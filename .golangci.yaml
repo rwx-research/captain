@@ -1,0 +1,43 @@
+linters:
+  # Only run explicitly enabled linters
+  disable-all: true
+  # The list below includes pretty much all available linters from the "bugs",
+  # "format", and "performance" categories. However, we don't use most of the
+  # non-default "style", "comment", or "complexity" linters since they are often
+  # very opinionated and don't lead to better code per-se. 
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - contextcheck
+    - decorder
+    - durationcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - gci
+    - gocritic
+    - goerr113
+    - gofmt
+    - gofumpt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nilerr
+    - noctx
+    - paralleltest
+    - prealloc
+    - reassign
+    - revive
+    - staticcheck
+    - testpackage
+    - typecheck
+    - unused
+    - wrapcheck
