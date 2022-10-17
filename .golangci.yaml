@@ -19,6 +19,7 @@ linters:
     - errorlint
     - exhaustive
     - exportloopref
+    - forbidigo
     - gci
     - gocritic
     - goerr113
@@ -29,6 +30,7 @@ linters:
     - gosimple
     - govet
     - ineffassign
+    - lll
     - misspell
     - nilerr
     - noctx
@@ -41,3 +43,21 @@ linters:
     - typecheck
     - unused
     - wrapcheck
+
+linters-settings:
+  forbidigo:
+    forbid:
+      - 'fmt\.Errorf' # Use x/xerrors package instead.
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/rwx-research)
+      - dot
+
+issues:
+  exclude-rules:
+    # Some of the rules can be relaxed for test files
+    - path: _test\.go
+      linters:
+        - wrapcheck

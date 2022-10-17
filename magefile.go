@@ -5,18 +5,16 @@ package main
 
 import (
 	"context"
+	"os/exec"
 
-	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 )
 
 // Default is the default build target.
 var Default = Build
 
-// Build creates a production-ready build of the Captain CLI.
+// Build builds the Captain CLI
 func Build(ctx context.Context) error {
-	mg.Deps(Test)
-
 	return sh.RunV("go", "build", "./cmd/captain")
 }
 
@@ -30,12 +28,12 @@ func Lint(ctx context.Context) error {
 	return sh.RunV("golangci-lint", "run", "./...")
 }
 
-// Run runs the Captain CLI in a developer mode.
-func Run(ctx context.Context) error {
-	return sh.RunV("go", "run", "./cmd/captain")
-}
-
 // Test executes the test-suite for the Captain-CLI.
 func Test(ctx context.Context) error {
-	return sh.RunV("go", "test", "./...")
+	cmd := exec.Command("command", "-v", "ginkgo")
+	if err := cmd.Run(); err != nil {
+		return sh.RunV("go", "test", "./...")
+	}
+
+	return sh.RunV("ginkgo", "./...")
 }

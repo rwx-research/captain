@@ -11,15 +11,52 @@ For additional information, please refer to
 [RFC 1](https://www.notion.so/rwx/RFC-1-Captain-CLI-architecture-82a164154abe48cdb92ad21050f63ef5)
 on Notion.
 
+## Usage
+
+```
+Captain provides client-side utilities related to build- and test-suites.
+
+This CLI is a complementary component to the main WebUI at
+https://captain.build.
+
+Usage:
+  captain [command]
+
+Available Commands:
+  help        Help about any command
+  upload      Upload a resource to Captain
+
+Flags:
+  -h, --help   help for captain
+
+Use "captain [command] --help" for more information about a command.
+```
+
+Currently, the CLI only supports uploading test artifacts from Github Actions.
+For example, the following command will upload all JSON files to Captain when
+run in Github Actions:
+
+```
+./captain upload results --suite-name RSpec **/*.json 
+```
+
 ## Development
 
-### Dependencies
+### Setup
+
+#### Dependencies
 
 For local development, the following two dependencies are expected to be
 installed on your system:
 
 * [Go 1.19](https://go.dev)
 * (optional) [golangci-lint v1.50](https://golangci-lint.run)
+
+#### Environment
+
+As the CLI is currently expected to be run from inside Github Actions, certain
+environment variables are expected to be present. These can be found under
+`test/.env.github.actions`.
 
 ### Building, testing, and running
 
@@ -28,18 +65,29 @@ of available targets, run `go run ./tools/mage -l`:
 
 ```
 Targets:
-  build*    creates a production-ready build of the Captain CLI.
+  build*    builds the Captain CLI
   clean     removes any generated artifacts from the repository.
   lint      runs the linter & performs static-analysis checks.
-  run       runs the Captain CLI in a developer mode.
   test      executes the test-suite for the Captain-CLI.
 
 * default target
 ```
 
-If Mage is invoked without any arguments, the default target is being executed.
-Otherwise, pass your desired target as the argument to Mage - multiple targets
-can also be executed: `go run ./tools/mage lint test run`.
+### Configuration
+
+The following environment variables can / should be used to configure the CLI:
+
+```
+CAPTAIN_HOST        # The host or host:port combination for the Captain API
+CAPTAIN_TOKEN       # The Captain API token
+INSECURE            # Disables TLS. Useful for using localhost as the API
+GITHUB_JOB          # The Job ID of a Github Actions Job
+GITHUB_RUN_ATTEMPT  # A unique number for each attempt of a particular worklow
+                    # on Github Actions
+GITHUB_RUN_ID       # A unique number for each workflow run on Github Acations
+GITHUB_REPOSITORY   # The owner & repository pair of the GitHub repository for
+                    # Github Actions
+```
 
 ### Coding conventions
 
@@ -54,7 +102,7 @@ Our linters should handle common scenarios already, however they're not perfect.
 ### Tips
 
 [Cobra](https://github.com/spf13/cobra-cli),
-[Ginkgo](https://onsi.github.io/ginkgo/), and [Mage][https://magefile.org] can
+[Ginkgo](https://onsi.github.io/ginkgo/), and [Mage](https://magefile.org) can
 all be installed as command-line applications. This is not strictly necessary,
 but can be useful in a few situations. For example, both the `cobra` and
 `ginkgo` CLIs allow generating common boilerplate code.
