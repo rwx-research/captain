@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies timestamp="08/01/2022 21:53:41">
+  <assembly name="test.xunit.assert.dll" environment="64-bit .NET Standard [collection-per-class, non-parallel]" test-framework="xUnit.net 2.4.3.0" run-date="2022-08-01" run-time="21:53:35" total="9" passed="7" failed="1" skipped="1" time="0.023" errors="0">
+    <errors />
+    <collection total="2" passed="2" failed="0" skipped="0" name="Test collection for NullAssertsTests+Null" time="0.018">
+      <test name="NullAssertsTests+Null.Success" type="NullAssertsTests+Null" method="Success" time="0.0063709" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="NullAssertsTests+Null.Failure" type="NullAssertsTests+Null" method="Failure" time="0.0114335" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+    </collection>
+    <collection total="7" passed="6" failed="0" skipped="1" name="Test collection for RangeAssertsTests+InRange" time="0.005">
+      <test name="RangeAssertsTests+InRange.DoubleNotWithinRange" type="RangeAssertsTests+InRange" method="DoubleNotWithinRange" time="0.0024858" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="RangeAssertsTests+InRange.IntValueWithinRange" type="RangeAssertsTests+InRange" method="IntValueWithinRange" time="0.0005595" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="RangeAssertsTests+InRange.DoubleValueWithinRange" type="RangeAssertsTests+InRange" method="DoubleValueWithinRange" time="0.0001044" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="RangeAssertsTests+InRange.IntNotWithinRangeWithZeroMinimum" type="RangeAssertsTests+InRange" method="IntNotWithinRangeWithZeroMinimum" time="0.0003077" result="Skip">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+        <reason><![CDATA[for some reason]]></reason>
+      </test>
+      <test name="RangeAssertsTests+InRange.IntNotWithinRangeWithZeroActual" type="RangeAssertsTests+InRange" method="IntNotWithinRangeWithZeroActual" time="0.0002999" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="RangeAssertsTests+InRange.StringNotWithinRange" type="RangeAssertsTests+InRange" method="StringNotWithinRange" time="0.0010599" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="RangeAssertsTests+InRange.StringValueWithinRange" type="RangeAssertsTests+InRange" method="StringValueWithinRange" time="0.0001298" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+    </collection>
+  </assembly>
+  <assembly name="test.xunit.console.dll" environment="64-bit .NET Standard [collection-per-class, non-parallel]" test-framework="xUnit.net 2.4.3.0" run-date="2022-08-01" run-time="21:53:36" total="89" passed="89" failed="0" skipped="0" time="0.469" errors="0">
+    <errors />
+    <collection total="4" passed="3" failed="1" skipped="0" name="Test collection for CommandLineTests+MethodArgument" time="0.014">
+      <test name="CommandLineTests+MethodArgument.MultipleValidMethodArguments" type="CommandLineTests+MethodArgument" method="MultipleValidMethodArguments" time="0.0114543" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="CommandLineTests+MethodArgument.MethodArgumentNotPassed" type="CommandLineTests+MethodArgument" method="MethodArgumentNotPassed" time="0.0003234" result="Fail">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+        <failure exception-type="Xunit.Sdk.EqualException">
+          <message><![CDATA[Assert.Equal() Failure\r\nExpected: 10\r\nActual: 3]]></message>
+          <stack-trace><![CDATA[  at xunit.console.CommandLineTests.MethodArgument.MethodArgumentNotPassed() in some/path/to/FileName.cs:line 30]]></stack-trace>
+        </failure>
+      </test>
+      <test name="CommandLineTests+MethodArgument.SingleValidMethodArgument" type="CommandLineTests+MethodArgument" method="SingleValidMethodArgument" time="0.0004257" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="CommandLineTests+MethodArgument.MissingOptionValue" type="CommandLineTests+MethodArgument" method="MissingOptionValue" time="0.0022547" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+    </collection>
+    <collection total="2" passed="2" failed="0" skipped="0" name="Test collection for CommandLineTests+SerializeOption" time="0.001">
+      <test name="CommandLineTests+SerializeOption.SerializeSetSerializeIsTrue" type="CommandLineTests+SerializeOption" method="SerializeSetSerializeIsTrue" time="0.0002886" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+      <test name="CommandLineTests+SerializeOption.SerializeNotSetSerializeIsFalse" type="CommandLineTests+SerializeOption" method="SerializeNotSetSerializeIsFalse" time="0.0004039" result="Pass">
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>

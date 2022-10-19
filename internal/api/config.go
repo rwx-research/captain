@@ -23,31 +23,31 @@ type ClientConfig struct {
 // Validate checks the configuration for errors
 func (cc ClientConfig) Validate() error {
 	if cc.AccountName == "" {
-		return errors.ConfigurationError("missing account name")
+		return errors.NewConfigurationError("missing account name")
 	}
 
 	if cc.Log == nil {
-		return errors.InternalError("missing logger")
+		return errors.NewInternalError("missing logger")
 	}
 
 	if cc.JobName == "" {
-		return errors.ConfigurationError("missing job name")
+		return errors.NewConfigurationError("missing job name")
 	}
 
 	if cc.RunAttempt == "" {
-		return errors.ConfigurationError("missing run attempt")
+		return errors.NewConfigurationError("missing run attempt")
 	}
 
 	if cc.RunID == "" {
-		return errors.ConfigurationError("missing run ID")
+		return errors.NewConfigurationError("missing run ID")
 	}
 
 	if cc.RepositoryName == "" {
-		return errors.ConfigurationError("missing repository name")
+		return errors.NewConfigurationError("missing repository name")
 	}
 
 	if cc.Token == "" {
-		return errors.ConfigurationError("missing API token")
+		return errors.NewConfigurationError("missing API token")
 	}
 
 	return nil

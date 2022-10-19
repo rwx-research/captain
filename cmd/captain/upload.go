@@ -1,10 +1,12 @@
 package main
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
+)
 
 var (
-	suiteName string
-
 	// uploadCmd represents the "upload" sub-command itself
 	uploadCmd = &cobra.Command{
 		Use:   "upload",
@@ -16,14 +18,17 @@ var (
 		Use:   "results [file]",
 		Short: "Upload test results to Captain",
 		Long:  descriptionUploadResults,
-		Run: func(cmd *cobra.Command, args []string) {
-			captain.UploadTestResults(cmd.Context(), suiteName, args)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO: Should also support reading from stdin
+			return errors.Wrap(captain.UploadTestResults(cmd.Context(), suiteName, args))
 		},
 	}
 )
 
 func init() {
-	uploadResultsCmd.Flags().StringVar(&suiteName, "suite-name", "", "the suite name (required)")
+	// Although `suite-name` is a global flag, we need to re-define it here in order to mark it as required.
+	// This is due to a bug in 'spf13/cobra'. See https://github.com/spf13/cobra/issues/921
+	uploadResultsCmd.Flags().StringVar(&suiteName, "suite-name", "", "the name of the build- or test-suite (required)")
 
 	// TODO: We've decided to make this optional as well
 	if err := uploadResultsCmd.MarkFlagRequired("suite-name"); err != nil {

@@ -7,15 +7,18 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"golang.org/x/xerrors"
 
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/exec"
+	"github.com/rwx-research/captain-cli/internal/fs"
+	"github.com/rwx-research/captain-cli/internal/parsers"
 )
 
 var (
-	captain cli.Service
+	captain   cli.Service
+	suiteName string
 
 	rootCmd = &cobra.Command{
 		Use:               "captain",
@@ -28,6 +31,7 @@ var (
 )
 
 func init() {
+	rootCmd.PersistentFlags().StringVar(&suiteName, "suite-name", "", "the name of the build- or test-suite")
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }
 
@@ -36,7 +40,7 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 
 	if err := viper.Unmarshal(&cfg); err != nil {
 		// TODO: Check if this viper error are ok to present to end-users
-		return errors.ConfigurationError("unable to parse configuration: %s", err)
+		return errors.NewConfigurationError("unable to parse configuration: %s", err)
 	}
 
 	owner, repository := path.Split(cfg.VCS.Github.Repository)
@@ -45,7 +49,7 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 	//       There should also be a difference between production (default) & debug logging.
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		return errors.InternalError("unable to create logger: %s", err)
+		return errors.NewInternalError("unable to create logger: %s", err)
 	}
 
 	apiClient, err := api.NewClient(api.ClientConfig{
@@ -60,12 +64,15 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		Token:          cfg.Captain.Token,
 	})
 	if err != nil {
-		return xerrors.Errorf("unable to create API client: %w", err)
+		return errors.WithMessage("unable to create API client: %w", err)
 	}
 
 	captain = cli.Service{
-		API: apiClient,
-		Log: logger.Sugar(),
+		API:        apiClient,
+		Log:        logger.Sugar(),
+		FileSystem: fs.Local{},
+		TaskRunner: exec.Local{},
+		Parsers:    []cli.Parser{new(parsers.JUnit), new(parsers.Jest), new(parsers.RSpecV3), new(parsers.XUnitDotNetV2)},
 	}
 
 	return nil

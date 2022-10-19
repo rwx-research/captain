@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite id="0" name="suite" package="testsuite/suite" tests="72" errors="0" failures="0" hostname="localhost" timestamp="2022-09-05T01:31:20.961486821Z" time="21.367">
+    <testcase name="reporting::test_dot_reporter::breaks_lines_with_many_dots" time="0.352">
+      <failure type="failure" message="Failed because of some assertion" />
+    </testcase>
+    <testcase name="reporting::test_dot_reporter::dot_line_limit_fits_on_one_line" time="0.38">
+      <error type="error" message="Some error occurred" />
+    </testcase>
+    <testcase name="reporting::test_dot_reporter::flush_buffer_when_test_results_done" time="0.353">
+      <skipped />
+    </testcase>
+    <testcase name="reporting::test_dot_reporter::formats_results_as_dots_with_summary" time="0.325">
+      <failure type="failure" message="Multiple" />
+      <error type="error" message="Issues" />
+    </testcase>
+    <testcase name="reporting::test_dot_reporter::one_newline_before_summaries_line_limit_reached" time="0.345">
+      <skipped message="For some reason" />
+    </testcase>
+    <testcase name="reporting::test_dot_reporter::one_newline_before_summaries_line_limit_not_reached" time="0.381">
+    </testcase>
+    <testcase name="reporting::test_dot_reporter::write_on_result" time="0.279" />
+    <testcase name="reporting::test_line_reporter::flush_buffer_when_test_results_done" time="0.291" />
+    <testcase name="reporting::test_line_reporter::formats_results_as_lines" time="0.295" />
+    <testcase name="reporting::test_line_reporter::write_on_result" time="0.253" />
+    <testcase name="reporting::test_reporter_kind::parse_dot_reporter" time="0.298" />
+    <testcase name="reporting::test_reporter_kind::parse_junit_reporter_eq_no_suffix_to_default" time="0.318" />
+    <testcase name="reporting::test_reporter_kind::parse_junit_reporter_eq_no_suffix_with_spaces_to_default" time="0.254" />
+    <testcase name="reporting::test_reporter_kind::parse_junit_reporter_eq_with_suffix_to_absolute_path" time="0.274" />
+    <testcase name="reporting::test_reporter_kind::parse_junit_reporter_eq_with_suffix_to_relative_path" time="0.267" />
+    <testcase name="reporting::test_reporter_kind::parse_junit_reporter_no_eq_to_default" time="0.277" />
+    <testcase name="reporting::test_reporter_kind::parse_line_reporter" time="0.257" />
+    <testcase name="reporting::test_reporter_kind::parse_unknown_reporter" time="0.25" />
+    <testcase name="test::validate_multiple_args" time="0.247" />
+    <testcase name="test::validate_one_test_arg" time="0.253" />
+    <testcase name="test::validate_test_args_empty" time="0.261" />
+    <testcase name="healthcheck_queue_failure" time="0.264" />
+    <testcase name="healthcheck_queue_success" time="0.291" />
+    <testcase name="queue_open_servers_on_specified_ports" time="0.281" />
+    <testcase name="test_validate_protocol_version_message::protocol_version_message_incompatible" time="0.242" />
+    <testcase name="test_validate_protocol_version_message::protocol_version_message_recv_wrong_message" time="0.251" />
+    <testcase name="test_validate_protocol_version_message::protocol_version_message_tunnel_dropped" time="0.24" />
+    <testcase name="test_validate_protocol_version_message::protocol_version_message_tunnel_timeout" time="0.347" />
+    <testcase name="test_validate_protocol_version_message::recv_and_validate_protocol_version_message" time="0.214" />
+    <testcase name="test::error_with_empty_output_prints_empty_output" time="0.319" />
+    <testcase name="test::extend_appends_tests" time="0.315" />
+    <testcase name="test::failure_with_empty_output_prints_empty_output" time="0.295" />
+    <testcase name="test::generates_junit_xml_for_all_statuses" time="0.3" />
+    <testcase name="test::format_exact_millis" time="0.302" />
+    <testcase name="test::format_exact_minutes" time="0.296" />
+    <testcase name="test::format_exact_minutes_leftover_seconds_and_millis" time="0.311" />
+    <testcase name="test::format_exact_seconds" time="0.315" />
+    <testcase name="test::format_exact_seconds_leftover_millis" time="0.313" />
+    <testcase name="test::format_line_error" time="0.315" />
+    <testcase name="test::format_line_failure" time="0.295" />
+    <testcase name="test::format_line_pending" time="0.297" />
+    <testcase name="test::format_line_skipped" time="0.293" />
+    <testcase name="test::format_line_success" time="0.295" />
+    <testcase name="test::format_summary_error" time="0.305" />
+    <testcase name="test::format_summary_failure" time="0.314" />
+    <testcase name="test::format_summary_multiline" time="0.304" />
+    <testcase name="test::format_summary_no_output" time="0.299" />
+    <testcase name="test::format_summary_pending" time="0.291" />
+    <testcase name="test::format_summary_skipped" time="0.288" />
+    <testcase name="test::format_summary_success" time="0.299" />
+    <testcase name="procspawn_test_helper" time="0.246" />
+    <testcase name="queue::test::bad_message_doesnt_take_down_work_scheduling_server" time="0.303" />
+    <testcase name="queue::test::bad_message_doesnt_take_down_server" time="0.345" />
+    <testcase name="queue::test::client_disconnect_then_connect_gets_buffered_results" time="0.32" />
+    <testcase name="queue::test::invoker_reconnection_fails_never_invoked" time="0.309" />
+    <testcase name="queue::test::invoker_reconnection_succeeds" time="0.231" />
+    <testcase name="queue::test::multiple_invokers" time="0.288" />
+    <testcase name="queue::test::multiple_jobs_complete" time="0.289" />
+    <testcase name="queue::test::queue_server_healthcheck" time="0.24" />
+    <testcase name="net_protocol::test::error_reads_that_are_too_large" time="0.261" />
+    <testcase name="queue::test::work_server_healthcheck" time="0.31" />
+    <testcase name="net_protocol::test::error_reads_that_are_too_large_async" time="0.332" />
+    <testcase name="negotiate::test::queue_and_workers_lifecycle" time="0.323" />
+    <testcase name="procspawn_test_helper" time="0.309" />
+    <testcase name="negotiate::test::queue_negotiator_healthcheck" time="0.346" />
+    <testcase name="workers::test::test_1_worker_1_echo" time="0.298" />
+    <testcase name="workers::test::bad_message_doesnt_take_down_queue_negotiator_server" time="0.354" />
+    <testcase name="workers::test::test_1_worker_2_echos" time="0.311" />
+    <testcase name="workers::test::test_2_workers_1_echo" time="0.318" />
+    <testcase name="workers::test::test_2_workers_2_echos" time="0.293" />
+    <testcase name="workers::test::test_2_workers_8_echos" time="0.371" />
+    <testcase name="workers::test::work_in_constant_context" time="0.269" />
+  </testsuite>
+</testsuites>

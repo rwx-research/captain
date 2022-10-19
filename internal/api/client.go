@@ -55,7 +55,7 @@ func NewClient(cfg ClientConfig) (Client, error) {
 
 		resp, err := client.Do(req)
 		if err != nil {
-			return resp, errors.SystemError("unable to perform HTTP request to %q: %s", req.URL, err)
+			return resp, errors.NewSystemError("unable to perform HTTP request to %q: %s", req.URL, err)
 		}
 
 		return resp, nil
@@ -64,15 +64,67 @@ func NewClient(cfg ClientConfig) (Client, error) {
 	return Client{cfg, roundTrip}, nil
 }
 
+// GetQuarantinedTestIDs returns a list of test identifiers that are marked as quarantined on Captain.
+func (c Client) GetQuarantinedTestIDs(ctx context.Context) ([]string, error) {
+	endpoint := "/api/organization/integrations/github/quarantined_tests"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, errors.NewInternalError("unable to construct HTTP request: %s", err)
+	}
+
+	queryValues := req.URL.Query()
+	queryValues.Add("account_name", c.AccountName)
+	queryValues.Add("repository_name", c.RepositoryName)
+	queryValues.Add("workflow_run_id", c.RunID)
+	req.URL.RawQuery = queryValues.Encode()
+
+	resp, err := c.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, errors.NewInternalError(
+			"API backend encountered an error. Endpoint was %q, Status Code %d",
+			endpoint,
+			resp.StatusCode,
+		)
+	}
+
+	respBody := struct {
+		QuarantinedTests []struct {
+			Identifier string `json:"identifier"`
+		} `json:"quarantined_tests"`
+	}{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+		return nil, errors.NewInternalError(
+			"unable to parse the response body. Endpoint was %q, Content-Type %q. Original Error: %s",
+			endpoint,
+			resp.Header.Get(headerContentType),
+			err,
+		)
+	}
+
+	quarantinedTests := make([]string, len(respBody.QuarantinedTests))
+	for i, quarantinedTest := range respBody.QuarantinedTests {
+		quarantinedTests[i] = quarantinedTest.Identifier
+	}
+
+	return quarantinedTests, nil
+}
+
 func (c Client) postJSON(ctx context.Context, endpoint string, body any) (*http.Response, error) {
 	encodedBody, err := json.Marshal(body)
 	if err != nil {
-		return nil, errors.InternalError("unable to construct JSON object for request: %s", err)
+		return nil, errors.NewInternalError("unable to construct JSON object for request: %s", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(encodedBody))
 	if err != nil {
-		return nil, errors.InternalError("unable to construct HTTP request: %s", err)
+		return nil, errors.NewInternalError("unable to construct HTTP request: %s", err)
 	}
 
 	req.Header.Set(headerContentType, contentTypeJSON)
@@ -88,12 +140,12 @@ func (c Client) postJSON(ctx context.Context, endpoint string, body any) (*http.
 func (c Client) putJSON(ctx context.Context, endpoint string, body any) (*http.Response, error) {
 	encodedBody, err := json.Marshal(body)
 	if err != nil {
-		return nil, errors.InternalError("unable to construct JSON object for request: %s", err)
+		return nil, errors.NewInternalError("unable to construct JSON object for request: %s", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut, endpoint, bytes.NewBuffer(encodedBody))
 	if err != nil {
-		return nil, errors.InternalError("unable to construct HTTP request: %s", err)
+		return nil, errors.NewInternalError("unable to construct HTTP request: %s", err)
 	}
 
 	req.Header.Set(headerContentType, contentTypeJSON)
@@ -134,7 +186,7 @@ func (c Client) registerArtifacts(ctx context.Context, artifacts []Artifact) (ma
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return nil, errors.InternalError(
+		return nil, errors.NewInternalError(
 			"API backend encountered an error. Endpoint was %q, Status Code %d",
 			endpoint,
 			resp.StatusCode,
@@ -149,7 +201,7 @@ func (c Client) registerArtifacts(ctx context.Context, artifacts []Artifact) (ma
 	}{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
-		return nil, errors.InternalError(
+		return nil, errors.NewInternalError(
 			"unable to parse the response body. Endpoint was %q, Content-Type %q. Original Error: %s",
 			endpoint,
 			resp.Header.Get(headerContentType),
@@ -162,7 +214,7 @@ func (c Client) registerArtifacts(ctx context.Context, artifacts []Artifact) (ma
 	for _, endpoint := range respBody.BulkArtifacts {
 		parsedURL, err := url.Parse(endpoint.UploadURL)
 		if err != nil {
-			return nil, errors.InternalError("unable to parse S3 URL")
+			return nil, errors.NewInternalError("unable to parse S3 URL")
 		}
 
 		S3Endpoints[endpoint.ExternalID] = parsedURL
@@ -199,7 +251,7 @@ func (c Client) updateArtifactStatuses(ctx context.Context, statuses map[uuid.UU
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return errors.InternalError(
+		return errors.NewInternalError(
 			"API backend encountered an error. Endpoint was %q, Status Code %d",
 			endpoint,
 			resp.StatusCode,
@@ -217,7 +269,7 @@ func (c Client) UploadArtifacts(ctx context.Context, artifacts []Artifact) error
 	for _, artifact := range artifacts {
 		fileInfo, err := artifact.FD.Stat()
 		if err != nil {
-			return errors.SystemError("unable to determine file-size for %q", artifact.OriginalPath)
+			return errors.NewSystemError("unable to determine file-size for %q", artifact.OriginalPath)
 		}
 
 		fileSizeLookup[artifact.ExternalID] = fileInfo.Size()

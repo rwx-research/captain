@@ -5,6 +5,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
 var initializationErrors []error
@@ -18,10 +20,19 @@ func main() {
 
 	// Logging is expected to take place in `internal/cli`, as text output is _the_ primary way of communicating
 	// to a user on the terminal and is therefore one of our main concerns.
-	// The print call below acts as a last catch-all in case an error is encountered before we could initialize the
-	// CLI. It is complimentary to the 'initializationErrors' above.
+	// This error here is mainly used to communicate any necessary exit Code.
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+		if e, ok := errors.AsExecutionError(err); ok {
+			os.Exit(e.Code)
+		}
+
+		// All errors should be wrapped with an error type from our errors package. If this is not the case, this
+		// means that the error originates from 'spf13/cobra` or `spf13/viper`. For example, this could be for
+		// a missing flag that was marked as required.
+		if !errors.IsRWXError(err) {
+			fmt.Fprintln(os.Stderr, err)
+		}
+
 		os.Exit(1)
 	}
 }

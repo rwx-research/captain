@@ -34,37 +34,37 @@ func init() {
 	cobra.OnInitialize(func() {
 		// TODO: Check if these viper errors are ok to present to end-users
 		if err := viper.BindEnv("captain.host", "CAPTAIN_HOST"); err != nil {
-			err = errors.ConfigurationError("unable to read from environment: %s", err)
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
 
 		if err := viper.BindEnv("captain.token", "CAPTAIN_TOKEN"); err != nil {
-			err = errors.ConfigurationError("unable to read from environment: %s", err)
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
 
 		if err := viper.BindEnv("ci.github.job", "GITHUB_JOB"); err != nil {
-			err = errors.ConfigurationError("unable to read from environment: %s", err)
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
 
 		if err := viper.BindEnv("ci.github.run.attempt", "GITHUB_RUN_ATTEMPT"); err != nil {
-			err = errors.ConfigurationError("unable to read from environment: %s", err)
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
 
 		if err := viper.BindEnv("ci.github.run.id", "GITHUB_RUN_ID"); err != nil {
-			err = errors.ConfigurationError("unable to read from environment: %s", err)
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
 
 		if err := viper.BindEnv("insecure", "INSECURE"); err != nil {
-			err = errors.ConfigurationError("unable to read from environment: %s", err)
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
 
 		if err := viper.BindEnv("vcs.github.repository", "GITHUB_REPOSITORY"); err != nil {
-			err = errors.ConfigurationError("unable to read from environment: %s", err)
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
 	})

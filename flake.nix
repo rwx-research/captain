@@ -10,14 +10,7 @@
       let pkgs = import nixpkgs { system = system; };
       in {
         devShell = pkgs.mkShell {
-          packages = with pkgs; [
-            cobra-cli
-            ginkgo
-            go_1_19
-            golangci-lint
-            mage
-            nixfmt
-          ];
+          packages = with pkgs; [ ginkgo go_1_19 golangci-lint mage nixfmt ];
         };
       });
 }

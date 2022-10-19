@@ -24,10 +24,12 @@ Usage:
 
 Available Commands:
   help        Help about any command
+  run         Execute a build- or test-suite
   upload      Upload a resource to Captain
 
 Flags:
-  -h, --help   help for captain
+  -h, --help                help for captain
+      --suite-name string   the name of the build- or test-suite
 
 Use "captain [command] --help" for more information about a command.
 ```

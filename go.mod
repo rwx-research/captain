@@ -10,10 +10,13 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.13.0
 	go.uber.org/zap v1.23.0
+	golang.org/x/mod v0.5.1
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 )
 
 require (
+	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

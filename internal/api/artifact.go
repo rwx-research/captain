@@ -1,15 +1,15 @@
 package api
 
 import (
-	"os"
-
 	"github.com/google/uuid"
+
+	"github.com/rwx-research/captain-cli/internal/fs"
 )
 
 // Artifact is a build- or test-artifact as defined by the Captain API.
 type Artifact struct {
 	ExternalID   uuid.UUID    `json:"external_id"`
-	FD           *os.File     `json:"-"`
+	FD           fs.File      `json:"-"`
 	Kind         ArtifactKind `json:"kind"`
 	MimeType     string       `json:"mime_type"`
 	Name         string       `json:"name"`

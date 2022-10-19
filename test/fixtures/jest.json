@@ -1,0 +1,238 @@
+{
+  "numFailedTestSuites": 3,
+  "numFailedTests": 6,
+  "numPassedTestSuites": 0,
+  "numPassedTests": 6,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 3,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 3,
+  "numTotalTestSuites": 3,
+  "numTotalTests": 18,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1665517160011,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "duration": null,
+          "failureMessages": [],
+          "fullName": "is top-level pending",
+          "location": null,
+          "status": "todo",
+          "title": "is top-level pending"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": null,
+          "failureMessages": [],
+          "fullName": "is top-level skipped",
+          "location": null,
+          "status": "pending",
+          "title": "is top-level skipped"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 1,
+          "failureMessages": [],
+          "fullName": "is top-level passing",
+          "location": null,
+          "status": "passed",
+          "title": "is top-level passing"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 2,
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js:12:16)\n    at Promise.then.completed (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:333:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:259:10)\n    at _callCircusTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:277:40)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)\n    at _runTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:209:3)\n    at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:97:9)\n    at run (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:31:3)\n    at runAndTransformResultsToJestFormat (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:136:21)\n    at jestAdapter (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:92:19)\n    at runTestInternal (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:407:16)\n    at runTest (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:491:34)\n    at Object.worker (/home/runner/work/captain/captain/node_modules/jest-runner/build/testWorker.js:133:12)"
+          ],
+          "fullName": "is top-level failing",
+          "location": null,
+          "status": "failed",
+          "title": "is top-level failing"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 653,
+          "failureMessages": [],
+          "fullName": "is asynchronously top-level passing",
+          "location": null,
+          "status": "passed",
+          "title": "is asynchronously top-level passing"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 651,
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js:22:16)"
+          ],
+          "fullName": "is asynchronously top-level failing",
+          "location": null,
+          "status": "failed",
+          "title": "is asynchronously top-level failing"
+        }
+      ],
+      "endTime": 1665517162106,
+      "message": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mis top-level failing\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32mfalse\u001b[39m\n    Received: \u001b[31mtrue\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 10 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 11 |\u001b[39m it(\u001b[32m\"is top-level failing\"\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 12 |\u001b[39m   expect(\u001b[36mtrue\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 13 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 14 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 15 |\u001b[39m it(\u001b[32m\"is asynchronously top-level passing\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.toBe (\u001b[22m\u001b[2m\u001b[0m\u001b[36mapp/javascript/controllers/top_level.test.js\u001b[39m\u001b[0m\u001b[2m:12:16)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mis asynchronously top-level failing\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32mfalse\u001b[39m\n    Received: \u001b[31mtrue\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 20 |\u001b[39m it(\u001b[32m\"is asynchronously top-level failing\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 21 |\u001b[39m   \u001b[36mawait\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mPromise\u001b[39m(resolve \u001b[33m=>\u001b[39m setTimeout(resolve\u001b[33m,\u001b[39m \u001b[35m650\u001b[39m))\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 22 |\u001b[39m   expect(\u001b[36mtrue\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 23 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 24 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.toBe (\u001b[22m\u001b[2m\u001b[0m\u001b[36mapp/javascript/controllers/top_level.test.js\u001b[39m\u001b[0m\u001b[2m:22:16)\u001b[22m\u001b[2m\u001b[22m\n",
+      "name": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js",
+      "startTime": 1665517160298,
+      "status": "failed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["even", "more nesting"],
+          "duration": null,
+          "failureMessages": [],
+          "fullName": "even more nesting is pending",
+          "location": null,
+          "status": "todo",
+          "title": "is pending"
+        },
+        {
+          "ancestorTitles": ["even", "more nesting"],
+          "duration": null,
+          "failureMessages": [],
+          "fullName": "even more nesting is skipped",
+          "location": null,
+          "status": "pending",
+          "title": "is skipped"
+        },
+        {
+          "ancestorTitles": ["even", "more nesting"],
+          "duration": 1,
+          "failureMessages": [],
+          "fullName": "even more nesting is passing",
+          "location": null,
+          "status": "passed",
+          "title": "is passing"
+        },
+        {
+          "ancestorTitles": ["even", "more nesting"],
+          "duration": 1,
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js:14:20)\n    at Promise.then.completed (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:333:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:259:10)\n    at _callCircusTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:277:40)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)\n    at _runTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:209:3)\n    at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:97:9)\n    at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:91:9)\n    at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:91:9)\n    at run (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:31:3)\n    at runAndTransformResultsToJestFormat (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:136:21)\n    at jestAdapter (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:92:19)\n    at runTestInternal (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:407:16)\n    at runTest (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:491:34)\n    at Object.worker (/home/runner/work/captain/captain/node_modules/jest-runner/build/testWorker.js:133:12)"
+          ],
+          "fullName": "even more nesting is failing",
+          "location": null,
+          "status": "failed",
+          "title": "is failing"
+        },
+        {
+          "ancestorTitles": ["even", "more nesting"],
+          "duration": 654,
+          "failureMessages": [],
+          "fullName": "even more nesting is asynchronously passing",
+          "location": null,
+          "status": "passed",
+          "title": "is asynchronously passing"
+        },
+        {
+          "ancestorTitles": ["even", "more nesting"],
+          "duration": 651,
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js:24:20)"
+          ],
+          "fullName": "even more nesting is asynchronously failing",
+          "location": null,
+          "status": "failed",
+          "title": "is asynchronously failing"
+        }
+      ],
+      "endTime": 1665517162134,
+      "message": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1meven › more nesting › is failing\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32mfalse\u001b[39m\n    Received: \u001b[31mtrue\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 12 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 13 |\u001b[39m     it(\u001b[32m\"is failing\"\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 14 |\u001b[39m       expect(\u001b[36mtrue\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m    |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 15 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 16 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 17 |\u001b[39m     it(\u001b[32m\"is asynchronously passing\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.toBe (\u001b[22m\u001b[2m\u001b[0m\u001b[36mapp/javascript/controllers/nested/more/nested.test.js\u001b[39m\u001b[0m\u001b[2m:14:20)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1meven › more nesting › is asynchronously failing\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32mfalse\u001b[39m\n    Received: \u001b[31mtrue\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 22 |\u001b[39m     it(\u001b[32m\"is asynchronously failing\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 23 |\u001b[39m       \u001b[36mawait\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mPromise\u001b[39m(resolve \u001b[33m=>\u001b[39m setTimeout(resolve\u001b[33m,\u001b[39m \u001b[35m650\u001b[39m))\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 24 |\u001b[39m       expect(\u001b[36mtrue\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m    |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 25 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 26 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 27 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.toBe (\u001b[22m\u001b[2m\u001b[0m\u001b[36mapp/javascript/controllers/nested/more/nested.test.js\u001b[39m\u001b[0m\u001b[2m:24:20)\u001b[22m\u001b[2m\u001b[22m\n",
+      "name": "/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js",
+      "startTime": 1665517160298,
+      "status": "failed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["one level of nesting"],
+          "duration": null,
+          "failureMessages": [],
+          "fullName": "one level of nesting is pending",
+          "location": null,
+          "status": "todo",
+          "title": "is pending"
+        },
+        {
+          "ancestorTitles": ["one level of nesting"],
+          "duration": null,
+          "failureMessages": [],
+          "fullName": "one level of nesting is skipped",
+          "location": null,
+          "status": "pending",
+          "title": "is skipped"
+        },
+        {
+          "ancestorTitles": ["one level of nesting"],
+          "duration": 0,
+          "failureMessages": [],
+          "fullName": "one level of nesting is passing",
+          "location": null,
+          "status": "passed",
+          "title": "is passing"
+        },
+        {
+          "ancestorTitles": ["one level of nesting"],
+          "duration": 1,
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js:13:18)\n    at Promise.then.completed (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:333:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:259:10)\n    at _callCircusTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:277:40)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)\n    at _runTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:209:3)\n    at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:97:9)\n    at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:91:9)\n    at run (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:31:3)\n    at runAndTransformResultsToJestFormat (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:136:21)\n    at jestAdapter (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:92:19)\n    at runTestInternal (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:407:16)\n    at runTest (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:491:34)\n    at Object.worker (/home/runner/work/captain/captain/node_modules/jest-runner/build/testWorker.js:133:12)"
+          ],
+          "fullName": "one level of nesting is failing",
+          "location": null,
+          "status": "failed",
+          "title": "is failing"
+        },
+        {
+          "ancestorTitles": ["one level of nesting"],
+          "duration": 653,
+          "failureMessages": [],
+          "fullName": "one level of nesting is asynchronously passing",
+          "location": null,
+          "status": "passed",
+          "title": "is asynchronously passing"
+        },
+        {
+          "ancestorTitles": ["one level of nesting"],
+          "duration": 652,
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js:23:18)"
+          ],
+          "fullName": "one level of nesting is asynchronously failing",
+          "location": null,
+          "status": "failed",
+          "title": "is asynchronously failing"
+        }
+      ],
+      "endTime": 1665517162135,
+      "message": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mone level of nesting › is failing\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32mfalse\u001b[39m\n    Received: \u001b[31mtrue\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 11 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 12 |\u001b[39m   it(\u001b[32m\"is failing\"\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 13 |\u001b[39m     expect(\u001b[36mtrue\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 14 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 15 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 16 |\u001b[39m   it(\u001b[32m\"is asynchronously passing\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.toBe (\u001b[22m\u001b[2m\u001b[0m\u001b[36mapp/javascript/controllers/nested/nested.test.js\u001b[39m\u001b[0m\u001b[2m:13:18)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mone level of nesting › is asynchronously failing\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32mfalse\u001b[39m\n    Received: \u001b[31mtrue\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 21 |\u001b[39m   it(\u001b[32m\"is asynchronously failing\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 22 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mPromise\u001b[39m(resolve \u001b[33m=>\u001b[39m setTimeout(resolve\u001b[33m,\u001b[39m \u001b[35m650\u001b[39m))\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 23 |\u001b[39m     expect(\u001b[36mtrue\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 24 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 25 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 26 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.toBe (\u001b[22m\u001b[2m\u001b[0m\u001b[36mapp/javascript/controllers/nested/nested.test.js\u001b[39m\u001b[0m\u001b[2m:23:18)\u001b[22m\u001b[2m\u001b[22m\n",
+      "name": "/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js",
+      "startTime": 1665517160299,
+      "status": "failed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}

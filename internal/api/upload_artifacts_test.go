@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/google/uuid"
@@ -14,6 +12,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/mocks"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -23,6 +22,7 @@ var _ = Describe("Uploading Artifacts", func() {
 	var (
 		apiClient          api.Client
 		artifacts          []api.Artifact
+		mockFile           *mocks.File
 		mockRoundTripper   func(*http.Request) (*http.Response, error)
 		mockRoundTripCalls int
 	)
@@ -30,12 +30,12 @@ var _ = Describe("Uploading Artifacts", func() {
 	BeforeEach(func() {
 		mockRoundTripCalls = 0
 
-		fd0, err := os.Create(filepath.Join(GinkgoT().TempDir(), "a0.json"))
-		Expect(err).ToNot(HaveOccurred())
+		mockFile = new(mocks.File)
+		mockFile.Reader = strings.NewReader("")
 
 		artifacts = []api.Artifact{{
 			ExternalID: uuid.New(),
-			FD:         fd0,
+			FD:         mockFile,
 		}}
 	})
 
@@ -89,7 +89,7 @@ var _ = Describe("Uploading Artifacts", func() {
 	Context("with an error during artifact registration", func() {
 		BeforeEach(func() {
 			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
-				return nil, errors.InternalError("Error")
+				return nil, errors.NewInternalError("Error")
 			}
 		})
 
@@ -152,7 +152,7 @@ var _ = Describe("Uploading Artifacts", func() {
 				case 1: // upload to `upload_url`
 					resp.Body = io.NopCloser(strings.NewReader(""))
 				case 2: // update status
-					err = errors.InternalError("Error")
+					err = errors.NewInternalError("Error")
 				default:
 					Fail("too many HTTP calls")
 				}

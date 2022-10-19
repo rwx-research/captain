@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<testsuites failures="0" errors="0" tests="11" skipped="0">
+  <testsuite name="Root Suite" timestamp="2022-09-07T18:06:15" tests="0" file="cypress/e2e/login.cy.js" time="0.0000" failures="0"/>
+  <testsuite name="Login Flow" timestamp="2022-09-07T18:06:15" tests="2" time="14.2320" failures="0">
+    <testcase name="Login Flow When you are logged out and visit an authenticated path, you are redirected to the authenticated path after login" time="10.8410" classname="When you are logged out and visit an authenticated path, you are redirected to the authenticated path after login">
+      <failure type="failure" message="Failed because of some assertion" />
+    </testcase>
+    <testcase name="Login Flow When you are logged out and visit an authenticated path, you are redirected to the authenticated path after signup" time="3.5000" classname="When you are logged out and visit an authenticated path, you are redirected to the authenticated path after signup">
+      <error type="error" message="Some error occurred" />
+    </testcase>
+  </testsuite>
+  <testsuite name="Root Suite" timestamp="2022-09-07T18:07:45" tests="0" file="cypress/e2e/time-zone.cy.js" time="0.0000" failures="0"/>
+  <testsuite name="Automatic time zone detection" timestamp="2022-09-07T18:07:45" tests="1" time="9.1280" failures="0">
+    <testcase name="Automatic time zone detection Initially sets user's time zones to the browser's and lets them change it" time="9.3010" classname="Initially sets user's time zones to the browser's and lets them change it">
+      <skipped />
+    </testcase>
+  </testsuite>
+  <testsuite name="Root Suite" timestamp="2022-09-07T18:05:40" tests="0" file="cypress/e2e/feedback.cy.js" time="0.0000" failures="0"/>
+  <testsuite name="Feedback submission functionality" timestamp="2022-09-07T18:05:40" tests="1" time="11.9180" failures="0">
+    <testcase name="Feedback submission functionality Allows the submission of feedback to the support email address" time="12.4450" classname="Allows the submission of feedback to the support email address">
+      <failure type="failure" message="Multiple" />
+      <error type="error" message="Issues" />
+    </testcase>
+  </testsuite>
+  <testsuite name="Root Suite" timestamp="2022-09-07T18:07:22" tests="0" file="cypress/e2e/one-click-onboarding.cy.js" time="0.0000" failures="0"/>
+  <testsuite name="One Click Onboarding Flow" timestamp="2022-09-07T18:07:22" tests="3" time="9.1720" failures="0">
+    <testcase name="One Click Onboarding Flow You can sign up with Github through the one click flow" time="2.3540" classname="You can sign up with Github through the one click flow">
+      <skipped message="For some reason" />
+    </testcase>
+    <testcase name="One Click Onboarding Flow You can see the unsupported message and form for non-Github selections in the one click flow" time="3.5990" classname="You can see the unsupported message and form for non-Github selections in the one click flow">
+    </testcase>
+    <testcase name="One Click Onboarding Flow You can see the unsupported message and form for not-listed selections in the one click flow" time="3.3550" classname="You can see the unsupported message and form for not-listed selections in the one click flow"/>
+  </testsuite>
+  <testsuite name="Root Suite" timestamp="2022-09-07T18:05:55" tests="0" file="cypress/e2e/forgot-password.cy.js" time="0.0000" failures="0"/>
+  <testsuite name="Forgot Password Flow" timestamp="2022-09-07T18:05:55" tests="1" time="17.2040" failures="0">
+    <testcase name="Forgot Password Flow You can sign up with email, forget your password, ask to reset it, reset it, and sign in with the new password" time="17.3330" classname="You can sign up with email, forget your password, ask to reset it, reset it, and sign in with the new password"/>
+  </testsuite>
+  <testsuite name="Root Suite" timestamp="2022-09-07T18:07:34" tests="0" file="cypress/e2e/telemetry.cy.js" time="0.0000" failures="0"/>
+  <testsuite name="Telemetry functionality" timestamp="2022-09-07T18:07:34" tests="1" time="9.0830" failures="0">
+    <testcase name="Telemetry functionality Telemetry is enabled by default but can be opted out of" time="9.2560" classname="Telemetry is enabled by default but can be opted out of"/>
+  </testsuite>
+  <testsuite name="Root Suite" timestamp="2022-09-07T18:06:32" tests="0" file="cypress/e2e/onboarding.cy.js" time="0.0000" failures="0"/>
+  <testsuite name="Onboarding Flow" timestamp="2022-09-07T18:06:32" tests="2" time="48.0140" failures="0">
+    <testcase name="Onboarding Flow You can sign up with email, create an organization, invite someone to that organization, and then they can signup with the invite code and automatically be added to the organization." time="20.8020" classname="You can sign up with email, create an organization, invite someone to that organization, and then they can signup with the invite code and automatically be added to the organization."/>
+    <testcase name="Onboarding Flow You can sign up with email, create an organization, invite someone who already has an account to that organization, and then they can be deeplink logged in and added to the organization." time="27.2890" classname="You can sign up with email, create an organization, invite someone who already has an account to that organization, and then they can be deeplink logged in and added to the organization."/>
+  </testsuite>
+</testsuites>
