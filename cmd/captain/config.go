@@ -58,11 +58,6 @@ func init() {
 			initializationErrors = append(initializationErrors, err)
 		}
 
-		if err := viper.BindEnv("insecure", "INSECURE"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
 		if err := viper.BindEnv("vcs.github.repository", "GITHUB_REPOSITORY"); err != nil {
 			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)

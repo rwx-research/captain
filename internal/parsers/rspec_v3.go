@@ -4,71 +4,78 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"strings"
+	"time"
 
 	"golang.org/x/mod/semver"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
 // RSpecV3 is a RSpec parser for v3 artifacts.
-type RSpecV3 struct {
-	result rSpecV3Result
-	index  int
-}
+type RSpecV3 struct{}
 
 type rSpecV3Result struct {
-	Version  string           `json:"version"`
-	Examples []rSpecV3Example `json:"examples"`
-}
-
-type rSpecV3Example struct {
-	FullDescription string `json:"full_description"`
-	ID              string `json:"id"`
-	Status          string `json:"status"`
+	Version  string `json:"version"`
+	Examples []struct {
+		FullDescription string  `json:"full_description"`
+		ID              string  `json:"id"`
+		Runtime         float64 `json:"run_time"`
+		Status          string  `json:"status"`
+		PendingMessage  string  `json:"pending_message"`
+		Exception       struct {
+			Message string `json:"message"`
+		} `json:"exception"`
+	} `json:"examples"`
 }
 
 // Parse attempts to parse the provided byte-stream as an RSpec v3 test suite.
-func (r *RSpecV3) Parse(content io.Reader) error {
-	if err := json.NewDecoder(content).Decode(&r.result); err != nil {
-		return errors.NewInputError("unable to parse document as JSON: %s", err)
+func (r *RSpecV3) Parse(content io.Reader) (map[string]testing.TestResult, error) {
+	var RSpecResult rSpecV3Result
+
+	if err := json.NewDecoder(content).Decode(&RSpecResult); err != nil {
+		return nil, errors.NewInputError("unable to parse document as JSON: %s", err)
 	}
 
-	if !strings.HasPrefix(r.result.Version, "v") {
-		r.result.Version = fmt.Sprintf("v%s", r.result.Version)
+	if !strings.HasPrefix(RSpecResult.Version, "v") {
+		RSpecResult.Version = fmt.Sprintf("v%s", RSpecResult.Version)
 	}
 
-	if semver.Major(r.result.Version) != "v3" {
-		return errors.NewInputError("provided JSON document is not a RSpec v3 artifact")
+	if semver.Major(RSpecResult.Version) != "v3" {
+		return nil, errors.NewInputError("provided JSON document is not a RSpec v3 artifact")
 	}
 
-	return nil
-}
+	results := make(map[string]testing.TestResult)
 
-func (r *RSpecV3) example() rSpecV3Example {
-	return r.result.Examples[r.index-1]
-}
+	for _, example := range RSpecResult.Examples {
+		var status testing.TestStatus
+		var statusMessage string
 
-// IsTestCaseFailed returns whether or not the current test case has failed.
-//
-// Caution: this method will panic unless `NextTestCase` was previously called.
-func (r *RSpecV3) IsTestCaseFailed() bool {
-	return r.example().Status == "failed"
-}
+		switch example.Status {
+		case "failed":
+			status = testing.TestStatusFailed
+			statusMessage = example.Exception.Message
+		case "passed":
+			status = testing.TestStatusSuccessful
+		case "pending":
+			status = testing.TestStatusPending
+			statusMessage = example.PendingMessage
+		}
 
-// NextTestCase prepares the next test case for reading. It returns 'true' if this was successful and 'false' if there
-// is no further test case to process.
-//
-// Caution: This method needs to be called before any other further data is read from the parser.
-func (r *RSpecV3) NextTestCase() bool {
-	r.index++
+		id := example.ID
+		if id == "" {
+			id = example.FullDescription
+		}
 
-	return r.index <= len(r.result.Examples)
-}
+		results[id] = testing.TestResult{
+			Description:   example.FullDescription,
+			Duration:      time.Duration(math.Round(example.Runtime * float64(time.Second))),
+			Status:        status,
+			StatusMessage: statusMessage,
+		}
+	}
 
-// TestCaseID returns the ID of the current test case.
-//
-// Caution: this method will panic unless `NextTestCase` was previously called.
-func (r *RSpecV3) TestCaseID() string {
-	return r.example().ID
+	return results, nil
 }

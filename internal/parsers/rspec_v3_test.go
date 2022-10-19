@@ -2,8 +2,10 @@ package parsers_test
 
 import (
 	"os"
+	"time"
 
 	"github.com/rwx-research/captain-cli/internal/parsers"
+	"github.com/rwx-research/captain-cli/internal/testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -11,8 +13,10 @@ import (
 
 var _ = Describe("RspecV3", func() {
 	var (
+		err     error
 		fixture *os.File
 		parser  *parsers.RSpecV3
+		result  map[string]testing.TestResult
 	)
 
 	BeforeEach(func() {
@@ -24,27 +28,61 @@ var _ = Describe("RspecV3", func() {
 	})
 
 	JustBeforeEach(func() {
-		Expect(parser.Parse(fixture)).To(Succeed())
+		result, err = parser.Parse(fixture)
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("detects successful & failed tests", func() {
-		var failedTestCount, successfulTestCount int
+		var failedTestCount, pendingTestCount, successfulTestCount, unknownStatusCount int
 
-		for parser.NextTestCase() {
-			if parser.IsTestCaseFailed() {
-				failedTestCount++
-			} else {
+		for _, testResult := range result {
+			switch testResult.Status {
+			case testing.TestStatusSuccessful:
 				successfulTestCount++
+			case testing.TestStatusFailed:
+				failedTestCount++
+			case testing.TestStatusPending:
+				pendingTestCount++
+			case testing.TestStatusUnknown:
+				unknownStatusCount++
 			}
 		}
 
-		Expect(failedTestCount+successfulTestCount).To(Equal(72), "total test count")
+		Expect(result).To(HaveLen(72), "total test count")
 		Expect(failedTestCount).To(Equal(36), "failed tests count")
-		Expect(successfulTestCount).To(Equal(36), "successful test count")
+		Expect(pendingTestCount).To(Equal(24), "pending test count")
+		Expect(successfulTestCount).To(Equal(12), "successful test count")
+		Expect(unknownStatusCount).To(BeZero())
 	})
 
-	It("extracts the test name", func() {
-		Expect(parser.NextTestCase())
-		Expect(parser.TestCaseID()).To(Equal("./spec/examples/class_spec.rb[1:1]"))
+	It("extracts the test metadata", func() {
+		key := "./spec/examples/class_spec.rb[1:1]"
+		Expect(result).To(HaveKey(key))
+		Expect(result[key].Description).To(Equal("Tests::Case has top-level passing tests"))
+		Expect(result[key].Duration).To(Equal(time.Duration(30795000)))
+	})
+
+	It("adds a status message to failed tests", func() {
+		var failedTest testing.TestResult
+		for _, example := range result {
+			if example.Status == testing.TestStatusFailed {
+				failedTest = example
+				break
+			}
+		}
+		Expect(failedTest).NotTo(Equal(testing.TestResult{}))
+		Expect(failedTest.StatusMessage).NotTo(BeEmpty())
+	})
+
+	It("adds a status message to pending tests", func() {
+		var pendingTest testing.TestResult
+		for _, example := range result {
+			if example.Status == testing.TestStatusPending {
+				pendingTest = example
+				break
+			}
+		}
+		Expect(pendingTest).NotTo(Equal(testing.TestResult{}))
+		Expect(pendingTest.StatusMessage).NotTo(BeEmpty())
 	})
 })

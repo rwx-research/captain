@@ -2,86 +2,77 @@ package parsers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
 // Jest is a jest parser.
-type Jest struct {
-	result                      jestTestSuite
-	resultIndex, assertionIndex int
-}
+type Jest struct{}
 
 type jestTestSuite struct {
 	StartTime   *int64 `json:"startTime"`
 	TestResults []struct {
-		Name             string           `json:"name"`
-		AssertionResults []jestTestResult `json:"assertionResults"`
+		Name             string `json:"name"`
+		AssertionResults []struct {
+			AncestorTitles  []string `json:"ancestorTitles"`
+			Duration        *int     `json:"duration"`
+			FailureMessages []string `json:"failureMessages"`
+			Status          string   `json:"status"`
+			Title           string   `json:"title"`
+		} `json:"assertionResults"`
 	} `json:"testResults"`
 }
 
-type jestTestResult struct {
-	AncestorTitles []string `json:"ancestorTitles"`
-	Title          string   `json:"title"`
-	Status         string   `json:"status"`
-}
-
 // Parse attempts to parse the provided byte-stream as a Jest test suite.
-func (j *Jest) Parse(content io.Reader) error {
-	if err := json.NewDecoder(content).Decode(&j.result); err != nil {
-		return errors.NewInputError("unable to parse document as JSON: %s", err)
+func (j *Jest) Parse(content io.Reader) (map[string]testing.TestResult, error) {
+	var testSuite jestTestSuite
+
+	if err := json.NewDecoder(content).Decode(&testSuite); err != nil {
+		return nil, errors.NewInputError("unable to parse document as JSON: %s", err)
 	}
 
-	if j.result.StartTime == nil {
-		return errors.NewInputError("provided JSON document is not a Jest artifact")
+	if testSuite.StartTime == nil {
+		return nil, errors.NewInputError("provided JSON document is not a Jest artifact")
 	}
 
-	return nil
-}
+	results := make(map[string]testing.TestResult)
+	for _, testResult := range testSuite.TestResults {
+		for _, assertionResult := range testResult.AssertionResults {
+			var status testing.TestStatus
+			var statusMessage string
 
-func (j *Jest) testResult() jestTestResult {
-	return j.result.TestResults[j.resultIndex].AssertionResults[j.assertionIndex-1]
-}
+			description := assertionResult.AncestorTitles
+			description = append(description, assertionResult.Title)
 
-// IsTestCaseFailed returns whether or not the current test case has failed.
-//
-// Caution: this method will panic unless `NextTestCase` was previously called.
-func (j *Jest) IsTestCaseFailed() bool {
-	return j.testResult().Status == "failed"
-}
+			id := append([]string{testResult.Name}, description...)
 
-// NextTestCase prepares the next test case for reading. It returns 'true' if this was successful and 'false' if there
-// is no further test case to process.
-//
-// Caution: This method needs to be called before any other further data is read from the parser.
-func (j *Jest) NextTestCase() bool {
-	j.assertionIndex++
+			switch assertionResult.Status {
+			case "passed":
+				status = testing.TestStatusSuccessful
+			case "failed":
+				status = testing.TestStatusFailed
+				statusMessage = strings.Join(assertionResult.FailureMessages, "\n\n")
+			case "pending", "todo":
+				status = testing.TestStatusPending
+			}
 
-	if len(j.result.TestResults) == 0 {
-		return false
-	}
+			null := 0
+			if assertionResult.Duration == nil {
+				assertionResult.Duration = &null
+			}
 
-	if j.assertionIndex > len(j.result.TestResults[j.resultIndex].AssertionResults) {
-		j.assertionIndex = 0
-		j.resultIndex++
-
-		if j.resultIndex == len(j.result.TestResults) {
-			return false
+			results[strings.Join(id, " > ")] = testing.TestResult{
+				Description:   strings.Join(description, " > "),
+				Duration:      time.Duration(*assertionResult.Duration) * time.Second,
+				Status:        status,
+				StatusMessage: statusMessage,
+			}
 		}
-
-		return j.NextTestCase()
 	}
 
-	return true
-}
-
-// TestCaseID returns the ID of the current test case.
-//
-// Caution: this method will panic unless `NextTestCase` was previously called.
-func (j *Jest) TestCaseID() string {
-	assertionName := strings.Join(append(j.testResult().AncestorTitles, j.testResult().Title), " > ")
-	return fmt.Sprintf("%s > %s", j.result.TestResults[j.resultIndex].Name, assertionName)
+	return results, nil
 }

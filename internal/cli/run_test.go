@@ -13,6 +13,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/mocks"
+	"github.com/rwx-research/captain-cli/internal/testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -60,8 +61,8 @@ var _ = Describe("Run", func() {
 		}
 		service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
 
-		service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) error {
-			return nil
+		service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (map[string]testing.TestResult, error) {
+			return make(map[string]testing.TestResult), nil
 		}
 
 		// Caution: This needs to be an existing file. We don't actually read from it, however the glob expansion
@@ -129,27 +130,25 @@ var _ = Describe("Run", func() {
 	})
 
 	Context("with an erroring command", func() {
+		var (
+			exitCode     int
+			failedTestID string
+		)
+
 		BeforeEach(func() {
-			fileParsed := false
+			exitCode = int(GinkgoRandomSeed() + 1)
+			failedTestID = fmt.Sprintf("%d", GinkgoRandomSeed()+2)
 
 			mockGetExitStatusFromError := func(error) (int, error) {
-				return int(GinkgoRandomSeed()), nil
+				return exitCode, nil
 			}
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
-			service.Parsers[0].(*mocks.Parser).MockNextTestCase = func() bool {
-				if !fileParsed {
-					fileParsed = true
-					return true
-				}
+			service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (map[string]testing.TestResult, error) {
+				result := make(map[string]testing.TestResult)
+				result[failedTestID] = testing.TestResult{Status: testing.TestStatusFailed}
 
-				return false
-			}
-			service.Parsers[0].(*mocks.Parser).MockIsTestCaseFailed = func() bool {
-				return true
-			}
-			service.Parsers[0].(*mocks.Parser).MockTestCaseID = func() string {
-				return fmt.Sprintf("%d", GinkgoRandomSeed()+1)
+				return result, nil
 			}
 		})
 
@@ -158,14 +157,14 @@ var _ = Describe("Run", func() {
 				Expect(err).To(HaveOccurred())
 				executionError, ok := errors.AsExecutionError(err)
 				Expect(ok).To(BeTrue(), "Error is an execution error")
-				Expect(executionError.Code).To(Equal(int(GinkgoRandomSeed())))
+				Expect(executionError.Code).To(Equal(exitCode))
 			})
 		})
 
 		Context("all tests quarantined", func() {
 			BeforeEach(func() {
 				mockGetQuarantinedTestIDs := func(ctx context.Context) ([]string, error) {
-					return []string{fmt.Sprintf("%d", GinkgoRandomSeed()+1)}, nil
+					return []string{failedTestID}, nil
 				}
 				service.API.(*mocks.API).MockGetQuarantinedTestIDs = mockGetQuarantinedTestIDs
 			})

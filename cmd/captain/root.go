@@ -18,6 +18,7 @@ import (
 
 var (
 	captain   cli.Service
+	insecure  bool
 	suiteName string
 
 	rootCmd = &cobra.Command{
@@ -32,6 +33,16 @@ var (
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&suiteName, "suite-name", "", "the name of the build- or test-suite")
+
+	rootCmd.PersistentFlags().BoolVar(&insecure, "insecure", false, "disable TLS for the API")
+	if err := rootCmd.PersistentFlags().MarkHidden("insecure"); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+
+	if err := viper.BindPFlag("insecure", rootCmd.PersistentFlags().Lookup("insecure")); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }
 

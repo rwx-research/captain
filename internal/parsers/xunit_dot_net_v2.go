@@ -4,80 +4,63 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"math"
+	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
 // XUnitDotNetV2 is an XUnit parser for v2 artifacts.
-type XUnitDotNetV2 struct {
-	result                   xUnitDotNetV2Assemblies
-	assemblyIndex, testIndex int
-}
+type XUnitDotNetV2 struct{}
 
 type xUnitDotNetV2Assemblies struct {
-	XMLName    xml.Name                `xml:"assemblies"`
-	Assemblies []xUnitDotNetV2Assembly `xml:"assembly"`
-}
-
-type xUnitDotNetV2Assembly struct {
-	Name  string              `xml:"name,attr"`
-	Tests []xUnitDotNetV2Test `xml:"collection>test"`
-}
-
-type xUnitDotNetV2Test struct {
-	Name   string `xml:"name,attr"`
-	Result string `xml:"result,attr"`
+	XMLName    xml.Name `xml:"assemblies"`
+	Assemblies []struct {
+		Name  string `xml:"name,attr"`
+		Tests []struct {
+			Name           string  `xml:"name,attr"`
+			Result         string  `xml:"result,attr"`
+			FailureMessage string  `xml:"failure>message"`
+			SkipReason     string  `xml:"reason"`
+			Time           float64 `xml:"time,attr"`
+		} `xml:"collection>test"`
+	} `xml:"assembly"`
 }
 
 // Parse attempts to parse the provided byte-stream as an XUnit test suite.
-func (x *XUnitDotNetV2) Parse(content io.Reader) error {
-	if err := xml.NewDecoder(content).Decode(&x.result); err != nil {
-		return errors.NewInputError("unable to parse document as XML: %s", err)
+func (x *XUnitDotNetV2) Parse(content io.Reader) (map[string]testing.TestResult, error) {
+	var assemblies xUnitDotNetV2Assemblies
+
+	if err := xml.NewDecoder(content).Decode(&assemblies); err != nil {
+		return nil, errors.NewInputError("unable to parse document as XML: %s", err)
 	}
 
-	return nil
-}
+	results := make(map[string]testing.TestResult)
+	for _, assembly := range assemblies.Assemblies {
+		for _, assemblyTest := range assembly.Tests {
+			var status testing.TestStatus
+			var statusMessage string
 
-func (x *XUnitDotNetV2) test() xUnitDotNetV2Test {
-	return x.result.Assemblies[x.assemblyIndex].Tests[x.testIndex-1]
-}
+			switch assemblyTest.Result {
+			case "Pass":
+				status = testing.TestStatusSuccessful
+			case "Fail":
+				status = testing.TestStatusFailed
+				statusMessage = assemblyTest.FailureMessage
+			case "Skip":
+				status = testing.TestStatusPending
+				statusMessage = assemblyTest.SkipReason
+			}
 
-// IsTestCaseFailed returns whether or not the current test case has failed.
-//
-// Caution: this method will panic unless `NextTestCase` was previously called.
-func (x *XUnitDotNetV2) IsTestCaseFailed() bool {
-	return x.test().Result != "Pass"
-}
-
-// NextTestCase prepares the next test case for reading. It returns 'true' if this was successful and 'false' if there
-// is no further test case to process.
-//
-// Caution: This method needs to be called before any other further data is read from the parser.
-func (x *XUnitDotNetV2) NextTestCase() bool {
-	x.testIndex++
-
-	if len(x.result.Assemblies) == 0 {
-		return false
-	}
-
-	if x.testIndex > len(x.result.Assemblies[x.assemblyIndex].Tests) {
-		x.testIndex = 0
-		x.assemblyIndex++
-
-		if x.assemblyIndex == len(x.result.Assemblies) {
-			return false
+			results[fmt.Sprintf("%s > %s", assembly.Name, assemblyTest.Name)] = testing.TestResult{
+				Description:   assemblyTest.Name,
+				Duration:      time.Duration(math.Round(assemblyTest.Time * float64(time.Second))),
+				Status:        status,
+				StatusMessage: statusMessage,
+			}
 		}
-
-		return x.NextTestCase()
 	}
 
-	return true
-}
-
-// TestCaseID returns the ID of the current test case.
-//
-// Caution: this method will panic unless `NextTestCase` was previously called.
-func (x *XUnitDotNetV2) TestCaseID() string {
-	assemblyName := x.result.Assemblies[x.assemblyIndex].Name
-	return fmt.Sprintf("%s > %s", assemblyName, x.test().Name)
+	return results, nil
 }

@@ -7,6 +7,7 @@ package cli
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"io"
 	"mime"
 	"path"
@@ -20,6 +21,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
+	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
 // Service is the main CLI service.
@@ -36,11 +38,39 @@ func (s Service) logError(err error) error {
 	return err
 }
 
-func (s Service) parse(filepaths []string) (map[string]struct{}, error) {
-	failedTests := make(map[string]struct{})
+// Parse parses the files supplied in `filepaths` and prints them as formatted JSON to stdout.
+func (s Service) Parse(ctx context.Context, filepaths []string) error {
+	results, err := s.parse(filepaths)
+	if err != nil {
+		// Error was already logged in `parse`
+		return errors.Wrap(err)
+	}
+
+	rawOutput := make(map[string]testResult)
+	for id, result := range results {
+		rawOutput[id] = testResult{
+			Description:   result.Description,
+			Duration:      result.Duration,
+			Status:        testStatus(result.Status),
+			StatusMessage: result.StatusMessage,
+		}
+	}
+
+	formattedOutput, err := json.MarshalIndent(rawOutput, "", "  ")
+	if err != nil {
+		return s.logError(errors.NewSystemError("unable to output test results as JSON: %s", err))
+	}
+
+	s.Log.Infoln(string(formattedOutput))
+
+	return nil
+}
+
+func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error) {
+	results := make(map[string]testing.TestResult)
 
 	for _, artifactPath := range filepaths {
-		var matchingParser Parser
+		var result map[string]testing.TestResult
 
 		fd, err := s.FileSystem.Open(artifactPath)
 		if err != nil {
@@ -49,7 +79,8 @@ func (s Service) parse(filepaths []string) (map[string]struct{}, error) {
 		defer fd.Close()
 
 		for _, parser := range s.Parsers {
-			if err := parser.Parse(fd); err != nil {
+			result, err = parser.Parse(fd)
+			if err != nil {
 				s.Log.Debug("unable to parse %q using %T: %s", artifactPath, parser, err)
 
 				if _, err := fd.Seek(0, io.SeekStart); err != nil {
@@ -59,22 +90,19 @@ func (s Service) parse(filepaths []string) (map[string]struct{}, error) {
 				continue
 			}
 
-			matchingParser = parser
 			break
 		}
 
-		if matchingParser == nil {
+		if result == nil {
 			return nil, s.logError(errors.NewInputError("unable to parse %q with any of the available parser", artifactPath))
 		}
 
-		for matchingParser.NextTestCase() {
-			if matchingParser.IsTestCaseFailed() {
-				failedTests[matchingParser.TestCaseID()] = struct{}{}
-			}
+		for id, testResult := range result {
+			results[id] = testResult
 		}
 	}
 
-	return failedTests, nil
+	return results, nil
 }
 
 func (s Service) runCommand(ctx context.Context, args []string) error {
@@ -170,9 +198,16 @@ func (s Service) RunSuite(ctx context.Context, args []string, name, artifactGlob
 	}
 
 	// Parse test artifacts
-	failedTests, err := s.parse(artifacts)
+	testResults, err := s.parse(artifacts)
 	if err != nil {
 		return s.logError(errors.Wrap(err))
+	}
+
+	failedTests := make(map[string]struct{})
+	for id, testResult := range testResults {
+		if testResult.Status == testing.TestStatusFailed {
+			failedTests[id] = struct{}{}
+		}
 	}
 
 	// Remove quarantined IDs from list of failed tests

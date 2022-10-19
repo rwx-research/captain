@@ -9,6 +9,7 @@ WebUI. It will also provide the capability to upload test results to Captain.
 
 For additional information, please refer to
 [RFC 1](https://www.notion.so/rwx/RFC-1-Captain-CLI-architecture-82a164154abe48cdb92ad21050f63ef5)
+and [RFC 3](https://www.notion.so/rwx/RFC-3-Captain-CLI-design-7c98d1dbf4244b0eb8960cc98c103f73)
 on Notion.
 
 ## Usage
@@ -41,6 +42,15 @@ run in Github Actions:
 ```
 ./captain upload results --suite-name RSpec **/*.json 
 ```
+
+### Hidden options
+
+To aid development, the following commands & flags are available, but hidden in
+the documentation:
+
+* `--insecure` disables TLS on the API. Useful for running against localhost.
+* `parse` (as in `captain parse <file>`) attempts to parse one or more files and
+  returns a normalized version of the test results.
 
 ## Development
 

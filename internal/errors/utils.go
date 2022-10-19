@@ -11,33 +11,12 @@ func As(err error, target any) bool {
 	return errors.As(err, target)
 }
 
-// IsRWXError reports whether the error originates from this package.
-func IsRWXError(err error) bool {
-	if _, ok := AsConfigurationError(err); ok {
-		return true
-	}
-
-	if _, ok := AsExecutionError(err); ok {
-		return true
-	}
-
-	if _, ok := AsInputError(err); ok {
-		return true
-	}
-
-	if _, ok := AsInternalError(err); ok {
-		return true
-	}
-
-	if _, ok := AsSystemError(err); ok {
-		return true
-	}
-
-	return false
-}
-
 // Wrap wraps an error without doing anything further - this is useful for collecting stack traces.
 func Wrap(err error) error {
+	if err == nil {
+		return nil
+	}
+
 	return xerrors.Errorf("%w", err)
 }
 

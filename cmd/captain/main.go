@@ -26,10 +26,7 @@ func main() {
 			os.Exit(e.Code)
 		}
 
-		// All errors should be wrapped with an error type from our errors package. If this is not the case, this
-		// means that the error originates from 'spf13/cobra` or `spf13/viper`. For example, this could be for
-		// a missing flag that was marked as required.
-		if !errors.IsRWXError(err) {
+		if _, ok := errors.AsConfigurationError(err); ok {
 			fmt.Fprintln(os.Stderr, err)
 		}
 

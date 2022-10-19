@@ -3,61 +3,68 @@ package parsers
 import (
 	"encoding/xml"
 	"io"
+	"math"
+	"strings"
+	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
 // JUnit is a JUnit parser.
 // Note: this also happens to work for Cypress artifacts.
-type JUnit struct {
-	result jUnitTestSuite
-	index  int
-}
+type JUnit struct{}
 
 type jUnitTestSuite struct {
-	XMLName   xml.Name        `xml:"testsuites"`
-	TestCases []jUnitTestCase `xml:"testsuite>testcase"`
+	XMLName   xml.Name `xml:"testsuites"`
+	TestCases []struct {
+		Name    string        `xml:"name,attr"`
+		Error   *jUnitMessage `xml:"error"`
+		Failure *jUnitMessage `xml:"failure"`
+		Skipped *jUnitMessage `xml:"skipped"`
+		Time    float64       `xml:"time,attr"`
+	} `xml:"testsuite>testcase"`
 }
 
-type jUnitTestCase struct {
-	Name    string    `xml:"name,attr"`
-	Error   *struct{} `xml:"error"`
-	Failure *struct{} `xml:"failure"`
+type jUnitMessage struct {
+	Message string `xml:"message,attr"`
 }
 
 // Parse attempts to parse the provided byte-stream as a JUnit test suite.
-func (j *JUnit) Parse(content io.Reader) error {
-	if err := xml.NewDecoder(content).Decode(&j.result); err != nil {
-		return errors.NewInputError("unable to parse document as XML: %s", err)
+func (j *JUnit) Parse(content io.Reader) (map[string]testing.TestResult, error) {
+	var testSuite jUnitTestSuite
+
+	if err := xml.NewDecoder(content).Decode(&testSuite); err != nil {
+		return nil, errors.NewInputError("unable to parse document as XML: %s", err)
 	}
 
-	return nil
-}
+	results := make(map[string]testing.TestResult)
+	for _, testCase := range testSuite.TestCases {
+		status := testing.TestStatusSuccessful
+		statusMessages := make([]string, 0)
 
-func (j *JUnit) testCase() jUnitTestCase {
-	return j.result.TestCases[j.index-1]
-}
+		if testCase.Failure != nil {
+			status = testing.TestStatusFailed
+			statusMessages = append(statusMessages, testCase.Failure.Message)
+		}
 
-// IsTestCaseFailed returns whether or not the current test case has failed.
-//
-// Caution: this method will panic unless `NextTestCase` was previously called.
-func (j *JUnit) IsTestCaseFailed() bool {
-	return j.testCase().Error != nil || j.testCase().Failure != nil
-}
+		if testCase.Error != nil {
+			status = testing.TestStatusFailed
+			statusMessages = append(statusMessages, testCase.Error.Message)
+		}
 
-// NextTestCase prepares the next test case for reading. It returns 'true' if this was successful and 'false' if there
-// is no further test case to process.
-//
-// Caution: This method needs to be called before any other further data is read from the parser.
-func (j *JUnit) NextTestCase() bool {
-	j.index++
+		if testCase.Skipped != nil {
+			status = testing.TestStatusPending
+			statusMessages = []string{testCase.Skipped.Message}
+		}
 
-	return j.index <= len(j.result.TestCases)
-}
+		results[testCase.Name] = testing.TestResult{
+			Description:   testCase.Name,
+			Duration:      time.Duration(math.Round(testCase.Time * float64(time.Second))),
+			Status:        status,
+			StatusMessage: strings.Join(statusMessages, "\n"),
+		}
+	}
 
-// TestCaseID returns the ID of the current test case.
-//
-// Caution: this method will panic unless `NextTestCase` was previously called.
-func (j *JUnit) TestCaseID() string {
-	return j.testCase().Name
+	return results, nil
 }
