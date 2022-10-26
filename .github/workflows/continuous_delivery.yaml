@@ -14,9 +14,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     environment: production
     permissions:
+      contents: read
       id-token: write
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
+      max-parallel: 1
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
