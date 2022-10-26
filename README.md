@@ -92,7 +92,6 @@ The following environment variables can / should be used to configure the CLI:
 ```
 CAPTAIN_HOST        # The host or host:port combination for the Captain API
 CAPTAIN_TOKEN       # The Captain API token
-INSECURE            # Disables TLS. Useful for using localhost as the API
 GITHUB_JOB          # The Job ID of a Github Actions Job
 GITHUB_RUN_ATTEMPT  # A unique number for each attempt of a particular worklow
                     # on Github Actions

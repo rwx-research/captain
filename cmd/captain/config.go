@@ -22,6 +22,7 @@ type config struct {
 			}
 		}
 	}
+	Debug    bool
 	Insecure bool // Disables TLS for the Captain API
 	VCS      struct {
 		Github struct {
@@ -39,6 +40,11 @@ func init() {
 		}
 
 		if err := viper.BindEnv("captain.token", "CAPTAIN_TOKEN"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("debug", "DEBUG"); err != nil {
 			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}

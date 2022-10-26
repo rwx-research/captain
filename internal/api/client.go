@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 
@@ -40,9 +41,9 @@ func NewClient(cfg ClientConfig) (Client, error) {
 		// We re-use the same roundtripper here primarily to make mocking easier. Alternatives would be to
 		// a) have two different roundtrippers (or one for each configured host)
 		// b) have the API client instantiate another API client
-		// c) move all of this sequentaly logic out of the API layer
+		// c) move all of this sequental logic out of the API layer
 		// None of these options are great - having this special case for the S3 upload seems the least bad (given
-		// that there is only a singly occurrence)
+		// that there is only a single occurrence)
 		if !strings.HasSuffix(req.URL.Host, "amazonaws.com") {
 			req.URL.Scheme = "https"
 			if cfg.Insecure {
@@ -53,9 +54,22 @@ func NewClient(cfg ClientConfig) (Client, error) {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.Token))
 		}
 
+		if cfg.Debug {
+			hasBody := req.Body != nil
+			dump, _ := httputil.DumpRequest(req, hasBody)
+			sanitizedDump := bearerTokenRegexp.ReplaceAll(dump, []byte("<redacted>"))
+			cfg.Log.Debugf("Executing following HTTP request:\n\n%s\n", sanitizedDump)
+		}
+
 		resp, err := client.Do(req)
 		if err != nil {
 			return resp, errors.NewSystemError("unable to perform HTTP request to %q: %s", req.URL, err)
+		}
+
+		if cfg.Debug {
+			dump, _ := httputil.DumpResponse(resp, true)
+			sanitizedDump := setCookieHeaderRegexp.ReplaceAll(dump, []byte("Set-Cookie: <redacted>"))
+			cfg.Log.Debugf("Received following response:\n\n%s\n", sanitizedDump)
 		}
 
 		return resp, nil

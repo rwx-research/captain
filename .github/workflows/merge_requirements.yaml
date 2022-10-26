@@ -1,0 +1,31 @@
+name: Merge Requirements
+on:
+  pull_request:
+jobs:
+  check-version:
+    name: Ensure version bump
+    runs-on: ubuntu-latest
+    if: ${{ github.head_ref != 'main' }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        id: nix-cache
+        with:
+          path: /tmp/nix-cache
+          key: ${{ runner.os }}-nix-${{ hashFiles('./flake.*') }}-golang-${{ hashFiles('./go.*') }}
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            cores = 0
+            experimental-features = nix-command flakes
+            keep-derivations = true
+            keep-outputs = true
+      - run: nix-store --import < /tmp/nix-cache
+        if: "steps.nix-cache.outputs.cache-hit == 'true'"
+      - run: |
+          if [[ -n $(git diff origin/main -- version.go) ]]; then
+            echo "Missing version bump in version.go"
+            exit 1
+          fi
+      - run: nix-store --export $(find /nix/store -maxdepth 1 -name '*-*') > /tmp/nix-cache
+        if: "steps.nix-cache.outputs.cache-hit != 'true'"

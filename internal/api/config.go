@@ -9,6 +9,7 @@ import (
 // ClientConfig is the configuration object for the Captain API client
 type ClientConfig struct {
 	AccountName    string
+	Debug          bool
 	Host           string
 	Insecure       bool
 	Log            *zap.SugaredLogger

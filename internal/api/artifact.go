@@ -26,9 +26,19 @@ type ArtifactKind string
 const ArtifactKindTestResult = ArtifactKind("test_results")
 
 // ParserType is an enum holding possible parser types
-//
-// Deprecated: This will be removed in the future
 type ParserType string
+
+// ParserTypeCypressXML is the parser type of Cypes results encoded in XML
+const ParserTypeCypessXML = ParserType("cypress_junit_xml")
+
+// ParserTypeJestJSON is the parser type of Jest results encoded in JSON
+const ParserTypeJestJSON = ParserType("jest_json")
+
+// ParserTypeJUnitXML is the parser type of JUnit results encoded in XML
+const ParserTypeJUnitXML = ParserType("junit_xml")
 
 // ParserTypeRSpecJSON is the parser type of RSpec results encoded in JSON
 const ParserTypeRSpecJSON = ParserType("rspec_json")
+
+// ParserTypeXUnitXML is the parser type of XUnit results encoded in XML
+const ParserTypeXUnitXML = ParserType("xunit_dot_not_xml")

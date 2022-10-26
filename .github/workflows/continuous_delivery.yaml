@@ -1,0 +1,54 @@
+name: Continuous Delivery
+run-name: Upload CLI release to S3
+on:
+  workflow_run:
+    workflows:
+      - Continuous Integration
+    branches:
+      - main
+    types:
+      - completed
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ${{ matrix.os }}
+    environment: production
+    permissions:
+      id-token: write
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        id: nix-cache
+        with:
+          path: /tmp/nix-cache
+          key: ${{ runner.os }}-nix-${{ hashFiles('./flake.*') }}-golang-${{ hashFiles('./go.*') }}
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            cores = 0
+            experimental-features = nix-command flakes
+            keep-derivations = true
+            keep-outputs = true
+      - run: nix-store --import < /tmp/nix-cache
+        if: "steps.nix-cache.outputs.cache-hit == 'true'"
+      - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
+          role-duration-seconds: 900
+      - run: |
+          version=$(./captain --version) 
+          artifact_name=$(echo "captain-$RUNNER_OS-$RUNNER_ARCH-$version" | tr '[:upper:]' '[:lower:]')
+          aws s3 mv ./captain "s3://rwx-research-cli-releases-2210202003/$artifact_name"
+      - run: |
+          files=$(aws s3api list-objects --bucket rwx-research-cli-releases-2210202003 --no-paginate --query 'Contents[].Key' --output=text)
+          versions=$(echo $files | grep "\-v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//')
+          latest=$(echo $versions | grep -v "-" | head -n 1)
+          encodedVersions=$(echo $versions | jq --raw-input | jq --slurp)
+          jq -n --argjson versions "$encodedVersions" --arg latest "$latest" '{captain: {latest: $latest, versions: $versions}}' > versions.json
+          aws s3 mv ./versions.json "s3://rwx-research-cli-releases-2210202003/"

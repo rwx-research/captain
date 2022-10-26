@@ -12,15 +12,18 @@ import (
 	"mime"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
+	"github.com/rwx-research/captain-cli/internal/parsers"
 	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
@@ -72,6 +75,8 @@ func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error
 	for _, artifactPath := range filepaths {
 		var result map[string]testing.TestResult
 
+		s.Log.Debugf("Attempting to parse %q", artifactPath)
+
 		fd, err := s.FileSystem.Open(artifactPath)
 		if err != nil {
 			return nil, s.logError(errors.NewSystemError("unable to open file: %s", err))
@@ -81,7 +86,7 @@ func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error
 		for _, parser := range s.Parsers {
 			result, err = parser.Parse(fd)
 			if err != nil {
-				s.Log.Debug("unable to parse %q using %T: %s", artifactPath, parser, err)
+				s.Log.Debugf("unable to parse %q using %T: %s", artifactPath, parser, err)
 
 				if _, err := fd.Seek(0, io.SeekStart); err != nil {
 					return nil, s.logError(errors.NewSystemError("unable to read from file: %s", err))
@@ -90,6 +95,7 @@ func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error
 				continue
 			}
 
+			s.Log.Debugf("Successfully parsed %q using %T", artifactPath, parser)
 			break
 		}
 
@@ -103,6 +109,11 @@ func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error
 	}
 
 	return results, nil
+}
+
+// PrintVersion prints the CLI version
+func (s Service) PrintVersion() {
+	s.Log.Infoln(captain.Version)
 }
 
 func (s Service) runCommand(ctx context.Context, args []string) error {
@@ -123,9 +134,11 @@ func (s Service) runCommand(ctx context.Context, args []string) error {
 		s.Log.Warnf("unable to attach to stdout of sub-process: %s", err)
 	}
 
+	s.Log.Debugf("Executing %q", strings.Join(args, " "))
 	if err := cmd.Start(); err != nil {
 		return s.logError(errors.NewSystemError("unable to execute sub-command: %s", err))
 	}
+	defer s.Log.Debugf("Finished executing %q", strings.Join(args, " "))
 
 	if stdout != nil {
 		scanner := bufio.NewScanner(stdout)
@@ -146,11 +159,12 @@ func (s Service) runCommand(ctx context.Context, args []string) error {
 }
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting artifact.
-func (s Service) RunSuite(ctx context.Context, args []string, name, artifactGlob string) error {
+func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	var wg sync.WaitGroup
 	var quarantinedTestIDs []string
 
-	if len(args) == 0 {
+	if len(cfg.Args) == 0 {
+		s.Log.Debug("No arguments provided to `RunSuite`")
 		return nil
 	}
 
@@ -162,33 +176,40 @@ func (s Service) RunSuite(ctx context.Context, args []string, name, artifactGlob
 			return errors.Wrap(err)
 		}
 
+		if len(testIDs) == 0 {
+			s.Log.Debug("No quarantined tests defined in Captain")
+		}
+
 		quarantinedTestIDs = testIDs
 		return nil
 	})
 
 	// Run sub-command
-	runErr := s.runCommand(ctx, args)
+	runErr := s.runCommand(ctx, cfg.Args)
 	if _, ok := errors.AsExecutionError(runErr); runErr != nil && !ok {
 		return errors.Wrap(runErr)
 	}
 
 	// Return early if not artifacts were defined over the CLI. If there was an error during execution, the exit Code is
 	// being passed along.
-	if artifactGlob == "" {
+	if cfg.ArtifactGlob == "" {
+		s.Log.Debug("No artifact path provided, quitting")
 		return runErr
 	}
 
-	artifacts, err := filepath.Glob(artifactGlob)
+	artifacts, err := filepath.Glob(cfg.ArtifactGlob)
 	if err != nil {
 		return s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
 	}
 
 	// Start uploading artifacts in the background
 	wg.Add(1)
+	var uploadError error
+
 	go func() {
 		// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
 		// not affect the exit code.
-		_ = s.UploadTestResults(ctx, name, artifacts)
+		uploadError = s.UploadTestResults(ctx, cfg.SuiteName, artifacts)
 		wg.Done()
 	}()
 
@@ -210,8 +231,14 @@ func (s Service) RunSuite(ctx context.Context, args []string, name, artifactGlob
 		}
 	}
 
+	// This protects against an edge-case where the test-suite fails before writing any results to an artifact.
+	if runErr != nil && len(failedTests) == 0 {
+		return runErr
+	}
+
 	// Remove quarantined IDs from list of failed tests
 	for _, quarantinedTestID := range quarantinedTestIDs {
+		s.Log.Debugf("ignoring test results for %q due to quarantine", quarantinedTestID)
 		delete(failedTests, quarantinedTestID)
 	}
 
@@ -223,6 +250,10 @@ func (s Service) RunSuite(ctx context.Context, args []string, name, artifactGlob
 		return runErr
 	}
 
+	if uploadError != nil && cfg.FailOnUploadError {
+		return uploadError
+	}
+
 	return nil
 }
 
@@ -231,7 +262,14 @@ func (s Service) RunSuite(ctx context.Context, args []string, name, artifactGlob
 func (s Service) UploadTestResults(ctx context.Context, suiteName string, filepaths []string) error {
 	newArtifacts := make([]api.Artifact, len(filepaths))
 
+	if len(filepaths) == 0 {
+		s.Log.Debug("No paths to test results provided")
+		return nil
+	}
+
 	for i, filePath := range filepaths {
+		s.Log.Debugf("Attempting to upload %q to Captain", filePath)
+
 		fd, err := s.FileSystem.Open(filePath)
 		if err != nil {
 			return s.logError(errors.NewSystemError("unable to open file: %s", err))
@@ -243,6 +281,40 @@ func (s Service) UploadTestResults(ctx context.Context, suiteName string, filepa
 			return s.logError(errors.NewInternalError("unable to generate new UUID: %s", err))
 		}
 
+		s.Log.Debugf("Attempting to parse %q", filePath)
+		var parserType api.ParserType
+
+		// Re-parsing the files here is not great. This will be removed once the API doesn't expect
+		// a parser type anymore.
+		for _, parser := range s.Parsers {
+			_, parseErr := parser.Parse(fd)
+
+			// We always have to seek back to the beginning since we'll re-read the file upon upload.
+			if _, err := fd.Seek(0, io.SeekStart); err != nil {
+				return s.logError(errors.NewSystemError("unable to read from file: %s", err))
+			}
+
+			if parseErr != nil {
+				s.Log.Debugf("unable to parse %q using %T: %s", filePath, parser, parseErr)
+				continue
+			}
+
+			s.Log.Debugf("Successfully parsed %q using %T", filePath, parser)
+
+			switch parser.(type) {
+			case *parsers.Jest:
+				parserType = api.ParserTypeJestJSON
+			case *parsers.JUnit:
+				parserType = api.ParserTypeJUnitXML
+			case *parsers.RSpecV3:
+				parserType = api.ParserTypeRSpecJSON
+			case *parsers.XUnitDotNetV2:
+				parserType = api.ParserTypeXUnitXML
+			}
+
+			break
+		}
+
 		newArtifacts[i] = api.Artifact{
 			ExternalID:   id,
 			FD:           fd,
@@ -250,7 +322,7 @@ func (s Service) UploadTestResults(ctx context.Context, suiteName string, filepa
 			MimeType:     mime.TypeByExtension(path.Ext(filePath)),
 			Name:         suiteName,
 			OriginalPath: filePath,
-			Parser:       api.ParserTypeRSpecJSON,
+			Parser:       parserType,
 		}
 	}
 

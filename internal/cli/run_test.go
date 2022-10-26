@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"go.uber.org/zap/zaptest"
 
@@ -72,7 +73,9 @@ var _ = Describe("Run", func() {
 		mockOpen := func(name string) (fs.File, error) {
 			Expect(name).To(Equal(artifactPath))
 			fileOpened = true
-			return new(mocks.File), nil
+			file := new(mocks.File)
+			file.Reader = strings.NewReader("")
+			return file, nil
 		}
 		service.FileSystem.(*mocks.FileSystem).MockOpen = mockOpen
 
@@ -80,7 +83,13 @@ var _ = Describe("Run", func() {
 	})
 
 	JustBeforeEach(func() {
-		err = service.RunSuite(ctx, []string{arg}, "test", artifactPath)
+		runConfig := cli.RunConfig{
+			Args:         []string{arg},
+			ArtifactGlob: artifactPath,
+			SuiteName:    "test",
+		}
+
+		err = service.RunSuite(ctx, runConfig)
 	})
 
 	Context("under expected conditions", func() {
