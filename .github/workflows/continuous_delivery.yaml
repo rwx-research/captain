@@ -47,6 +47,8 @@ jobs:
           version=$(./captain --version) 
           artifact_name=$(echo "captain-$RUNNER_OS-$RUNNER_ARCH-$version" | tr '[:upper:]' '[:lower:]')
           aws s3 mv ./captain "s3://rwx-research-cli-releases-2210202003/$artifact_name"
+        env:
+          CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
       - run: |
           files=$(aws s3api list-objects --bucket rwx-research-cli-releases-2210202003 --no-paginate --query 'Contents[].Key' --output=text)
           versions=$(echo $files | grep "\-v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//')
