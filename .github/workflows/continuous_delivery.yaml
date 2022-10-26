@@ -49,7 +49,7 @@ jobs:
         env:
           CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
       - run: |
-          files=$(aws s3api list-objects --bucket rwx-research-cli-releases-2210202003 --no-paginate --query 'Contents[].Key' --output=text)
+          files=$(aws s3api list-objects --bucket rwx-research-cli-releases-2210202003 --no-paginate --query 'Contents[].Key' --output=json | jq -r '.[]')
           versions=$(echo $files | grep "\-v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//')
           latest=$(echo $versions | grep -v "-" | head -n 1)
           encodedVersions=$(echo $versions | jq --raw-input | jq --slurp)
