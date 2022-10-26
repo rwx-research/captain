@@ -18,7 +18,6 @@ jobs:
       id-token: write
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
-      max-parallel: 1
       matrix:
         os: [ubuntu-latest, macos-latest]
     steps:
@@ -56,3 +55,4 @@ jobs:
           encodedVersions=$(echo $versions | jq --raw-input | jq --slurp)
           jq -n --argjson versions "$encodedVersions" --arg latest "$latest" '{captain: {latest: $latest, versions: $versions}}' > versions.json
           aws s3 mv ./versions.json "s3://rwx-research-cli-releases-2210202003/"
+        if: "matrix.os == 'ubuntu-latest'"
