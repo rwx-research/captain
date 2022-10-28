@@ -7,48 +7,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        id: nix-cache
-        with:
-          path: /tmp/nix-cache
-          key: ${{ runner.os }}-nix-${{ hashFiles('./flake.*') }}-golang-${{ hashFiles('./go.*') }}
       - uses: cachix/install-nix-action@v18
         with:
           extra_nix_config: |
-            cores = 0
-            experimental-features = nix-command flakes
             keep-derivations = true
             keep-outputs = true
-      - run: nix-store --import < /tmp/nix-cache
-        if: "steps.nix-cache.outputs.cache-hit == 'true'"
       - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
       - run: REPORT=true ./captain run --suite-name="Ginkgo" --github-job-name="Build & Test" --test-results=report.xml --fail-on-upload-error -- nix develop --command mage test
         env:
           CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
           DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
-      - run: nix-store --export $(find /nix/store -maxdepth 1 -name '*-*') > /tmp/nix-cache
-        if: "steps.nix-cache.outputs.cache-hit != 'true'"
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        id: nix-cache
-        with:
-          path: /tmp/nix-cache
-          key: ${{ runner.os }}-nix-${{ hashFiles('./flake.*') }}-golang-${{ hashFiles('./go.*') }}
       - uses: cachix/install-nix-action@v18
         with:
           extra_nix_config: |
-            cores = 0
-            experimental-features = nix-command flakes
             keep-derivations = true
             keep-outputs = true
-      - run: nix-store --import < /tmp/nix-cache
-        if: "steps.nix-cache.outputs.cache-hit == 'true'"
       - run: nix develop --command mage lint
-      - run: nix develop --command nixfmt --check flake.nix
-      - run: nix-store --export $(find /nix/store -maxdepth 1 -name '*-*') > /tmp/nix-cache
-        if: "steps.nix-cache.outputs.cache-hit != 'true'"
+      - run: nix fmt -- --check flake.nix
