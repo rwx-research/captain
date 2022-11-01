@@ -21,6 +21,7 @@ This CLI is a complementary component to the main WebUI at
 https://captain.build.
 
 Usage:
+  captain [flags]
   captain [command]
 
 Available Commands:
@@ -29,8 +30,10 @@ Available Commands:
   upload      Upload a resource to Captain
 
 Flags:
-  -h, --help                help for captain
-      --suite-name string   the name of the build- or test-suite
+      --github-job-matrix string   the JSON encoded job-matrix from Github
+      --github-job-name string     the name of the current Github Job
+  -h, --help                       help for captain
+      --suite-name string          the name of the build- or test-suite
 
 Use "captain [command] --help" for more information about a command.
 ```

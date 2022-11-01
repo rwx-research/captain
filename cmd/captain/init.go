@@ -76,8 +76,9 @@ func unsafeInitParsingOnly(cmd *cobra.Command, args []string) error {
 	}
 
 	captain = cli.Service{
-		Log:     logger,
-		Parsers: []cli.Parser{new(parsers.JUnit), new(parsers.Jest), new(parsers.RSpecV3), new(parsers.XUnitDotNetV2)},
+		Log:        logger,
+		FileSystem: fs.Local{},
+		Parsers:    []cli.Parser{new(parsers.JUnit), new(parsers.Jest), new(parsers.RSpecV3), new(parsers.XUnitDotNetV2)},
 	}
 
 	return nil
