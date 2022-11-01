@@ -15,7 +15,10 @@ type config struct {
 	}
 	CI struct {
 		Github struct {
-			Job string
+			Job struct {
+				Name   string
+				Matrix string
+			}
 			Run struct {
 				Attempt string
 				ID      string
@@ -49,7 +52,7 @@ func init() {
 			initializationErrors = append(initializationErrors, err)
 		}
 
-		if err := viper.BindEnv("ci.github.job", "GITHUB_JOB"); err != nil {
+		if err := viper.BindEnv("ci.github.job.name", "GITHUB_JOB"); err != nil {
 			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}

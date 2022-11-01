@@ -176,21 +176,25 @@ func (c Client) registerArtifacts(ctx context.Context, artifacts []Artifact) (ma
 	endpoint := "/api/organization/integrations/github/bulk_artifacts"
 
 	reqBody := struct {
-		AccountName    string     `json:"account_name"`
-		Artifacts      []Artifact `json:"artifacts"`
-		JobName        string     `json:"job_name"`
-		JobMatrix      *string    `json:"job_matrix"`
-		RepositoryName string     `json:"repository_name"`
-		RunAttempt     string     `json:"run_attempt"`
-		RunID          string     `json:"run_id"`
+		AccountName    string           `json:"account_name"`
+		Artifacts      []Artifact       `json:"artifacts"`
+		JobName        string           `json:"job_name"`
+		JobMatrix      *json.RawMessage `json:"job_matrix"`
+		RepositoryName string           `json:"repository_name"`
+		RunAttempt     string           `json:"run_attempt"`
+		RunID          string           `json:"run_id"`
 	}{
 		AccountName:    c.AccountName,
 		Artifacts:      artifacts,
 		RepositoryName: c.RepositoryName,
 		JobName:        c.JobName,
-		JobMatrix:      c.JobMatrix,
 		RunAttempt:     c.RunAttempt,
 		RunID:          c.RunID,
+	}
+
+	if c.JobMatrix != "" {
+		rawJobMatrix := json.RawMessage(c.JobMatrix)
+		reqBody.JobMatrix = &rawJobMatrix
 	}
 
 	resp, err := c.postJSON(ctx, endpoint, reqBody)

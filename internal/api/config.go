@@ -14,7 +14,7 @@ type ClientConfig struct {
 	Insecure       bool
 	Log            *zap.SugaredLogger
 	JobName        string
-	JobMatrix      *string
+	JobMatrix      string
 	RepositoryName string
 	RunAttempt     string
 	RunID          string

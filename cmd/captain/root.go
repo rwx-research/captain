@@ -11,12 +11,13 @@ import (
 )
 
 var (
-	captain       cli.Service
-	debug         bool
-	githubJobName string
-	insecure      bool
-	suiteName     string
-	version       bool
+	captain         cli.Service
+	debug           bool
+	githubJobName   string
+	githubJobMatrix string
+	insecure        bool
+	suiteName       string
+	version         bool
 
 	rootCmd = &cobra.Command{
 		Use:           "captain",
@@ -38,8 +39,15 @@ var (
 func init() {
 	rootCmd.PersistentFlags().StringVar(&suiteName, "suite-name", "", "the name of the build- or test-suite")
 
+	rootCmd.PersistentFlags().StringVar(
+		&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github",
+	)
+	if err := viper.BindPFlag("ci.github.job.matrix", rootCmd.PersistentFlags().Lookup("github-job-matrix")); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+
 	rootCmd.PersistentFlags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
-	if err := viper.BindPFlag("ci.github.job", rootCmd.PersistentFlags().Lookup("github-job-name")); err != nil {
+	if err := viper.BindPFlag("ci.github.job.name", rootCmd.PersistentFlags().Lookup("github-job-name")); err != nil {
 		initializationErrors = append(initializationErrors, err)
 	}
 

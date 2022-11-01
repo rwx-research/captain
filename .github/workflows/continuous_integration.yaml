@@ -13,7 +13,14 @@ jobs:
             keep-derivations = true
             keep-outputs = true
       - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
-      - run: REPORT=true ./captain run --suite-name="Ginkgo" --github-job-name="Build & Test" --test-results=report.xml --fail-on-upload-error -- nix develop --command mage test
+      - run: |
+          REPORT=true ./captain run \
+            --suite-name="Ginkgo" \
+            --github-job-name="Build & Test" \
+            --github-job-matrix='${{ toJSON(matrix) }}' \
+            --test-results=report.xml \
+            --fail-on-upload-error \
+            -- nix develop --command mage test
         env:
           CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
           DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
