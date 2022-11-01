@@ -15,9 +15,10 @@ var (
 
 	// uploadResultsCmd is the "results" sub-command of "uploads".
 	uploadResultsCmd = &cobra.Command{
-		Use:   "results [file]",
-		Short: "Upload test results to Captain",
-		Long:  descriptionUploadResults,
+		Use:     "results [file]",
+		Short:   "Upload test results to Captain",
+		Long:    descriptionUploadResults,
+		PreRunE: initCLIService,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Should also support reading from stdin
 			return errors.Wrap(captain.UploadTestResults(cmd.Context(), suiteName, args))

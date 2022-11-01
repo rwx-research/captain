@@ -12,9 +12,10 @@ var (
 	failOnUploadError bool
 
 	runCmd = &cobra.Command{
-		Use:   "run",
-		Short: "Execute a build- or test-suite",
-		Long:  descriptionRun,
+		Use:     "run",
+		Short:   "Execute a build- or test-suite",
+		Long:    descriptionRun,
+		PreRunE: initCLIService,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return errors.Wrap(cmd.Usage())

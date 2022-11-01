@@ -19,7 +19,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
@@ -109,11 +108,6 @@ func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error
 	}
 
 	return results, nil
-}
-
-// PrintVersion prints the CLI version
-func (s Service) PrintVersion() {
-	s.Log.Infoln(captain.Version)
 }
 
 func (s Service) runCommand(ctx context.Context, args []string) error {
