@@ -143,13 +143,15 @@ var _ = Describe("Run", func() {
 
 	Context("with an erroring command", func() {
 		var (
-			exitCode              int
-			failedTestDescription string
+			exitCode                    int
+			firstFailedTestDescription  string
+			secondFailedTestDescription string
 		)
 
 		BeforeEach(func() {
 			exitCode = int(GinkgoRandomSeed() + 1)
-			failedTestDescription = fmt.Sprintf("%d", GinkgoRandomSeed()+2)
+			firstFailedTestDescription = fmt.Sprintf("%d", GinkgoRandomSeed()+2)
+			secondFailedTestDescription = fmt.Sprintf("%d", GinkgoRandomSeed()+3)
 
 			mockGetExitStatusFromError := func(error) (int, error) {
 				return exitCode, nil
@@ -157,11 +159,102 @@ var _ = Describe("Run", func() {
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
 			service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) ([]testing.TestResult, error) {
-				return []testing.TestResult{{Description: failedTestDescription, Status: testing.TestStatusFailed}}, nil
+				return []testing.TestResult{
+					{
+						Description: "passed test",
+						Status:      testing.TestStatusSuccessful,
+						Meta:        map[string]any{"file": "/path/to/file.test"},
+					},
+					{
+						Description: firstFailedTestDescription,
+						Status:      testing.TestStatusFailed,
+						Meta:        map[string]any{"file": "/path/to/file.test"},
+					},
+					{
+						Description: secondFailedTestDescription,
+						Status:      testing.TestStatusFailed,
+						Meta:        map[string]any{"file": "/other/path/to/file.test"},
+					},
+				}, nil
 			}
 		})
 
 		Context("no quarantined tests", func() {
+			It("returns the error code of the command", func() {
+				Expect(err).To(HaveOccurred())
+				executionError, ok := errors.AsExecutionError(err)
+				Expect(ok).To(BeTrue(), "Error is an execution error")
+				Expect(executionError.Code).To(Equal(exitCode))
+			})
+		})
+
+		Context("other unknown tests quarantined", func() {
+			BeforeEach(func() {
+				mockGetQuarantinedTestCases := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) ([]api.QuarantinedTestCase, error) {
+					return []api.QuarantinedTestCase{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "not/the/right/path.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
+			})
+
+			It("returns the error code of the command", func() {
+				Expect(err).To(HaveOccurred())
+				executionError, ok := errors.AsExecutionError(err)
+				Expect(ok).To(BeTrue(), "Error is an execution error")
+				Expect(executionError.Code).To(Equal(exitCode))
+			})
+		})
+
+		Context("other unknown tests quarantined", func() {
+			BeforeEach(func() {
+				mockGetQuarantinedTestCases := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) ([]api.QuarantinedTestCase, error) {
+					return []api.QuarantinedTestCase{
+						{
+							CompositeIdentifier: "some-description -captain- huh",
+							IdentityComponents:  []string{"description", "huh"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
+			})
+
+			It("returns the error code of the command", func() {
+				Expect(err).To(HaveOccurred())
+				executionError, ok := errors.AsExecutionError(err)
+				Expect(ok).To(BeTrue(), "Error is an execution error")
+				Expect(executionError.Code).To(Equal(exitCode))
+			})
+		})
+
+		Context("some tests quarantined", func() {
+			BeforeEach(func() {
+				mockGetQuarantinedTestCases := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) ([]api.QuarantinedTestCase, error) {
+					return []api.QuarantinedTestCase{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
+			})
+
 			It("returns the error code of the command", func() {
 				Expect(err).To(HaveOccurred())
 				executionError, ok := errors.AsExecutionError(err)
@@ -178,8 +271,13 @@ var _ = Describe("Run", func() {
 				) ([]api.QuarantinedTestCase, error) {
 					return []api.QuarantinedTestCase{
 						{
-							CompositeIdentifier: failedTestDescription,
-							IdentityComponents:  []string{"description"},
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
 							StrictIdentity:      true,
 						},
 					}, nil
