@@ -51,11 +51,11 @@ var _ = Describe("Uploading Artifacts", func() {
 				switch mockRoundTripCalls {
 				case 0: // registering the artifact
 					Expect(req.Method).To(Equal(http.MethodPost))
-					Expect(req.URL.Path).To(HaveSuffix("bulk_artifacts"))
+					Expect(req.URL.Path).To(HaveSuffix("bulk_test_results"))
 					Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 					resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(
-						"{\"bulk_artifacts\":[{\"external_id\":%q,\"upload_url\":\"%d\"}]}",
-						artifacts[0].ExternalID, GinkgoRandomSeed(),
+						"{\"test_results_uploads\":[{\"id\": %q, \"external_identifier\":%q,\"upload_url\":\"%d\"}]}",
+						"some-captain-identifier", artifacts[0].ExternalID, GinkgoRandomSeed(),
 					)))
 				case 1: // upload to `upload_url`
 					Expect(req.Method).To(Equal(http.MethodPut))
@@ -63,12 +63,12 @@ var _ = Describe("Uploading Artifacts", func() {
 					resp.Body = io.NopCloser(strings.NewReader(""))
 				case 2: // update status
 					Expect(req.Method).To(Equal(http.MethodPut))
-					Expect(req.URL.Path).To(HaveSuffix("status"))
+					Expect(req.URL.Path).To(HaveSuffix("bulk_test_results"))
 					body, err := io.ReadAll(req.Body)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(string(body)).To(ContainSubstring(fmt.Sprintf(
-						"%q,\"status\":\"uploaded\"",
-						artifacts[0].ExternalID,
+						"%q,\"upload_status\":\"uploaded\"",
+						"some-captain-identifier",
 					)))
 					resp.Body = io.NopCloser(strings.NewReader(""))
 				default:
@@ -82,7 +82,7 @@ var _ = Describe("Uploading Artifacts", func() {
 		})
 
 		It("registers, uploads, and updates the test result in sequence", func() {
-			Expect(apiClient.UploadArtifacts(context.Background(), artifacts)).To(Succeed())
+			Expect(apiClient.UploadArtifacts(context.Background(), "test suite name", artifacts)).To(Succeed())
 		})
 	})
 
@@ -94,7 +94,7 @@ var _ = Describe("Uploading Artifacts", func() {
 		})
 
 		It("returns an error to the user", func() {
-			Expect(apiClient.UploadArtifacts(context.Background(), artifacts)).ToNot(Succeed())
+			Expect(apiClient.UploadArtifacts(context.Background(), "test suite name", artifacts)).ToNot(Succeed())
 		})
 	})
 
@@ -106,8 +106,8 @@ var _ = Describe("Uploading Artifacts", func() {
 				switch mockRoundTripCalls {
 				case 0: // registering the artifact
 					resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(
-						"{\"bulk_artifacts\":[{\"external_id\":%q,\"upload_url\":\"%d\"}]}",
-						artifacts[0].ExternalID, GinkgoRandomSeed(),
+						"{\"test_results_uploads\":[{\"id\": %q, \"external_identifier\":%q,\"upload_url\":\"%d\"}]}",
+						"some-captain-identifier", artifacts[0].ExternalID, GinkgoRandomSeed(),
 					)))
 				case 1: // upload to `upload_url`
 					resp.Body = io.NopCloser(strings.NewReader(""))
@@ -116,8 +116,8 @@ var _ = Describe("Uploading Artifacts", func() {
 					body, err := io.ReadAll(req.Body)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(string(body)).To(ContainSubstring(fmt.Sprintf(
-						"%q,\"status\":\"upload_failed\"",
-						artifacts[0].ExternalID,
+						"%q,\"upload_status\":\"upload_failed\"",
+						"some-captain-identifier",
 					)))
 					resp.Body = io.NopCloser(strings.NewReader(""))
 				default:
@@ -131,7 +131,7 @@ var _ = Describe("Uploading Artifacts", func() {
 		})
 
 		It("updates the upload status as failed", func() {
-			Expect(apiClient.UploadArtifacts(context.Background(), artifacts)).To(Succeed())
+			Expect(apiClient.UploadArtifacts(context.Background(), "test suite name", artifacts)).To(Succeed())
 		})
 	})
 
@@ -146,8 +146,8 @@ var _ = Describe("Uploading Artifacts", func() {
 				switch mockRoundTripCalls {
 				case 0: // registering the artifact
 					resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(
-						"{\"bulk_artifacts\":[{\"external_id\":%q,\"upload_url\":\"%d\"}]}",
-						artifacts[0].ExternalID, GinkgoRandomSeed(),
+						"{\"test_results_uploads\":[{\"id\": %q, \"external_identifier\":%q,\"upload_url\":\"%d\"}]}",
+						"some-captain-identifier", artifacts[0].ExternalID, GinkgoRandomSeed(),
 					)))
 				case 1: // upload to `upload_url`
 					resp.Body = io.NopCloser(strings.NewReader(""))
@@ -164,7 +164,7 @@ var _ = Describe("Uploading Artifacts", func() {
 		})
 
 		It("does not return an error to the user", func() {
-			Expect(apiClient.UploadArtifacts(context.Background(), artifacts)).To(Succeed())
+			Expect(apiClient.UploadArtifacts(context.Background(), "test suite name", artifacts)).To(Succeed())
 		})
 	})
 })

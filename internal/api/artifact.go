@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/url"
+
 	"github.com/google/uuid"
 
 	"github.com/rwx-research/captain-cli/internal/fs"
@@ -8,22 +10,15 @@ import (
 
 // Artifact is a build- or test-artifact as defined by the Captain API.
 type Artifact struct {
-	ExternalID   uuid.UUID    `json:"external_id"`
-	FD           fs.File      `json:"-"`
-	Kind         ArtifactKind `json:"kind"`
-	MimeType     string       `json:"mime_type"`
-	Name         string       `json:"name"`
-	OriginalPath string       `json:"original_path"`
-	Parser       ParserType   `json:"parser"`
+	ExternalID   uuid.UUID  `json:"external_identifier"`
+	FD           fs.File    `json:"-"`
+	OriginalPath string     `json:"original_path"`
+	Parser       ParserType `json:"format"`
+
+	uploadURL      *url.URL
+	captainID      string
+	s3uploadStatus int
 }
-
-// ArtifactKind is an enum holding possible artifact kinds
-//
-// Deprecated: This will be removed in the future
-type ArtifactKind string
-
-// ArtifactKindTestResult is the artifact kind of test results
-const ArtifactKindTestResult = ArtifactKind("test_results")
 
 // ParserType is an enum holding possible parser types
 type ParserType string

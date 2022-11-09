@@ -172,29 +172,50 @@ func (c Client) putJSON(ctx context.Context, endpoint string, body any) (*http.R
 	return resp, nil
 }
 
-func (c Client) registerArtifacts(ctx context.Context, artifacts []Artifact) (map[uuid.UUID]*url.URL, error) {
-	endpoint := "/api/organization/integrations/github/bulk_artifacts"
+func (c Client) registerArtifacts(ctx context.Context, testSuite string, artifacts []Artifact) ([]Artifact, error) {
+	endpoint := "/api/test_suites/bulk_test_results"
+
+	type JobTags struct {
+		GithubRunID          string           `json:"github_run_id"`
+		GithubRunAttempt     string           `json:"github_run_attempt"`
+		GithubRepositoryName string           `json:"github_repository_name"`
+		GithubAccountOwner   string           `json:"github_account_owner"`
+		GithubJobMatrix      *json.RawMessage `json:"github_job_matrix"`
+		GithubJobName        string           `json:"github_job_name"`
+	}
 
 	reqBody := struct {
-		AccountName    string           `json:"account_name"`
-		Artifacts      []Artifact       `json:"artifacts"`
-		JobName        string           `json:"job_name"`
-		JobMatrix      *json.RawMessage `json:"job_matrix"`
-		RepositoryName string           `json:"repository_name"`
-		RunAttempt     string           `json:"run_attempt"`
-		RunID          string           `json:"run_id"`
+		AttemptedBy         string     `json:"attempted_by"`
+		Provider            string     `json:"provider"`
+		BranchName          string     `json:"branch"`
+		CommitMessage       *string    `json:"commit_message"`
+		CommitSha           string     `json:"commit_sha"`
+		TestSuiteIdentifier string     `json:"test_suite_identifier"`
+		Artifacts           []Artifact `json:"test_results_files"`
+		JobTags             JobTags    `json:"job_tags"`
 	}{
-		AccountName:    c.AccountName,
-		Artifacts:      artifacts,
-		RepositoryName: c.RepositoryName,
-		JobName:        c.JobName,
-		RunAttempt:     c.RunAttempt,
-		RunID:          c.RunID,
+		AttemptedBy:         c.AttemptedBy,
+		Provider:            c.Provider,
+		BranchName:          c.BranchName,
+		CommitSha:           c.CommitSha,
+		TestSuiteIdentifier: testSuite,
+		Artifacts:           artifacts,
+		JobTags: JobTags{
+			GithubRunID:          c.RunID,
+			GithubRunAttempt:     c.RunAttempt,
+			GithubRepositoryName: c.RepositoryName,
+			GithubAccountOwner:   c.AccountName,
+			GithubJobName:        c.JobName,
+		},
+	}
+
+	if c.CommitMessage != "" {
+		reqBody.CommitMessage = &c.CommitMessage
 	}
 
 	if c.JobMatrix != "" {
 		rawJobMatrix := json.RawMessage(c.JobMatrix)
-		reqBody.JobMatrix = &rawJobMatrix
+		reqBody.JobTags.GithubJobMatrix = &rawJobMatrix
 	}
 
 	resp, err := c.postJSON(ctx, endpoint, reqBody)
@@ -212,10 +233,11 @@ func (c Client) registerArtifacts(ctx context.Context, artifacts []Artifact) (ma
 	}
 
 	respBody := struct {
-		BulkArtifacts []struct {
-			ExternalID uuid.UUID `json:"external_id"`
+		TestResultsUploads []struct {
+			ExternalID uuid.UUID `json:"external_identifier"`
+			CaptainID  string    `json:"id"`
 			UploadURL  string    `json:"upload_url"`
-		} `json:"bulk_artifacts"`
+		} `json:"test_results_uploads"`
 	}{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
@@ -227,38 +249,43 @@ func (c Client) registerArtifacts(ctx context.Context, artifacts []Artifact) (ma
 		)
 	}
 
-	S3Endpoints := make(map[uuid.UUID]*url.URL)
-
-	for _, endpoint := range respBody.BulkArtifacts {
+	for _, endpoint := range respBody.TestResultsUploads {
 		parsedURL, err := url.Parse(endpoint.UploadURL)
 		if err != nil {
 			return nil, errors.NewInternalError("unable to parse S3 URL")
 		}
-
-		S3Endpoints[endpoint.ExternalID] = parsedURL
+		for i, artifact := range artifacts {
+			if artifact.ExternalID == endpoint.ExternalID {
+				artifacts[i].captainID = endpoint.CaptainID
+				artifacts[i].uploadURL = parsedURL
+				break
+			}
+		}
 	}
 
-	return S3Endpoints, nil
+	return artifacts, nil
 }
 
-func (c Client) updateArtifactStatuses(ctx context.Context, statuses map[uuid.UUID]int) error {
-	endpoint := "/api/organization/integrations/github/bulk_artifacts/status"
+func (c Client) updateArtifactStatuses(ctx context.Context, testSuite string, artifacts []Artifact) error {
+	endpoint := "/api/test_suites/bulk_test_results"
 
 	type uploadStatus struct {
-		ExternalID uuid.UUID `json:"external_id"`
-		Status     string    `json:"status"`
+		CaptainID string `json:"id"`
+		Status    string `json:"upload_status"`
 	}
 
 	reqBody := struct {
-		Artifacts []uploadStatus `json:"artifacts"`
+		TestSuiteIdentifier string         `json:"test_suite_identifier"`
+		Artifacts           []uploadStatus `json:"test_results_files"`
 	}{}
+	reqBody.TestSuiteIdentifier = testSuite
 
-	for id, status := range statuses {
+	for _, artifact := range artifacts {
 		switch {
-		case status < 300:
-			reqBody.Artifacts = append(reqBody.Artifacts, uploadStatus{id, "uploaded"})
+		case artifact.s3uploadStatus < 300:
+			reqBody.Artifacts = append(reqBody.Artifacts, uploadStatus{artifact.captainID, "uploaded"})
 		default:
-			reqBody.Artifacts = append(reqBody.Artifacts, uploadStatus{id, "upload_failed"})
+			reqBody.Artifacts = append(reqBody.Artifacts, uploadStatus{artifact.captainID, "upload_failed"})
 		}
 	}
 
@@ -282,7 +309,11 @@ func (c Client) updateArtifactStatuses(ctx context.Context, statuses map[uuid.UU
 // UploadArtifacts uploads artifacts to Captain.
 // This method is not atomic - data-loss can occur silently. To verify that this operation was successful,
 // the Captain database has to be queried manually.
-func (c Client) UploadArtifacts(ctx context.Context, artifacts []Artifact) error {
+func (c Client) UploadArtifacts(ctx context.Context, testSuite string, artifacts []Artifact) error {
+	if testSuite == "" {
+		return errors.NewInputError("test suite name required")
+	}
+
 	fileSizeLookup := make(map[uuid.UUID]int64)
 	for _, artifact := range artifacts {
 		fileInfo, err := artifact.FD.Stat()
@@ -293,17 +324,19 @@ func (c Client) UploadArtifacts(ctx context.Context, artifacts []Artifact) error
 		fileSizeLookup[artifact.ExternalID] = fileInfo.Size()
 	}
 
-	S3Endpoints, err := c.registerArtifacts(ctx, artifacts)
+	artifacts, err := c.registerArtifacts(ctx, testSuite, artifacts)
 	if err != nil {
 		return err
 	}
 
-	uploadStatuses := make(map[uuid.UUID]int)
+	for i, artifact := range artifacts {
+		if artifact.uploadURL == nil {
+			return errors.NewInternalError("endpoint failed to return upload destination url")
+		}
 
-	for _, artifact := range artifacts {
 		req := http.Request{
 			Method:        http.MethodPut,
-			URL:           S3Endpoints[artifact.ExternalID],
+			URL:           artifact.uploadURL,
 			Body:          artifact.FD,
 			ContentLength: fileSizeLookup[artifact.ExternalID],
 		}
@@ -315,10 +348,10 @@ func (c Client) UploadArtifacts(ctx context.Context, artifacts []Artifact) error
 		}
 		defer resp.Body.Close()
 
-		uploadStatuses[artifact.ExternalID] = resp.StatusCode
+		artifacts[i].s3uploadStatus = resp.StatusCode
 	}
 
-	if err := c.updateArtifactStatuses(ctx, uploadStatuses); err != nil {
+	if err := c.updateArtifactStatuses(ctx, testSuite, artifacts); err != nil {
 		c.Log.Warnf("unable to update artifact status: %s", err)
 	}
 

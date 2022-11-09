@@ -9,8 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"mime"
-	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -253,7 +251,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 
 // UploadTestResults is the implementation of `captain upload results`. It takes a number of filepaths, checks that
 // files exist and uploads them using the provided API.
-func (s Service) UploadTestResults(ctx context.Context, suiteName string, filepaths []string) error {
+func (s Service) UploadTestResults(ctx context.Context, testSuite string, filepaths []string) error {
 	newArtifacts := make([]api.Artifact, len(filepaths))
 
 	if len(filepaths) == 0 {
@@ -312,15 +310,12 @@ func (s Service) UploadTestResults(ctx context.Context, suiteName string, filepa
 		newArtifacts[i] = api.Artifact{
 			ExternalID:   id,
 			FD:           fd,
-			Kind:         api.ArtifactKindTestResult,
-			MimeType:     mime.TypeByExtension(path.Ext(filePath)),
-			Name:         suiteName,
 			OriginalPath: filePath,
 			Parser:       parserType,
 		}
 	}
 
-	if err := s.API.UploadArtifacts(ctx, newArtifacts); err != nil {
+	if err := s.API.UploadArtifacts(ctx, testSuite, newArtifacts); err != nil {
 		return s.logError(errors.WithMessage("unable to upload test result: %s", err))
 	}
 

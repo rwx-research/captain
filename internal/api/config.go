@@ -9,6 +9,7 @@ import (
 // ClientConfig is the configuration object for the Captain API client
 type ClientConfig struct {
 	AccountName    string
+	AttemptedBy    string
 	Debug          bool
 	Host           string
 	Insecure       bool
@@ -19,10 +20,18 @@ type ClientConfig struct {
 	RunAttempt     string
 	RunID          string
 	Token          string
+	Provider       string
+	BranchName     string
+	CommitSha      string
+	CommitMessage  string
 }
 
 // Validate checks the configuration for errors
 func (cc ClientConfig) Validate() error {
+	if cc.AttemptedBy == "" {
+		return errors.NewConfigurationError("missing attempted by")
+	}
+
 	if cc.AccountName == "" {
 		return errors.NewConfigurationError("missing account name")
 	}
@@ -49,6 +58,18 @@ func (cc ClientConfig) Validate() error {
 
 	if cc.Token == "" {
 		return errors.NewConfigurationError("missing API token")
+	}
+
+	if cc.Provider == "" {
+		return errors.NewConfigurationError("missing ci/cd provider")
+	}
+
+	if cc.BranchName == "" {
+		return errors.NewConfigurationError("missing branch name")
+	}
+
+	if cc.CommitSha == "" {
+		return errors.NewConfigurationError("missing commit sha")
 	}
 
 	return nil

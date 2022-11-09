@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"os"
 	"path"
 	"strings"
 
@@ -29,16 +31,46 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		logger = logging.NewDebugLogger()
 	}
 
+	branchName := cfg.VCS.Github.RefName
+	if cfg.CI.Github.Run.EventName == "pull_request" {
+		branchName = cfg.VCS.Github.HeadRef
+	}
+
+	eventPayloadData := struct {
+		HeadCommit struct {
+			Message string `json:"message"`
+		} `json:"head_commit"`
+	}{}
+
+	file, err := os.Open(cfg.CI.Github.Run.EventPath)
+	if err != nil && !os.IsNotExist(err) {
+		return errors.WithMessage("unable to open event payload file: %v", err)
+	} else if err == nil {
+		if err := json.NewDecoder(file).Decode(&eventPayloadData); err != nil {
+			return errors.WithMessage("failed to decode event payload data: %v", err)
+		}
+	}
+
+	attemptedBy := cfg.CI.Github.Run.TriggeringActor
+	if attemptedBy == "" {
+		attemptedBy = cfg.CI.Github.Run.ExecutingActor
+	}
+
 	owner, repository := path.Split(cfg.VCS.Github.Repository)
 
 	apiClient, err := api.NewClient(api.ClientConfig{
 		AccountName:    strings.TrimSuffix(owner, "/"),
+		AttemptedBy:    attemptedBy,
+		BranchName:     branchName,
+		CommitMessage:  eventPayloadData.HeadCommit.Message,
+		CommitSha:      cfg.VCS.Github.CommitSha,
 		Debug:          cfg.Debug,
 		Host:           cfg.Captain.Host,
 		Insecure:       cfg.Insecure,
 		JobName:        cfg.CI.Github.Job.Name,
 		JobMatrix:      cfg.CI.Github.Job.Matrix,
 		Log:            logger,
+		Provider:       "github",
 		RunAttempt:     cfg.CI.Github.Run.Attempt,
 		RunID:          cfg.CI.Github.Run.ID,
 		RepositoryName: repository,

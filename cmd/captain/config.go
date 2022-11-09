@@ -20,8 +20,12 @@ type config struct {
 				Matrix string
 			}
 			Run struct {
-				Attempt string
-				ID      string
+				Attempt         string
+				ID              string
+				EventName       string
+				EventPath       string
+				ExecutingActor  string
+				TriggeringActor string
 			}
 		}
 	}
@@ -30,6 +34,9 @@ type config struct {
 	VCS      struct {
 		Github struct {
 			Repository string
+			RefName    string
+			HeadRef    string
+			CommitSha  string
 		}
 	}
 }
@@ -67,7 +74,42 @@ func init() {
 			initializationErrors = append(initializationErrors, err)
 		}
 
+		if err := viper.BindEnv("ci.github.run.eventName", "GITHUB_EVENT_NAME"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.github.run.eventPath", "GITHUB_EVENT_PATH"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.github.run.executingActor", "GITHUB_ACTOR"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.github.run.triggeringActor", "GITHUB_TRIGGERING_ACTOR"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
 		if err := viper.BindEnv("vcs.github.repository", "GITHUB_REPOSITORY"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("vcs.github.refName", "GITHUB_REF_NAME"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("vcs.github.headRef", "GITHUB_HEAD_REF"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("vcs.github.commitSha", "GITHUB_SHA"); err != nil {
 			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}

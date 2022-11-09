@@ -94,7 +94,7 @@ var _ = Describe("Run", func() {
 
 	Context("under expected conditions", func() {
 		BeforeEach(func() {
-			mockUploadArtifacts := func(ctx context.Context, artifacts []api.Artifact) error {
+			mockUploadArtifacts := func(ctx context.Context, testSuite string, artifacts []api.Artifact) error {
 				Expect(artifacts).To(HaveLen(1))
 				artifactUploaded = true
 				return nil
