@@ -37,7 +37,7 @@ jobs:
       - run: |
           version=$(go run ./cmd/captain --version)
           artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
-          aws s3 mv ./captain "s3://rwx-research-cli-releases-2210202003/$artifact_name"
+          aws s3 mv ./captain "s3://terraform-20221109133415397600000001/$artifact_name"
         env:
           CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
 
@@ -57,10 +57,10 @@ jobs:
           role-duration-seconds: 900
       - run: |
           versions=$(
-            aws s3api list-objects --bucket rwx-research-cli-releases-2210202003 --no-paginate --query 'Contents[].Key' --output=json \
+            aws s3api list-objects --bucket terraform-20221109133415397600000001 --no-paginate --query 'Contents[].Key' --output=json \
             | jq -r '.[]' | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' \
           )
           latest=$(printf "%s\n" $versions | grep -v "-" | head -n 1)
           encodedVersions=$(printf "%s\n" $versions | jq --raw-input | jq --slurp)
           jq -n --argjson versions "$encodedVersions" --arg latest "$latest" '{captain: {latest: $latest, versions: $versions}}' > versions.json
-          aws s3 mv ./versions.json "s3://rwx-research-cli-releases-2210202003/"
+          aws s3 mv ./versions.json "s3://terraform-20221109133415397600000001/versions.json"
