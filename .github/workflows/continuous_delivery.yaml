@@ -9,9 +9,9 @@ on:
     types:
       - completed
 jobs:
-  deploy:
-    name: Deploy
-    runs-on: ${{ matrix.os }}
+  upload:
+    name: Upload artifacts
+    runs-on: ubuntu-latest
     environment: Production
     permissions:
       contents: read
@@ -19,7 +19,8 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
@@ -27,7 +28,7 @@ jobs:
           extra_nix_config: |
             keep-derivations = true
             keep-outputs = true
-      - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
+      - run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: us-east-1
@@ -35,10 +36,25 @@ jobs:
           role-duration-seconds: 900
       - run: |
           version=$(./captain --version) 
-          artifact_name=$(echo "captain-$RUNNER_OS-$RUNNER_ARCH-$version" | tr '[:upper:]' '[:lower:]')
+          artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
           aws s3 mv ./captain "s3://rwx-research-cli-releases-2210202003/$artifact_name"
         env:
           CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
+
+   update-versions:
+    name: Update versions.json
+    runs-on: ubuntu-latest
+    environment: Production
+    permissions:
+      contents: read
+      id-token: write
+    needs: upload
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
+          role-duration-seconds: 900
       - run: |
           versions=$(
             aws s3api list-objects --bucket rwx-research-cli-releases-2210202003 --no-paginate --query 'Contents[].Key' --output=json \
@@ -48,4 +64,3 @@ jobs:
           encodedVersions=$(printf "%s\n" $versions | jq --raw-input | jq --slurp)
           jq -n --argjson versions "$encodedVersions" --arg latest "$latest" '{captain: {latest: $latest, versions: $versions}}' > versions.json
           aws s3 mv ./versions.json "s3://rwx-research-cli-releases-2210202003/"
-        if: "matrix.os == 'ubuntu-latest'"
