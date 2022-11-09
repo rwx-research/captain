@@ -63,6 +63,7 @@ func (j *JUnit) Parse(content io.Reader) (map[string]testing.TestResult, error) 
 			Duration:      time.Duration(math.Round(testCase.Time * float64(time.Second))),
 			Status:        status,
 			StatusMessage: strings.Join(statusMessages, "\n"),
+			Meta:          map[string]any{},
 		}
 	}
 

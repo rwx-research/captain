@@ -35,4 +35,4 @@ const ParserTypeJUnitXML = ParserType("junit_xml")
 const ParserTypeRSpecJSON = ParserType("rspec_json")
 
 // ParserTypeXUnitXML is the parser type of XUnit results encoded in XML
-const ParserTypeXUnitXML = ParserType("xunit_dot_not_xml")
+const ParserTypeXUnitXML = ParserType("xunit_dot_net_xml")

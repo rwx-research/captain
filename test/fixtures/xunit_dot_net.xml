@@ -53,7 +53,7 @@
       </test>
     </collection>
   </assembly>
-  <assembly name="test.xunit.console.dll" environment="64-bit .NET Standard [collection-per-class, non-parallel]" test-framework="xUnit.net 2.4.3.0" run-date="2022-08-01" run-time="21:53:36" total="89" passed="89" failed="0" skipped="0" time="0.469" errors="0">
+  <assembly name="/some/path/to/test.xunit.console.dll" environment="64-bit .NET Standard [collection-per-class, non-parallel]" test-framework="xUnit.net 2.4.3.0" run-date="2022-08-01" run-time="21:53:36" total="89" passed="89" failed="0" skipped="0" time="0.469" errors="0">
     <errors />
     <collection total="4" passed="3" failed="1" skipped="0" name="Test collection for CommandLineTests+MethodArgument" time="0.014">
       <test name="CommandLineTests+MethodArgument.MultipleValidMethodArguments" type="CommandLineTests+MethodArgument" method="MultipleValidMethodArguments" time="0.0114543" result="Pass">

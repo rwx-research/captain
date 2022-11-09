@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"regexp"
 	"strings"
 	"time"
 
@@ -25,6 +26,7 @@ type rSpecV3Result struct {
 		Runtime         float64 `json:"run_time"`
 		Status          string  `json:"status"`
 		PendingMessage  string  `json:"pending_message"`
+		FilePath        string  `json:"file_path"`
 		Exception       struct {
 			Message string `json:"message"`
 		} `json:"exception"`
@@ -69,11 +71,19 @@ func (r *RSpecV3) Parse(content io.Reader) (map[string]testing.TestResult, error
 			id = example.FullDescription
 		}
 
+		file := example.ID
+		if file == "" {
+			file = example.FilePath
+		} else {
+			file = regexp.MustCompile(`\.rb(:.+|\[.+\])$`).ReplaceAllString(file, ".rb")
+		}
+
 		results[id] = testing.TestResult{
 			Description:   example.FullDescription,
 			Duration:      time.Duration(math.Round(example.Runtime * float64(time.Second))),
 			Status:        status,
 			StatusMessage: statusMessage,
+			Meta:          map[string]any{"id": id, "file": file},
 		}
 	}
 

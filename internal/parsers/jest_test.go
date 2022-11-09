@@ -59,6 +59,9 @@ var _ = Describe("Jest", func() {
 		Expect(result).To(HaveKey(key))
 		Expect(result[key].Description).To(Equal("is top-level passing"))
 		Expect(result[key].Duration).To(Equal(time.Duration(1000000000)))
+		Expect(result[key].Meta).To(Equal(
+			map[string]any{"file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"},
+		))
 	})
 
 	It("adds a status message to failed tests", func() {

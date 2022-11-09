@@ -70,6 +70,7 @@ func (j *Jest) Parse(content io.Reader) (map[string]testing.TestResult, error) {
 				Duration:      time.Duration(*assertionResult.Duration) * time.Second,
 				Status:        status,
 				StatusMessage: statusMessage,
+				Meta:          map[string]any{"file": testResult.Name},
 			}
 		}
 	}

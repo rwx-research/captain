@@ -60,6 +60,22 @@ var _ = Describe("RspecV3", func() {
 		Expect(result).To(HaveKey(key))
 		Expect(result[key].Description).To(Equal("Tests::Case has top-level passing tests"))
 		Expect(result[key].Duration).To(Equal(time.Duration(30795000)))
+		Expect(result[key].Meta).To(Equal(
+			map[string]any{"id": "./spec/examples/class_spec.rb[1:1]", "file": "./spec/examples/class_spec.rb"},
+		))
+	})
+
+	It("extracts the test metadata in absence of an id", func() {
+		key := "some string within a context behaves like shared examples has top-level passing tests"
+		Expect(result).To(HaveKey(key))
+		Expect(result[key].Description).To(Equal(key))
+		Expect(result[key].Duration).To(Equal(time.Duration(1960000)))
+		Expect(result[key].Meta).To(Equal(
+			map[string]any{
+				"id":   "some string within a context behaves like shared examples has top-level passing tests",
+				"file": "./spec/examples/shared_examples.rb",
+			},
+		))
 	})
 
 	It("adds a status message to failed tests", func() {

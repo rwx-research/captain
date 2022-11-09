@@ -60,6 +60,15 @@ var _ = Describe("XunitDotNetV2", func() {
 		Expect(result).To(HaveKey(key))
 		Expect(result[key].Description).To(Equal("NullAssertsTests+Null.Success"))
 		Expect(result[key].Duration).To(Equal(time.Duration(6370900)))
+		Expect(result[key].Meta).To(Equal(map[string]any{"assembly": "test.xunit.assert.dll"}))
+	})
+
+	It("removes file path prefixes from assembly names", func() {
+		key := "test.xunit.console.dll > CommandLineTests+MethodArgument.MultipleValidMethodArguments"
+		Expect(result).To(HaveKey(key))
+		Expect(result[key].Description).To(Equal("CommandLineTests+MethodArgument.MultipleValidMethodArguments"))
+		Expect(result[key].Duration).To(Equal(time.Duration(11454300)))
+		Expect(result[key].Meta).To(Equal(map[string]any{"assembly": "test.xunit.console.dll"}))
 	})
 
 	It("adds a status message to failed tests", func() {

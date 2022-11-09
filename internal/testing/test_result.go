@@ -9,4 +9,5 @@ type TestResult struct {
 	Duration      time.Duration
 	Status        TestStatus
 	StatusMessage string
+	Meta          map[string]any
 }

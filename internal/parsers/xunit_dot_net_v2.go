@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
+	"regexp"
 	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -53,11 +55,14 @@ func (x *XUnitDotNetV2) Parse(content io.Reader) (map[string]testing.TestResult,
 				statusMessage = assemblyTest.SkipReason
 			}
 
-			results[fmt.Sprintf("%s > %s", assembly.Name, assemblyTest.Name)] = testing.TestResult{
+			assemblyName := regexp.MustCompile(fmt.Sprintf(`[^%s]+$`, string(os.PathSeparator))).FindString(assembly.Name)
+
+			results[fmt.Sprintf("%s > %s", assemblyName, assemblyTest.Name)] = testing.TestResult{
 				Description:   assemblyTest.Name,
 				Duration:      time.Duration(math.Round(assemblyTest.Time * float64(time.Second))),
 				Status:        status,
 				StatusMessage: statusMessage,
+				Meta:          map[string]any{"assembly": assemblyName},
 			}
 		}
 	}

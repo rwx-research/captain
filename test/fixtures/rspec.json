@@ -1930,7 +1930,6 @@
       "pending_message": "for a reason"
     },
     {
-      "id": "./spec/examples/string_spec.rb[1:8:7:1]",
       "description": "has top-level passing tests",
       "full_description": "some string within a context behaves like shared examples has top-level passing tests",
       "status": "passed",
