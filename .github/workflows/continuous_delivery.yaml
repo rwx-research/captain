@@ -40,6 +40,14 @@ jobs:
           aws s3 mv ./captain "s3://terraform-20221109133415397600000001/$artifact_name"
         env:
           CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
+        if: ${{ matrix.os != 'windows' }}
+      - run: |
+          version=$(go run ./cmd/captain --version)
+          artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
+          aws s3 mv ./captain.exe "s3://terraform-20221109133415397600000001/$artifact_name"
+        env:
+          CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
+        if: ${{ matrix.os == 'windows' }}
 
   update-versions:
     name: Update versions.json
