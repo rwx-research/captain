@@ -59,7 +59,7 @@ var _ = Describe("Junit", func() {
 		Expect(result).To(HaveKey(key))
 		Expect(result[key].Description).To(Equal("reporting::test_dot_reporter::breaks_lines_with_many_dots"))
 		Expect(result[key].Duration).To(Equal(time.Duration(352000000)))
-		Expect(result[key].Meta).To(Equal(map[string]any{}))
+		Expect(result[key].Meta).To(BeNil())
 	})
 
 	It("adds a status message to failed tests", func() {

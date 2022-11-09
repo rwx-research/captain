@@ -30,6 +30,8 @@ type xUnitDotNetV2Assemblies struct {
 	} `xml:"assembly"`
 }
 
+var assemblyNameRegexp = regexp.MustCompile(fmt.Sprintf(`[^%s]+$`, string(os.PathSeparator)))
+
 // Parse attempts to parse the provided byte-stream as an XUnit test suite.
 func (x *XUnitDotNetV2) Parse(content io.Reader) (map[string]testing.TestResult, error) {
 	var assemblies xUnitDotNetV2Assemblies
@@ -55,8 +57,7 @@ func (x *XUnitDotNetV2) Parse(content io.Reader) (map[string]testing.TestResult,
 				statusMessage = assemblyTest.SkipReason
 			}
 
-			assemblyName := regexp.MustCompile(fmt.Sprintf(`[^%s]+$`, string(os.PathSeparator))).FindString(assembly.Name)
-
+			assemblyName := assemblyNameRegexp.FindString(assembly.Name)
 			results[fmt.Sprintf("%s > %s", assemblyName, assemblyTest.Name)] = testing.TestResult{
 				Description:   assemblyTest.Name,
 				Duration:      time.Duration(math.Round(assemblyTest.Time * float64(time.Second))),

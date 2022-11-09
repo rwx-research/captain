@@ -33,6 +33,8 @@ type rSpecV3Result struct {
 	} `json:"examples"`
 }
 
+var fileRegexp = regexp.MustCompile(`\.rb(:.+|\[.+\])$`)
+
 // Parse attempts to parse the provided byte-stream as an RSpec v3 test suite.
 func (r *RSpecV3) Parse(content io.Reader) (map[string]testing.TestResult, error) {
 	var RSpecResult rSpecV3Result
@@ -71,11 +73,9 @@ func (r *RSpecV3) Parse(content io.Reader) (map[string]testing.TestResult, error
 			id = example.FullDescription
 		}
 
-		file := example.ID
-		if file == "" {
-			file = example.FilePath
-		} else {
-			file = regexp.MustCompile(`\.rb(:.+|\[.+\])$`).ReplaceAllString(file, ".rb")
+		file := example.FilePath
+		if example.ID != "" {
+			file = fileRegexp.ReplaceAllString(example.ID, ".rb")
 		}
 
 		results[id] = testing.TestResult{
