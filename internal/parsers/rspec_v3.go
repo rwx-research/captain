@@ -14,7 +14,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
-// RSpecV3 is a RSpec parser for v3 artifacts.
+// RSpecV3 is a RSpec parser for v3 test results.
 type RSpecV3 struct{}
 
 type rSpecV3Result struct {
@@ -44,7 +44,7 @@ func (r *RSpecV3) Parse(content io.Reader) (map[string]testing.TestResult, error
 	}
 
 	if semver.Major(RSpecResult.Version) != "v3" {
-		return nil, errors.NewInputError("provided JSON document is not a RSpec v3 artifact")
+		return nil, errors.NewInputError("provided JSON document is not a RSpec v3 test results")
 	}
 
 	results := make(map[string]testing.TestResult)

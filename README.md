@@ -38,12 +38,12 @@ Flags:
 Use "captain [command] --help" for more information about a command.
 ```
 
-Currently, the CLI only supports uploading test artifacts from Github Actions.
+Currently, the CLI only supports uploading test results from Github Actions.
 For example, the following command will upload all JSON files to Captain when
 run in Github Actions:
 
 ```
-./captain upload results --suite-name RSpec **/*.json 
+./captain upload results --suite-name RSpec **/*.json
 ```
 
 ### Hidden options

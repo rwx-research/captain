@@ -22,10 +22,10 @@ var (
 			}
 
 			runConfig := cli.RunConfig{
-				Args:              args,
-				ArtifactGlob:      testResults,
-				FailOnUploadError: failOnUploadError,
-				SuiteName:         suiteName,
+				Args:                args,
+				TestResultsFileGlob: testResults,
+				FailOnUploadError:   failOnUploadError,
+				SuiteName:           suiteName,
 			}
 
 			return errors.Wrap(captain.RunSuite(cmd.Context(), runConfig))
@@ -45,7 +45,7 @@ func init() {
 		&failOnUploadError,
 		"fail-on-upload-error",
 		false,
-		"return a non-zero exit code in case the artifact upload fails",
+		"return a non-zero exit code in case the test results upload fails",
 	)
 
 	rootCmd.AddCommand(runCmd)

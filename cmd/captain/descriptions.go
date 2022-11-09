@@ -7,7 +7,7 @@ const (
 This CLI is a complementary component to the main WebUI at
 https://captain.build.`
 
-	descriptionUploadResults = `'captain upload results' will upload artifacts from various test runners, such
+	descriptionUploadResults = `'captain upload results' will upload test results from various test runners, such
 as JUnit or RSpec.
 
 Example use:

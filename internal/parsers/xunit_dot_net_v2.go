@@ -11,7 +11,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
-// XUnitDotNetV2 is an XUnit parser for v2 artifacts.
+// XUnitDotNetV2 is an XUnit parser for v2 test results.
 type XUnitDotNetV2 struct{}
 
 type xUnitDotNetV2Assemblies struct {

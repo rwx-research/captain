@@ -8,13 +8,12 @@ import (
 	"github.com/rwx-research/captain-cli/internal/fs"
 )
 
-// Artifact is a build- or test-artifact as defined by the Captain API.
-type Artifact struct {
-	ExternalID   uuid.UUID  `json:"external_identifier"`
-	FD           fs.File    `json:"-"`
-	OriginalPath string     `json:"original_path"`
-	Parser       ParserType `json:"format"`
-
+// TestResultsFile is a build- or test-artifact as defined by the Captain API.
+type TestResultsFile struct {
+	ExternalID     uuid.UUID  `json:"external_identifier"`
+	FD             fs.File    `json:"-"`
+	OriginalPath   string     `json:"original_path"`
+	Parser         ParserType `json:"format"`
 	uploadURL      *url.URL
 	captainID      string
 	s3uploadStatus int

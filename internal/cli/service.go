@@ -69,12 +69,12 @@ func (s Service) Parse(ctx context.Context, filepaths []string) error {
 func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error) {
 	results := make(map[string]testing.TestResult)
 
-	for _, artifactPath := range filepaths {
+	for _, testResultsFilePath := range filepaths {
 		var result map[string]testing.TestResult
 
-		s.Log.Debugf("Attempting to parse %q", artifactPath)
+		s.Log.Debugf("Attempting to parse %q", testResultsFilePath)
 
-		fd, err := s.FileSystem.Open(artifactPath)
+		fd, err := s.FileSystem.Open(testResultsFilePath)
 		if err != nil {
 			return nil, s.logError(errors.NewSystemError("unable to open file: %s", err))
 		}
@@ -83,7 +83,7 @@ func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error
 		for _, parser := range s.Parsers {
 			result, err = parser.Parse(fd)
 			if err != nil {
-				s.Log.Debugf("unable to parse %q using %T: %s", artifactPath, parser, err)
+				s.Log.Debugf("unable to parse %q using %T: %s", testResultsFilePath, parser, err)
 
 				if _, err := fd.Seek(0, io.SeekStart); err != nil {
 					return nil, s.logError(errors.NewSystemError("unable to read from file: %s", err))
@@ -92,12 +92,14 @@ func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error
 				continue
 			}
 
-			s.Log.Debugf("Successfully parsed %q using %T", artifactPath, parser)
+			s.Log.Debugf("Successfully parsed %q using %T", testResultsFilePath, parser)
 			break
 		}
 
 		if result == nil {
-			return nil, s.logError(errors.NewInputError("unable to parse %q with any of the available parser", artifactPath))
+			return nil, s.logError(
+				errors.NewInputError("unable to parse %q with any of the available parser", testResultsFilePath),
+			)
 		}
 
 		for id, testResult := range result {
@@ -150,7 +152,7 @@ func (s Service) runCommand(ctx context.Context, args []string) error {
 	return nil
 }
 
-// RunSuite runs the specified build- or test-suite and optionally uploads the resulting artifact.
+// RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
 func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	var wg sync.WaitGroup
 	var quarantinedTestIDs []string
@@ -182,26 +184,26 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		return errors.Wrap(runErr)
 	}
 
-	// Return early if not artifacts were defined over the CLI. If there was an error during execution, the exit Code is
-	// being passed along.
-	if cfg.ArtifactGlob == "" {
-		s.Log.Debug("No artifact path provided, quitting")
+	// Return early if not testResultsFiles were defined over the CLI. If there was an error
+	// during execution, the exit Code is being passed along.
+	if cfg.TestResultsFileGlob == "" {
+		s.Log.Debug("No testResultsFile path provided, quitting")
 		return runErr
 	}
 
-	artifacts, err := filepath.Glob(cfg.ArtifactGlob)
+	testResultsFiles, err := filepath.Glob(cfg.TestResultsFileGlob)
 	if err != nil {
 		return s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
 	}
 
-	// Start uploading artifacts in the background
+	// Start uploading testResultsFiles in the background
 	wg.Add(1)
 	var uploadError error
 
 	go func() {
 		// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
 		// not affect the exit code.
-		uploadError = s.UploadTestResults(ctx, cfg.SuiteName, artifacts)
+		uploadError = s.UploadTestResults(ctx, cfg.SuiteName, testResultsFiles)
 		wg.Done()
 	}()
 
@@ -210,8 +212,8 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		s.Log.Warnf("Unable to fetch list of quarantined tests from Captain: %s", err)
 	}
 
-	// Parse test artifacts
-	testResults, err := s.parse(artifacts)
+	// Parse test testResultsFiles
+	testResults, err := s.parse(testResultsFiles)
 	if err != nil {
 		return s.logError(errors.Wrap(err))
 	}
@@ -223,7 +225,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		}
 	}
 
-	// This protects against an edge-case where the test-suite fails before writing any results to an artifact.
+	// This protects against an edge-case where the test-suite fails before writing any results to a test results file.
 	if runErr != nil && len(failedTests) == 0 {
 		return runErr
 	}
@@ -252,7 +254,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 // UploadTestResults is the implementation of `captain upload results`. It takes a number of filepaths, checks that
 // files exist and uploads them using the provided API.
 func (s Service) UploadTestResults(ctx context.Context, testSuite string, filepaths []string) error {
-	newArtifacts := make([]api.Artifact, len(filepaths))
+	newTestResultsFiles := make([]api.TestResultsFile, len(filepaths))
 
 	if len(filepaths) == 0 {
 		s.Log.Debug("No paths to test results provided")
@@ -307,7 +309,7 @@ func (s Service) UploadTestResults(ctx context.Context, testSuite string, filepa
 			break
 		}
 
-		newArtifacts[i] = api.Artifact{
+		newTestResultsFiles[i] = api.TestResultsFile{
 			ExternalID:   id,
 			FD:           fd,
 			OriginalPath: filePath,
@@ -315,7 +317,7 @@ func (s Service) UploadTestResults(ctx context.Context, testSuite string, filepa
 		}
 	}
 
-	if err := s.API.UploadArtifacts(ctx, testSuite, newArtifacts); err != nil {
+	if err := s.API.UploadTestResults(ctx, testSuite, newTestResultsFiles); err != nil {
 		return s.logError(errors.WithMessage("unable to upload test result: %s", err))
 	}
 

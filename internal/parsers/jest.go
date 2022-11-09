@@ -36,7 +36,7 @@ func (j *Jest) Parse(content io.Reader) (map[string]testing.TestResult, error) {
 	}
 
 	if testSuite.StartTime == nil {
-		return nil, errors.NewInputError("provided JSON document is not a Jest artifact")
+		return nil, errors.NewInputError("provided JSON document is not a Jest test results")
 	}
 
 	results := make(map[string]testing.TestResult)

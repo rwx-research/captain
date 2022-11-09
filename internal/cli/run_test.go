@@ -22,20 +22,20 @@ import (
 
 var _ = Describe("Run", func() {
 	var (
-		arg          string
-		artifactPath string
-		err          error
-		ctx          context.Context
-		mockCommand  *mocks.Command
-		service      cli.Service
+		arg                 string
+		testResultsFilePath string
+		err                 error
+		ctx                 context.Context
+		mockCommand         *mocks.Command
+		service             cli.Service
 
-		artifactUploaded, commandStarted, commandFinished, fetchedQuarantinedTests, fileOpened bool
+		testResultsFileUploaded, commandStarted, commandFinished, fetchedQuarantinedTests, fileOpened bool
 	)
 
 	BeforeEach(func() {
 		ctx = context.Background()
 		err = nil
-		artifactUploaded = false
+		testResultsFileUploaded = false
 		commandStarted = false
 		commandFinished = false
 		fetchedQuarantinedTests = false
@@ -68,10 +68,10 @@ var _ = Describe("Run", func() {
 
 		// Caution: This needs to be an existing file. We don't actually read from it, however the glob expansion
 		// functionality is not mocked, i.e. it still uses the file-system.
-		artifactPath = "../../go.mod"
+		testResultsFilePath = "../../go.mod"
 
 		mockOpen := func(name string) (fs.File, error) {
-			Expect(name).To(Equal(artifactPath))
+			Expect(name).To(Equal(testResultsFilePath))
 			fileOpened = true
 			file := new(mocks.File)
 			file.Reader = strings.NewReader("")
@@ -84,9 +84,9 @@ var _ = Describe("Run", func() {
 
 	JustBeforeEach(func() {
 		runConfig := cli.RunConfig{
-			Args:         []string{arg},
-			ArtifactGlob: artifactPath,
-			SuiteName:    "test",
+			Args:                []string{arg},
+			TestResultsFileGlob: testResultsFilePath,
+			SuiteName:           "test",
 		}
 
 		err = service.RunSuite(ctx, runConfig)
@@ -94,12 +94,12 @@ var _ = Describe("Run", func() {
 
 	Context("under expected conditions", func() {
 		BeforeEach(func() {
-			mockUploadArtifacts := func(ctx context.Context, testSuite string, artifacts []api.Artifact) error {
-				Expect(artifacts).To(HaveLen(1))
-				artifactUploaded = true
+			mockUploadTestResults := func(ctx context.Context, testSuite string, testResultsFiles []api.TestResultsFile) error {
+				Expect(testResultsFiles).To(HaveLen(1))
+				testResultsFileUploaded = true
 				return nil
 			}
-			service.API.(*mocks.API).MockUploadArtifacts = mockUploadArtifacts
+			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
 
 			mockGetQuarantinedTestIDs := func(ctx context.Context) ([]string, error) {
 				fetchedQuarantinedTests = true
@@ -129,12 +129,12 @@ var _ = Describe("Run", func() {
 			Expect(fetchedQuarantinedTests).To(BeTrue())
 		})
 
-		It("reads the artifact file", func() {
+		It("reads the test results file", func() {
 			Expect(fileOpened).To(BeTrue())
 		})
 
-		It("uploads the artifact", func() {
-			Expect(artifactUploaded).To(BeTrue())
+		It("uploads the test results file", func() {
+			Expect(testResultsFileUploaded).To(BeTrue())
 		})
 	})
 

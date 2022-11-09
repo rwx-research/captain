@@ -12,7 +12,7 @@ import (
 )
 
 // JUnit is a JUnit parser.
-// Note: this also happens to work for Cypress artifacts.
+// Note: this also happens to work for Cypress test results.
 type JUnit struct{}
 
 type jUnitTestSuite struct {
