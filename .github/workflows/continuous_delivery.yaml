@@ -35,7 +35,7 @@ jobs:
           role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
           role-duration-seconds: 900
       - run: |
-          version=$(./captain --version) 
+          version=$(go run ./cmd/captain --version)
           artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
           aws s3 mv ./captain "s3://rwx-research-cli-releases-2210202003/$artifact_name"
         env:
