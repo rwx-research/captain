@@ -9,11 +9,11 @@ import (
 
 // Parser is a mocked implementation of 'cli.Parser'.
 type Parser struct {
-	MockParse func(io.Reader) (map[string]testing.TestResult, error)
+	MockParse func(io.Reader) ([]testing.TestResult, error)
 }
 
 // Parse either calls the configured mock of itself or returns an error if that doesn't exist.
-func (p *Parser) Parse(reader io.Reader) (map[string]testing.TestResult, error) {
+func (p *Parser) Parse(reader io.Reader) ([]testing.TestResult, error) {
 	if p.MockParse != nil {
 		return p.MockParse(reader)
 	}

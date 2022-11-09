@@ -46,14 +46,15 @@ func (s Service) Parse(ctx context.Context, filepaths []string) error {
 		return errors.Wrap(err)
 	}
 
-	rawOutput := make(map[string]testResult)
-	for id, result := range results {
-		rawOutput[id] = testResult{
+	rawOutput := make([]testResult, 0)
+	for _, result := range results {
+		rawOutput = append(rawOutput, testResult{
 			Description:   result.Description,
 			Duration:      result.Duration,
 			Status:        testStatus(result.Status),
 			StatusMessage: result.StatusMessage,
-		}
+			Meta:          result.Meta,
+		})
 	}
 
 	formattedOutput, err := json.MarshalIndent(rawOutput, "", "  ")
@@ -66,11 +67,11 @@ func (s Service) Parse(ctx context.Context, filepaths []string) error {
 	return nil
 }
 
-func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error) {
-	results := make(map[string]testing.TestResult)
+func (s Service) parse(filepaths []string) ([]testing.TestResult, error) {
+	results := make([]testing.TestResult, 0)
 
 	for _, testResultsFilePath := range filepaths {
-		var result map[string]testing.TestResult
+		var result []testing.TestResult
 
 		s.Log.Debugf("Attempting to parse %q", testResultsFilePath)
 
@@ -102,9 +103,7 @@ func (s Service) parse(filepaths []string) (map[string]testing.TestResult, error
 			)
 		}
 
-		for id, testResult := range result {
-			results[id] = testResult
-		}
+		results = append(results, result...)
 	}
 
 	return results, nil
@@ -150,6 +149,31 @@ func (s Service) runCommand(ctx context.Context, args []string) error {
 	}
 
 	return nil
+}
+
+func (s Service) isQuarantined(failedTest testing.TestResult, quarantinedTestCases []api.QuarantinedTestCase) bool {
+	for _, quarantinedTestCase := range quarantinedTestCases {
+		compositeIdentifier, err := failedTest.Identify(
+			quarantinedTestCase.IdentityComponents,
+			quarantinedTestCase.StrictIdentity,
+		)
+		if err != nil {
+			s.Log.Debugf("%v does not quarantine %v because %v", quarantinedTestCase, failedTest, err.Error())
+			continue
+		}
+
+		if compositeIdentifier == quarantinedTestCase.CompositeIdentifier {
+			s.Log.Debugf(
+				"%v quarantines %v because they share the same composite identifier (%v)",
+				quarantinedTestCase,
+				failedTest,
+				compositeIdentifier,
+			)
+			return true
+		}
+	}
+
+	return false
 }
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
@@ -218,10 +242,10 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		return s.logError(errors.Wrap(err))
 	}
 
-	failedTests := make(map[string]struct{})
-	for id, testResult := range testResults {
+	failedTests := make([]testing.TestResult, 0)
+	for _, testResult := range testResults {
 		if testResult.Status == testing.TestStatusFailed {
-			failedTests[id] = struct{}{}
+			failedTests = append(failedTests, testResult)
 		}
 	}
 
@@ -230,17 +254,23 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		return runErr
 	}
 
-	// Remove quarantined IDs from list of failed tests
-	for _, quarantinedTestID := range quarantinedTestCases {
-		s.Log.Debugf("ignoring test results for %q due to quarantine", quarantinedTestID)
-		delete(failedTests, quarantinedTestID.CompositeIdentifier)
+	remainingFailedTests := make([]testing.TestResult, 0)
+	for _, failedTest := range failedTests {
+		s.Log.Debugf("attempting to quarantine failed test: %v", failedTest)
+
+		if s.isQuarantined(failedTest, quarantinedTestCases) {
+			s.Log.Debugf("quarantined failed test: %v", failedTest)
+		} else {
+			s.Log.Debugf("did not quarantine failed test: %v", failedTest)
+			remainingFailedTests = append(remainingFailedTests, failedTest)
+		}
 	}
 
 	// Wait until raw version of test results was uploaded
 	wg.Wait()
 
 	// Return original exit code in case there are failed tests.
-	if runErr != nil && len(failedTests) > 0 {
+	if runErr != nil && len(remainingFailedTests) > 0 {
 		return runErr
 	}
 

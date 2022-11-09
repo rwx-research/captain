@@ -36,7 +36,7 @@ type rSpecV3Result struct {
 var fileRegexp = regexp.MustCompile(`\.rb(:.+|\[.+\])$`)
 
 // Parse attempts to parse the provided byte-stream as an RSpec v3 test suite.
-func (r *RSpecV3) Parse(content io.Reader) (map[string]testing.TestResult, error) {
+func (r *RSpecV3) Parse(content io.Reader) ([]testing.TestResult, error) {
 	var RSpecResult rSpecV3Result
 
 	if err := json.NewDecoder(content).Decode(&RSpecResult); err != nil {
@@ -51,8 +51,7 @@ func (r *RSpecV3) Parse(content io.Reader) (map[string]testing.TestResult, error
 		return nil, errors.NewInputError("provided JSON document is not a RSpec v3 test results")
 	}
 
-	results := make(map[string]testing.TestResult)
-
+	results := make([]testing.TestResult, 0)
 	for _, example := range RSpecResult.Examples {
 		var status testing.TestStatus
 		var statusMessage string
@@ -78,13 +77,13 @@ func (r *RSpecV3) Parse(content io.Reader) (map[string]testing.TestResult, error
 			file = fileRegexp.ReplaceAllString(example.ID, ".rb")
 		}
 
-		results[id] = testing.TestResult{
+		results = append(results, testing.TestResult{
 			Description:   example.FullDescription,
 			Duration:      time.Duration(math.Round(example.Runtime * float64(time.Second))),
 			Status:        status,
 			StatusMessage: statusMessage,
 			Meta:          map[string]any{"id": id, "file": file},
-		}
+		})
 	}
 
 	return results, nil

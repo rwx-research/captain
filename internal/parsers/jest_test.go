@@ -16,7 +16,7 @@ var _ = Describe("Jest", func() {
 		err     error
 		fixture *os.File
 		parser  *parsers.Jest
-		result  map[string]testing.TestResult
+		result  []testing.TestResult
 	)
 
 	BeforeEach(func() {
@@ -55,13 +55,21 @@ var _ = Describe("Jest", func() {
 	})
 
 	It("extracts the test metadata", func() {
-		key := "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js > is top-level passing"
-		Expect(result).To(HaveKey(key))
-		Expect(result[key].Description).To(Equal("is top-level passing"))
-		Expect(result[key].Duration).To(Equal(time.Duration(1000000000)))
-		Expect(result[key].Meta).To(Equal(
-			map[string]any{"file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"},
-		))
+		key := "is top-level passing"
+
+		for _, testResult := range result {
+			if testResult.Description != key {
+				continue
+			}
+
+			Expect(testResult.Duration).To(Equal(time.Duration(1000000000)))
+			Expect(testResult.Meta).To(Equal(
+				map[string]any{"file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"},
+			))
+			return
+		}
+
+		Expect(true).To(Equal(false), "Unreachable")
 	})
 
 	It("adds a status message to failed tests", func() {

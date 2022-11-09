@@ -16,7 +16,7 @@ var _ = Describe("Junit", func() {
 		err     error
 		fixture *os.File
 		parser  *parsers.JUnit
-		result  map[string]testing.TestResult
+		result  []testing.TestResult
 	)
 
 	BeforeEach(func() {
@@ -47,19 +47,27 @@ var _ = Describe("Junit", func() {
 			}
 		}
 
-		Expect(result).To(HaveLen(71), "total test count")
+		Expect(result).To(HaveLen(72), "total test count")
 		Expect(failedTestCount).To(Equal(3), "failed tests count")
 		Expect(pendingTestCount).To(Equal(2), "pending test count")
-		Expect(successfulTestCount).To(Equal(66), "successful test count")
+		Expect(successfulTestCount).To(Equal(67), "successful test count")
 		Expect(unknownStatusCount).To(BeZero())
 	})
 
 	It("extracts the test metadata", func() {
 		key := "reporting::test_dot_reporter::breaks_lines_with_many_dots"
-		Expect(result).To(HaveKey(key))
-		Expect(result[key].Description).To(Equal("reporting::test_dot_reporter::breaks_lines_with_many_dots"))
-		Expect(result[key].Duration).To(Equal(time.Duration(352000000)))
-		Expect(result[key].Meta).To(BeNil())
+
+		for _, testResult := range result {
+			if testResult.Description != key {
+				continue
+			}
+
+			Expect(testResult.Duration).To(Equal(time.Duration(352000000)))
+			Expect(testResult.Meta).To(BeNil())
+			return
+		}
+
+		Expect(true).To(Equal(false), "Unreachable")
 	})
 
 	It("adds a status message to failed tests", func() {

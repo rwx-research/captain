@@ -31,14 +31,14 @@ type jUnitMessage struct {
 }
 
 // Parse attempts to parse the provided byte-stream as a JUnit test suite.
-func (j *JUnit) Parse(content io.Reader) (map[string]testing.TestResult, error) {
+func (j *JUnit) Parse(content io.Reader) ([]testing.TestResult, error) {
 	var testSuite jUnitTestSuite
 
 	if err := xml.NewDecoder(content).Decode(&testSuite); err != nil {
 		return nil, errors.NewInputError("unable to parse document as XML: %s", err)
 	}
 
-	results := make(map[string]testing.TestResult)
+	results := make([]testing.TestResult, 0)
 	for _, testCase := range testSuite.TestCases {
 		status := testing.TestStatusSuccessful
 		statusMessages := make([]string, 0)
@@ -58,12 +58,12 @@ func (j *JUnit) Parse(content io.Reader) (map[string]testing.TestResult, error) 
 			statusMessages = []string{testCase.Skipped.Message}
 		}
 
-		results[testCase.Name] = testing.TestResult{
+		results = append(results, testing.TestResult{
 			Description:   testCase.Name,
 			Duration:      time.Duration(math.Round(testCase.Time * float64(time.Second))),
 			Status:        status,
 			StatusMessage: strings.Join(statusMessages, "\n"),
-		}
+		})
 	}
 
 	return results, nil

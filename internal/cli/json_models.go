@@ -8,10 +8,11 @@ import (
 )
 
 type testResult struct {
-	Description   string        `json:"description"`
-	Duration      time.Duration `json:"duration"`
-	Status        testStatus    `json:"status"`
-	StatusMessage string        `json:"status_message,omitempty"`
+	Description   string         `json:"description"`
+	Duration      time.Duration  `json:"duration"`
+	Status        testStatus     `json:"status"`
+	StatusMessage string         `json:"status_message,omitempty"`
+	Meta          map[string]any `json:"meta"`
 }
 
 type testStatus testing.TestStatus

@@ -16,7 +16,7 @@ var _ = Describe("RspecV3", func() {
 		err     error
 		fixture *os.File
 		parser  *parsers.RSpecV3
-		result  map[string]testing.TestResult
+		result  []testing.TestResult
 	)
 
 	BeforeEach(func() {
@@ -56,26 +56,42 @@ var _ = Describe("RspecV3", func() {
 	})
 
 	It("extracts the test metadata", func() {
-		key := "./spec/examples/class_spec.rb[1:1]"
-		Expect(result).To(HaveKey(key))
-		Expect(result[key].Description).To(Equal("Tests::Case has top-level passing tests"))
-		Expect(result[key].Duration).To(Equal(time.Duration(30795000)))
-		Expect(result[key].Meta).To(Equal(
-			map[string]any{"id": "./spec/examples/class_spec.rb[1:1]", "file": "./spec/examples/class_spec.rb"},
-		))
+		key := "Tests::Case has top-level passing tests"
+
+		for _, testResult := range result {
+			if testResult.Description != key {
+				continue
+			}
+
+			Expect(testResult.Duration).To(Equal(time.Duration(30795000)))
+			Expect(testResult.Meta).To(Equal(
+				map[string]any{"id": "./spec/examples/class_spec.rb[1:1]", "file": "./spec/examples/class_spec.rb"},
+			))
+			return
+		}
+
+		Expect(true).To(Equal(false), "Unreachable")
 	})
 
 	It("extracts the test metadata in absence of an id", func() {
 		key := "some string within a context behaves like shared examples has top-level passing tests"
-		Expect(result).To(HaveKey(key))
-		Expect(result[key].Description).To(Equal(key))
-		Expect(result[key].Duration).To(Equal(time.Duration(1960000)))
-		Expect(result[key].Meta).To(Equal(
-			map[string]any{
-				"id":   "some string within a context behaves like shared examples has top-level passing tests",
-				"file": "./spec/examples/shared_examples.rb",
-			},
-		))
+
+		for _, testResult := range result {
+			if testResult.Description != key {
+				continue
+			}
+
+			Expect(testResult.Duration).To(Equal(time.Duration(1960000)))
+			Expect(testResult.Meta).To(Equal(
+				map[string]any{
+					"id":   "some string within a context behaves like shared examples has top-level passing tests",
+					"file": "./spec/examples/shared_examples.rb",
+				},
+			))
+			return
+		}
+
+		Expect(true).To(Equal(false), "Unreachable")
 	})
 
 	It("adds a status message to failed tests", func() {

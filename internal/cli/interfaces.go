@@ -24,7 +24,7 @@ type FileSystem interface {
 
 // Parser is the interface a potential parser needs to implement.
 type Parser interface {
-	Parse(io.Reader) (map[string]testing.TestResult, error)
+	Parse(io.Reader) ([]testing.TestResult, error)
 }
 
 // TaskRunner is an abstraction over various task-runners / execution environments.

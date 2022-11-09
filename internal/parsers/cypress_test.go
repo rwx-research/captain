@@ -16,7 +16,7 @@ var _ = Describe("Cypress", func() {
 		err     error
 		fixture *os.File
 		parser  *parsers.JUnit
-		result  map[string]testing.TestResult
+		result  []testing.TestResult
 	)
 
 	BeforeEach(func() {
@@ -59,12 +59,17 @@ var _ = Describe("Cypress", func() {
 	It("extracts the test metadata", func() {
 		key := "Login Flow When you are logged out and visit an authenticated path, you are redirected to the " +
 			"authenticated path after login"
-		Expect(result).To(HaveKey(key))
-		Expect(result[key].Description).To(Equal(
-			"Login Flow When you are logged out and visit an authenticated path, you are redirected to the authenticated " +
-				"path after login",
-		))
-		Expect(result[key].Duration).To(Equal(time.Duration(10841000000)))
+
+		for _, testResult := range result {
+			if testResult.Description != key {
+				continue
+			}
+
+			Expect(testResult.Duration).To(Equal(time.Duration(10841000000)))
+			return
+		}
+
+		Expect(true).To(Equal(false), "Unreachable")
 	})
 
 	It("adds a status message to failed tests", func() {

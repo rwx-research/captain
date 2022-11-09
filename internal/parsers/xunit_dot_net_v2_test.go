@@ -16,7 +16,7 @@ var _ = Describe("XunitDotNetV2", func() {
 		err     error
 		fixture *os.File
 		parser  *parsers.XUnitDotNetV2
-		result  map[string]testing.TestResult
+		result  []testing.TestResult
 	)
 
 	BeforeEach(func() {
@@ -56,19 +56,35 @@ var _ = Describe("XunitDotNetV2", func() {
 	})
 
 	It("extracts the test metadata", func() {
-		key := "test.xunit.assert.dll > NullAssertsTests+Null.Success"
-		Expect(result).To(HaveKey(key))
-		Expect(result[key].Description).To(Equal("NullAssertsTests+Null.Success"))
-		Expect(result[key].Duration).To(Equal(time.Duration(6370900)))
-		Expect(result[key].Meta).To(Equal(map[string]any{"assembly": "test.xunit.assert.dll"}))
+		key := "NullAssertsTests+Null.Success"
+
+		for _, testResult := range result {
+			if testResult.Description != key {
+				continue
+			}
+
+			Expect(testResult.Duration).To(Equal(time.Duration(6370900)))
+			Expect(testResult.Meta).To(Equal(map[string]any{"assembly": "test.xunit.assert.dll"}))
+			return
+		}
+
+		Expect(true).To(Equal(false), "Unreachable")
 	})
 
 	It("removes file path prefixes from assembly names", func() {
-		key := "test.xunit.console.dll > CommandLineTests+MethodArgument.MultipleValidMethodArguments"
-		Expect(result).To(HaveKey(key))
-		Expect(result[key].Description).To(Equal("CommandLineTests+MethodArgument.MultipleValidMethodArguments"))
-		Expect(result[key].Duration).To(Equal(time.Duration(11454300)))
-		Expect(result[key].Meta).To(Equal(map[string]any{"assembly": "test.xunit.console.dll"}))
+		key := "CommandLineTests+MethodArgument.MultipleValidMethodArguments"
+
+		for _, testResult := range result {
+			if testResult.Description != key {
+				continue
+			}
+
+			Expect(testResult.Duration).To(Equal(time.Duration(11454300)))
+			Expect(testResult.Meta).To(Equal(map[string]any{"assembly": "test.xunit.console.dll"}))
+			return
+		}
+
+		Expect(true).To(Equal(false), "Unreachable")
 	})
 
 	It("adds a status message to failed tests", func() {

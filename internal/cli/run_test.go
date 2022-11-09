@@ -62,8 +62,8 @@ var _ = Describe("Run", func() {
 		}
 		service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
 
-		service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (map[string]testing.TestResult, error) {
-			return make(map[string]testing.TestResult), nil
+		service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) ([]testing.TestResult, error) {
+			return []testing.TestResult{}, nil
 		}
 
 		// Caution: This needs to be an existing file. We don't actually read from it, however the glob expansion
@@ -143,24 +143,21 @@ var _ = Describe("Run", func() {
 
 	Context("with an erroring command", func() {
 		var (
-			exitCode     int
-			failedTestID string
+			exitCode              int
+			failedTestDescription string
 		)
 
 		BeforeEach(func() {
 			exitCode = int(GinkgoRandomSeed() + 1)
-			failedTestID = fmt.Sprintf("%d", GinkgoRandomSeed()+2)
+			failedTestDescription = fmt.Sprintf("%d", GinkgoRandomSeed()+2)
 
 			mockGetExitStatusFromError := func(error) (int, error) {
 				return exitCode, nil
 			}
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
-			service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (map[string]testing.TestResult, error) {
-				result := make(map[string]testing.TestResult)
-				result[failedTestID] = testing.TestResult{Status: testing.TestStatusFailed}
-
-				return result, nil
+			service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) ([]testing.TestResult, error) {
+				return []testing.TestResult{{Description: failedTestDescription, Status: testing.TestStatusFailed}}, nil
 			}
 		})
 
@@ -179,7 +176,13 @@ var _ = Describe("Run", func() {
 					ctx context.Context,
 					testSuiteIdentifier string,
 				) ([]api.QuarantinedTestCase, error) {
-					return []api.QuarantinedTestCase{{CompositeIdentifier: failedTestID}}, nil
+					return []api.QuarantinedTestCase{
+						{
+							CompositeIdentifier: failedTestDescription,
+							IdentityComponents:  []string{"description"},
+							StrictIdentity:      true,
+						},
+					}, nil
 				}
 				service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
 			})

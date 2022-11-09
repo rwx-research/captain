@@ -33,14 +33,14 @@ type xUnitDotNetV2Assemblies struct {
 var assemblyNameRegexp = regexp.MustCompile(fmt.Sprintf(`[^%s]+$`, string(os.PathSeparator)))
 
 // Parse attempts to parse the provided byte-stream as an XUnit test suite.
-func (x *XUnitDotNetV2) Parse(content io.Reader) (map[string]testing.TestResult, error) {
+func (x *XUnitDotNetV2) Parse(content io.Reader) ([]testing.TestResult, error) {
 	var assemblies xUnitDotNetV2Assemblies
 
 	if err := xml.NewDecoder(content).Decode(&assemblies); err != nil {
 		return nil, errors.NewInputError("unable to parse document as XML: %s", err)
 	}
 
-	results := make(map[string]testing.TestResult)
+	results := make([]testing.TestResult, 0)
 	for _, assembly := range assemblies.Assemblies {
 		for _, assemblyTest := range assembly.Tests {
 			var status testing.TestStatus
@@ -58,13 +58,13 @@ func (x *XUnitDotNetV2) Parse(content io.Reader) (map[string]testing.TestResult,
 			}
 
 			assemblyName := assemblyNameRegexp.FindString(assembly.Name)
-			results[fmt.Sprintf("%s > %s", assemblyName, assemblyTest.Name)] = testing.TestResult{
+			results = append(results, testing.TestResult{
 				Description:   assemblyTest.Name,
 				Duration:      time.Duration(math.Round(assemblyTest.Time * float64(time.Second))),
 				Status:        status,
 				StatusMessage: statusMessage,
 				Meta:          map[string]any{"assembly": assemblyName},
-			}
+			})
 		}
 	}
 

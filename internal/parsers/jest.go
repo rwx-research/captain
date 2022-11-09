@@ -28,7 +28,7 @@ type jestTestSuite struct {
 }
 
 // Parse attempts to parse the provided byte-stream as a Jest test suite.
-func (j *Jest) Parse(content io.Reader) (map[string]testing.TestResult, error) {
+func (j *Jest) Parse(content io.Reader) ([]testing.TestResult, error) {
 	var testSuite jestTestSuite
 
 	if err := json.NewDecoder(content).Decode(&testSuite); err != nil {
@@ -39,7 +39,7 @@ func (j *Jest) Parse(content io.Reader) (map[string]testing.TestResult, error) {
 		return nil, errors.NewInputError("provided JSON document is not a Jest test results")
 	}
 
-	results := make(map[string]testing.TestResult)
+	results := make([]testing.TestResult, 0)
 	for _, testResult := range testSuite.TestResults {
 		for _, assertionResult := range testResult.AssertionResults {
 			var status testing.TestStatus
@@ -47,8 +47,6 @@ func (j *Jest) Parse(content io.Reader) (map[string]testing.TestResult, error) {
 
 			description := assertionResult.AncestorTitles
 			description = append(description, assertionResult.Title)
-
-			id := append([]string{testResult.Name}, description...)
 
 			switch assertionResult.Status {
 			case "passed":
@@ -65,13 +63,13 @@ func (j *Jest) Parse(content io.Reader) (map[string]testing.TestResult, error) {
 				assertionResult.Duration = &null
 			}
 
-			results[strings.Join(id, " > ")] = testing.TestResult{
+			results = append(results, testing.TestResult{
 				Description:   strings.Join(description, " > "),
 				Duration:      time.Duration(*assertionResult.Duration) * time.Second,
 				Status:        status,
 				StatusMessage: statusMessage,
 				Meta:          map[string]any{"file": testResult.Name},
-			}
+			})
 		}
 	}
 
