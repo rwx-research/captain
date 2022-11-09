@@ -101,11 +101,14 @@ var _ = Describe("Run", func() {
 			}
 			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
 
-			mockGetQuarantinedTestIDs := func(ctx context.Context) ([]string, error) {
+			mockGetQuarantinedTestCases := func(
+				ctx context.Context,
+				testSuiteIdentifier string,
+			) ([]api.QuarantinedTestCase, error) {
 				fetchedQuarantinedTests = true
 				return nil, nil
 			}
-			service.API.(*mocks.API).MockGetQuarantinedTestIDs = mockGetQuarantinedTestIDs
+			service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
 
 			mockCommand.MockWait = func() error {
 				commandFinished = true
@@ -172,10 +175,13 @@ var _ = Describe("Run", func() {
 
 		Context("all tests quarantined", func() {
 			BeforeEach(func() {
-				mockGetQuarantinedTestIDs := func(ctx context.Context) ([]string, error) {
-					return []string{failedTestID}, nil
+				mockGetQuarantinedTestCases := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) ([]api.QuarantinedTestCase, error) {
+					return []api.QuarantinedTestCase{{CompositeIdentifier: failedTestID}}, nil
 				}
-				service.API.(*mocks.API).MockGetQuarantinedTestIDs = mockGetQuarantinedTestIDs
+				service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
 			})
 
 			It("doesn't return an error", func() {

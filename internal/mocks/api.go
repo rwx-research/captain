@@ -9,17 +9,20 @@ import (
 
 // API is a mocked implementation of 'api.Client'.
 type API struct {
-	MockGetQuarantinedTestIDs func(context.Context) ([]string, error)
-	MockUploadTestResults     func(context.Context, string, []api.TestResultsFile) error
+	MockGetQuarantinedTestCases func(context.Context, string) ([]api.QuarantinedTestCase, error)
+	MockUploadTestResults       func(context.Context, string, []api.TestResultsFile) error
 }
 
-// GetQuarantinedTestIDs either calls the configured mock of itself or returns an error if that doesn't exist.
-func (a *API) GetQuarantinedTestIDs(ctx context.Context) ([]string, error) {
-	if a.MockGetQuarantinedTestIDs != nil {
-		return a.MockGetQuarantinedTestIDs(ctx)
+// GetQuarantinedTestCases either calls the configured mock of itself or returns an error if that doesn't exist.
+func (a *API) GetQuarantinedTestCases(
+	ctx context.Context,
+	testSuiteIdentifier string,
+) ([]api.QuarantinedTestCase, error) {
+	if a.MockGetQuarantinedTestCases != nil {
+		return a.MockGetQuarantinedTestCases(ctx, testSuiteIdentifier)
 	}
 
-	return nil, errors.NewConfigurationError("MockGetQuarantinedTestIDs was not configured")
+	return nil, errors.NewConfigurationError("MockGetQuarantinedTestCases was not configured")
 }
 
 // UploadTestResults either calls the configured mock of itself or returns an error if that doesn't exist.

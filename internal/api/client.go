@@ -78,9 +78,12 @@ func NewClient(cfg ClientConfig) (Client, error) {
 	return Client{cfg, roundTrip}, nil
 }
 
-// GetQuarantinedTestIDs returns a list of test identifiers that are marked as quarantined on Captain.
-func (c Client) GetQuarantinedTestIDs(ctx context.Context) ([]string, error) {
-	endpoint := "/api/organization/integrations/github/quarantined_tests"
+// GetQuarantinedTestCases returns a list of test cases that are marked as quarantined on Captain.
+func (c Client) GetQuarantinedTestCases(
+	ctx context.Context,
+	testSuiteIdentifier string,
+) ([]QuarantinedTestCase, error) {
+	endpoint := "/api/test_suites/quarantined_tests"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -88,9 +91,7 @@ func (c Client) GetQuarantinedTestIDs(ctx context.Context) ([]string, error) {
 	}
 
 	queryValues := req.URL.Query()
-	queryValues.Add("account_name", c.AccountName)
-	queryValues.Add("repository_name", c.RepositoryName)
-	queryValues.Add("workflow_run_id", c.RunID)
+	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
 	req.URL.RawQuery = queryValues.Encode()
 
 	resp, err := c.RoundTrip(req)
@@ -108,9 +109,7 @@ func (c Client) GetQuarantinedTestIDs(ctx context.Context) ([]string, error) {
 	}
 
 	respBody := struct {
-		QuarantinedTests []struct {
-			Identifier string `json:"identifier"`
-		} `json:"quarantined_tests"`
+		QuarantinedTestCases []QuarantinedTestCase `json:"quarantined_tests"`
 	}{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
@@ -122,12 +121,7 @@ func (c Client) GetQuarantinedTestIDs(ctx context.Context) ([]string, error) {
 		)
 	}
 
-	quarantinedTests := make([]string, len(respBody.QuarantinedTests))
-	for i, quarantinedTest := range respBody.QuarantinedTests {
-		quarantinedTests[i] = quarantinedTest.Identifier
-	}
-
-	return quarantinedTests, nil
+	return respBody.QuarantinedTestCases, nil
 }
 
 func (c Client) postJSON(ctx context.Context, endpoint string, body any) (*http.Response, error) {

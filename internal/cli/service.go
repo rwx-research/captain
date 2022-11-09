@@ -155,7 +155,7 @@ func (s Service) runCommand(ctx context.Context, args []string) error {
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
 func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	var wg sync.WaitGroup
-	var quarantinedTestIDs []string
+	var quarantinedTestCases []api.QuarantinedTestCase
 
 	if len(cfg.Args) == 0 {
 		s.Log.Debug("No arguments provided to `RunSuite`")
@@ -165,16 +165,16 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	// Fetch list of quarantined test IDs in the background
 	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		testIDs, err := s.API.GetQuarantinedTestIDs(egCtx)
+		testCases, err := s.API.GetQuarantinedTestCases(egCtx, cfg.SuiteName)
 		if err != nil {
 			return errors.Wrap(err)
 		}
 
-		if len(testIDs) == 0 {
+		if len(testCases) == 0 {
 			s.Log.Debug("No quarantined tests defined in Captain")
 		}
 
-		quarantinedTestIDs = testIDs
+		quarantinedTestCases = testCases
 		return nil
 	})
 
@@ -231,9 +231,9 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	}
 
 	// Remove quarantined IDs from list of failed tests
-	for _, quarantinedTestID := range quarantinedTestIDs {
+	for _, quarantinedTestID := range quarantinedTestCases {
 		s.Log.Debugf("ignoring test results for %q due to quarantine", quarantinedTestID)
-		delete(failedTests, quarantinedTestID)
+		delete(failedTests, quarantinedTestID.CompositeIdentifier)
 	}
 
 	// Wait until raw version of test results was uploaded
