@@ -6,7 +6,10 @@ import (
 	"io"
 	"strings"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
+	"go.uber.org/zap/zaptest/observer"
 
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/cli"
@@ -28,6 +31,8 @@ var _ = Describe("Run", func() {
 		ctx                 context.Context
 		mockCommand         *mocks.Command
 		service             cli.Service
+		core                zapcore.Core
+		recordedLogs        *observer.ObservedLogs
 
 		testResultsFileUploaded, commandStarted, commandFinished, fetchedQuarantinedTests, fileOpened bool
 	)
@@ -41,9 +46,12 @@ var _ = Describe("Run", func() {
 		fetchedQuarantinedTests = false
 		fileOpened = false
 
+		core, recordedLogs = observer.New(zapcore.InfoLevel)
 		service = cli.Service{
-			API:        new(mocks.API),
-			Log:        zaptest.NewLogger(GinkgoT()).Sugar(),
+			API: new(mocks.API),
+			Log: zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
+				zap.WrapCore(func(original zapcore.Core) zapcore.Core { return core }),
+			)).Sugar(),
 			FileSystem: new(mocks.FileSystem),
 			TaskRunner: new(mocks.TaskRunner),
 			Parsers:    []cli.Parser{new(mocks.Parser)},
@@ -150,8 +158,8 @@ var _ = Describe("Run", func() {
 
 		BeforeEach(func() {
 			exitCode = int(GinkgoRandomSeed() + 1)
-			firstFailedTestDescription = fmt.Sprintf("%d", GinkgoRandomSeed()+2)
-			secondFailedTestDescription = fmt.Sprintf("%d", GinkgoRandomSeed()+3)
+			firstFailedTestDescription = fmt.Sprintf("first-description-%d", GinkgoRandomSeed()+2)
+			secondFailedTestDescription = fmt.Sprintf("second-description-%d", GinkgoRandomSeed()+3)
 
 			mockGetExitStatusFromError := func(error) (int, error) {
 				return exitCode, nil
@@ -236,6 +244,18 @@ var _ = Describe("Run", func() {
 				Expect(ok).To(BeTrue(), "Error is an execution error")
 				Expect(executionError.Code).To(Equal(exitCode))
 			})
+
+			It("does not log any quarantined tests", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring("2 unquarantined failures")))
+				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("  - %v", firstFailedTestDescription)))
+				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("  - %v", secondFailedTestDescription)))
+			})
 		})
 
 		Context("some tests quarantined", func() {
@@ -260,6 +280,18 @@ var _ = Describe("Run", func() {
 				executionError, ok := errors.AsExecutionError(err)
 				Expect(ok).To(BeTrue(), "Error is an execution error")
 				Expect(executionError.Code).To(Equal(exitCode))
+			})
+
+			It("logs the quarantined tests", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).To(ContainElement("1 quarantined failure, 1 unquarantined failure"))
+				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("  - %v", firstFailedTestDescription)))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("  - %v", secondFailedTestDescription)))
 			})
 		})
 
@@ -287,6 +319,18 @@ var _ = Describe("Run", func() {
 
 			It("doesn't return an error", func() {
 				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("logs the quarantined tests", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).To(ContainElement("2 quarantined failures, 0 unquarantined failures"))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("  - %v", firstFailedTestDescription)))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("  - %v", secondFailedTestDescription)))
 			})
 		})
 	})

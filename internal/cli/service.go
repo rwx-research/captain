@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
@@ -176,6 +177,14 @@ func (s Service) isQuarantined(failedTest testing.TestResult, quarantinedTestCas
 	return false
 }
 
+func pluralize(count int, singular string, plural string) string {
+	if count == 1 {
+		return singular
+	}
+
+	return plural
+}
+
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
 func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	var wg sync.WaitGroup
@@ -254,15 +263,34 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		return runErr
 	}
 
-	remainingFailedTests := make([]testing.TestResult, 0)
+	quarantinedFailedTests := make([]testing.TestResult, 0)
+	unquarantinedFailedTests := make([]testing.TestResult, 0)
 	for _, failedTest := range failedTests {
 		s.Log.Debugf("attempting to quarantine failed test: %v", failedTest)
 
 		if s.isQuarantined(failedTest, quarantinedTestCases) {
 			s.Log.Debugf("quarantined failed test: %v", failedTest)
+			quarantinedFailedTests = append(quarantinedFailedTests, failedTest)
 		} else {
 			s.Log.Debugf("did not quarantine failed test: %v", failedTest)
-			remainingFailedTests = append(remainingFailedTests, failedTest)
+			unquarantinedFailedTests = append(unquarantinedFailedTests, failedTest)
+		}
+	}
+
+	if len(quarantinedFailedTests) > 0 {
+		s.Log.Infoln(
+			fmt.Sprintf(
+				"%v quarantined %v, %v unquarantined %v",
+				len(quarantinedFailedTests),
+				pluralize(len(quarantinedFailedTests), "failure", "failures"),
+				len(unquarantinedFailedTests),
+				pluralize(len(unquarantinedFailedTests), "failure", "failures"),
+			),
+		)
+
+		s.Log.Infoln("\nQuarantined:")
+		for _, quarantinedFailedTest := range quarantinedFailedTests {
+			s.Log.Infoln(fmt.Sprintf("  - %v", quarantinedFailedTest.Description))
 		}
 	}
 
@@ -270,7 +298,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	wg.Wait()
 
 	// Return original exit code in case there are failed tests.
-	if runErr != nil && len(remainingFailedTests) > 0 {
+	if runErr != nil && len(unquarantinedFailedTests) > 0 {
 		return runErr
 	}
 
