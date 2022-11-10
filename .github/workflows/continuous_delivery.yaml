@@ -68,7 +68,14 @@ jobs:
             aws s3api list-objects --bucket terraform-20221109133415397600000001 --no-paginate --query 'Contents[].Key' --output=json \
             | jq -r '.[]' | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' \
           )
-          latest=$(printf "%s\n" $versions | grep -v "-" | head -n 1)
           encodedVersions=$(printf "%s\n" $versions | jq --raw-input | jq --slurp)
-          jq -n --argjson versions "$encodedVersions" --arg latest "$latest" '{captain: {latest: $latest, versions: $versions}}' > versions.json
+          latest=$(printf "%s\n" $versions | grep -v "-" | head -n 1)
+          latestV1=$(printf "%s\n" $versions | grep -v "-" | grep "v1" | head -n 1)
+
+          jq -n \
+            --argjson versions "$encodedVersions" \
+            --arg latest "$latest" \
+            --arg latestV1 "$latestV1" \
+           '{captain: {latest: $latest, v1: $latestV1, versions: $versions}}' > versions.json
+
           aws s3 mv ./versions.json "s3://terraform-20221109133415397600000001/versions.json"
