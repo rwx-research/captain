@@ -13,7 +13,7 @@ import (
 // APIClient is the interface of our API layer.
 type APIClient interface {
 	GetQuarantinedTestCases(context.Context, string) ([]api.QuarantinedTestCase, error)
-	UploadTestResults(context.Context, string, []api.TestResultsFile) error
+	UploadTestResults(context.Context, string, []api.TestResultsFile) ([]api.TestResultsUploadResult, error)
 }
 
 // FileSystem is an abstraction over file-systems. This is implemented by the default `os` package and can also be used

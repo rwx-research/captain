@@ -19,6 +19,11 @@ type TestResultsFile struct {
 	s3uploadStatus int
 }
 
+type TestResultsUploadResult struct {
+	OriginalPath string
+	Uploaded     bool
+}
+
 // ParserType is an enum holding possible parser types
 type ParserType string
 

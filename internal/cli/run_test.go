@@ -102,10 +102,14 @@ var _ = Describe("Run", func() {
 
 	Context("under expected conditions", func() {
 		BeforeEach(func() {
-			mockUploadTestResults := func(ctx context.Context, testSuite string, testResultsFiles []api.TestResultsFile) error {
+			mockUploadTestResults := func(
+				ctx context.Context,
+				testSuite string,
+				testResultsFiles []api.TestResultsFile,
+			) ([]api.TestResultsUploadResult, error) {
 				Expect(testResultsFiles).To(HaveLen(1))
 				testResultsFileUploaded = true
-				return nil
+				return []api.TestResultsUploadResult{{OriginalPath: testResultsFilePath, Uploaded: true}}, nil
 			}
 			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
 
@@ -146,6 +150,17 @@ var _ = Describe("Run", func() {
 
 		It("uploads the test results file", func() {
 			Expect(testResultsFileUploaded).To(BeTrue())
+		})
+
+		It("logs the uploaded files", func() {
+			logMessages := make([]string, 0)
+
+			for _, log := range recordedLogs.All() {
+				logMessages = append(logMessages, log.Message)
+			}
+
+			Expect(logMessages).To(ContainElement(ContainSubstring("Found 1 test result file")))
+			Expect(logMessages).To(ContainElement(ContainSubstring(fmt.Sprintf("- Uploaded %v", testResultsFilePath))))
 		})
 	})
 
@@ -252,9 +267,10 @@ var _ = Describe("Run", func() {
 					logMessages = append(logMessages, log.Message)
 				}
 
-				Expect(logMessages).NotTo(ContainElement(ContainSubstring("2 unquarantined failures")))
-				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("  - %v", firstFailedTestDescription)))
-				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("  - %v", secondFailedTestDescription)))
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring("under quarantine")))
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring("remaining actionable")))
+				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
+				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
 			})
 		})
 
@@ -289,9 +305,10 @@ var _ = Describe("Run", func() {
 					logMessages = append(logMessages, log.Message)
 				}
 
-				Expect(logMessages).To(ContainElement("1 quarantined failure, 1 unquarantined failure"))
-				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("  - %v", firstFailedTestDescription)))
-				Expect(logMessages).To(ContainElement(fmt.Sprintf("  - %v", secondFailedTestDescription)))
+				Expect(logMessages).To(ContainElement(ContainSubstring("1 of 2 failures under quarantine")))
+				Expect(logMessages).To(ContainElement(ContainSubstring("1 remaining actionable failure")))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
 			})
 		})
 
@@ -328,9 +345,10 @@ var _ = Describe("Run", func() {
 					logMessages = append(logMessages, log.Message)
 				}
 
-				Expect(logMessages).To(ContainElement("2 quarantined failures, 0 unquarantined failures"))
-				Expect(logMessages).To(ContainElement(fmt.Sprintf("  - %v", firstFailedTestDescription)))
-				Expect(logMessages).To(ContainElement(fmt.Sprintf("  - %v", secondFailedTestDescription)))
+				Expect(logMessages).To(ContainElement(ContainSubstring("2 of 2 failures under quarantine")))
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring("remaining actionable")))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
 			})
 		})
 	})

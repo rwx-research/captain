@@ -82,7 +82,10 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("registers, uploads, and updates the test result in sequence", func() {
-			Expect(apiClient.UploadTestResults(context.Background(), "test suite name", testResultsFiles)).To(Succeed())
+			uploadResults, err := apiClient.UploadTestResults(context.Background(), "test suite name", testResultsFiles)
+			Expect(uploadResults).To(HaveLen(1))
+			Expect(uploadResults[0].Uploaded).To(Equal(true))
+			Expect(err).To(Succeed())
 		})
 	})
 
@@ -94,7 +97,9 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("returns an error to the user", func() {
-			Expect(apiClient.UploadTestResults(context.Background(), "test suite name", testResultsFiles)).ToNot(Succeed())
+			uploadResults, err := apiClient.UploadTestResults(context.Background(), "test suite name", testResultsFiles)
+			Expect(uploadResults).To(BeNil())
+			Expect(err).ToNot(Succeed())
 		})
 	})
 
@@ -131,7 +136,10 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("updates the upload status as failed", func() {
-			Expect(apiClient.UploadTestResults(context.Background(), "test suite name", testResultsFiles)).To(Succeed())
+			uploadResults, err := apiClient.UploadTestResults(context.Background(), "test suite name", testResultsFiles)
+			Expect(uploadResults).To(HaveLen(1))
+			Expect(uploadResults[0].Uploaded).To(Equal(false))
+			Expect(err).To(Succeed())
 		})
 	})
 
@@ -164,7 +172,10 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("does not return an error to the user", func() {
-			Expect(apiClient.UploadTestResults(context.Background(), "test suite name", testResultsFiles)).To(Succeed())
+			uploadResults, err := apiClient.UploadTestResults(context.Background(), "test suite name", testResultsFiles)
+			Expect(uploadResults).To(HaveLen(1))
+			Expect(uploadResults[0].Uploaded).To(Equal(true))
+			Expect(err).To(Succeed())
 		})
 	})
 })

@@ -21,7 +21,8 @@ var (
 		PreRunE: initCLIService,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Should also support reading from stdin
-			return errors.Wrap(captain.UploadTestResults(cmd.Context(), suiteName, args))
+			_, err := captain.UploadTestResults(cmd.Context(), suiteName, args)
+			return errors.Wrap(err)
 		},
 	}
 )

@@ -231,12 +231,13 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 
 	// Start uploading testResultsFiles in the background
 	wg.Add(1)
+	var uploadResults []api.TestResultsUploadResult
 	var uploadError error
 
 	go func() {
 		// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
 		// not affect the exit code.
-		uploadError = s.UploadTestResults(ctx, cfg.SuiteName, testResultsFiles)
+		uploadResults, uploadError = s.UploadTestResults(ctx, cfg.SuiteName, testResultsFiles)
 		wg.Done()
 	}()
 
@@ -277,25 +278,66 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		}
 	}
 
-	if len(quarantinedFailedTests) > 0 {
+	// Wait until raw version of test results was uploaded
+	wg.Wait()
+
+	// Display detailed output if necessary
+	hasUploadResults := len(uploadResults) > 0
+	hasQuarantinedFailedTests := len(quarantinedFailedTests) > 0
+	hasDetails := hasUploadResults || hasQuarantinedFailedTests
+
+	if hasDetails {
+		s.Log.Infoln(strings.Repeat("-", 80))
+		s.Log.Infoln(fmt.Sprintf("%v Captain %v", strings.Repeat("-", 40-4-1), strings.Repeat("-", 40-3-1)))
+		s.Log.Infoln(strings.Repeat("-", 80))
+	}
+
+	if hasUploadResults {
 		s.Log.Infoln(
 			fmt.Sprintf(
-				"%v quarantined %v, %v unquarantined %v",
+				"\nFound %v test result %v:",
+				len(uploadResults),
+				pluralize(len(uploadResults), "file", "files"),
+			),
+		)
+
+		for _, uploadResult := range uploadResults {
+			if uploadResult.Uploaded {
+				s.Log.Infoln(fmt.Sprintf("- Uploaded %v", uploadResult.OriginalPath))
+			} else {
+				s.Log.Infoln(fmt.Sprintf("- Unable to upload %v", uploadResult.OriginalPath))
+			}
+		}
+	}
+
+	if hasQuarantinedFailedTests {
+		s.Log.Infoln(
+			fmt.Sprintf(
+				"\n%v of %v %v under quarantine:",
 				len(quarantinedFailedTests),
-				pluralize(len(quarantinedFailedTests), "failure", "failures"),
+				len(failedTests),
+				pluralize(len(failedTests), "failure", "failures"),
+			),
+		)
+
+		for _, quarantinedFailedTest := range quarantinedFailedTests {
+			s.Log.Infoln(fmt.Sprintf("- %v", quarantinedFailedTest.Description))
+		}
+	}
+
+	if hasDetails && len(unquarantinedFailedTests) > 0 {
+		s.Log.Infoln(
+			fmt.Sprintf(
+				"\n%v remaining actionable %v",
 				len(unquarantinedFailedTests),
 				pluralize(len(unquarantinedFailedTests), "failure", "failures"),
 			),
 		)
 
-		s.Log.Infoln("\nQuarantined:")
-		for _, quarantinedFailedTest := range quarantinedFailedTests {
-			s.Log.Infoln(fmt.Sprintf("  - %v", quarantinedFailedTest.Description))
+		for _, unquarantinedFailedTests := range unquarantinedFailedTests {
+			s.Log.Infoln(fmt.Sprintf("- %v", unquarantinedFailedTests.Description))
 		}
 	}
-
-	// Wait until raw version of test results was uploaded
-	wg.Wait()
 
 	// Return original exit code in case there are failed tests.
 	if runErr != nil && len(unquarantinedFailedTests) > 0 {
@@ -311,12 +353,16 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 
 // UploadTestResults is the implementation of `captain upload results`. It takes a number of filepaths, checks that
 // files exist and uploads them using the provided API.
-func (s Service) UploadTestResults(ctx context.Context, testSuite string, filepaths []string) error {
+func (s Service) UploadTestResults(
+	ctx context.Context,
+	testSuite string,
+	filepaths []string,
+) ([]api.TestResultsUploadResult, error) {
 	newTestResultsFiles := make([]api.TestResultsFile, len(filepaths))
 
 	if len(filepaths) == 0 {
 		s.Log.Debug("No paths to test results provided")
-		return nil
+		return nil, nil
 	}
 
 	for i, filePath := range filepaths {
@@ -324,13 +370,13 @@ func (s Service) UploadTestResults(ctx context.Context, testSuite string, filepa
 
 		fd, err := s.FileSystem.Open(filePath)
 		if err != nil {
-			return s.logError(errors.NewSystemError("unable to open file: %s", err))
+			return nil, s.logError(errors.NewSystemError("unable to open file: %s", err))
 		}
 		defer fd.Close()
 
 		id, err := uuid.NewRandom()
 		if err != nil {
-			return s.logError(errors.NewInternalError("unable to generate new UUID: %s", err))
+			return nil, s.logError(errors.NewInternalError("unable to generate new UUID: %s", err))
 		}
 
 		s.Log.Debugf("Attempting to parse %q", filePath)
@@ -343,7 +389,7 @@ func (s Service) UploadTestResults(ctx context.Context, testSuite string, filepa
 
 			// We always have to seek back to the beginning since we'll re-read the file upon upload.
 			if _, err := fd.Seek(0, io.SeekStart); err != nil {
-				return s.logError(errors.NewSystemError("unable to read from file: %s", err))
+				return nil, s.logError(errors.NewSystemError("unable to read from file: %s", err))
 			}
 
 			if parseErr != nil {
@@ -375,9 +421,10 @@ func (s Service) UploadTestResults(ctx context.Context, testSuite string, filepa
 		}
 	}
 
-	if err := s.API.UploadTestResults(ctx, testSuite, newTestResultsFiles); err != nil {
-		return s.logError(errors.WithMessage("unable to upload test result: %s", err))
+	uploadResults, err := s.API.UploadTestResults(ctx, testSuite, newTestResultsFiles)
+	if err != nil {
+		return nil, s.logError(errors.WithMessage("unable to upload test result: %s", err))
 	}
 
-	return nil
+	return uploadResults, nil
 }

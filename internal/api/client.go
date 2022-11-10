@@ -311,16 +311,20 @@ func (c Client) updateTestResultsStatuses(
 // UploadTestResults uploads test results files to Captain.
 // This method is not atomic - data-loss can occur silently. To verify that this operation was successful,
 // the Captain database has to be queried manually.
-func (c Client) UploadTestResults(ctx context.Context, testSuite string, testResultsFiles []TestResultsFile) error {
+func (c Client) UploadTestResults(
+	ctx context.Context,
+	testSuite string,
+	testResultsFiles []TestResultsFile,
+) ([]TestResultsUploadResult, error) {
 	if testSuite == "" {
-		return errors.NewInputError("test suite name required")
+		return nil, errors.NewInputError("test suite name required")
 	}
 
 	fileSizeLookup := make(map[uuid.UUID]int64)
 	for _, testResultsFile := range testResultsFiles {
 		fileInfo, err := testResultsFile.FD.Stat()
 		if err != nil {
-			return errors.NewSystemError("unable to determine file-size for %q", testResultsFile.OriginalPath)
+			return nil, errors.NewSystemError("unable to determine file-size for %q", testResultsFile.OriginalPath)
 		}
 
 		fileSizeLookup[testResultsFile.ExternalID] = fileInfo.Size()
@@ -328,12 +332,13 @@ func (c Client) UploadTestResults(ctx context.Context, testSuite string, testRes
 
 	testResultsFiles, err := c.registerTestResults(ctx, testSuite, testResultsFiles)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	uploadResults := make([]TestResultsUploadResult, 0)
 	for i, testResultsFile := range testResultsFiles {
 		if testResultsFile.uploadURL == nil {
-			return errors.NewInternalError("endpoint failed to return upload destination url")
+			return nil, errors.NewInternalError("endpoint failed to return upload destination url")
 		}
 		req := http.Request{
 			Method:        http.MethodPut,
@@ -345,16 +350,24 @@ func (c Client) UploadTestResults(ctx context.Context, testSuite string, testRes
 		resp, err := c.RoundTrip(&req)
 		if err != nil {
 			c.Log.Warnf("unable to upload test results file to S3: %s", err)
+			uploadResults = append(uploadResults, TestResultsUploadResult{
+				OriginalPath: testResultsFile.OriginalPath,
+				Uploaded:     false,
+			})
 			continue
 		}
 		defer resp.Body.Close()
 
 		testResultsFiles[i].s3uploadStatus = resp.StatusCode
+		uploadResults = append(uploadResults, TestResultsUploadResult{
+			OriginalPath: testResultsFile.OriginalPath,
+			Uploaded:     resp.StatusCode < 300,
+		})
 	}
 
 	if err := c.updateTestResultsStatuses(ctx, testSuite, testResultsFiles); err != nil {
 		c.Log.Warnf("unable to update test results file status: %s", err)
 	}
 
-	return nil
+	return uploadResults, nil
 }
