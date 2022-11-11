@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -52,6 +53,7 @@ func NewClient(cfg ClientConfig) (Client, error) {
 
 			req.URL.Host = cfg.Host
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.Token))
+			req.Header.Set("User-Agent", fmt.Sprintf("captain-cli/%s", strings.TrimPrefix(captain.Version, "v")))
 		}
 
 		if cfg.Debug {
