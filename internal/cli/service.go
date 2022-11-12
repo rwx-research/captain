@@ -198,7 +198,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	// Fetch list of quarantined test IDs in the background
 	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		testCases, err := s.API.GetQuarantinedTestCases(egCtx, cfg.SuiteName)
+		testCases, err := s.API.GetQuarantinedTestCases(egCtx, cfg.SuiteID)
 		if err != nil {
 			return errors.Wrap(err)
 		}
@@ -237,7 +237,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	go func() {
 		// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
 		// not affect the exit code.
-		uploadResults, uploadError = s.UploadTestResults(ctx, cfg.SuiteName, testResultsFiles)
+		uploadResults, uploadError = s.UploadTestResults(ctx, cfg.SuiteID, testResultsFiles)
 		wg.Done()
 	}()
 
@@ -355,7 +355,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 // files exist and uploads them using the provided API.
 func (s Service) UploadTestResults(
 	ctx context.Context,
-	testSuite string,
+	testSuiteID string,
 	filepaths []string,
 ) ([]api.TestResultsUploadResult, error) {
 	newTestResultsFiles := make([]api.TestResultsFile, len(filepaths))
@@ -421,7 +421,7 @@ func (s Service) UploadTestResults(
 		}
 	}
 
-	uploadResults, err := s.API.UploadTestResults(ctx, testSuite, newTestResultsFiles)
+	uploadResults, err := s.API.UploadTestResults(ctx, testSuiteID, newTestResultsFiles)
 	if err != nil {
 		return nil, s.logError(errors.WithMessage("unable to upload test result: %s", err))
 	}

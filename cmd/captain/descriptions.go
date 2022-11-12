@@ -12,14 +12,14 @@ as JUnit or RSpec.
 
 Example use:
 
-	captain upload results --suite-name="JUnit" *.xml`
+	captain upload results --suite-id="JUnit" *.xml`
 
 	descriptionRun = `'captain run' can be used to execute a build- or test-suite and optionally upload the resulting
 artifacts.
 
 Example use:
 
-	captain run --suite-name="Rake" -- bundle exec rake
+	captain run --suite-id="your-project-rake" -- bundle exec rake
 
-	captain run --suite-name="Jest" --test-results "jest-result.json" -- jest`
+	captain run --suite-id="your-project-jest" --test-results "jest-result.json" -- jest`
 )

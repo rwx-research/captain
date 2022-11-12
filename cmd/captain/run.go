@@ -25,7 +25,7 @@ var (
 				Args:                args,
 				TestResultsFileGlob: testResults,
 				FailOnUploadError:   failOnUploadError,
-				SuiteName:           suiteName,
+				SuiteID:             suiteID,
 			}
 
 			return errors.Wrap(captain.RunSuite(cmd.Context(), runConfig))

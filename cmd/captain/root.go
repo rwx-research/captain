@@ -16,7 +16,7 @@ var (
 	githubJobName   string
 	githubJobMatrix string
 	insecure        bool
-	suiteName       string
+	suiteID         string
 	version         bool
 
 	rootCmd = &cobra.Command{
@@ -37,7 +37,7 @@ var (
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&suiteName, "suite-name", "", "the name of the build- or test-suite")
+	rootCmd.PersistentFlags().StringVar(&suiteID, "suite-id", "", "the id of the test suite")
 
 	rootCmd.PersistentFlags().StringVar(
 		&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github",

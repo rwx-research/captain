@@ -28,11 +28,11 @@ func (a *API) GetQuarantinedTestCases(
 // UploadTestResults either calls the configured mock of itself or returns an error if that doesn't exist.
 func (a *API) UploadTestResults(
 	ctx context.Context,
-	testSuite string,
+	testSuiteID string,
 	testResultsFiles []api.TestResultsFile,
 ) ([]api.TestResultsUploadResult, error) {
 	if a.MockUploadTestResults != nil {
-		return a.MockUploadTestResults(ctx, testSuite, testResultsFiles)
+		return a.MockUploadTestResults(ctx, testSuiteID, testResultsFiles)
 	}
 
 	return nil, errors.NewConfigurationError("MockUploadTestResults was not configured")

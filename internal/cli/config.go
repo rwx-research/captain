@@ -5,5 +5,5 @@ type RunConfig struct {
 	Args                []string
 	TestResultsFileGlob string
 	FailOnUploadError   bool
-	SuiteName           string
+	SuiteID             string
 }

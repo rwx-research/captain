@@ -94,7 +94,7 @@ var _ = Describe("Run", func() {
 		runConfig := cli.RunConfig{
 			Args:                []string{arg},
 			TestResultsFileGlob: testResultsFilePath,
-			SuiteName:           "test",
+			SuiteID:             "test",
 		}
 
 		err = service.RunSuite(ctx, runConfig)

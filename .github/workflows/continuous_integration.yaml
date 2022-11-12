@@ -15,7 +15,7 @@ jobs:
       - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
       - run: |
           REPORT=true ./captain run \
-            --suite-name="Ginkgo" \
+            --suite-id="captain-cli-ginkgo" \
             --github-job-name="Build & Test" \
             --github-job-matrix='${{ toJSON(matrix) }}' \
             --test-results=report.xml \

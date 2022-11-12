@@ -33,7 +33,7 @@ Flags:
       --github-job-matrix string   the JSON encoded job-matrix from Github
       --github-job-name string     the name of the current Github Job
   -h, --help                       help for captain
-      --suite-name string          the name of the build- or test-suite
+      --suite-id string            the id of the test suite
 
 Use "captain [command] --help" for more information about a command.
 ```
@@ -43,7 +43,7 @@ For example, the following command will upload all JSON files to Captain when
 run in Github Actions:
 
 ```
-./captain upload results --suite-name RSpec **/*.json
+./captain upload results --suite-id your-project-rspec tmp/rspec-*.json
 ```
 
 ### Hidden options
