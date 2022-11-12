@@ -93,14 +93,24 @@ Targets:
 The following environment variables can / should be used to configure the CLI:
 
 ```
-CAPTAIN_HOST        # The host or host:port combination for the Captain API
-CAPTAIN_TOKEN       # The Captain API token
+RWX_ACCESS_TOKEN    # The RWX Access Token
+```
+
+The following environment variables are automatically detected and used by the CLI:
+
+```
 GITHUB_JOB          # The Job ID of a Github Actions Job
 GITHUB_RUN_ATTEMPT  # A unique number for each attempt of a particular worklow
                     # on Github Actions
 GITHUB_RUN_ID       # A unique number for each workflow run on Github Acations
 GITHUB_REPOSITORY   # The owner & repository pair of the GitHub repository for
                     # Github Actions
+```
+
+The following environment variables can / should be used when developing the CLI:
+
+```
+CAPTAIN_HOST        # The host or host:port combination for the Captain API
 ```
 
 ### Coding conventions

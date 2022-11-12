@@ -22,7 +22,7 @@ jobs:
             --fail-on-upload-error \
             -- nix develop --command mage test
         env:
-          CAPTAIN_TOKEN: ${{ secrets.CAPTAIN_TOKEN }}
+          RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
           DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
 
   lint:
