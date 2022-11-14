@@ -1,0 +1,1 @@
+{"version":"3.12.0","examples":[{"id":"./x.rb[1:1]","description":"is flaky","full_description":"is flaky","status":"passed","file_path":"./x.rb","line_number":2,"run_time":0.00038,"pending_message":null}],"summary":{"duration":0.000769,"example_count":1,"failure_count":0,"pending_count":0,"errors_outside_of_examples_count":0},"summary_line":"1 example, 0 failures"}

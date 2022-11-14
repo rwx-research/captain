@@ -24,6 +24,9 @@ jobs:
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
           DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
+      - run: ./test/functional.sh
+        env:
+          RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
 
   lint:
     name: Lint
