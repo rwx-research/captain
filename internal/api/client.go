@@ -17,6 +17,7 @@ import (
 
 	"github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
 // Client is the main client for the Captain API.
@@ -124,6 +125,52 @@ func (c Client) GetQuarantinedTestCases(
 	}
 
 	return respBody.QuarantinedTestCases, nil
+}
+
+func (c Client) GetTestTimingManifest(
+	ctx context.Context,
+	testSuiteIdentifier string,
+) ([]testing.TestFileTiming, error) {
+	endpoint := "/api/test_suites/timing_manifest"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, errors.NewInternalError("unable to construct HTTP request: %s", err)
+	}
+
+	queryValues := req.URL.Query()
+	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
+	queryValues.Add("commit_sha", c.CommitSha)
+	req.URL.RawQuery = queryValues.Encode()
+
+	resp, err := c.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, errors.NewInternalError(
+			"API backend encountered an error. Endpoint was %q, Status Code %d",
+			endpoint,
+			resp.StatusCode,
+		)
+	}
+
+	respBody := struct {
+		FileTimings []testing.TestFileTiming `json:"file_timings"`
+	}{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+		return nil, errors.NewInternalError(
+			"unable to parse the response body. Endpoint was %q, Content-Type %q. Original Error: %s",
+			endpoint,
+			resp.Header.Get(headerContentType),
+			err,
+		)
+	}
+
+	return respBody.FileTimings, nil
 }
 
 func (c Client) postJSON(ctx context.Context, endpoint string, body any) (*http.Response, error) {

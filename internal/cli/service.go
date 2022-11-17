@@ -11,8 +11,10 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -349,6 +351,102 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	}
 
 	return nil
+}
+
+// Partition splits a glob of test filepaths using decreasing first fit backed by a timing manifest from captain.
+func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
+	err := cfg.Validate()
+	if err != nil {
+		return errors.Wrap(err)
+	}
+	fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
+	if err != nil {
+		return errors.Wrap(err)
+	}
+
+	fileTimingLookup := make(map[string]testing.TestFileTiming, len(fileTimings))
+	for _, timing := range fileTimings {
+		fileTimingLookup[timing.Filepath] = timing
+	}
+
+	matchedFileTimings := make([]testing.TestFileTiming, 0)
+	unmatchedFilepaths := make([]string, 0)
+	for _, testFilepath := range cfg.TestFilePaths {
+		if timing, ok := fileTimingLookup[testFilepath]; ok {
+			matchedFileTimings = append(matchedFileTimings, timing)
+		} else {
+			unmatchedFilepaths = append(unmatchedFilepaths, testFilepath)
+		}
+	}
+	sort.Slice(matchedFileTimings, func(i, j int) bool {
+		return matchedFileTimings[i].Duration > matchedFileTimings[j].Duration
+	})
+
+	partitions := make([]testing.TestPartition, 0)
+	var totalCapacity time.Duration
+	for _, timing := range matchedFileTimings {
+		totalCapacity += timing.Duration
+	}
+	partitionCapacity := totalCapacity / time.Duration(cfg.TotalPartitions)
+
+	s.Log.Debugf("Total Capacity: %s", totalCapacity)
+	s.Log.Debugf("Target Partition Capacity: %s", partitionCapacity)
+
+	for i := 0; i < cfg.TotalPartitions; i++ {
+		partitions = append(partitions, testing.TestPartition{
+			Index:             i,
+			TestFilePaths:     make([]string, 0),
+			RemainingCapacity: partitionCapacity,
+			TotalCapacity:     partitionCapacity,
+		})
+	}
+
+	for _, timing := range matchedFileTimings {
+		fits, partition := partitionWithFirstFit(partitions, timing)
+		if fits {
+			partition = partition.Add(timing)
+			partitions[partition.Index] = partition
+			s.Log.Debugf("%s: Assigned %s using first fit strategy", partition, timing)
+			continue
+		}
+		partition = partitionWithMostRemainingCapacity(partitions)
+		partition = partition.Add(timing)
+		partitions[partition.Index] = partition
+		s.Log.Debugf("%s: Assigned %s using most remaining capacity strategy", partition, timing)
+	}
+
+	for i, testFilepath := range unmatchedFilepaths {
+		partition := partitions[i%len(partitions)]
+		partitions[partition.Index] = partition.AddFilePath(testFilepath)
+		s.Log.Debugf("%s: Assigned '%s' using round robin strategy", partition, testFilepath)
+	}
+
+	s.Log.Infoln(strings.Join(partitions[cfg.PartitionIndex].TestFilePaths, " "))
+
+	return nil
+}
+
+func partitionWithFirstFit(
+	partitions []testing.TestPartition,
+	timing testing.TestFileTiming,
+) (fit bool, result testing.TestPartition) {
+	for _, p := range partitions {
+		if p.RemainingCapacity >= timing.Duration {
+			return true, p
+		}
+	}
+	return false, result
+}
+
+func partitionWithMostRemainingCapacity(partitions []testing.TestPartition) testing.TestPartition {
+	result := partitions[0]
+	for i := 1; i < len(partitions); i++ {
+		p := partitions[i]
+		if p.RemainingCapacity > result.RemainingCapacity {
+			result = p
+		}
+	}
+	return result
 }
 
 // UploadTestResults is the implementation of `captain upload results`. It takes a number of filepaths, checks that

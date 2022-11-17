@@ -5,11 +5,13 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
 // API is a mocked implementation of 'api.Client'.
 type API struct {
 	MockGetQuarantinedTestCases func(context.Context, string) ([]api.QuarantinedTestCase, error)
+	MockGetTestTimingManifest   func(context.Context, string) ([]testing.TestFileTiming, error)
 	MockUploadTestResults       func(context.Context, string, []api.TestResultsFile) ([]api.TestResultsUploadResult, error)
 }
 
@@ -23,6 +25,18 @@ func (a *API) GetQuarantinedTestCases(
 	}
 
 	return nil, errors.NewConfigurationError("MockGetQuarantinedTestCases was not configured")
+}
+
+// GetQuarantinedTestCases either calls the configured mock of itself or returns an error if that doesn't exist.
+func (a *API) GetTestTimingManifest(
+	ctx context.Context,
+	testSuiteIdentifier string,
+) ([]testing.TestFileTiming, error) {
+	if a.MockGetTestTimingManifest != nil {
+		return a.MockGetTestTimingManifest(ctx, testSuiteIdentifier)
+	}
+
+	return nil, errors.NewConfigurationError("MockGetTestTimingManifest was not configured")
 }
 
 // UploadTestResults either calls the configured mock of itself or returns an error if that doesn't exist.
