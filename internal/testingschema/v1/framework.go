@@ -34,11 +34,19 @@ func NewDotNetxUnitFramework() Framework {
 	return Framework{Language: FrameworkLanguageDotNet, Kind: FrameworkKindxUnit}
 }
 
-func NewOtherFramework(providedLanguage string, providedKind string) Framework {
+func NewOtherFramework(providedLanguage *string, providedKind *string) Framework {
 	return Framework{
 		Language:         FrameworkLanguageOther,
 		Kind:             FrameworkKindOther,
-		ProvidedLanguage: &providedLanguage,
-		ProvidedKind:     &providedKind,
+		ProvidedLanguage: providedLanguage,
+		ProvidedKind:     providedKind,
 	}
+}
+
+func (f Framework) IsOther() bool {
+	return f.Language == FrameworkLanguageOther && f.Kind == FrameworkKindOther
+}
+
+func (f Framework) IsProvided() bool {
+	return f.ProvidedLanguage != nil && f.ProvidedKind != nil
 }

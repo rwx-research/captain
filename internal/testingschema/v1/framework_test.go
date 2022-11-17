@@ -39,12 +39,42 @@ var _ = Describe("Framework", func() {
 		It("produces a framework of the expected configuration", func() {
 			providedLanguage := "provided language"
 			providedKind := "provided kind"
-			Expect(v1.NewOtherFramework(providedLanguage, providedKind)).To(Equal(v1.Framework{
+			Expect(v1.NewOtherFramework(&providedLanguage, &providedKind)).To(Equal(v1.Framework{
 				Language:         v1.FrameworkLanguageOther,
 				Kind:             v1.FrameworkKindOther,
 				ProvidedLanguage: &providedLanguage,
 				ProvidedKind:     &providedKind,
 			}))
+		})
+	})
+
+	Describe("IsOther", func() {
+		It("is true when called for an other framework", func() {
+			Expect(v1.NewOtherFramework(nil, nil).IsOther()).To(BeTrue())
+		})
+
+		It("is false when called for a known framework", func() {
+			Expect(v1.NewRubyRSpecFramework().IsOther()).To(BeFalse())
+		})
+	})
+
+	Describe("IsProvided", func() {
+		It("is true when called for an other framework with all provided fields", func() {
+			providedLanguage := "provided language"
+			providedKind := "provided kind"
+			Expect(v1.NewOtherFramework(&providedLanguage, &providedKind).IsProvided()).To(BeTrue())
+		})
+
+		It("is false when called for an other framework with some or no provided fields", func() {
+			providedLanguage := "provided language"
+			providedKind := "provided kind"
+			Expect(v1.NewOtherFramework(&providedLanguage, nil).IsProvided()).To(BeFalse())
+			Expect(v1.NewOtherFramework(nil, &providedKind).IsProvided()).To(BeFalse())
+			Expect(v1.NewOtherFramework(nil, nil).IsProvided()).To(BeFalse())
+		})
+
+		It("is false when called for a known framework", func() {
+			Expect(v1.NewRubyRSpecFramework().IsProvided()).To(BeFalse())
 		})
 	})
 })
