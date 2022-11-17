@@ -49,3 +49,48 @@ type Summary struct {
 	TimedOut    int           `json:"timedOut"`
 	Todo        int           `json:"todo"`
 }
+
+func NewSummary(tests []Test, otherErrors []OtherError) Summary {
+	summary := Summary{Tests: len(tests), OtherErrors: len(otherErrors)}
+	status := SummaryStatusSuccessful
+
+	if len(otherErrors) > 0 {
+		status = SummaryStatusFailed
+	}
+
+	for _, test := range tests {
+		if len(test.PastAttempts) > 0 {
+			summary.Retries++
+		}
+		if test.Attempt.Status.Kind == TestStatusCanceled {
+			status = SummaryStatusFailed
+			summary.Canceled++
+		}
+		if test.Attempt.Status.Kind == TestStatusFailed {
+			status = SummaryStatusFailed
+			summary.Failed++
+		}
+		if test.Attempt.Status.Kind == TestStatusPended {
+			summary.Pended++
+		}
+		if test.Attempt.Status.Kind == TestStatusQuarantined {
+			summary.Quarantined++
+		}
+		if test.Attempt.Status.Kind == TestStatusSkipped {
+			summary.Skipped++
+		}
+		if test.Attempt.Status.Kind == TestStatusSuccessful {
+			summary.Successful++
+		}
+		if test.Attempt.Status.Kind == TestStatusTimedOut {
+			status = SummaryStatusFailed
+			summary.TimedOut++
+		}
+		if test.Attempt.Status.Kind == TestStatusTodo {
+			summary.Todo++
+		}
+	}
+
+	summary.Status = status
+	return summary
+}
