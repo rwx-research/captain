@@ -11,7 +11,7 @@ import (
 
 var _ = Describe("TestResults.MarshalJSON", func() {
 	It("includes the schema in the marshalled JSON", func() {
-		json, err := json.Marshal(v1.TestResults{})
+		json, err := json.Marshal(v1.TestResults{Summary: v1.Summary{Status: v1.SummaryStatusSuccessful}})
 
 		Expect(err).To(BeNil())
 		Expect(string(json)).To(
@@ -29,7 +29,7 @@ var _ = Describe("TestResults.MarshalJSON", func() {
 					Kind:     "RSpec",
 				},
 				Summary: v1.Summary{
-					Status:      v1.SummaryStatus{Kind: "successful"},
+					Status:      v1.SummaryStatusSuccessful,
 					Tests:       1,
 					OtherErrors: 2,
 					Retries:     3,

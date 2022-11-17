@@ -1,7 +1,38 @@
 package v1
 
-type SummaryStatus struct {
+import (
+	"encoding/json"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
+)
+
+type SummaryStatus string
+
+const (
+	SummaryStatusSuccessful SummaryStatus = "successful"
+	SummaryStatusCanceled   SummaryStatus = "canceled"
+	SummaryStatusFailed     SummaryStatus = "failed"
+	SummaryStatusTimedOut   SummaryStatus = "timedOut"
+)
+
+type summaryStatus struct {
 	Kind string `json:"kind"`
+}
+
+func (ss SummaryStatus) MarshalJSON() ([]byte, error) {
+	json, err := json.Marshal(&summaryStatus{Kind: (string)(ss)})
+	return json, errors.Wrap(err)
+}
+
+func (ss *SummaryStatus) UnmarshalJSON(b []byte) error {
+	var s summaryStatus
+	if err := json.Unmarshal(b, &s); err != nil {
+		println(err)
+		return errors.Wrap(err)
+	}
+
+	*ss = SummaryStatus(s.Kind)
+	return nil
 }
 
 type Summary struct {

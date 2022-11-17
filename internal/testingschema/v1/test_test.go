@@ -10,19 +10,115 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("TestAttempt", func() {
-	It("serializes the duration to nanoseconds", func() {
-		duration := time.Duration(1500000000)
-		json, err := json.Marshal(v1.TestAttempt{Duration: &duration})
+var _ = Describe("Test", func() {
+	Describe("TestAttempt", func() {
+		It("serializes the duration to nanoseconds", func() {
+			duration := time.Duration(1500000000)
+			json, err := json.Marshal(v1.TestAttempt{Duration: &duration})
 
-		Expect(err).To(BeNil())
-		Expect(string(json)).To(ContainSubstring(`"durationInNanoseconds":1500000000`))
+			Expect(err).To(BeNil())
+			Expect(string(json)).To(ContainSubstring(`"durationInNanoseconds":1500000000`))
+		})
+
+		It("serializes no duration to null", func() {
+			json, err := json.Marshal(v1.TestAttempt{Duration: nil})
+
+			Expect(err).To(BeNil())
+			Expect(string(json)).To(ContainSubstring(`"durationInNanoseconds":null`))
+		})
 	})
 
-	It("serializes no duration to null", func() {
-		json, err := json.Marshal(v1.TestAttempt{Duration: nil})
+	Describe("NewCanceledTestStatus", func() {
+		It("produces a Canceled test status", func() {
+			Expect(v1.NewCanceledTestStatus()).To(Equal(
+				v1.TestStatus{
+					Kind: v1.TestStatusCanceled,
+				},
+			))
+		})
+	})
 
-		Expect(err).To(BeNil())
-		Expect(string(json)).To(ContainSubstring(`"durationInNanoseconds":null`))
+	Describe("NewFailedTestStatus", func() {
+		It("produces a Failed test status", func() {
+			message := "message"
+			exception := "exception"
+			backtrace := []string{"1", "2", "3"}
+			Expect(v1.NewFailedTestStatus(&message, &exception, backtrace)).To(Equal(
+				v1.TestStatus{
+					Kind:      v1.TestStatusFailed,
+					Message:   &message,
+					Exception: &exception,
+					Backtrace: backtrace,
+				},
+			))
+		})
+	})
+
+	Describe("NewPendedTestStatus", func() {
+		It("produces a Pended test status", func() {
+			message := "message"
+			Expect(v1.NewPendedTestStatus(&message)).To(Equal(
+				v1.TestStatus{
+					Kind:    v1.TestStatusPended,
+					Message: &message,
+				},
+			))
+		})
+	})
+
+	Describe("NewSkippedTestStatus", func() {
+		It("produces a Skipped test status", func() {
+			message := "message"
+			Expect(v1.NewSkippedTestStatus(&message)).To(Equal(
+				v1.TestStatus{
+					Kind:    v1.TestStatusSkipped,
+					Message: &message,
+				},
+			))
+		})
+	})
+
+	Describe("NewSuccessfulTestStatus", func() {
+		It("produces a Successful test status", func() {
+			Expect(v1.NewSuccessfulTestStatus()).To(Equal(
+				v1.TestStatus{
+					Kind: v1.TestStatusSuccessful,
+				},
+			))
+		})
+	})
+
+	Describe("NewTimedOutTestStatus", func() {
+		It("produces a TimedOut test status", func() {
+			Expect(v1.NewTimedOutTestStatus()).To(Equal(
+				v1.TestStatus{
+					Kind: v1.TestStatusTimedOut,
+				},
+			))
+		})
+	})
+
+	Describe("NewTodoTestStatus", func() {
+		It("produces a Todo test status", func() {
+			message := "message"
+			Expect(v1.NewTodoTestStatus(&message)).To(Equal(
+				v1.TestStatus{
+					Kind:    v1.TestStatusTodo,
+					Message: &message,
+				},
+			))
+		})
+	})
+
+	Describe("NewQuarantinedTestStatus", func() {
+		It("produces a Quarantined test status", func() {
+			originalStatus := v1.NewCanceledTestStatus()
+			Expect(v1.NewQuarantinedTestStatus(originalStatus)).To(Equal(
+				v1.TestStatus{
+					Kind:           v1.TestStatusQuarantined,
+					OriginalStatus: &originalStatus,
+				},
+			))
+		})
 	})
 })
