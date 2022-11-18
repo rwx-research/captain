@@ -81,7 +81,7 @@ func (p RubyRSpecParser) Parse(data io.Reader) (*ParseResult, error) {
 		}
 		location := v1.Location{File: file}
 
-		duration := time.Duration(example.RunTime * 1000000000)
+		duration := time.Duration(example.RunTime) * time.Second
 		meta := make(map[string]any)
 
 		if example.FilePath != "" {
