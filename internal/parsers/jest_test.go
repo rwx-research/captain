@@ -55,14 +55,14 @@ var _ = Describe("Jest", func() {
 	})
 
 	It("extracts the test metadata", func() {
-		key := "is top-level passing"
+		key := "is asynchronously top-level passing"
 
 		for _, testResult := range result {
 			if testResult.Description != key {
 				continue
 			}
 
-			Expect(testResult.Duration).To(Equal(time.Duration(1000000000)))
+			Expect(testResult.Duration).To(Equal(time.Duration(653000000)))
 			Expect(testResult.Meta).To(Equal(
 				map[string]any{"file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"},
 			))

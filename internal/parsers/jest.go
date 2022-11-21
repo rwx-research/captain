@@ -65,7 +65,7 @@ func (j *Jest) Parse(content io.Reader) ([]testing.TestResult, error) {
 
 			results = append(results, testing.TestResult{
 				Description:   strings.Join(description, " > "),
-				Duration:      time.Duration(*assertionResult.Duration) * time.Second,
+				Duration:      time.Duration(*assertionResult.Duration) * time.Millisecond,
 				Status:        status,
 				StatusMessage: statusMessage,
 				Meta:          map[string]any{"file": testResult.Name},
