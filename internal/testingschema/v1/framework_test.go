@@ -26,6 +26,15 @@ var _ = Describe("Framework", func() {
 		})
 	})
 
+	Describe("NewJavaScriptCypressFramework", func() {
+		It("produces a framework of the expected configuration", func() {
+			Expect(v1.NewJavaScriptCypressFramework()).To(Equal(v1.Framework{
+				Language: v1.FrameworkLanguageJavaScript,
+				Kind:     v1.FrameworkKindCypress,
+			}))
+		})
+	})
+
 	Describe("NewDotNetxUnitFramework", func() {
 		It("produces a framework of the expected configuration", func() {
 			Expect(v1.NewDotNetxUnitFramework()).To(Equal(v1.Framework{

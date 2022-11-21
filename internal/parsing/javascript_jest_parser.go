@@ -107,9 +107,9 @@ type JavaScriptJestTestResults struct {
 	RunExecError *JavaScriptJestSerializableError `json:"runExecError"`
 }
 
-var newlineRegexp = regexp.MustCompile(`\r?\n`)
+var javaScriptJestNewlineRegexp = regexp.MustCompile(`\r?\n`)
 
-var backtraceSeparatorRegexp = regexp.MustCompile(`\r?\n\s{4}at`)
+var javaScriptJestBacktraceSeparatorRegexp = regexp.MustCompile(`\r?\n\s{4}at`)
 
 func (p JavaScriptJestParser) Parse(data io.Reader) (*ParseResult, error) {
 	var testResults JavaScriptJestTestResults
@@ -216,7 +216,7 @@ func (p JavaScriptJestParser) Parse(data io.Reader) (*ParseResult, error) {
 	if testResults.RunExecError != nil {
 		var backtrace []string
 		if testResults.RunExecError.Stack != nil {
-			backtrace = newlineRegexp.Split(*testResults.RunExecError.Stack, -1)
+			backtrace = javaScriptJestNewlineRegexp.Split(*testResults.RunExecError.Stack, -1)
 		}
 		otherErrors = append(
 			otherErrors,
@@ -245,7 +245,7 @@ func (p JavaScriptJestParser) extractFailureMetadata(failureMessages []string) (
 	var backtrace []string
 
 	if failureMessages != nil && failureMessages[0] != "" {
-		parts := backtraceSeparatorRegexp.Split(failureMessages[0], -1)
+		parts := javaScriptJestBacktraceSeparatorRegexp.Split(failureMessages[0], -1)
 		first, rest := parts[0], parts[1:]
 		message = &first
 

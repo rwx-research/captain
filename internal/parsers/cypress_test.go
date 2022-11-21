@@ -22,7 +22,7 @@ var _ = Describe("Cypress", func() {
 	BeforeEach(func() {
 		var err error
 
-		fixture, err = os.Open("../../test/fixtures/cypress.xml")
+		fixture, err = os.Open("../../test/fixtures/unrealistic-cypress.xml")
 		Expect(err).ToNot(HaveOccurred())
 
 		parser = new(parsers.JUnit)
