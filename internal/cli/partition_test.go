@@ -2,6 +2,7 @@ package cli_test
 
 import (
 	"context"
+	"path/filepath"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -139,6 +140,18 @@ var _ = Describe("Partition", func() {
 				return []testing.TestFileTiming{}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+		})
+
+		It("prints warning to standard err", func() {
+			_ = service.Partition(ctx, cfg(1, 2))
+
+			assignments := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.ErrorLevel).All() {
+				assignments = append(assignments, log.Message)
+			}
+			Expect(assignments).To(
+				ContainElement("No test file timings were matched. This will result in a naive round-robin strategy."),
+			)
 		})
 
 		It("uses round-robin strategy", func() {
@@ -339,7 +352,7 @@ var _ = Describe("Partition", func() {
 		})
 	})
 
-	Context("when we have more moar partitions", func() {
+	Context("when we have moar partitions", func() {
 		BeforeEach(func() {
 			mockGetTimingManifest := func(
 				ctx context.Context,
@@ -374,7 +387,7 @@ var _ = Describe("Partition", func() {
 		})
 	})
 
-	Context("when we have more moar partitions", func() {
+	Context("when the server sends down ./filepaths", func() {
 		BeforeEach(func() {
 			mockGetTimingManifest := func(
 				ctx context.Context,
@@ -382,13 +395,87 @@ var _ = Describe("Partition", func() {
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				return []testing.TestFileTiming{
-					{Filepath: "d.test", Duration: 1},
-					{Filepath: "c.test", Duration: 2},
-					{Filepath: "b.test", Duration: 3},
-					{Filepath: "a.test", Duration: 4},
+					{Filepath: "./d.test", Duration: 1},
+					{Filepath: "./c.test", Duration: 2},
+					{Filepath: "./b.test", Duration: 3},
+					{Filepath: "./a.test", Duration: 4},
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+		})
+
+		It("still matches because we are comparing expanded absolute paths", func() {
+			_ = service.Partition(ctx, cfg(1, 2))
+
+			assignments := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
+				assignments = append(assignments, log.Message)
+			}
+			Expect(assignments).To(ContainElements([]string{
+				"Total Capacity: 10ns",
+				"Target Partition Capacity: 5ns",
+				"[PART 0 (80.00)]: Assigned 'a.test' (4ns) using first fit strategy",
+				"[PART 1 (60.00)]: Assigned 'b.test' (3ns) using first fit strategy",
+				"[PART 1 (100.00)]: Assigned 'c.test' (2ns) using first fit strategy",
+				"[PART 0 (100.00)]: Assigned 'd.test' (1ns) using first fit strategy",
+			}))
+		})
+	})
+
+	Context("when the server sends down fully expanded paths", func() {
+		BeforeEach(func() {
+			mockGetTimingManifest := func(
+				ctx context.Context,
+				testSuiteIdentifier string,
+			) ([]testing.TestFileTiming, error) {
+				fetchedTimingManifest = true
+				a, _ := filepath.Abs("a.test")
+				b, _ := filepath.Abs("b.test")
+				c, _ := filepath.Abs("c.test")
+				d, _ := filepath.Abs("d.test")
+				return []testing.TestFileTiming{
+					{Filepath: a, Duration: 4},
+					{Filepath: b, Duration: 3},
+					{Filepath: c, Duration: 2},
+					{Filepath: d, Duration: 1},
+				}, nil
+			}
+			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+		})
+
+		It("still matches because we are comparing expanded absolute paths", func() {
+			_ = service.Partition(ctx, cfg(1, 2))
+
+			assignments := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
+				assignments = append(assignments, log.Message)
+			}
+			Expect(assignments).To(ContainElements(
+				"Total Capacity: 10ns",
+				"Target Partition Capacity: 5ns",
+				"[PART 0 (80.00)]: Assigned 'a.test' (4ns) using first fit strategy",
+				"[PART 1 (60.00)]: Assigned 'b.test' (3ns) using first fit strategy",
+				"[PART 1 (100.00)]: Assigned 'c.test' (2ns) using first fit strategy",
+				"[PART 0 (100.00)]: Assigned 'd.test' (1ns) using first fit strategy",
+			))
+		})
+
+		It("logs the partitioned files for index 0 using client test file paths", func() {
+			_ = service.Partition(ctx, cfg(0, 2))
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+				logMessages = append(logMessages, log.Message)
+			}
+			Expect(logMessages).To(ContainElement("a.test d.test"))
+		})
+
+		It("logs the partitioned files for index 1 using client test file paths", func() {
+			_ = service.Partition(ctx, cfg(1, 2))
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+				logMessages = append(logMessages, log.Message)
+			}
+			Expect(logMessages).To(ContainElement("b.test c.test"))
 		})
 	})
 })

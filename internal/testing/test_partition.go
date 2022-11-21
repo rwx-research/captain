@@ -3,8 +3,6 @@ package testing
 import (
 	"fmt"
 	"time"
-
-	"go.uber.org/zap"
 )
 
 type TestPartition struct {
@@ -12,12 +10,11 @@ type TestPartition struct {
 	Index             int
 	TestFilePaths     []string
 	TotalCapacity     time.Duration
-	Log               *zap.SugaredLogger
 }
 
-func (p TestPartition) Add(timing TestFileTiming) TestPartition {
-	p = p.AddFilePath(timing.Filepath)
-	p.RemainingCapacity -= timing.Duration
+func (p TestPartition) Add(matchedTiming FileTimingMatch) TestPartition {
+	p = p.AddFilePath(matchedTiming.ClientFilepath)
+	p.RemainingCapacity -= matchedTiming.Duration()
 	return p
 }
 

@@ -364,28 +364,51 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 		return errors.Wrap(err)
 	}
 
-	fileTimingLookup := make(map[string]testing.TestFileTiming, len(fileTimings))
-	for _, timing := range fileTimings {
-		fileTimingLookup[timing.Filepath] = timing
-	}
-
-	matchedFileTimings := make([]testing.TestFileTiming, 0)
+	fileTimingMatches := make([]testing.FileTimingMatch, 0)
 	unmatchedFilepaths := make([]string, 0)
-	for _, testFilepath := range cfg.TestFilePaths {
-		if timing, ok := fileTimingLookup[testFilepath]; ok {
-			matchedFileTimings = append(matchedFileTimings, timing)
+	for _, clientTestFile := range cfg.TestFilePaths {
+		match := false
+		var fileTimingMatch testing.FileTimingMatch
+		clientExpandedFilepath, err := filepath.Abs(clientTestFile)
+		if err != nil {
+			s.Log.Warnf("failed to expand path of test file: %s", clientTestFile)
+			unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)
+			continue
+		}
+
+		for _, serverTiming := range fileTimings {
+			serverExpandedFilepath, err := filepath.Abs(serverTiming.Filepath)
+			if err != nil {
+				s.Log.Warnf("failed to expand filepath of timing file: %s", serverTiming.Filepath)
+				break
+			}
+			if clientExpandedFilepath == serverExpandedFilepath {
+				match = true
+				fileTimingMatch = testing.FileTimingMatch{
+					FileTiming:     serverTiming,
+					ClientFilepath: clientTestFile,
+				}
+				break
+			}
+		}
+		if match {
+			fileTimingMatches = append(fileTimingMatches, fileTimingMatch)
 		} else {
-			unmatchedFilepaths = append(unmatchedFilepaths, testFilepath)
+			unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)
 		}
 	}
-	sort.Slice(matchedFileTimings, func(i, j int) bool {
-		return matchedFileTimings[i].Duration > matchedFileTimings[j].Duration
+	sort.Slice(fileTimingMatches, func(i, j int) bool {
+		return fileTimingMatches[i].Duration() > fileTimingMatches[j].Duration()
 	})
+
+	if len(fileTimingMatches) == 0 {
+		s.Log.Errorln("No test file timings were matched. This will result in a naive round-robin strategy.")
+	}
 
 	partitions := make([]testing.TestPartition, 0)
 	var totalCapacity time.Duration
-	for _, timing := range matchedFileTimings {
-		totalCapacity += timing.Duration
+	for _, fileTimingMatch := range fileTimingMatches {
+		totalCapacity += fileTimingMatch.Duration()
 	}
 	partitionCapacity := totalCapacity / time.Duration(cfg.TotalPartitions)
 
@@ -401,18 +424,18 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 		})
 	}
 
-	for _, timing := range matchedFileTimings {
-		fits, partition := partitionWithFirstFit(partitions, timing)
+	for _, fileTimingMatch := range fileTimingMatches {
+		fits, partition := partitionWithFirstFit(partitions, fileTimingMatch)
 		if fits {
-			partition = partition.Add(timing)
+			partition = partition.Add(fileTimingMatch)
 			partitions[partition.Index] = partition
-			s.Log.Debugf("%s: Assigned %s using first fit strategy", partition, timing)
+			s.Log.Debugf("%s: Assigned %s using first fit strategy", partition, fileTimingMatch)
 			continue
 		}
 		partition = partitionWithMostRemainingCapacity(partitions)
-		partition = partition.Add(timing)
+		partition = partition.Add(fileTimingMatch)
 		partitions[partition.Index] = partition
-		s.Log.Debugf("%s: Assigned %s using most remaining capacity strategy", partition, timing)
+		s.Log.Debugf("%s: Assigned %s using most remaining capacity strategy", partition, fileTimingMatch)
 	}
 
 	for i, testFilepath := range unmatchedFilepaths {
@@ -421,17 +444,18 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 		s.Log.Debugf("%s: Assigned '%s' using round robin strategy", partition, testFilepath)
 	}
 
-	s.Log.Infoln(strings.Join(partitions[cfg.PartitionIndex].TestFilePaths, " "))
+	activePartition := partitions[cfg.PartitionIndex]
+	s.Log.Infoln(strings.Join(activePartition.TestFilePaths, " "))
 
 	return nil
 }
 
 func partitionWithFirstFit(
 	partitions []testing.TestPartition,
-	timing testing.TestFileTiming,
+	fileTimingMatch testing.FileTimingMatch,
 ) (fit bool, result testing.TestPartition) {
 	for _, p := range partitions {
-		if p.RemainingCapacity >= timing.Duration {
+		if p.RemainingCapacity >= fileTimingMatch.Duration() {
 			return true, p
 		}
 	}
