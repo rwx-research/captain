@@ -44,3 +44,29 @@ else
 fi
 
 set -e
+
+echo Testing Partitioning...
+
+set +e
+part1=$(./captain partition \
+  .github/workflows/fixtures/partition/*.rb \
+  --suite-id "captain-cli-functional-tests" --index 0 --total 2)
+
+if [[ "$part1" == ".github/workflows/fixtures/partition/x.rb .github/workflows/fixtures/partition/z.rb" ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  exit 1;
+fi
+
+part2=$(./captain partition \
+  .github/workflows/fixtures/partition/*.rb \
+  --suite-id "captain-cli-functional-tests" --index 1 --total 2)
+
+if [[ "$part2" == ".github/workflows/fixtures/partition/y.rb" ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  exit 1;
+fi
+set -e
