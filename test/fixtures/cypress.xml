@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites name="Mocha Tests" time="9.497" tests="13" failures="3">
   <testsuite name="Root Suite" timestamp="2022-11-21T20:02:01" tests="1" file="cypress/e2e/todo-one.cy.js" time="0.000" failures="0">
+    <properties>
+      <property name="some-key" value="some-value"/>
+      <property name="other-key" value="1"/>
+    </properties>
     <testcase name="displays two todo items by default" time="0.490" classname="displays two todo items by default">
     </testcase>
   </testsuite>
@@ -54,10 +58,12 @@
   </testsuite>
   <testsuite name="more nesting" timestamp="2022-11-21T20:02:09" tests="3" time="1.006" failures="0">
     <testcase name="example to-do app one with a checked task more nesting can filter for uncompleted tasks" time="0.309" classname="can filter for uncompleted tasks">
+      <skipped />
     </testcase>
     <testcase name="example to-do app one with a checked task more nesting can filter for completed tasks" time="0.324" classname="can filter for completed tasks">
     </testcase>
     <testcase name="example to-do app one with a checked task more nesting can delete all completed tasks" time="0.362" classname="can delete all completed tasks">
+      <skipped />
     </testcase>
   </testsuite>
   <testsuite name="with something else" timestamp="2022-11-21T20:02:10" tests="3" time="0.978" failures="0">
