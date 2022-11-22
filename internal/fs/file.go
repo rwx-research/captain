@@ -10,4 +10,5 @@ import (
 type File interface {
 	io.ReadSeekCloser
 	Stat() (os.FileInfo, error)
+	Name() string
 }

@@ -1,6 +1,7 @@
 package parsing_test
 
 import (
+	"encoding/base64"
 	"io"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 	"go.uber.org/zap/zaptest/observer"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
@@ -20,6 +22,9 @@ import (
 type SuccessfulParserOne struct{}
 
 func (p SuccessfulParserOne) Parse(testResults io.Reader) (*v1.TestResults, error) {
+	buf, err := io.ReadAll(testResults)
+	Expect(string(buf)).To(Equal("the fake contents to base64 encode"))
+	Expect(err).NotTo(HaveOccurred())
 	one := "one"
 	return &v1.TestResults{Framework: v1.NewOtherFramework(&one, &one)}, nil
 }
@@ -27,6 +32,9 @@ func (p SuccessfulParserOne) Parse(testResults io.Reader) (*v1.TestResults, erro
 type SuccessfulParserTwo struct{}
 
 func (p SuccessfulParserTwo) Parse(testResults io.Reader) (*v1.TestResults, error) {
+	buf, err := io.ReadAll(testResults)
+	Expect(string(buf)).To(Equal("the fake contents to base64 encode"))
+	Expect(err).NotTo(HaveOccurred())
 	two := "two"
 	return &v1.TestResults{Framework: v1.NewOtherFramework(&two, &two)}, nil
 }
@@ -34,6 +42,9 @@ func (p SuccessfulParserTwo) Parse(testResults io.Reader) (*v1.TestResults, erro
 type ErrorParser struct{}
 
 func (p ErrorParser) Parse(testResults io.Reader) (*v1.TestResults, error) {
+	buf, err := io.ReadAll(testResults)
+	Expect(string(buf)).To(Equal("the fake contents to base64 encode"))
+	Expect(err).NotTo(HaveOccurred())
 	return nil, errors.NewInternalError("could not parse")
 }
 
@@ -48,7 +59,7 @@ var _ = Describe("Parse", func() {
 		logCore      zapcore.Core
 		log          *zap.SugaredLogger
 		recordedLogs *observer.ObservedLogs
-		testResults  io.Reader
+		file         *mocks.File
 	)
 
 	BeforeEach(func() {
@@ -56,11 +67,13 @@ var _ = Describe("Parse", func() {
 		log = zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
 			zap.WrapCore(func(original zapcore.Core) zapcore.Core { return logCore }),
 		)).Sugar()
-		testResults = strings.NewReader("")
+		file = new(mocks.File)
+		file.Reader = strings.NewReader("the fake contents to base64 encode")
+		file.MockName = func() string { return "some/path/to/file" }
 	})
 
 	It("is an error when no parsers are provided", func() {
-		results, err := parsing.Parse(testResults, make([]parsing.Parser, 0), log)
+		results, err := parsing.Parse(file, make([]parsing.Parser, 0), log)
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
@@ -68,7 +81,7 @@ var _ = Describe("Parse", func() {
 	})
 
 	It("is an error when no logger is provided", func() {
-		results, err := parsing.Parse(testResults, []parsing.Parser{SuccessfulParserOne{}}, nil)
+		results, err := parsing.Parse(file, []parsing.Parser{SuccessfulParserOne{}}, nil)
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
@@ -76,7 +89,7 @@ var _ = Describe("Parse", func() {
 	})
 
 	It("is an error when a parser returns neither a result nor an error", func() {
-		results, err := parsing.Parse(testResults, []parsing.Parser{NeitherErrorNorResultsParser{}}, log)
+		results, err := parsing.Parse(file, []parsing.Parser{NeitherErrorNorResultsParser{}}, log)
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
@@ -87,7 +100,7 @@ var _ = Describe("Parse", func() {
 
 	It("is an error when no parsers can parse", func() {
 		results, err := parsing.Parse(
-			testResults,
+			file,
 			[]parsing.Parser{
 				ErrorParser{},
 				ErrorParser{},
@@ -115,9 +128,9 @@ var _ = Describe("Parse", func() {
 		))
 	})
 
-	It("returns the first test results", func() {
+	It("returns the first test results with the base64 encoded content", func() {
 		results, err := parsing.Parse(
-			testResults,
+			file,
 			[]parsing.Parser{
 				SuccessfulParserTwo{},
 				ErrorParser{},
@@ -128,6 +141,15 @@ var _ = Describe("Parse", func() {
 
 		Expect(results).NotTo(BeNil())
 		Expect(*results.Framework.ProvidedKind).To(Equal("two"))
+		Expect(results.DerivedFrom).To(Equal(
+			[]v1.OriginalTestResults{
+				{
+					OriginalFilePath: "some/path/to/file",
+					Contents:         base64.StdEncoding.EncodeToString([]byte("the fake contents to base64 encode")),
+					GroupNumber:      1,
+				},
+			},
+		))
 		Expect(err).To(BeNil())
 
 		logMessages := make([]string, 0)
