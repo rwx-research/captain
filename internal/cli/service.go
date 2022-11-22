@@ -364,9 +364,30 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 		return errors.Wrap(err)
 	}
 
+	// Expand all args as glob, ensuring to de-dupe and sort
+	testFilePathSet := make(map[string]bool)
+	for _, filePathGlob := range cfg.TestFilePaths {
+		filePaths, err := s.FileSystem.Glob(filePathGlob)
+		if err != nil {
+			return s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
+		}
+		for _, filePath := range filePaths {
+			testFilePathSet[filePath] = true
+		}
+	}
+	testFilePaths := make([]string, 0, len(testFilePathSet))
+	for testFilePath := range testFilePathSet {
+		testFilePaths = append(testFilePaths, testFilePath)
+	}
+	sort.Slice(testFilePaths, func(i, j int) bool {
+		return testFilePaths[i] < testFilePaths[j]
+	})
+
+	// Compare expanded client file paths w/ expanded server file paths
+	// taking care to always use the client path and sort by duration desc
 	fileTimingMatches := make([]testing.FileTimingMatch, 0)
 	unmatchedFilepaths := make([]string, 0)
-	for _, clientTestFile := range cfg.TestFilePaths {
+	for _, clientTestFile := range testFilePaths {
 		match := false
 		var fileTimingMatch testing.FileTimingMatch
 		clientExpandedFilepath, err := filepath.Abs(clientTestFile)
@@ -402,7 +423,7 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 	})
 
 	if len(fileTimingMatches) == 0 {
-		s.Log.Errorln("No test file timings were matched. This will result in a naive round-robin strategy.")
+		s.Log.Errorln("No test file timings were matched. Using naive round-robin strategy.")
 	}
 
 	partitions := make([]testing.TestPartition, 0)

@@ -21,6 +21,7 @@ type APIClient interface {
 // for mocking.
 type FileSystem interface {
 	Open(name string) (fs.File, error)
+	Glob(pattern string) ([]string, error)
 }
 
 // Parser is the interface a potential parser needs to implement.

@@ -30,5 +30,9 @@ func (pc PartitionConfig) Validate() error {
 		return errors.NewConfigurationError("index must be < total")
 	}
 
+	if len(pc.TestFilePaths) == 0 {
+		return errors.NewConfigurationError("no test file paths provided")
+	}
+
 	return nil
 }

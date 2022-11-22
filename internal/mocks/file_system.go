@@ -8,6 +8,7 @@ import (
 // FileSystem is a mocked implementation of 'cli.FileSystem'.
 type FileSystem struct {
 	MockOpen func(name string) (fs.File, error)
+	MockGlob func(pattern string) ([]string, error)
 }
 
 // Open either calls the configured mock of itself or returns an error if that doesn't exist.
@@ -17,4 +18,12 @@ func (f *FileSystem) Open(name string) (fs.File, error) {
 	}
 
 	return nil, errors.NewConfigurationError("MockOpen was not configured")
+}
+
+func (f *FileSystem) Glob(pattern string) ([]string, error) {
+	if f.MockGlob != nil {
+		return f.MockGlob(pattern)
+	}
+
+	return nil, errors.NewConfigurationError("MockGlob was not configured")
 }

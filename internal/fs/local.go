@@ -4,6 +4,7 @@ package fs
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
@@ -19,4 +20,13 @@ func (l Local) Open(name string) (File, error) {
 	}
 
 	return f, nil
+}
+
+func (l Local) Glob(pattern string) ([]string, error) {
+	filepaths, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, errors.Wrap(err)
+	}
+
+	return filepaths, nil
 }

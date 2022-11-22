@@ -15,6 +15,7 @@ var (
 		Short:   "Partition a test suite using historical file timings recorded by Captain",
 		Long:    descriptionPartition,
 		PreRunE: initCLIService,
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := captain.Partition(cmd.Context(), cli.PartitionConfig{
 				PartitionIndex:  partitionIndex,

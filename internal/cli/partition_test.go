@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap/zaptest/observer"
 
 	"github.com/rwx-research/captain-cli/internal/cli"
+	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/testing"
 
@@ -17,13 +18,17 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func cfg(index int, total int) cli.PartitionConfig {
+func cfgWithArgs(index int, total int, args []string) cli.PartitionConfig {
 	return cli.PartitionConfig{
-		TestFilePaths:   []string{"a.test", "b.test", "c.test", "d.test"},
+		TestFilePaths:   args,
 		PartitionIndex:  index,
 		TotalPartitions: total,
 		SuiteID:         "captain-cli-test",
 	}
+}
+
+func cfgWithGlob(index int, total int, glob string) cli.PartitionConfig {
+	return cfgWithArgs(index, total, []string{glob})
 }
 
 var _ = Describe("Partition", func() {
@@ -55,15 +60,42 @@ var _ = Describe("Partition", func() {
 
 	Context("when misconfigured", func() {
 		It("requires an index be >= 0", func() {
-			err = service.Partition(ctx, cfg(-1, 2))
+			err = service.Partition(ctx, cfgWithGlob(-1, 2, "*.test"))
 			Expect(err.Error()).To(ContainSubstring("index must be >= 0"))
 		})
 
 		It("requires an index be < total", func() {
-			err = service.Partition(ctx, cfg(1, 1))
+			err = service.Partition(ctx, cfgWithGlob(1, 1, "*.test"))
 			Expect(err.Error()).To(ContainSubstring("index must be < total"))
-			err = service.Partition(ctx, cfg(2, 1))
+			err = service.Partition(ctx, cfgWithGlob(2, 1, "*.test"))
 			Expect(err.Error()).To(ContainSubstring("index must be < total"))
+		})
+
+		It("must specify filepath args", func() {
+			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}))
+			Expect(err.Error()).To(ContainSubstring("no test file paths provided"))
+		})
+	})
+
+	Context("when the client provides multiple globs", func() {
+		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
+			mockGetTimingManifest := func(ctx context.Context, testSuiteIdentifier string) ([]testing.TestFileTiming, error) {
+				return []testing.TestFileTiming{}, nil
+			}
+			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+		})
+
+		It("only considers unique filepaths", func() {
+			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test", "*.test"}))
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+				logMessages = append(logMessages, log.Message)
+			}
+			Expect(logMessages).To(ContainElement("a.test b.test c.test d.test"))
 		})
 	})
 
@@ -82,20 +114,24 @@ var _ = Describe("Partition", func() {
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
 		It("doesnt return an error", func() {
-			err = service.Partition(ctx, cfg(0, 2))
+			err = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("fetches the timing manifest", func() {
-			_ = service.Partition(ctx, cfg(0, 2))
+			_ = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			Expect(fetchedTimingManifest).To(BeTrue())
 		})
 
 		It("uses first fit strategy", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
@@ -112,7 +148,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs the partitioned files for index 0", func() {
-			_ = service.Partition(ctx, cfg(0, 2))
+			_ = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -121,7 +157,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs the partitioned files for index 1", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -132,6 +168,9 @@ var _ = Describe("Partition", func() {
 
 	Context("when there are no test file timings", func() {
 		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
 			mockGetTimingManifest := func(
 				ctx context.Context,
 				testSuiteIdentifier string,
@@ -140,22 +179,23 @@ var _ = Describe("Partition", func() {
 				return []testing.TestFileTiming{}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
 		It("prints warning to standard err", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.ErrorLevel).All() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(
-				ContainElement("No test file timings were matched. This will result in a naive round-robin strategy."),
+				ContainElement("No test file timings were matched. Using naive round-robin strategy."),
 			)
 		})
 
 		It("uses round-robin strategy", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
@@ -172,7 +212,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs files for partition 0", func() {
-			_ = service.Partition(ctx, cfg(0, 2))
+			_ = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
@@ -182,7 +222,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs files for partition 1", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
@@ -194,6 +234,9 @@ var _ = Describe("Partition", func() {
 
 	Context("when test file timings overflow partitions", func() {
 		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
 			mockGetTimingManifest := func(
 				ctx context.Context,
 				testSuiteIdentifier string,
@@ -207,20 +250,21 @@ var _ = Describe("Partition", func() {
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
 		It("doesnt return an error", func() {
-			err = service.Partition(ctx, cfg(0, 2))
+			err = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("fetches the timing manifest", func() {
-			_ = service.Partition(ctx, cfg(0, 2))
+			_ = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			Expect(fetchedTimingManifest).To(BeTrue())
 		})
 
 		It("uses first fit strategy, falling back to most remaining when it can't fit", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
@@ -237,7 +281,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs the partitioned files for index 0", func() {
-			_ = service.Partition(ctx, cfg(0, 2))
+			_ = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -246,7 +290,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs the partitioned files for index 1", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -257,6 +301,9 @@ var _ = Describe("Partition", func() {
 
 	Context("when suite run with some timed and some untimed files", func() {
 		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
 			mockGetTimingManifest := func(
 				ctx context.Context,
 				testSuiteIdentifier string,
@@ -269,20 +316,21 @@ var _ = Describe("Partition", func() {
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
 		It("doesnt return an error", func() {
-			err = service.Partition(ctx, cfg(0, 2))
+			err = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("fetches the timing manifest", func() {
-			_ = service.Partition(ctx, cfg(0, 2))
+			_ = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			Expect(fetchedTimingManifest).To(BeTrue())
 		})
 
 		It("uses first fit, falls back to most remaining, then round robins unknowns", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
@@ -299,7 +347,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs the partitioned files for index 0", func() {
-			_ = service.Partition(ctx, cfg(0, 2))
+			_ = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -308,7 +356,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs the partitioned files for index 1", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -319,6 +367,9 @@ var _ = Describe("Partition", func() {
 
 	Context("when we're provided out of order timings", func() {
 		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
 			mockGetTimingManifest := func(
 				ctx context.Context,
 				testSuiteIdentifier string,
@@ -332,10 +383,11 @@ var _ = Describe("Partition", func() {
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
 		It("sorts and processes in decreasing order", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
@@ -354,6 +406,9 @@ var _ = Describe("Partition", func() {
 
 	Context("when we have moar partitions", func() {
 		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
 			mockGetTimingManifest := func(
 				ctx context.Context,
 				testSuiteIdentifier string,
@@ -367,10 +422,11 @@ var _ = Describe("Partition", func() {
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
 		It("utilizes them best it can", func() {
-			_ = service.Partition(ctx, cfg(1, 3))
+			_ = service.Partition(ctx, cfgWithGlob(1, 3, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
@@ -389,6 +445,9 @@ var _ = Describe("Partition", func() {
 
 	Context("when the server sends down ./filepaths", func() {
 		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
 			mockGetTimingManifest := func(
 				ctx context.Context,
 				testSuiteIdentifier string,
@@ -402,10 +461,11 @@ var _ = Describe("Partition", func() {
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
 		It("still matches because we are comparing expanded absolute paths", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
@@ -424,6 +484,9 @@ var _ = Describe("Partition", func() {
 
 	Context("when the server sends down fully expanded paths", func() {
 		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
 			mockGetTimingManifest := func(
 				ctx context.Context,
 				testSuiteIdentifier string,
@@ -441,10 +504,11 @@ var _ = Describe("Partition", func() {
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
 		It("still matches because we are comparing expanded absolute paths", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
@@ -461,7 +525,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs the partitioned files for index 0 using client test file paths", func() {
-			_ = service.Partition(ctx, cfg(0, 2))
+			_ = service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -470,12 +534,33 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("logs the partitioned files for index 1 using client test file paths", func() {
-			_ = service.Partition(ctx, cfg(1, 2))
+			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
 			}
 			Expect(logMessages).To(ContainElement("b.test c.test"))
+		})
+	})
+
+	Context("when the server returns an error", func() {
+		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
+			mockGetTimingManifest := func(
+				ctx context.Context,
+				testSuiteIdentifier string,
+			) ([]testing.TestFileTiming, error) {
+				return nil, errors.NewSystemError("something bad!")
+			}
+			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+		})
+
+		It("raises an error because partitioning one index and round-robining another is problematic ", func() {
+			err = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
+			Expect(err.Error()).To(ContainSubstring("something bad!"))
 		})
 	})
 })
