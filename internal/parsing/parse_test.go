@@ -17,48 +17,29 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type PositiveSentimentParser struct{}
+type SuccessfulParserOne struct{}
 
-func (p PositiveSentimentParser) Parse(testResults io.Reader) (*parsing.ParseResult, error) {
-	positive := "positive"
-	return &parsing.ParseResult{
-		Sentiment:   parsing.PositiveParseResultSentiment,
-		TestResults: v1.TestResults{Framework: v1.NewOtherFramework(&positive, &positive)},
-		Parser:      p,
-	}, nil
+func (p SuccessfulParserOne) Parse(testResults io.Reader) (*v1.TestResults, error) {
+	one := "one"
+	return &v1.TestResults{Framework: v1.NewOtherFramework(&one, &one)}, nil
 }
 
-type NeutralSentimentParser struct{}
+type SuccessfulParserTwo struct{}
 
-func (p NeutralSentimentParser) Parse(testResults io.Reader) (*parsing.ParseResult, error) {
-	neutral := "neutral"
-	return &parsing.ParseResult{
-		Sentiment:   parsing.NeutralParseResultSentiment,
-		TestResults: v1.TestResults{Framework: v1.NewOtherFramework(&neutral, &neutral)},
-		Parser:      p,
-	}, nil
-}
-
-type NegativeSentimentParser struct{}
-
-func (p NegativeSentimentParser) Parse(testResults io.Reader) (*parsing.ParseResult, error) {
-	negative := "negative"
-	return &parsing.ParseResult{
-		Sentiment:   parsing.NegativeParseResultSentiment,
-		TestResults: v1.TestResults{Framework: v1.NewOtherFramework(&negative, &negative)},
-		Parser:      p,
-	}, nil
+func (p SuccessfulParserTwo) Parse(testResults io.Reader) (*v1.TestResults, error) {
+	two := "two"
+	return &v1.TestResults{Framework: v1.NewOtherFramework(&two, &two)}, nil
 }
 
 type ErrorParser struct{}
 
-func (p ErrorParser) Parse(testResults io.Reader) (*parsing.ParseResult, error) {
+func (p ErrorParser) Parse(testResults io.Reader) (*v1.TestResults, error) {
 	return nil, errors.NewInternalError("could not parse")
 }
 
 type NeitherErrorNorResultsParser struct{}
 
-func (p NeitherErrorNorResultsParser) Parse(testResults io.Reader) (*parsing.ParseResult, error) {
+func (p NeitherErrorNorResultsParser) Parse(testResults io.Reader) (*v1.TestResults, error) {
 	return nil, nil
 }
 
@@ -87,7 +68,7 @@ var _ = Describe("Parse", func() {
 	})
 
 	It("is an error when no logger is provided", func() {
-		results, err := parsing.Parse(testResults, []parsing.Parser{NeutralSentimentParser{}}, nil)
+		results, err := parsing.Parse(testResults, []parsing.Parser{SuccessfulParserOne{}}, nil)
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
@@ -100,7 +81,7 @@ var _ = Describe("Parse", func() {
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(
-			ContainSubstring("NeitherErrorNorResultsParser did not error and did not return a parse result"),
+			ContainSubstring("NeitherErrorNorResultsParser did not error and did not return a test result"),
 		)
 	})
 
@@ -134,20 +115,19 @@ var _ = Describe("Parse", func() {
 		))
 	})
 
-	It("returns the first parse result with the highest sentiment", func() {
+	It("returns the first test results", func() {
 		results, err := parsing.Parse(
 			testResults,
 			[]parsing.Parser{
-				NeutralSentimentParser{},
-				NegativeSentimentParser{},
+				SuccessfulParserTwo{},
 				ErrorParser{},
-				PositiveSentimentParser{},
+				SuccessfulParserOne{},
 			},
 			log,
 		)
 
 		Expect(results).NotTo(BeNil())
-		Expect(*results.Framework.ProvidedKind).To(Equal("positive"))
+		Expect(*results.Framework.ProvidedKind).To(Equal("two"))
 		Expect(err).To(BeNil())
 
 		logMessages := make([]string, 0)
@@ -159,78 +139,13 @@ var _ = Describe("Parse", func() {
 			ContainSubstring("ErrorParser was not capable of parsing the test results"),
 		))
 		Expect(logMessages).To(ContainElement(
-			ContainSubstring("NeutralSentimentParser was capable of parsing the test results. Sentiment: Neutral"),
+			ContainSubstring("SuccessfulParserOne was capable of parsing the test results."),
 		))
 		Expect(logMessages).To(ContainElement(
-			ContainSubstring("PositiveSentimentParser was capable of parsing the test results. Sentiment: Positive"),
+			ContainSubstring("SuccessfulParserTwo was capable of parsing the test results."),
 		))
 		Expect(logMessages).To(ContainElement(
-			ContainSubstring("NegativeSentimentParser was capable of parsing the test results. Sentiment: Negative"),
-		))
-		Expect(logMessages).To(ContainElement(
-			ContainSubstring("PositiveSentimentParser was ultimately responsible for parsing the test results"),
-		))
-	})
-
-	It("returns results with neutral sentiment", func() {
-		results, err := parsing.Parse(
-			testResults,
-			[]parsing.Parser{
-				NeutralSentimentParser{},
-				ErrorParser{},
-			},
-			log,
-		)
-
-		Expect(results).NotTo(BeNil())
-		Expect(*results.Framework.ProvidedKind).To(Equal("neutral"))
-		Expect(err).To(BeNil())
-
-		logMessages := make([]string, 0)
-		for _, log := range recordedLogs.All() {
-			logMessages = append(logMessages, log.Message)
-		}
-
-		Expect(logMessages).To(ContainElement(
-			ContainSubstring("ErrorParser was not capable of parsing the test results"),
-		))
-		Expect(logMessages).To(ContainElement(
-			ContainSubstring("NeutralSentimentParser was capable of parsing the test results. Sentiment: Neutral"),
-		))
-		Expect(logMessages).To(ContainElement(
-			ContainSubstring("NeutralSentimentParser was ultimately responsible for parsing the test results"),
-		))
-	})
-
-	It("returns an error if we only have negative sentiments", func() {
-		results, err := parsing.Parse(
-			testResults,
-			[]parsing.Parser{
-				NegativeSentimentParser{},
-				ErrorParser{},
-			},
-			log,
-		)
-
-		Expect(results).To(BeNil())
-		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(
-			ContainSubstring("No parsers were capable of parsing the provided test results"),
-		)
-
-		logMessages := make([]string, 0)
-		for _, log := range recordedLogs.All() {
-			logMessages = append(logMessages, log.Message)
-		}
-
-		Expect(logMessages).To(ContainElement(
-			ContainSubstring("ErrorParser was not capable of parsing the test results"),
-		))
-		Expect(logMessages).To(ContainElement(
-			ContainSubstring("NegativeSentimentParser was capable of parsing the test results. Sentiment: Negative"),
-		))
-		Expect(logMessages).NotTo(ContainElement(
-			ContainSubstring("ultimately responsible for parsing the test results"),
+			ContainSubstring("SuccessfulParserTwo was ultimately responsible for parsing the test results"),
 		))
 	})
 })

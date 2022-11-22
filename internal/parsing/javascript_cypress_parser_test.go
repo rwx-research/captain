@@ -18,63 +18,61 @@ var _ = Describe("JavaScriptCypressParser", func() {
 			fixture, err := os.Open("../../test/fixtures/cypress.xml")
 			Expect(err).ToNot(HaveOccurred())
 
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
-			Expect(parseResult.Parser).To(Equal(parsing.JavaScriptCypressParser{}))
-			Expect(parseResult.Sentiment).To(Equal(parsing.PositiveParseResultSentiment))
-			Expect(parseResult.TestResults.Framework.Language).To(Equal(v1.FrameworkLanguageJavaScript))
-			Expect(parseResult.TestResults.Framework.Kind).To(Equal(v1.FrameworkKindCypress))
-			Expect(parseResult.TestResults.Summary.Tests).To(Equal(19))
-			Expect(parseResult.TestResults.Summary.Successful).To(Equal(14))
-			Expect(parseResult.TestResults.Summary.Failed).To(Equal(3))
-			Expect(parseResult.TestResults.Summary.Skipped).To(Equal(2))
-			Expect(parseResult.TestResults.Summary.OtherErrors).To(Equal(0))
+			Expect(testResults.Framework.Language).To(Equal(v1.FrameworkLanguageJavaScript))
+			Expect(testResults.Framework.Kind).To(Equal(v1.FrameworkKindCypress))
+			Expect(testResults.Summary.Tests).To(Equal(19))
+			Expect(testResults.Summary.Successful).To(Equal(14))
+			Expect(testResults.Summary.Failed).To(Equal(3))
+			Expect(testResults.Summary.Skipped).To(Equal(2))
+			Expect(testResults.Summary.OtherErrors).To(Equal(0))
 		})
 
 		It("errors on malformed XML", func() {
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(`<abc`))
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(`<abc`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to parse test results as XML"))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 		})
 
 		It("errors on XML that doesn't look like Cypress", func() {
-			var parseResult *parsing.ParseResult
+			var testResults *v1.TestResults
 			var err error
 
-			parseResult, err = parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(`<foo></foo>`))
+			testResults, err = parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(`<foo></foo>`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to parse test results as XML"))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 
-			parseResult, err = parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(`<testsuites></testsuites>`))
+			testResults, err = parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(`<testsuites></testsuites>`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("No tests count was found in the XML"))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 
-			parseResult, err = parsing.JavaScriptCypressParser{}.Parse(
+			testResults, err = parsing.JavaScriptCypressParser{}.Parse(
 				strings.NewReader(`<testsuites tests="1"><testsuite></testsuite></testsuites>`),
 			)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(
 				ContainSubstring("The test suites in the XML do not appear to match Cypress XML"),
 			)
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 		})
 
 		It("parses files properly", func() {
 			fixture, err := os.Open("../../test/fixtures/cypress.xml")
 			Expect(err).ToNot(HaveOccurred())
 
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			nameOne := "example to-do app one displays two todo items by default"
 			nameTwo := "example to-do app two can add new todo items"
-			for _, test := range parseResult.TestResults.Tests {
+			for _, test := range testResults.Tests {
 				switch test.Name {
 				case nameOne:
 					Expect(test.Location.File).To(Equal("cypress/e2e/todo-one.cy.js"))
@@ -93,12 +91,12 @@ var _ = Describe("JavaScriptCypressParser", func() {
 			fixture, err := os.Open("../../test/fixtures/cypress.xml")
 			Expect(err).ToNot(HaveOccurred())
 
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			name := "displays two todo items by default"
-			for _, test := range parseResult.TestResults.Tests {
+			for _, test := range testResults.Tests {
 				if test.Name != name {
 					continue
 				}
@@ -116,12 +114,12 @@ var _ = Describe("JavaScriptCypressParser", func() {
 			fixture, err := os.Open("../../test/fixtures/cypress.xml")
 			Expect(err).ToNot(HaveOccurred())
 
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			name := "example to-do app one displays two todo items by default"
-			for _, test := range parseResult.TestResults.Tests {
+			for _, test := range testResults.Tests {
 				if test.Name != name {
 					continue
 				}
@@ -150,12 +148,12 @@ var _ = Describe("JavaScriptCypressParser", func() {
 			fixture, err := os.Open("../../test/fixtures/cypress.xml")
 			Expect(err).ToNot(HaveOccurred())
 
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			name := "example to-do app one can add new todo items"
-			for _, test := range parseResult.TestResults.Tests {
+			for _, test := range testResults.Tests {
 				if test.Name != name {
 					continue
 				}
@@ -175,12 +173,12 @@ var _ = Describe("JavaScriptCypressParser", func() {
 			fixture, err := os.Open("../../test/fixtures/cypress.xml")
 			Expect(err).ToNot(HaveOccurred())
 
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			name := "example to-do app one with a checked task can filter for uncompleted tasks"
-			for _, test := range parseResult.TestResults.Tests {
+			for _, test := range testResults.Tests {
 				if test.Name != name {
 					continue
 				}
@@ -217,7 +215,7 @@ var _ = Describe("JavaScriptCypressParser", func() {
 		})
 
 		It("errors when presented with an <error> element", func() {
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
 				`
 					<testsuites tests="1">
 						<testsuite file="cypress/e2e/some.test.cy.js">
@@ -232,11 +230,11 @@ var _ = Describe("JavaScriptCypressParser", func() {
 			Expect(err.Error()).To(ContainSubstring(
 				`Unexpected <error> element in "some test name", mocha-junit-reporter does not emit these.`,
 			))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 		})
 
 		It("errors when the file name doesn't look like Cypress", func() {
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
 				`
 					<testsuites tests="1">
 						<testsuite file="e2e/some.test.js">
@@ -251,11 +249,11 @@ var _ = Describe("JavaScriptCypressParser", func() {
 			Expect(err.Error()).To(ContainSubstring(
 				`The file does not look like a Cypress file: "e2e/some.test.js"`,
 			))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 		})
 
 		It("calculates the correct name when the classname contains the name", func() {
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
 				`
 					<testsuites tests="1">
 						<testsuite file="cypress/e2e/some.test.cy.js">
@@ -266,12 +264,12 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
-			Expect(parseResult.TestResults.Tests[0].Name).To(Equal("prefix some test name"))
+			Expect(testResults).NotTo(BeNil())
+			Expect(testResults.Tests[0].Name).To(Equal("prefix some test name"))
 		})
 
 		It("calculates the correct name when the name contains the classname", func() {
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
 				`
 					<testsuites tests="1">
 						<testsuite file="cypress/e2e/some.test.cy.js">
@@ -282,12 +280,12 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
-			Expect(parseResult.TestResults.Tests[0].Name).To(Equal("prefix some test name"))
+			Expect(testResults).NotTo(BeNil())
+			Expect(testResults.Tests[0].Name).To(Equal("prefix some test name"))
 		})
 
 		It("calculates the correct name when the name is the same as classname", func() {
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
 				`
 					<testsuites tests="1">
 						<testsuite file="cypress/e2e/some.test.cy.js">
@@ -298,12 +296,12 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
-			Expect(parseResult.TestResults.Tests[0].Name).To(Equal("prefix some test name"))
+			Expect(testResults).NotTo(BeNil())
+			Expect(testResults.Tests[0].Name).To(Equal("prefix some test name"))
 		})
 
 		It("calculates the correct name when the name is entirely different from the classname", func() {
-			parseResult, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JavaScriptCypressParser{}.Parse(strings.NewReader(
 				`
 					<testsuites tests="1">
 						<testsuite file="cypress/e2e/some.test.cy.js">
@@ -314,8 +312,8 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
-			Expect(parseResult.TestResults.Tests[0].Name).To(Equal("prefix some test name"))
+			Expect(testResults).NotTo(BeNil())
+			Expect(testResults.Tests[0].Name).To(Equal("prefix some test name"))
 		})
 	})
 })

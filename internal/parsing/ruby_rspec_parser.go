@@ -49,7 +49,7 @@ type RubyRSpecTestResults struct {
 
 var fileRegexp = regexp.MustCompile(`\.rb(:.+|\[.+\])$`)
 
-func (p RubyRSpecParser) Parse(data io.Reader) (*ParseResult, error) {
+func (p RubyRSpecParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	var testResults RubyRSpecTestResults
 
 	if err := json.NewDecoder(data).Decode(&testResults); err != nil {
@@ -131,14 +131,10 @@ func (p RubyRSpecParser) Parse(data io.Reader) (*ParseResult, error) {
 		}
 	}
 
-	return &ParseResult{
-		Sentiment: PositiveParseResultSentiment,
-		TestResults: v1.TestResults{
-			Framework:   v1.NewRubyRSpecFramework(),
-			Summary:     v1.NewSummary(tests, otherErrors),
-			Tests:       tests,
-			OtherErrors: otherErrors,
-		},
-		Parser: p,
+	return &v1.TestResults{
+		Framework:   v1.NewRubyRSpecFramework(),
+		Summary:     v1.NewSummary(tests, otherErrors),
+		Tests:       tests,
+		OtherErrors: otherErrors,
 	}, nil
 }

@@ -111,7 +111,7 @@ var javaScriptJestNewlineRegexp = regexp.MustCompile(`\r?\n`)
 
 var javaScriptJestBacktraceSeparatorRegexp = regexp.MustCompile(`\r?\n\s{4}at`)
 
-func (p JavaScriptJestParser) Parse(data io.Reader) (*ParseResult, error) {
+func (p JavaScriptJestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	var testResults JavaScriptJestTestResults
 
 	if err := json.NewDecoder(data).Decode(&testResults); err != nil {
@@ -228,15 +228,11 @@ func (p JavaScriptJestParser) Parse(data io.Reader) (*ParseResult, error) {
 		otherErrors = append(otherErrors, v1.OtherError{Message: "An open handle was detected"})
 	}
 
-	return &ParseResult{
-		Sentiment: PositiveParseResultSentiment,
-		TestResults: v1.TestResults{
-			Framework:   v1.NewJavaScriptJestFramework(),
-			Summary:     v1.NewSummary(tests, otherErrors),
-			Tests:       tests,
-			OtherErrors: otherErrors,
-		},
-		Parser: p,
+	return &v1.TestResults{
+		Framework:   v1.NewJavaScriptJestFramework(),
+		Summary:     v1.NewSummary(tests, otherErrors),
+		Tests:       tests,
+		OtherErrors: otherErrors,
 	}, nil
 }
 

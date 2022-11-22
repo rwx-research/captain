@@ -135,7 +135,7 @@ var dotNetxUnitAssemblyNameRegexp = regexp.MustCompile(fmt.Sprintf(`[^%s]+$`, st
 
 var dotNetxUnitNewlineRegexp = regexp.MustCompile(`\r?\n`)
 
-func (p DotNetxUnitParser) Parse(data io.Reader) (*ParseResult, error) {
+func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	var testResults DotNetxUnitTestResults
 
 	if err := xml.NewDecoder(data).Decode(&testResults); err != nil {
@@ -237,15 +237,11 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*ParseResult, error) {
 		}
 	}
 
-	return &ParseResult{
-		Sentiment: PositiveParseResultSentiment,
-		TestResults: v1.TestResults{
-			Framework:   v1.NewDotNetxUnitFramework(),
-			Summary:     v1.NewSummary(tests, otherErrors),
-			Tests:       tests,
-			OtherErrors: otherErrors,
-		},
-		Parser: p,
+	return &v1.TestResults{
+		Framework:   v1.NewDotNetxUnitFramework(),
+		Summary:     v1.NewSummary(tests, otherErrors),
+		Tests:       tests,
+		OtherErrors: otherErrors,
 	}, nil
 }
 

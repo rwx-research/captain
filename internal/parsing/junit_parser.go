@@ -73,7 +73,7 @@ type JUnitTestResults struct {
 
 var jUnitNewlineRegexp = regexp.MustCompile(`\r?\n`)
 
-func (p JUnitParser) Parse(data io.Reader) (*ParseResult, error) {
+func (p JUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	var testResults JUnitTestResults
 
 	if err := xml.NewDecoder(data).Decode(&testResults); err != nil {
@@ -161,14 +161,10 @@ func (p JUnitParser) Parse(data io.Reader) (*ParseResult, error) {
 		}
 	}
 
-	return &ParseResult{
-		Sentiment: NeutralParseResultSentiment,
-		TestResults: v1.TestResults{
-			Framework: v1.NewOtherFramework(nil, nil),
-			Summary:   v1.NewSummary(tests, nil),
-			Tests:     tests,
-		},
-		Parser: p,
+	return &v1.TestResults{
+		Framework: v1.NewOtherFramework(nil, nil),
+		Summary:   v1.NewSummary(tests, nil),
+		Tests:     tests,
 	}, nil
 }
 

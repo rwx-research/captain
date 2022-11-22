@@ -18,54 +18,52 @@ var _ = Describe("DotNetxUnitParser", func() {
 			fixture, err := os.Open("../../test/fixtures/xunit_dot_net.xml")
 			Expect(err).ToNot(HaveOccurred())
 
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(fixture)
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
-			Expect(parseResult.Parser).To(Equal(parsing.DotNetxUnitParser{}))
-			Expect(parseResult.Sentiment).To(Equal(parsing.PositiveParseResultSentiment))
-			Expect(parseResult.TestResults.Framework.Language).To(Equal(v1.FrameworkLanguageDotNet))
-			Expect(parseResult.TestResults.Framework.Kind).To(Equal(v1.FrameworkKindxUnit))
-			Expect(parseResult.TestResults.Summary.Tests).To(Equal(15))
-			Expect(parseResult.TestResults.Summary.Successful).To(Equal(13))
-			Expect(parseResult.TestResults.Summary.Skipped).To(Equal(1))
-			Expect(parseResult.TestResults.Summary.Failed).To(Equal(1))
-			Expect(parseResult.TestResults.Summary.OtherErrors).To(Equal(0))
+			Expect(testResults.Framework.Language).To(Equal(v1.FrameworkLanguageDotNet))
+			Expect(testResults.Framework.Kind).To(Equal(v1.FrameworkKindxUnit))
+			Expect(testResults.Summary.Tests).To(Equal(15))
+			Expect(testResults.Summary.Successful).To(Equal(13))
+			Expect(testResults.Summary.Skipped).To(Equal(1))
+			Expect(testResults.Summary.Failed).To(Equal(1))
+			Expect(testResults.Summary.OtherErrors).To(Equal(0))
 		})
 
 		It("errors on malformed XML", func() {
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(`<abc`))
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(`<abc`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to parse test results as XML"))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 		})
 
 		It("errors on XML that doesn't look like xUnit.NET", func() {
-			var parseResult *parsing.ParseResult
+			var testResults *v1.TestResults
 			var err error
 
-			parseResult, err = parsing.DotNetxUnitParser{}.Parse(strings.NewReader(`<foo></foo>`))
+			testResults, err = parsing.DotNetxUnitParser{}.Parse(strings.NewReader(`<foo></foo>`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to parse test results as XML"))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 
-			parseResult, err = parsing.DotNetxUnitParser{}.Parse(strings.NewReader(`<assemblies></assemblies>`))
+			testResults, err = parsing.DotNetxUnitParser{}.Parse(strings.NewReader(`<assemblies></assemblies>`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("The test suites in the XML do not appear to match xUnit.NET XML"))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 
-			parseResult, err = parsing.DotNetxUnitParser{}.Parse(
+			testResults, err = parsing.DotNetxUnitParser{}.Parse(
 				strings.NewReader(`<assemblies><assembly></assembly></assemblies>`),
 			)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(
 				ContainSubstring("The test suites in the XML do not appear to match xUnit.NET XML"),
 			)
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 		})
 
 		It("can extract a detailed successful test", func() {
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
 				`
 					<assemblies>
 						<assembly name="some/path/to/AssemblyName.dll">
@@ -94,7 +92,7 @@ line 3]]></output>
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			line := 12
 			id := "some-id"
@@ -102,7 +100,7 @@ line 3]]></output>
 			testType := "NullAssertsTests+Null"
 			testMethod := "Success"
 			stdout := "line 1\nline 2\nline 3"
-			Expect(parseResult.TestResults.Tests[0]).To(Equal(
+			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					ID:       &id,
 					Name:     "NullAssertsTests+Null.Success",
@@ -124,7 +122,7 @@ line 3]]></output>
 		})
 
 		It("can extract a failed test", func() {
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
 				`
 					<assemblies>
 						<assembly name="some/path/to/AssemblyName.dll">
@@ -146,13 +144,13 @@ line 3]]></output>
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			duration := time.Duration(6370900)
 			message := "Some message here"
 			exception := "AssertionException"
 			var zeroString *string
-			Expect(parseResult.TestResults.Tests[0]).To(Equal(
+			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					Name: "NullAssertsTests+Null.Success",
 					Attempt: v1.TestAttempt{
@@ -169,7 +167,7 @@ line 3]]></output>
 		})
 
 		It("can extract a failed test without details", func() {
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
 				`
 					<assemblies>
 						<assembly name="some/path/to/AssemblyName.dll">
@@ -186,11 +184,11 @@ line 3]]></output>
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			duration := time.Duration(6370900)
 			var zeroString *string
-			Expect(parseResult.TestResults.Tests[0]).To(Equal(
+			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					Name: "NullAssertsTests+Null.Success",
 					Attempt: v1.TestAttempt{
@@ -207,7 +205,7 @@ line 3]]></output>
 		})
 
 		It("can extract a skipped test", func() {
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
 				`
 					<assemblies>
 						<assembly name="some/path/to/AssemblyName.dll">
@@ -225,12 +223,12 @@ line 3]]></output>
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			duration := time.Duration(6370900)
 			message := "Some reason here"
 			var zeroString *string
-			Expect(parseResult.TestResults.Tests[0]).To(Equal(
+			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					Name: "NullAssertsTests+Null.Success",
 					Attempt: v1.TestAttempt{
@@ -247,7 +245,7 @@ line 3]]></output>
 		})
 
 		It("can extract a not-run test", func() {
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
 				`
 					<assemblies>
 						<assembly name="some/path/to/AssemblyName.dll">
@@ -264,11 +262,11 @@ line 3]]></output>
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 
 			duration := time.Duration(6370900)
 			var zeroString *string
-			Expect(parseResult.TestResults.Tests[0]).To(Equal(
+			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					Name: "NullAssertsTests+Null.Success",
 					Attempt: v1.TestAttempt{
@@ -285,7 +283,7 @@ line 3]]></output>
 		})
 
 		It("errors on other results", func() {
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
 				`
 					<assemblies>
 						<assembly name="some/path/to/AssemblyName.dll">
@@ -303,11 +301,11 @@ line 3]]></output>
 			))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(`Unexpected result "wat"`))
-			Expect(parseResult).To(BeNil())
+			Expect(testResults).To(BeNil())
 		})
 
 		It("can extract other errors", func() {
-			parseResult, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.DotNetxUnitParser{}.Parse(strings.NewReader(
 				`
 					<assemblies>
 						<assembly name="some/path/to/AssemblyName.dll">
@@ -330,9 +328,9 @@ line 3]]></output>
 				`,
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(parseResult).NotTo(BeNil())
+			Expect(testResults).NotTo(BeNil())
 			exception := "SomeException"
-			Expect(parseResult.TestResults.OtherErrors).To(Equal(
+			Expect(testResults.OtherErrors).To(Equal(
 				[]v1.OtherError{
 					{
 						Backtrace: []string{"Some trace", "other line"},
