@@ -1,0 +1,53 @@
+{
+  "version": "3.12.0",
+  "examples": [
+    {
+      "id": "./.github/workflows/fixtures/partition/a_spec.rb[1:1]",
+      "description": "A is slowest",
+      "full_description": "A is slowest",
+      "status": "passed",
+      "file_path": "./.github/workflows/fixtures/partition/a_spec.rb",
+      "line_number": 2,
+      "run_time": 4.0,
+      "pending_message": null
+    },
+    {
+      "id": "./.github/workflows/fixtures/partition/b_spec.rb[1:1]",
+      "description": "B is second slowest",
+      "full_description": "B is second slowest",
+      "status": "passed",
+      "file_path": "./.github/workflows/fixtures/partition/b_spec.rb",
+      "line_number": 2,
+      "run_time": 3.0,
+      "pending_message": null
+    },
+    {
+      "id": "./.github/workflows/fixtures/partition/c_spec.rb[1:1]",
+      "description": "C is third slowest",
+      "full_description": "C is third slowest",
+      "status": "passed",
+      "file_path": "./.github/workflows/fixtures/partition/c_spec.rb",
+      "line_number": 2,
+      "run_time": 2.0,
+      "pending_message": null
+    },
+    {
+      "id": "./.github/workflows/fixtures/partition/d_spec.rb[1:1]",
+      "description": "D is slowest of all",
+      "full_description": "D is slowest of all",
+      "status": "passed",
+      "file_path": "./.github/workflows/fixtures/partition/d_spec.rb",
+      "line_number": 2,
+      "run_time": 1.0,
+      "pending_message": null
+    }
+  ],
+  "summary": {
+    "duration": 10.0,
+    "example_count": 4,
+    "failure_count": 0,
+    "pending_count": 0,
+    "errors_outside_of_examples_count": 0
+  },
+  "summary_line": "4 examples, 0 failures"
+}

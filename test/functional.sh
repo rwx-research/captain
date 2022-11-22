@@ -45,11 +45,11 @@ fi
 
 set -e
 
-echo Testing Partitioning...
+echo Testing Partitioning w/out timings...
 
 set +e
 part1=$(./captain partition \
-  .github/workflows/fixtures/partition/*.rb \
+  .github/workflows/fixtures/partition/{x,y,z}.rb \
   --suite-id "captain-cli-functional-tests" --index 0 --total 2)
 
 if [[ "$part1" == ".github/workflows/fixtures/partition/x.rb .github/workflows/fixtures/partition/z.rb" ]]; then
@@ -60,7 +60,7 @@ else
 fi
 
 part2=$(./captain partition \
-  .github/workflows/fixtures/partition/*.rb \
+  .github/workflows/fixtures/partition/{x,y,z}.rb \
   --suite-id "captain-cli-functional-tests" --index 1 --total 2)
 
 if [[ "$part2" == ".github/workflows/fixtures/partition/y.rb" ]]; then
@@ -70,3 +70,32 @@ else
   exit 1;
 fi
 set -e
+
+echo Testing Partitioning w/ timings...
+
+set +e
+./captain upload results ./.github/workflows/fixtures/partition/rspec-partition.json --suite-id captain-cli-functional-tests
+
+part1=$(./captain partition \
+  .github/workflows/fixtures/partition/*_spec.rb \
+  --suite-id "captain-cli-functional-tests" --index 0 --total 2)
+
+if [[ "$part1" == ".github/workflows/fixtures/partition/a_spec.rb .github/workflows/fixtures/partition/d_spec.rb" ]]; then
+  echo PASSED;
+else
+  echo "FAILED: $part1";
+  exit 1;
+fi
+
+part2=$(./captain partition \
+  .github/workflows/fixtures/partition/*_spec.rb \
+  --suite-id "captain-cli-functional-tests" --index 1 --total 2)
+
+if [[ "$part2" == ".github/workflows/fixtures/partition/b_spec.rb .github/workflows/fixtures/partition/c_spec.rb" ]]; then
+  echo PASSED;
+else
+  echo "FAILED: $part2";
+  exit 1;
+fi
+set -e
+
