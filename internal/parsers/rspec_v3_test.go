@@ -70,7 +70,7 @@ var _ = Describe("RspecV3", func() {
 			return
 		}
 
-		Expect(true).To(Equal(false), "Unreachable")
+		Fail("Unreachable")
 	})
 
 	It("extracts the test metadata in absence of an id", func() {
@@ -91,7 +91,7 @@ var _ = Describe("RspecV3", func() {
 			return
 		}
 
-		Expect(true).To(Equal(false), "Unreachable")
+		Fail("Unreachable")
 	})
 
 	It("adds a status message to failed tests", func() {

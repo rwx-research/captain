@@ -86,7 +86,7 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				return
 			}
 
-			Expect(true).To(Equal(false), "Unreachable")
+			Fail("Unreachable")
 		})
 
 		It("parses successful tests", func() {
@@ -109,7 +109,7 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				return
 			}
 
-			Expect(true).To(Equal(false), "Unreachable")
+			Fail("Unreachable")
 		})
 
 		It("parses tests which failed via an assertion", func() {
@@ -143,7 +143,7 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				return
 			}
 
-			Expect(true).To(Equal(false), "Unreachable")
+			Fail("Unreachable")
 		})
 
 		It("parses tests which failed via a custom error", func() {
@@ -168,7 +168,7 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				return
 			}
 
-			Expect(true).To(Equal(false), "Unreachable")
+			Fail("Unreachable")
 		})
 
 		It("parses tests which failed via a custom error", func() {
@@ -213,7 +213,7 @@ var _ = Describe("JavaScriptCypressParser", func() {
 				return
 			}
 
-			Expect(true).To(Equal(false), "Unreachable")
+			Fail("Unreachable")
 		})
 
 		It("errors when presented with an <error> element", func() {

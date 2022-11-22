@@ -68,7 +68,7 @@ var _ = Describe("XunitDotNetV2", func() {
 			return
 		}
 
-		Expect(true).To(Equal(false), "Unreachable")
+		Fail("Unreachable")
 	})
 
 	It("removes file path prefixes from assembly names", func() {
@@ -84,7 +84,7 @@ var _ = Describe("XunitDotNetV2", func() {
 			return
 		}
 
-		Expect(true).To(Equal(false), "Unreachable")
+		Fail("Unreachable")
 	})
 
 	It("adds a status message to failed tests", func() {

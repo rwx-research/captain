@@ -69,7 +69,7 @@ var _ = Describe("Cypress", func() {
 			return
 		}
 
-		Expect(true).To(Equal(false), "Unreachable")
+		Fail("Unreachable")
 	})
 
 	It("adds a status message to failed tests", func() {
