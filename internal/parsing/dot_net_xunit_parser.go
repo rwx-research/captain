@@ -2,7 +2,13 @@ package parsing
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
+	"math"
+	"os"
+	"regexp"
+	"strings"
+	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
@@ -125,6 +131,10 @@ type DotNetxUnitTestResults struct {
 	XMLName xml.Name `xml:"assemblies"`
 }
 
+var dotNetxUnitAssemblyNameRegexp = regexp.MustCompile(fmt.Sprintf(`[^%s]+$`, string(os.PathSeparator)))
+
+var dotNetxUnitNewlineRegexp = regexp.MustCompile(`\r?\n`)
+
 func (p DotNetxUnitParser) Parse(data io.Reader) (*ParseResult, error) {
 	var testResults DotNetxUnitTestResults
 
@@ -136,13 +146,122 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*ParseResult, error) {
 	}
 
 	tests := make([]v1.Test, 0)
+	otherErrors := make([]v1.OtherError, 0)
+	for _, assembly := range testResults.Assemblies {
+		assemblyName := dotNetxUnitAssemblyNameRegexp.FindString(assembly.Name)
+
+		for _, collection := range assembly.Collections {
+			for _, testCase := range collection.Tests {
+				duration := time.Duration(math.Round(testCase.Time * float64(time.Second)))
+
+				meta := map[string]any{
+					"assembly": assemblyName,
+					"type":     testCase.Type,
+					"method":   testCase.Method,
+				}
+				for _, trait := range testCase.Traits {
+					meta[fmt.Sprintf("trait-%v", trait.Name)] = trait.Value
+				}
+
+				var location *v1.Location
+				if testCase.SourceFile != nil {
+					location = &v1.Location{File: *testCase.SourceFile, Line: testCase.SourceLine}
+				}
+
+				var stdout *string
+				if testCase.Output != nil {
+					stdout = &testCase.Output.Contents
+				}
+
+				var status v1.TestStatus
+				switch testCase.Result {
+				case "Pass":
+					status = v1.NewSuccessfulTestStatus()
+				case "Fail":
+					var message *string
+					var exception *string
+					var backtrace []string
+					if testCase.Failure != nil {
+						exception = testCase.Failure.ExceptionType
+						message, backtrace = p.FailureDetails(*testCase.Failure)
+					}
+
+					status = v1.NewFailedTestStatus(message, exception, backtrace)
+				case "Skip":
+					var message *string
+					if testCase.SkippedReason != nil {
+						message = &testCase.SkippedReason.Contents
+					}
+
+					status = v1.NewSkippedTestStatus(message)
+				case "NotRun":
+					status = v1.NewSkippedTestStatus(nil)
+				default:
+					return nil, errors.NewInputError("Unexpected result %q for test %v", testCase.Result, testCase)
+				}
+
+				tests = append(
+					tests,
+					v1.Test{
+						ID:       testCase.ID,
+						Name:     testCase.Name,
+						Location: location,
+						Attempt: v1.TestAttempt{
+							Duration: &duration,
+							Meta:     meta,
+							Status:   status,
+							Stdout:   stdout,
+						},
+					},
+				)
+			}
+		}
+
+		for _, assemblyError := range assembly.Errors {
+			message, backtrace := p.FailureDetails(assemblyError.Failure)
+
+			if message == nil {
+				defaultMessage := fmt.Sprintf("An error occurred during %v", assemblyError.Type)
+				message = &defaultMessage
+			}
+
+			otherErrors = append(otherErrors, v1.OtherError{
+				Backtrace: backtrace,
+				Exception: assemblyError.Failure.ExceptionType,
+				Message:   *message,
+				Meta: map[string]any{
+					"assembly": assemblyName,
+					"type":     assemblyError.Type,
+				},
+			})
+		}
+	}
+
 	return &ParseResult{
 		Sentiment: PositiveParseResultSentiment,
 		TestResults: v1.TestResults{
-			Framework: v1.NewDotNetxUnitFramework(),
-			Summary:   v1.NewSummary(tests, nil),
-			Tests:     tests,
+			Framework:   v1.NewDotNetxUnitFramework(),
+			Summary:     v1.NewSummary(tests, otherErrors),
+			Tests:       tests,
+			OtherErrors: otherErrors,
 		},
 		Parser: p,
 	}, nil
+}
+
+func (p DotNetxUnitParser) FailureDetails(failure DotNetxUnitFailure) (*string, []string) {
+	var message *string
+	if failure.Message != nil {
+		message = &failure.Message.Contents
+	}
+
+	var backtrace []string
+	if failure.Stacktrace != nil {
+		backtrace = dotNetxUnitNewlineRegexp.Split(failure.Stacktrace.Contents, -1)
+		for i, line := range backtrace {
+			backtrace[i] = strings.TrimSpace(line)
+		}
+	}
+
+	return message, backtrace
 }
