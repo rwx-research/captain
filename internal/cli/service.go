@@ -226,7 +226,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		return runErr
 	}
 
-	testResultsFiles, err := filepath.Glob(cfg.TestResultsFileGlob)
+	testResultsFiles, err := s.FileSystem.Glob(cfg.TestResultsFileGlob)
 	if err != nil {
 		return s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
 	}
@@ -364,24 +364,10 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 		return errors.Wrap(err)
 	}
 
-	// Expand all args as glob, ensuring to de-dupe and sort
-	testFilePathSet := make(map[string]bool)
-	for _, filePathGlob := range cfg.TestFilePaths {
-		filePaths, err := s.FileSystem.Glob(filePathGlob)
-		if err != nil {
-			return s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
-		}
-		for _, filePath := range filePaths {
-			testFilePathSet[filePath] = true
-		}
+	testFilePaths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
+	if err != nil {
+		return s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
 	}
-	testFilePaths := make([]string, 0, len(testFilePathSet))
-	for testFilePath := range testFilePathSet {
-		testFilePaths = append(testFilePaths, testFilePath)
-	}
-	sort.Slice(testFilePaths, func(i, j int) bool {
-		return testFilePaths[i] < testFilePaths[j]
-	})
 
 	// Compare expanded client file paths w/ expanded server file paths
 	// taking care to always use the client path and sort by duration desc
@@ -501,14 +487,19 @@ func (s Service) UploadTestResults(
 	testSuiteID string,
 	filepaths []string,
 ) ([]api.TestResultsUploadResult, error) {
-	newTestResultsFiles := make([]api.TestResultsFile, len(filepaths))
-
 	if len(filepaths) == 0 {
 		s.Log.Debug("No paths to test results provided")
 		return nil, nil
 	}
 
-	for i, filePath := range filepaths {
+	expandedFilepaths, err := s.FileSystem.GlobMany(filepaths)
+	newTestResultsFiles := make([]api.TestResultsFile, len(expandedFilepaths))
+
+	if err != nil {
+		return nil, s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
+	}
+
+	for i, filePath := range expandedFilepaths {
 		s.Log.Debugf("Attempting to upload %q to Captain", filePath)
 
 		fd, err := s.FileSystem.Open(filePath)

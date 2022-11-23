@@ -22,6 +22,7 @@ type APIClient interface {
 type FileSystem interface {
 	Open(name string) (fs.File, error)
 	Glob(pattern string) ([]string, error)
+	GlobMany(patterns []string) ([]string, error)
 }
 
 // Parser is the interface a potential parser needs to implement.

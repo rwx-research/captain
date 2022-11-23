@@ -5,6 +5,7 @@ package fs
 import (
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
@@ -29,4 +30,28 @@ func (l Local) Glob(pattern string) ([]string, error) {
 	}
 
 	return filepaths, nil
+}
+
+func (l Local) GlobMany(patterns []string) ([]string, error) {
+	pathSet := make(map[string]struct{})
+	for _, pattern := range patterns {
+		expandedPaths, err := l.Glob(pattern)
+		if err != nil {
+			return nil, errors.Wrap(err)
+		}
+		for _, filePath := range expandedPaths {
+			pathSet[filePath] = struct{}{}
+		}
+	}
+
+	expandedPaths := make([]string, 0, len(pathSet))
+	for expandedPath := range pathSet {
+		expandedPaths = append(expandedPaths, expandedPath)
+	}
+
+	sort.Slice(expandedPaths, func(i, j int) bool {
+		return expandedPaths[i] < expandedPaths[j]
+	})
+
+	return expandedPaths, nil
 }

@@ -78,6 +78,9 @@ var _ = Describe("Run", func() {
 		// functionality is not mocked, i.e. it still uses the file-system.
 		testResultsFilePath = "../../go.mod"
 
+		mockGlob := func(pattern string) ([]string, error) {
+			return []string{testResultsFilePath}, nil
+		}
 		mockOpen := func(name string) (fs.File, error) {
 			Expect(name).To(Equal(testResultsFilePath))
 			fileOpened = true
@@ -86,6 +89,7 @@ var _ = Describe("Run", func() {
 			return file, nil
 		}
 		service.FileSystem.(*mocks.FileSystem).MockOpen = mockOpen
+		service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 
 		arg = fmt.Sprintf("%d", GinkgoRandomSeed())
 	})
