@@ -66,4 +66,21 @@ var _ = Describe("fs.GlobMany", func() {
 			"../../.github/workflows/fixtures/partition/z.rb",
 		}))
 	})
+
+	It("recursively expands double star globs", func() {
+		fs := fs.Local{}
+		expandedPaths, _ := fs.GlobMany([]string{
+			"../../.github/**/*.rb",
+		})
+
+		Expect(expandedPaths).To(Equal([]string{
+			"../../.github/workflows/fixtures/partition/a_spec.rb",
+			"../../.github/workflows/fixtures/partition/b_spec.rb",
+			"../../.github/workflows/fixtures/partition/c_spec.rb",
+			"../../.github/workflows/fixtures/partition/d_spec.rb",
+			"../../.github/workflows/fixtures/partition/x.rb",
+			"../../.github/workflows/fixtures/partition/y.rb",
+			"../../.github/workflows/fixtures/partition/z.rb",
+		}))
+	})
 })

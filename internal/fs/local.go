@@ -4,8 +4,9 @@ package fs
 
 import (
 	"os"
-	"path/filepath"
 	"sort"
+
+	"github.com/yargevad/filepathx"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
@@ -24,7 +25,7 @@ func (l Local) Open(name string) (File, error) {
 }
 
 func (l Local) Glob(pattern string) ([]string, error) {
-	filepaths, err := filepath.Glob(pattern)
+	filepaths, err := filepathx.Glob(pattern)
 	if err != nil {
 		return nil, errors.Wrap(err)
 	}

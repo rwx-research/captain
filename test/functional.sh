@@ -100,6 +100,22 @@ fi
 set -e
 
 
+echo Testing recursive globbing...
+
+set +e
+filepaths=$(./captain partition \
+  ".github/workflows/fixtures/**/*_spec.rb" \
+  --suite-id "captain-cli-functional-tests" --index 0 --total 1)
+
+if [[ "$filepaths" == ".github/workflows/fixtures/partition/a_spec.rb .github/workflows/fixtures/partition/b_spec.rb .github/workflows/fixtures/partition/c_spec.rb .github/workflows/fixtures/partition/d_spec.rb" ]]; then
+  echo PASSED;
+else
+  echo "FAILED: $part1";
+  exit 1;
+fi
+set -e
+
+
 echo Testing upload short circuits when nothing to upload...
 
 set +e
