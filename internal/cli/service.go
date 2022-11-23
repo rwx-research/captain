@@ -498,6 +498,10 @@ func (s Service) UploadTestResults(
 	if err != nil {
 		return nil, s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
 	}
+	if len(expandedFilepaths) == 0 {
+		s.Log.Debug("No paths to test results provided")
+		return nil, nil
+	}
 
 	for i, filePath := range expandedFilepaths {
 		s.Log.Debugf("Attempting to upload %q to Captain", filePath)

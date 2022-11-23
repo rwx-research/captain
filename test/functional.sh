@@ -99,3 +99,15 @@ else
 fi
 set -e
 
+
+echo Testing upload short circuits when nothing to upload...
+
+set +e
+./captain upload results nonexistingfile.json --suite-id captain-cli-functional-tests
+if [[ $? -eq 0 ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  exit 1;
+fi
+set -e
