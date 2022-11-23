@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -23,8 +24,9 @@ import (
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
-	"github.com/rwx-research/captain-cli/internal/parsers"
+	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/testing"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
 // Service is the main CLI service.
@@ -33,7 +35,7 @@ type Service struct {
 	Log        *zap.SugaredLogger
 	FileSystem FileSystem
 	TaskRunner TaskRunner
-	Parsers    []Parser
+	Parsers    []parsing.Parser
 }
 
 func (s Service) logError(err error) error {
@@ -49,33 +51,21 @@ func (s Service) Parse(ctx context.Context, filepaths []string) error {
 		return errors.Wrap(err)
 	}
 
-	rawOutput := make([]testResult, 0)
 	for _, result := range results {
-		rawOutput = append(rawOutput, testResult{
-			Description:   result.Description,
-			Duration:      result.Duration,
-			Status:        testStatus(result.Status),
-			StatusMessage: result.StatusMessage,
-			Meta:          result.Meta,
-		})
+		newOutput, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			return s.logError(errors.NewInternalError("Unable to output test results as JSON: %s", err))
+		}
+		s.Log.Infoln(string(newOutput))
 	}
-
-	formattedOutput, err := json.MarshalIndent(rawOutput, "", "  ")
-	if err != nil {
-		return s.logError(errors.NewSystemError("unable to output test results as JSON: %s", err))
-	}
-
-	s.Log.Infoln(string(formattedOutput))
 
 	return nil
 }
 
-func (s Service) parse(filepaths []string) ([]testing.TestResult, error) {
-	results := make([]testing.TestResult, 0)
+func (s Service) parse(filepaths []string) ([]v1.TestResults, error) {
+	allResults := make([]v1.TestResults, 0)
 
 	for _, testResultsFilePath := range filepaths {
-		var result []testing.TestResult
-
 		s.Log.Debugf("Attempting to parse %q", testResultsFilePath)
 
 		fd, err := s.FileSystem.Open(testResultsFilePath)
@@ -84,32 +74,17 @@ func (s Service) parse(filepaths []string) ([]testing.TestResult, error) {
 		}
 		defer fd.Close()
 
-		for _, parser := range s.Parsers {
-			result, err = parser.Parse(fd)
-			if err != nil {
-				s.Log.Debugf("unable to parse %q using %T: %s", testResultsFilePath, parser, err)
-
-				if _, err := fd.Seek(0, io.SeekStart); err != nil {
-					return nil, s.logError(errors.NewSystemError("unable to read from file: %s", err))
-				}
-
-				continue
-			}
-
-			s.Log.Debugf("Successfully parsed %q using %T", testResultsFilePath, parser)
-			break
-		}
-
-		if result == nil {
+		results, err := parsing.Parse(fd, s.Parsers, s.Log)
+		if err != nil {
 			return nil, s.logError(
-				errors.NewInputError("unable to parse %q with any of the available parser", testResultsFilePath),
+				errors.NewInputError("Unable to parse %q with the available parsers", testResultsFilePath),
 			)
 		}
 
-		results = append(results, result...)
+		allResults = append(allResults, *results)
 	}
 
-	return results, nil
+	return v1.Merge(allResults), nil
 }
 
 func (s Service) runCommand(ctx context.Context, args []string) error {
@@ -154,7 +129,7 @@ func (s Service) runCommand(ctx context.Context, args []string) error {
 	return nil
 }
 
-func (s Service) isQuarantined(failedTest testing.TestResult, quarantinedTestCases []api.QuarantinedTestCase) bool {
+func (s Service) isQuarantined(failedTest v1.Test, quarantinedTestCases []api.QuarantinedTestCase) bool {
 	for _, quarantinedTestCase := range quarantinedTestCases {
 		compositeIdentifier, err := failedTest.Identify(
 			quarantinedTestCase.IdentityComponents,
@@ -189,15 +164,13 @@ func pluralize(count int, singular string, plural string) string {
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
 func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
-	var wg sync.WaitGroup
-	var quarantinedTestCases []api.QuarantinedTestCase
-
 	if len(cfg.Args) == 0 {
 		s.Log.Debug("No arguments provided to `RunSuite`")
 		return nil
 	}
 
 	// Fetch list of quarantined test IDs in the background
+	var quarantinedTestCases []api.QuarantinedTestCase
 	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		testCases, err := s.API.GetQuarantinedTestCases(egCtx, cfg.SuiteID)
@@ -231,7 +204,19 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		return s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
 	}
 
-	// Start uploading testResultsFiles in the background
+	// Wait until list of quarantined tests was fetched. Ignore any errors.
+	if err := eg.Wait(); err != nil {
+		s.Log.Warnf("Unable to fetch list of quarantined tests from Captain: %s", err)
+	}
+
+	// Parse testResultsFiles
+	testResults, err := s.parse(testResultsFiles)
+	if err != nil {
+		return s.logError(errors.Wrap(err))
+	}
+
+	// Start uploading test results in the background
+	var wg sync.WaitGroup
 	wg.Add(1)
 	var uploadResults []api.TestResultsUploadResult
 	var uploadError error
@@ -239,25 +224,20 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	go func() {
 		// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
 		// not affect the exit code.
-		uploadResults, uploadError = s.UploadTestResults(ctx, cfg.SuiteID, testResultsFiles)
+		if len(testResults) > 0 {
+			uploadResults, uploadError = s.performTestResultsUpload(ctx, cfg.SuiteID, testResults)
+		} else {
+			s.Log.Debugf("No test results were parsed. Globbed files: %v", testResultsFiles)
+		}
 		wg.Done()
 	}()
 
-	// Wait until list of quarantined tests was fetched. Ignore any errors.
-	if err := eg.Wait(); err != nil {
-		s.Log.Warnf("Unable to fetch list of quarantined tests from Captain: %s", err)
-	}
-
-	// Parse test testResultsFiles
-	testResults, err := s.parse(testResultsFiles)
-	if err != nil {
-		return s.logError(errors.Wrap(err))
-	}
-
-	failedTests := make([]testing.TestResult, 0)
+	failedTests := make([]v1.Test, 0)
 	for _, testResult := range testResults {
-		if testResult.Status == testing.TestStatusFailed {
-			failedTests = append(failedTests, testResult)
+		for _, test := range testResult.Tests {
+			if test.Attempt.Status.Kind == v1.TestStatusFailed {
+				failedTests = append(failedTests, test)
+			}
 		}
 	}
 
@@ -266,8 +246,8 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		return runErr
 	}
 
-	quarantinedFailedTests := make([]testing.TestResult, 0)
-	unquarantinedFailedTests := make([]testing.TestResult, 0)
+	quarantinedFailedTests := make([]v1.Test, 0)
+	unquarantinedFailedTests := make([]v1.Test, 0)
 	for _, failedTest := range failedTests {
 		s.Log.Debugf("attempting to quarantine failed test: %v", failedTest)
 
@@ -305,9 +285,13 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 
 		for _, uploadResult := range uploadResults {
 			if uploadResult.Uploaded {
-				s.Log.Infoln(fmt.Sprintf("- Uploaded %v", uploadResult.OriginalPath))
+				for _, originalPath := range uploadResult.OriginalPaths {
+					s.Log.Infoln(fmt.Sprintf("- Uploaded %v", originalPath))
+				}
 			} else {
-				s.Log.Infoln(fmt.Sprintf("- Unable to upload %v", uploadResult.OriginalPath))
+				for _, originalPath := range uploadResult.OriginalPaths {
+					s.Log.Infoln(fmt.Sprintf("- Unable to upload %v", originalPath))
+				}
 			}
 		}
 	}
@@ -323,7 +307,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		)
 
 		for _, quarantinedFailedTest := range quarantinedFailedTests {
-			s.Log.Infoln(fmt.Sprintf("- %v", quarantinedFailedTest.Description))
+			s.Log.Infoln(fmt.Sprintf("- %v", quarantinedFailedTest.Name))
 		}
 	}
 
@@ -337,7 +321,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		)
 
 		for _, unquarantinedFailedTests := range unquarantinedFailedTests {
-			s.Log.Infoln(fmt.Sprintf("- %v", unquarantinedFailedTests.Description))
+			s.Log.Infoln(fmt.Sprintf("- %v", unquarantinedFailedTests.Name))
 		}
 	}
 
@@ -493,8 +477,6 @@ func (s Service) UploadTestResults(
 	}
 
 	expandedFilepaths, err := s.FileSystem.GlobMany(filepaths)
-	newTestResultsFiles := make([]api.TestResultsFile, len(expandedFilepaths))
-
 	if err != nil {
 		return nil, s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
 	}
@@ -503,63 +485,62 @@ func (s Service) UploadTestResults(
 		return nil, nil
 	}
 
-	for i, filePath := range expandedFilepaths {
-		s.Log.Debugf("Attempting to upload %q to Captain", filePath)
+	parsedResults, err := s.parse(expandedFilepaths)
+	if err != nil {
+		return nil, s.logError(errors.NewInputError("Unable to parse results: %s", err))
+	}
 
-		fd, err := s.FileSystem.Open(filePath)
-		if err != nil {
-			return nil, s.logError(errors.NewSystemError("unable to open file: %s", err))
-		}
-		defer fd.Close()
+	return s.performTestResultsUpload(
+		ctx,
+		testSuiteID,
+		parsedResults,
+	)
+}
 
+func (s Service) performTestResultsUpload(
+	ctx context.Context,
+	testSuiteID string,
+	testResults []v1.TestResults,
+) ([]api.TestResultsUploadResult, error) {
+	testResultsFiles := make([]api.TestResultsFile, len(testResults))
+
+	for i, testResult := range testResults {
 		id, err := uuid.NewRandom()
 		if err != nil {
-			return nil, s.logError(errors.NewInternalError("unable to generate new UUID: %s", err))
+			return nil, s.logError(errors.NewInternalError("Unable to generate new UUID: %s", err))
+		}
+		f, err := os.CreateTemp("", "rwx-test-results")
+		if err != nil {
+			return nil, s.logError(errors.NewInternalError("Unable to write test results to file: %s", err))
+		}
+		defer os.Remove(f.Name())
+
+		buf, err := json.Marshal(testResult)
+		if err != nil {
+			return nil, s.logError(errors.NewInternalError("Unable to output test results as JSON: %s", err))
+		}
+		if _, err := f.Write(buf); err != nil {
+			return nil, s.logError(errors.NewInternalError("Unable to write test results to file: %s", err))
+		}
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
+			return nil, s.logError(errors.NewInternalError("Unable to rewind test results file: %s", err))
+		}
+		defer f.Close()
+
+		originalPaths := make([]string, len(testResult.DerivedFrom))
+		for i, originalTestResult := range testResult.DerivedFrom {
+			originalPaths[i] = originalTestResult.OriginalFilePath
 		}
 
-		s.Log.Debugf("Attempting to parse %q", filePath)
-		var parserType api.ParserType
-
-		// Re-parsing the files here is not great. This will be removed once the API doesn't expect
-		// a parser type anymore.
-		for _, parser := range s.Parsers {
-			_, parseErr := parser.Parse(fd)
-
-			// We always have to seek back to the beginning since we'll re-read the file upon upload.
-			if _, err := fd.Seek(0, io.SeekStart); err != nil {
-				return nil, s.logError(errors.NewSystemError("unable to read from file: %s", err))
-			}
-
-			if parseErr != nil {
-				s.Log.Debugf("unable to parse %q using %T: %s", filePath, parser, parseErr)
-				continue
-			}
-
-			s.Log.Debugf("Successfully parsed %q using %T", filePath, parser)
-
-			switch parser.(type) {
-			case *parsers.Jest:
-				parserType = api.ParserTypeJestJSON
-			case *parsers.JUnit:
-				parserType = api.ParserTypeJUnitXML
-			case *parsers.RSpecV3:
-				parserType = api.ParserTypeRSpecJSON
-			case *parsers.XUnitDotNetV2:
-				parserType = api.ParserTypeXUnitXML
-			}
-
-			break
-		}
-
-		newTestResultsFiles[i] = api.TestResultsFile{
-			ExternalID:   id,
-			FD:           fd,
-			OriginalPath: filePath,
-			Parser:       parserType,
+		testResultsFiles[i] = api.TestResultsFile{
+			ExternalID:    id,
+			FD:            f,
+			OriginalPaths: originalPaths,
+			Parser:        api.ParserTypeRWX,
 		}
 	}
 
-	uploadResults, err := s.API.UploadTestResults(ctx, testSuiteID, newTestResultsFiles)
+	uploadResults, err := s.API.UploadTestResults(ctx, testSuiteID, testResultsFiles)
 	if err != nil {
 		return nil, s.logError(errors.WithMessage("unable to upload test result: %s", err))
 	}

@@ -25,8 +25,8 @@ func Parse(file fs.File, parsers []Parser, log *zap.SugaredLogger) (*v1.TestResu
 	parsedTestResults := make([]v1.TestResults, 0)
 	var firstParser Parser
 	for _, parser := range parsers {
-		if _, err := file.Seek(0, io.SeekStart); err != nil {
-			return nil, errors.NewSystemError("Unable to read from file: %s", err)
+		if err := rewindFile(file); err != nil {
+			return nil, err
 		}
 
 		parsedTestResult, err := parser.Parse(file)
@@ -52,12 +52,15 @@ func Parse(file fs.File, parsers []Parser, log *zap.SugaredLogger) (*v1.TestResu
 	finalResults := parsedTestResults[0]
 	log.Debugf("%T was ultimately responsible for parsing the test results", firstParser)
 
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return nil, errors.NewSystemError("Unable to read from file: %s", err)
+	if err := rewindFile(file); err != nil {
+		return nil, err
 	}
 	buf, err := io.ReadAll(file)
 	if err != nil {
 		return nil, errors.NewSystemError("Unable to read file into buffer: %s", err)
+	}
+	if err := rewindFile(file); err != nil {
+		return nil, err
 	}
 
 	finalResults.DerivedFrom = []v1.OriginalTestResults{
@@ -69,4 +72,12 @@ func Parse(file fs.File, parsers []Parser, log *zap.SugaredLogger) (*v1.TestResu
 	}
 
 	return &finalResults, nil
+}
+
+func rewindFile(file fs.File) error {
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return errors.NewSystemError("Unable to rewind file: %s", err)
+	}
+
+	return nil
 }

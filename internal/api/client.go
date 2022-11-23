@@ -373,7 +373,7 @@ func (c Client) UploadTestResults(
 	for _, testResultsFile := range testResultsFiles {
 		fileInfo, err := testResultsFile.FD.Stat()
 		if err != nil {
-			return nil, errors.NewSystemError("unable to determine file-size for %q", testResultsFile.OriginalPath)
+			return nil, errors.NewSystemError("unable to determine file-size for %q", testResultsFile.FD.Name())
 		}
 
 		fileSizeLookup[testResultsFile.ExternalID] = fileInfo.Size()
@@ -400,8 +400,8 @@ func (c Client) UploadTestResults(
 		if err != nil {
 			c.Log.Warnf("unable to upload test results file to S3: %s", err)
 			uploadResults = append(uploadResults, TestResultsUploadResult{
-				OriginalPath: testResultsFile.OriginalPath,
-				Uploaded:     false,
+				OriginalPaths: testResultsFile.OriginalPaths,
+				Uploaded:      false,
 			})
 			continue
 		}
@@ -409,8 +409,8 @@ func (c Client) UploadTestResults(
 
 		testResultsFiles[i].s3uploadStatus = resp.StatusCode
 		uploadResults = append(uploadResults, TestResultsUploadResult{
-			OriginalPath: testResultsFile.OriginalPath,
-			Uploaded:     resp.StatusCode < 300,
+			OriginalPaths: testResultsFile.OriginalPaths,
+			Uploaded:      resp.StatusCode < 300,
 		})
 	}
 

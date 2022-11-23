@@ -17,7 +17,8 @@ import (
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/mocks"
-	"github.com/rwx-research/captain-cli/internal/testing"
+	"github.com/rwx-research/captain-cli/internal/parsing"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -54,7 +55,7 @@ var _ = Describe("Run", func() {
 			)).Sugar(),
 			FileSystem: new(mocks.FileSystem),
 			TaskRunner: new(mocks.TaskRunner),
-			Parsers:    []cli.Parser{new(mocks.Parser)},
+			Parsers:    []parsing.Parser{new(mocks.Parser)},
 		}
 
 		mockCommand = new(mocks.Command)
@@ -70,8 +71,8 @@ var _ = Describe("Run", func() {
 		}
 		service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
 
-		service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) ([]testing.TestResult, error) {
-			return []testing.TestResult{}, nil
+		service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (*v1.TestResults, error) {
+			return &v1.TestResults{}, nil
 		}
 
 		// Caution: This needs to be an existing file. We don't actually read from it, however the glob expansion
@@ -113,7 +114,7 @@ var _ = Describe("Run", func() {
 			) ([]api.TestResultsUploadResult, error) {
 				Expect(testResultsFiles).To(HaveLen(1))
 				testResultsFileUploaded = true
-				return []api.TestResultsUploadResult{{OriginalPath: testResultsFilePath, Uploaded: true}}, nil
+				return []api.TestResultsUploadResult{{OriginalPaths: []string{testResultsFilePath}, Uploaded: true}}, nil
 			}
 			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
 
@@ -185,22 +186,30 @@ var _ = Describe("Run", func() {
 			}
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
-			service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) ([]testing.TestResult, error) {
-				return []testing.TestResult{
-					{
-						Description: "passed test",
-						Status:      testing.TestStatusSuccessful,
-						Meta:        map[string]any{"file": "/path/to/file.test"},
-					},
-					{
-						Description: firstFailedTestDescription,
-						Status:      testing.TestStatusFailed,
-						Meta:        map[string]any{"file": "/path/to/file.test"},
-					},
-					{
-						Description: secondFailedTestDescription,
-						Status:      testing.TestStatusFailed,
-						Meta:        map[string]any{"file": "/other/path/to/file.test"},
+			service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (*v1.TestResults, error) {
+				return &v1.TestResults{
+					Tests: []v1.Test{
+						{
+							Name:     "passed test",
+							Location: &v1.Location{File: "/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: v1.NewSuccessfulTestStatus(),
+							},
+						},
+						{
+							Name:     firstFailedTestDescription,
+							Location: &v1.Location{File: "/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: v1.NewFailedTestStatus(nil, nil, nil),
+							},
+						},
+						{
+							Name:     secondFailedTestDescription,
+							Location: &v1.Location{File: "/other/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: v1.NewFailedTestStatus(nil, nil, nil),
+							},
+						},
 					},
 				}, nil
 			}

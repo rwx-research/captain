@@ -15,7 +15,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/logging"
-	"github.com/rwx-research/captain-cli/internal/parsers"
+	"github.com/rwx-research/captain-cli/internal/parsing"
 )
 
 func initCLIService(cmd *cobra.Command, args []string) error {
@@ -85,7 +85,13 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		Log:        logger,
 		FileSystem: fs.Local{},
 		TaskRunner: exec.Local{},
-		Parsers:    []cli.Parser{new(parsers.JUnit), new(parsers.Jest), new(parsers.RSpecV3), new(parsers.XUnitDotNetV2)},
+		Parsers: []parsing.Parser{
+			new(parsing.DotNetxUnitParser),
+			new(parsing.JavaScriptCypressParser),
+			new(parsing.JavaScriptJestParser),
+			new(parsing.RubyRSpecParser),
+			new(parsing.JUnitParser),
+		},
 	}
 
 	return nil
@@ -110,7 +116,13 @@ func unsafeInitParsingOnly(cmd *cobra.Command, args []string) error {
 	captain = cli.Service{
 		Log:        logger,
 		FileSystem: fs.Local{},
-		Parsers:    []cli.Parser{new(parsers.JUnit), new(parsers.Jest), new(parsers.RSpecV3), new(parsers.XUnitDotNetV2)},
+		Parsers: []parsing.Parser{
+			new(parsing.DotNetxUnitParser),
+			new(parsing.JavaScriptCypressParser),
+			new(parsing.JavaScriptJestParser),
+			new(parsing.RubyRSpecParser),
+			new(parsing.JUnitParser),
+		},
 	}
 
 	return nil

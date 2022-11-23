@@ -12,6 +12,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/mocks"
+	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -54,7 +55,7 @@ var _ = Describe("Partition", func() {
 			)).Sugar(),
 			FileSystem: new(mocks.FileSystem),
 			TaskRunner: new(mocks.TaskRunner),
-			Parsers:    []cli.Parser{},
+			Parsers:    []parsing.Parser{},
 		}
 	})
 

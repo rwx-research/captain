@@ -169,5 +169,10 @@ var _ = Describe("Parse", func() {
 		Expect(logMessages).To(ContainElement(
 			ContainSubstring("SuccessfulParserTwo was ultimately responsible for parsing the test results"),
 		))
+
+		// ensure it rewinds the file once done
+		buf, err := io.ReadAll(file)
+		Expect(string(buf)).To(Equal("the fake contents to base64 encode"))
+		Expect(err).NotTo(HaveOccurred())
 	})
 })
