@@ -98,38 +98,22 @@ func (t Test) Identify(withComponents []string, strictly bool) (string, error) {
 	foundComponents := make([]string, 0)
 
 	for _, component := range withComponents {
-		if component == "description" {
-			component, err := t.componentValue(strictly, t.nameGetter)
-			if err != nil {
-				return "", err
-			}
-			foundComponents = append(foundComponents, *component)
-			continue
+		var getter func() (*string, error)
+		switch component {
+		case "description":
+			getter = t.nameGetter
+		case "file":
+			getter = t.fileGetter
+		case "id":
+			getter = t.idGetter
+		default:
+			getter = t.metaGetter(component)
 		}
 
-		if component == "file" {
-			component, err := t.componentValue(strictly, t.fileGetter)
-			if err != nil {
-				return "", err
-			}
-			foundComponents = append(foundComponents, *component)
-			continue
-		}
-
-		if component == "id" {
-			component, err := t.componentValue(strictly, t.idGetter)
-			if err != nil {
-				return "", err
-			}
-			foundComponents = append(foundComponents, *component)
-			continue
-		}
-
-		component, err := t.componentValue(strictly, t.metaGetter(component))
+		component, err := t.componentValue(strictly, getter)
 		if err != nil {
 			return "", err
 		}
-
 		foundComponents = append(foundComponents, *component)
 	}
 
