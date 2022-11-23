@@ -141,4 +141,136 @@ var _ = Describe("Test", func() {
 			Expect(test.Attempt.Status).To(Equal(v1.NewQuarantinedTestStatus(originalStatus)))
 		})
 	})
+
+	Describe("Identify", func() {
+		Context("with strict identification", func() {
+			It("returns an error when fetching from meta of a test without meta", func() {
+				compositeIdentifier, err := v1.Test{
+					Name:    "the-description",
+					Attempt: v1.TestAttempt{},
+				}.Identify([]string{"description", "something_from_meta"}, true)
+
+				Expect(compositeIdentifier).To(Equal(""))
+				Expect(err.Error()).To(ContainSubstring("Meta is not defined"))
+			})
+
+			It("returns an error when fetching from meta of a test without the component in meta", func() {
+				compositeIdentifier, err := v1.Test{
+					Name: "the-description",
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{"something_else_in_meta": 1},
+					},
+				}.Identify([]string{"description", "something_from_meta"}, true)
+
+				Expect(compositeIdentifier).To(Equal(""))
+				Expect(err.Error()).To(ContainSubstring("it was not there"))
+			})
+
+			It("returns an error when the fetching the file without a location", func() {
+				compositeIdentifier, err := v1.Test{
+					Name: "the-description",
+				}.Identify([]string{"description", "file"}, true)
+
+				Expect(compositeIdentifier).To(Equal(""))
+				Expect(err.Error()).To(ContainSubstring("Location is not defined"))
+			})
+
+			It("returns an error when the fetching the ID when it's not there", func() {
+				compositeIdentifier, err := v1.Test{
+					Name: "the-description",
+				}.Identify([]string{"description", "id"}, true)
+
+				Expect(compositeIdentifier).To(Equal(""))
+				Expect(err.Error()).To(ContainSubstring("ID is not defined"))
+			})
+
+			It("returns a composite identifier otherwise", func() {
+				id := "the-id"
+				compositeIdentifier, err := v1.Test{
+					ID:       &id,
+					Name:     "the-description",
+					Location: &v1.Location{File: "the-file"},
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{
+							"foo": 1,
+							"bar": "hello",
+							"baz": false,
+							"nil": nil,
+						},
+					},
+				}.Identify([]string{"id", "description", "file", "foo", "bar", "baz", "nil"}, true)
+
+				Expect(compositeIdentifier).To(Equal(
+					"the-id -captain- the-description -captain- the-file -captain-" +
+						" 1 -captain- hello -captain- false -captain- ",
+				))
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Context("without strict identification", func() {
+			It("returns a composite identifier when fetching from meta of a test without meta", func() {
+				compositeIdentifier, err := v1.Test{
+					Name:    "the-description",
+					Attempt: v1.TestAttempt{},
+				}.Identify([]string{"description", "something_from_meta"}, false)
+
+				Expect(compositeIdentifier).To(Equal("the-description -captain- MISSING_IDENTITY_COMPONENT"))
+				Expect(err).To(BeNil())
+			})
+
+			It("returns a composite identifier when fetching from meta of a test without the component in meta", func() {
+				compositeIdentifier, err := v1.Test{
+					Name: "the-description",
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{"something_else_in_meta": 1},
+					},
+				}.Identify([]string{"description", "something_from_meta"}, false)
+
+				Expect(compositeIdentifier).To(Equal("the-description -captain- MISSING_IDENTITY_COMPONENT"))
+				Expect(err).To(BeNil())
+			})
+
+			It("returns a composite identifier when fetching the file without a location", func() {
+				compositeIdentifier, err := v1.Test{
+					Name: "the-description",
+				}.Identify([]string{"description", "file"}, false)
+
+				Expect(compositeIdentifier).To(Equal("the-description -captain- MISSING_IDENTITY_COMPONENT"))
+				Expect(err).To(BeNil())
+			})
+
+			It("returns a composite identifier when fetching the ID when it's not there", func() {
+				compositeIdentifier, err := v1.Test{
+					Name: "the-description",
+				}.Identify([]string{"description", "id"}, false)
+
+				Expect(compositeIdentifier).To(Equal("the-description -captain- MISSING_IDENTITY_COMPONENT"))
+				Expect(err).To(BeNil())
+			})
+
+			It("returns a composite identifier otherwise", func() {
+				id := "the-id"
+				compositeIdentifier, err := v1.Test{
+					ID:       &id,
+					Name:     "the-description",
+					Location: &v1.Location{File: "the-file"},
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{
+							"foo": 1,
+							"bar": "hello",
+							"baz": false,
+							"nil": nil,
+						},
+					},
+				}.Identify([]string{"id", "description", "file", "foo", "bar", "baz", "nil"}, false)
+
+				Expect(compositeIdentifier).To(Equal(
+					"the-id -captain- the-description -captain- the-file -captain-" +
+						" 1 -captain- hello -captain- false -captain- ",
+				))
+				Expect(err).To(BeNil())
+			})
+		})
+	})
 })
