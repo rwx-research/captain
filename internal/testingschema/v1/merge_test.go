@@ -1,8 +1,6 @@
 package v1_test
 
 import (
-	"fmt"
-
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -107,9 +105,7 @@ var _ = Describe("Merge", func() {
 	})
 
 	It("merges results from the same framework", func() {
-		results := v1.Merge([]v1.TestResults{*rubyRSpec1, *javaScriptJest1, *rubyRSpec2, *javaScriptJest2})
-		println(fmt.Sprintf("%v", results))
-		Expect(results).To(Equal(
+		Expect(v1.Merge([]v1.TestResults{*rubyRSpec1, *javaScriptJest1, *rubyRSpec2, *javaScriptJest2})).To(Equal(
 			[]v1.TestResults{
 				{
 					DerivedFrom: []v1.OriginalTestResults{

@@ -78,3 +78,11 @@ type Test struct {
 	Attempt      TestAttempt   `json:"attempt"`
 	PastAttempts []TestAttempt `json:"pastAttempts,omitempty"`
 }
+
+func (t *Test) Quarantine() {
+	if t.Attempt.Status.Kind == TestStatusQuarantined {
+		return
+	}
+
+	t.Attempt.Status = NewQuarantinedTestStatus(t.Attempt.Status)
+}

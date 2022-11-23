@@ -121,4 +121,24 @@ var _ = Describe("Test", func() {
 			))
 		})
 	})
+
+	Describe("Quarantine", func() {
+		It("quarantines a test that is not quarantined", func() {
+			originalStatus := v1.NewFailedTestStatus(nil, nil, nil)
+			test := v1.Test{Attempt: v1.TestAttempt{Status: originalStatus}}
+			Expect(test.Attempt.Status).To(Equal(originalStatus))
+
+			test.Quarantine()
+			Expect(test.Attempt.Status).To(Equal(v1.NewQuarantinedTestStatus(originalStatus)))
+		})
+
+		It("does not double-quarantine a test", func() {
+			originalStatus := v1.NewFailedTestStatus(nil, nil, nil)
+			test := v1.Test{Attempt: v1.TestAttempt{Status: v1.NewQuarantinedTestStatus(originalStatus)}}
+			Expect(test.Attempt.Status).To(Equal(v1.NewQuarantinedTestStatus(originalStatus)))
+
+			test.Quarantine()
+			Expect(test.Attempt.Status).To(Equal(v1.NewQuarantinedTestStatus(originalStatus)))
+		})
+	})
 })

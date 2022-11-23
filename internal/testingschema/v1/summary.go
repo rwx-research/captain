@@ -27,7 +27,6 @@ func (ss SummaryStatus) MarshalJSON() ([]byte, error) {
 func (ss *SummaryStatus) UnmarshalJSON(b []byte) error {
 	var s summaryStatus
 	if err := json.Unmarshal(b, &s); err != nil {
-		println(err)
 		return errors.Wrap(err)
 	}
 
