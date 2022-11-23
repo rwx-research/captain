@@ -151,7 +151,7 @@ func (p JavaScriptJestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 
 			var duration *time.Duration
 			if assertionResult.Duration != nil {
-				transformedDuration := time.Duration(*assertionResult.Duration) * time.Millisecond
+				transformedDuration := time.Duration(*assertionResult.Duration * int(time.Millisecond))
 				duration = &transformedDuration
 			}
 

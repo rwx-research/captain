@@ -72,7 +72,7 @@ var _ = Describe("RubyRSpecParser", func() {
 						Status:          "failed",
 						FilePath:        "./spec/some/other/file/path_spec.rb",
 						LineNumber:      12,
-						RunTime:         60.0,
+						RunTime:         0.00005,
 						PendingMessage:  nil,
 						Exception: &parsing.RubyRSpecException{
 							Class:     "ExceptionClass",
@@ -91,7 +91,7 @@ var _ = Describe("RubyRSpecParser", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(testResults).NotTo(BeNil())
 
-			duration := time.Duration(60000000000)
+			duration := time.Duration(50000)
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					ID:       &id,

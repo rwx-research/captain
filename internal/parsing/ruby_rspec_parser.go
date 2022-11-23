@@ -3,6 +3,7 @@ package parsing
 import (
 	"encoding/json"
 	"io"
+	"math"
 	"regexp"
 	"strings"
 	"time"
@@ -81,7 +82,7 @@ func (p RubyRSpecParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 		location := v1.Location{File: file}
 
-		duration := time.Duration(example.RunTime) * time.Second
+		duration := time.Duration(math.Round(example.RunTime * float64(time.Second)))
 		meta := make(map[string]any)
 
 		if example.FilePath != "" {
