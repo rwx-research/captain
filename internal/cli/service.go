@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -215,53 +214,43 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		return s.logError(errors.Wrap(err))
 	}
 
-	// Start uploading test results in the background
-	var wg sync.WaitGroup
-	wg.Add(1)
-	var uploadResults []api.TestResultsUploadResult
-	var uploadError error
+	quarantinedFailedTests := make([]v1.Test, 0)
+	unquarantinedFailedTests := make([]v1.Test, 0)
+	for i, testResult := range testResults {
+		for i, test := range testResult.Tests {
+			if test.Attempt.Status.Kind != v1.TestStatusFailed {
+				continue
+			}
 
-	go func() {
-		// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
-		// not affect the exit code.
-		if len(testResults) > 0 {
-			uploadResults, uploadError = s.performTestResultsUpload(ctx, cfg.SuiteID, testResults)
-		} else {
-			s.Log.Debugf("No test results were parsed. Globbed files: %v", testResultsFiles)
-		}
-		wg.Done()
-	}()
+			s.Log.Debugf("attempting to quarantine failed test: %v", test)
 
-	failedTests := make([]v1.Test, 0)
-	for _, testResult := range testResults {
-		for _, test := range testResult.Tests {
-			if test.Attempt.Status.Kind == v1.TestStatusFailed {
-				failedTests = append(failedTests, test)
+			if s.isQuarantined(test, quarantinedTestCases) {
+				s.Log.Debugf("quarantined failed test: %v", test)
+				testResult.Tests[i] = test.Quarantine()
+				quarantinedFailedTests = append(quarantinedFailedTests, test)
+			} else {
+				s.Log.Debugf("did not quarantine failed test: %v", test)
+				unquarantinedFailedTests = append(unquarantinedFailedTests, test)
 			}
 		}
+		testResult.Summary = v1.NewSummary(testResult.Tests, testResult.OtherErrors)
+		testResults[i] = testResult
 	}
 
 	// This protects against an edge-case where the test-suite fails before writing any results to a test results file.
-	if runErr != nil && len(failedTests) == 0 {
+	if runErr != nil && len(quarantinedFailedTests)+len(unquarantinedFailedTests) == 0 {
 		return runErr
 	}
 
-	quarantinedFailedTests := make([]v1.Test, 0)
-	unquarantinedFailedTests := make([]v1.Test, 0)
-	for _, failedTest := range failedTests {
-		s.Log.Debugf("attempting to quarantine failed test: %v", failedTest)
-
-		if s.isQuarantined(failedTest, quarantinedTestCases) {
-			s.Log.Debugf("quarantined failed test: %v", failedTest)
-			quarantinedFailedTests = append(quarantinedFailedTests, failedTest)
-		} else {
-			s.Log.Debugf("did not quarantine failed test: %v", failedTest)
-			unquarantinedFailedTests = append(unquarantinedFailedTests, failedTest)
-		}
+	var uploadResults []api.TestResultsUploadResult
+	var uploadError error
+	// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
+	// not affect the exit code.
+	if len(testResults) > 0 {
+		uploadResults, uploadError = s.performTestResultsUpload(ctx, cfg.SuiteID, testResults)
+	} else {
+		s.Log.Debugf("No test results were parsed. Globbed files: %v", testResultsFiles)
 	}
-
-	// Wait until raw version of test results was uploaded
-	wg.Wait()
 
 	// Display detailed output if necessary
 	hasUploadResults := len(uploadResults) > 0
@@ -301,8 +290,8 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 			fmt.Sprintf(
 				"\n%v of %v %v under quarantine:",
 				len(quarantinedFailedTests),
-				len(failedTests),
-				pluralize(len(failedTests), "failure", "failures"),
+				len(quarantinedFailedTests)+len(unquarantinedFailedTests),
+				pluralize(len(quarantinedFailedTests)+len(unquarantinedFailedTests), "failure", "failures"),
 			),
 		)
 
@@ -311,7 +300,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		}
 	}
 
-	if hasDetails && len(unquarantinedFailedTests) > 0 {
+	if hasDetails && hasQuarantinedFailedTests && len(unquarantinedFailedTests) > 0 {
 		s.Log.Infoln(
 			fmt.Sprintf(
 				"\n%v remaining actionable %v",

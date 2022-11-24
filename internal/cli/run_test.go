@@ -174,6 +174,7 @@ var _ = Describe("Run", func() {
 			exitCode                    int
 			firstFailedTestDescription  string
 			secondFailedTestDescription string
+			uploadedTestResults         []byte
 		)
 
 		BeforeEach(func() {
@@ -213,6 +214,22 @@ var _ = Describe("Run", func() {
 					},
 				}, nil
 			}
+
+			mockUploadTestResults := func(
+				ctx context.Context,
+				testSuite string,
+				testResultsFiles []api.TestResultsFile,
+			) ([]api.TestResultsUploadResult, error) {
+				testResultsFileUploaded = true
+				Expect(testResultsFiles).To(HaveLen(1))
+
+				buf, err := io.ReadAll(testResultsFiles[0].FD)
+				Expect(err).NotTo(HaveOccurred())
+				uploadedTestResults = buf
+
+				return []api.TestResultsUploadResult{{OriginalPaths: []string{testResultsFilePath}, Uploaded: true}}, nil
+			}
+			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
 		})
 
 		Context("no quarantined tests", func() {
@@ -362,6 +379,8 @@ var _ = Describe("Run", func() {
 				Expect(logMessages).NotTo(ContainElement(ContainSubstring("remaining actionable")))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
+				Expect(string(uploadedTestResults)).To(ContainSubstring(`"quarantined":2`))
+				Expect(string(uploadedTestResults)).To(ContainSubstring(`"kind":"quarantined"`))
 			})
 		})
 	})

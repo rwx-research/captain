@@ -85,12 +85,13 @@ type Test struct {
 	PastAttempts []TestAttempt `json:"pastAttempts,omitempty"`
 }
 
-func (t *Test) Quarantine() {
+func (t Test) Quarantine() Test {
 	if t.Attempt.Status.Kind == TestStatusQuarantined {
-		return
+		return t
 	}
 
 	t.Attempt.Status = NewQuarantinedTestStatus(t.Attempt.Status)
+	return t
 }
 
 // Calculates the composite identifier of a Test given the components which determine it
