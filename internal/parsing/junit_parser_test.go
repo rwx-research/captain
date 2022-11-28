@@ -48,9 +48,8 @@ var _ = Describe("JUnitParser", func() {
 			Expect(testResults).To(BeNil())
 
 			testResults, err = parsing.JUnitParser{}.Parse(strings.NewReader(`<testsuites></testsuites>`))
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("The test suites in the XML do not appear to match JUnit XML"))
-			Expect(testResults).To(BeNil())
+			Expect(err).NotTo(HaveOccurred())
+			Expect(testResults).NotTo(BeNil())
 
 			testResults, err = parsing.JUnitParser{}.Parse(
 				strings.NewReader(`<testsuites><testsuite></testsuite></testsuites>`),

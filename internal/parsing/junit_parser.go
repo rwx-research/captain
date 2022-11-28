@@ -79,7 +79,7 @@ func (p JUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	if err := xml.NewDecoder(data).Decode(&testResults); err != nil {
 		return nil, errors.NewInputError("Unable to parse test results as XML: %s", err)
 	}
-	if len(testResults.TestSuites) < 1 || testResults.TestSuites[0].Tests == nil {
+	if len(testResults.TestSuites) > 0 && testResults.TestSuites[0].Tests == nil {
 		return nil, errors.NewInputError("The test suites in the XML do not appear to match JUnit XML")
 	}
 

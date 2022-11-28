@@ -141,7 +141,7 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	if err := xml.NewDecoder(data).Decode(&testResults); err != nil {
 		return nil, errors.NewInputError("Unable to parse test results as XML: %s", err)
 	}
-	if len(testResults.Assemblies) < 1 || testResults.Assemblies[0].Collections == nil {
+	if len(testResults.Assemblies) > 0 && testResults.Assemblies[0].Collections == nil {
 		return nil, errors.NewInputError("The test suites in the XML do not appear to match xUnit.NET XML")
 	}
 

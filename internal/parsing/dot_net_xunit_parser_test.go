@@ -48,9 +48,8 @@ var _ = Describe("DotNetxUnitParser", func() {
 			Expect(testResults).To(BeNil())
 
 			testResults, err = parsing.DotNetxUnitParser{}.Parse(strings.NewReader(`<assemblies></assemblies>`))
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("The test suites in the XML do not appear to match xUnit.NET XML"))
-			Expect(testResults).To(BeNil())
+			Expect(err).NotTo(HaveOccurred())
+			Expect(testResults).NotTo(BeNil())
 
 			testResults, err = parsing.DotNetxUnitParser{}.Parse(
 				strings.NewReader(`<assemblies><assembly></assembly></assemblies>`),
