@@ -1,0 +1,94 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Ruby",
+    "kind": "RSpec"
+  },
+  "summary": {
+    "status": { "kind": "failed" },
+    "tests": 3,
+    "otherErrors": 3,
+    "retries": 1,
+    "canceled": 0,
+    "failed": 1,
+    "pended": 0,
+    "quarantined": 1,
+    "skipped": 0,
+    "successful": 1,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "id": "./spec/some/path/foo_spec.rb:12",
+      "name": "Sky::Moon when it's dark out is bright",
+      "lineage": ["Sky::Moon", "when it's dark out", "is bright"],
+      "location": {
+        "file": "./spec/some/path/foo_spec.rb",
+        "line": 12
+      },
+      "attempt": {
+        "durationInNanoseconds": 1100300300,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "./spec/some/path/foo_spec.rb:20",
+      "name": "Sky::Moon when it's dark out is not bright",
+      "lineage": ["Sky::Moon", "when it's dark out", "is not bright"],
+      "location": {
+        "file": "./spec/some/path/foo_spec.rb",
+        "line": 20
+      },
+      "attempt": {
+        "durationInNanoseconds": 1200000000,
+        "status": {
+          "kind": "quarantined",
+          "originalStatus": {
+            "kind": "failed",
+            "message": "The moon is bright"
+          }
+        }
+      }
+    },
+    {
+      "name": "Sky::Moon does not exist",
+      "attempt": {
+        "durationInNanoseconds": 1200000000,
+        "finishedAt": "2022-11-15T15:01:49Z",
+        "status": { "kind": "successful" },
+        "meta": { "env": "foo" }
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 1500000000,
+          "finishedAt": "2022-11-15T07:01:34Z",
+          "status": {
+            "kind": "failed",
+            "message": "The moon is in the sky"
+          }
+        }
+      ]
+    }
+  ],
+  "otherErrors": [
+    { "message": "something broke" },
+    {
+      "message": "An error occurred",
+      "exception": "FooError",
+      "location": {
+        "file": "./some/path/to/file.rb",
+        "line": 10
+      }
+    }
+  ],
+  "derivedFrom": [
+    {
+      "originalFilePath": "./some/path/to/file.json",
+      "contents": "base64encodedoriginalfile",
+      "groupNumber": 1
+    }
+  ]
+}

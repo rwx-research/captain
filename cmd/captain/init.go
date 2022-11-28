@@ -86,6 +86,7 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		FileSystem: fs.Local{},
 		TaskRunner: exec.Local{},
 		Parsers: []parsing.Parser{
+			new(parsing.RWXParser),
 			new(parsing.DotNetxUnitParser),
 			new(parsing.JavaScriptCypressParser),
 			new(parsing.JavaScriptJestParser),
@@ -117,6 +118,7 @@ func unsafeInitParsingOnly(cmd *cobra.Command, args []string) error {
 		Log:        logger,
 		FileSystem: fs.Local{},
 		Parsers: []parsing.Parser{
+			new(parsing.RWXParser),
 			new(parsing.DotNetxUnitParser),
 			new(parsing.JavaScriptCypressParser),
 			new(parsing.JavaScriptJestParser),
