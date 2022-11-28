@@ -46,8 +46,7 @@ func (s Service) logError(err error) error {
 func (s Service) Parse(ctx context.Context, filepaths []string) error {
 	results, err := s.parse(filepaths)
 	if err != nil {
-		// Error was already logged in `parse`
-		return errors.Wrap(err)
+		return s.logError(errors.Wrap(err))
 	}
 
 	for _, result := range results {
@@ -69,15 +68,13 @@ func (s Service) parse(filepaths []string) ([]v1.TestResults, error) {
 
 		fd, err := s.FileSystem.Open(testResultsFilePath)
 		if err != nil {
-			return nil, s.logError(errors.NewSystemError("unable to open file: %s", err))
+			return nil, errors.NewSystemError("unable to open file: %s", err)
 		}
 		defer fd.Close()
 
 		results, err := parsing.Parse(fd, s.Parsers, s.Log)
 		if err != nil {
-			return nil, s.logError(
-				errors.NewInputError("Unable to parse %q with the available parsers", testResultsFilePath),
-			)
+			return nil, errors.NewInputError("Unable to parse %q with the available parsers", testResultsFilePath)
 		}
 
 		allResults = append(allResults, *results)
@@ -476,7 +473,7 @@ func (s Service) UploadTestResults(
 
 	parsedResults, err := s.parse(expandedFilepaths)
 	if err != nil {
-		return nil, s.logError(errors.NewInputError("Unable to parse results: %s", err))
+		return nil, s.logError(errors.Wrap(err))
 	}
 
 	return s.performTestResultsUpload(
