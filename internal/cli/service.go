@@ -132,19 +132,28 @@ func (s Service) isQuarantined(failedTest v1.Test, quarantinedTestCases []api.Qu
 			quarantinedTestCase.StrictIdentity,
 		)
 		if err != nil {
-			s.Log.Debugf("%v does not quarantine %v because %v", quarantinedTestCase, failedTest, err.Error())
+			s.Log.Debugf("%v does not identify %v because %v", quarantinedTestCase, failedTest, err.Error())
 			continue
 		}
 
-		if compositeIdentifier == quarantinedTestCase.CompositeIdentifier {
+		if compositeIdentifier != quarantinedTestCase.CompositeIdentifier {
 			s.Log.Debugf(
-				"%v quarantines %v because they share the same composite identifier (%v)",
+				"%v does not quarantine %v because they have different composite identifiers (%v != %v)",
 				quarantinedTestCase,
 				failedTest,
+				quarantinedTestCase.CompositeIdentifier,
 				compositeIdentifier,
 			)
-			return true
+			continue
 		}
+
+		s.Log.Debugf(
+			"%v quarantines %v because they share the same composite identifier (%v)",
+			quarantinedTestCase,
+			failedTest,
+			compositeIdentifier,
+		)
+		return true
 	}
 
 	return false
