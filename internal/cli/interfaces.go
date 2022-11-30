@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"io"
 
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/exec"
@@ -23,11 +22,6 @@ type FileSystem interface {
 	Open(name string) (fs.File, error)
 	Glob(pattern string) ([]string, error)
 	GlobMany(patterns []string) ([]string, error)
-}
-
-// Parser is the interface a potential parser needs to implement.
-type Parser interface {
-	Parse(io.Reader) ([]testing.TestResult, error)
 }
 
 // TaskRunner is an abstraction over various task-runners / execution environments.
