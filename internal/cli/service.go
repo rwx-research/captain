@@ -224,19 +224,19 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	unquarantinedFailedTests := make([]v1.Test, 0)
 	for i, testResult := range testResults {
 		for i, test := range testResult.Tests {
-			if test.Attempt.Status.Kind != v1.TestStatusFailed {
+			if !s.isQuarantined(test, quarantinedTestCases) {
+				if test.Attempt.Status.Kind == v1.TestStatusFailed {
+					s.Log.Debugf("did not quarantine failed test: %v", test)
+					unquarantinedFailedTests = append(unquarantinedFailedTests, test)
+				}
 				continue
 			}
 
-			s.Log.Debugf("attempting to quarantine failed test: %v", test)
+			testResult.Tests[i] = test.Quarantine()
 
-			if s.isQuarantined(test, quarantinedTestCases) {
+			if test.Attempt.Status.Kind == v1.TestStatusFailed {
 				s.Log.Debugf("quarantined failed test: %v", test)
-				testResult.Tests[i] = test.Quarantine()
 				quarantinedFailedTests = append(quarantinedFailedTests, test)
-			} else {
-				s.Log.Debugf("did not quarantine failed test: %v", test)
-				unquarantinedFailedTests = append(unquarantinedFailedTests, test)
 			}
 		}
 		testResult.Summary = v1.NewSummary(testResult.Tests, testResult.OtherErrors)

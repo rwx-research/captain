@@ -2,6 +2,7 @@ package cli_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -171,16 +172,18 @@ var _ = Describe("Run", func() {
 
 	Context("with an erroring command", func() {
 		var (
-			exitCode                    int
-			firstFailedTestDescription  string
-			secondFailedTestDescription string
-			uploadedTestResults         []byte
+			exitCode                       int
+			firstFailedTestDescription     string
+			secondFailedTestDescription    string
+			firstSuccessfulTestDescription string
+			uploadedTestResults            []byte
 		)
 
 		BeforeEach(func() {
 			exitCode = int(GinkgoRandomSeed() + 1)
-			firstFailedTestDescription = fmt.Sprintf("first-description-%d", GinkgoRandomSeed()+2)
-			secondFailedTestDescription = fmt.Sprintf("second-description-%d", GinkgoRandomSeed()+3)
+			firstFailedTestDescription = fmt.Sprintf("first-failed-description-%d", GinkgoRandomSeed()+2)
+			secondFailedTestDescription = fmt.Sprintf("second-failed-description-%d", GinkgoRandomSeed()+3)
+			firstSuccessfulTestDescription = fmt.Sprintf("first-successful-description-%d", GinkgoRandomSeed()+4)
 
 			mockGetExitStatusFromError := func(error) (int, error) {
 				return exitCode, nil
@@ -191,7 +194,7 @@ var _ = Describe("Run", func() {
 				return &v1.TestResults{
 					Tests: []v1.Test{
 						{
-							Name:     "passed test",
+							Name:     firstSuccessfulTestDescription,
 							Location: &v1.Location{File: "/path/to/file.test"},
 							Attempt: v1.TestAttempt{
 								Status: v1.NewSuccessfulTestStatus(),
@@ -342,7 +345,7 @@ var _ = Describe("Run", func() {
 			})
 		})
 
-		Context("all tests quarantined", func() {
+		Context("all tests quarantined tests fail", func() {
 			BeforeEach(func() {
 				mockGetQuarantinedTestCases := func(
 					ctx context.Context,
@@ -379,8 +382,77 @@ var _ = Describe("Run", func() {
 				Expect(logMessages).NotTo(ContainElement(ContainSubstring("remaining actionable")))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
-				Expect(string(uploadedTestResults)).To(ContainSubstring(`"quarantined":2`))
-				Expect(string(uploadedTestResults)).To(ContainSubstring(`"kind":"quarantined"`))
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).To(BeNil())
+
+				Expect(testResults.Summary.Quarantined).To(Equal(2))
+				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+
+				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+			})
+		})
+
+		Context("some quarantined tests successful", func() {
+			BeforeEach(func() {
+				mockGetQuarantinedTestCases := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) ([]api.QuarantinedTestCase, error) {
+					return []api.QuarantinedTestCase{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstSuccessfulTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
+			})
+
+			It("doesn't return an error", func() {
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("reports quarantined status with an original status of success", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).To(ContainElement(ContainSubstring("2 of 2 failures under quarantine")))
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring("remaining actionable")))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).To(BeNil())
+
+				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(testResults.Tests[0].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusSuccessful))
+
+				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
 			})
 		})
 	})
