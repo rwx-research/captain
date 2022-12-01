@@ -270,24 +270,30 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	}
 
 	if hasUploadResults {
+		uploadedPaths := make([]string, 0)
+		erroredPaths := make([]string, 0)
+		for _, uploadResult := range uploadResults {
+			if uploadResult.Uploaded {
+				uploadedPaths = append(uploadedPaths, uploadResult.OriginalPaths...)
+			} else {
+				erroredPaths = append(erroredPaths, uploadResult.OriginalPaths...)
+			}
+		}
+		testResultsFilesFound := len(uploadedPaths) + len(erroredPaths)
+
 		s.Log.Infoln(
 			fmt.Sprintf(
 				"\nFound %v test result %v:",
-				len(uploadResults),
-				pluralize(len(uploadResults), "file", "files"),
+				testResultsFilesFound,
+				pluralize(testResultsFilesFound, "file", "files"),
 			),
 		)
 
-		for _, uploadResult := range uploadResults {
-			if uploadResult.Uploaded {
-				for _, originalPath := range uploadResult.OriginalPaths {
-					s.Log.Infoln(fmt.Sprintf("- Uploaded %v", originalPath))
-				}
-			} else {
-				for _, originalPath := range uploadResult.OriginalPaths {
-					s.Log.Infoln(fmt.Sprintf("- Unable to upload %v", originalPath))
-				}
-			}
+		for _, uploadedPath := range uploadedPaths {
+			s.Log.Infoln(fmt.Sprintf("- Uploaded %v", uploadedPath))
+		}
+		for _, erroredPath := range erroredPaths {
+			s.Log.Infoln(fmt.Sprintf("- Unable to upload %v", erroredPath))
 		}
 	}
 

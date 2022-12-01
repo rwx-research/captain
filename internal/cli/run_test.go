@@ -230,7 +230,10 @@ var _ = Describe("Run", func() {
 				Expect(err).NotTo(HaveOccurred())
 				uploadedTestResults = buf
 
-				return []api.TestResultsUploadResult{{OriginalPaths: []string{testResultsFilePath}, Uploaded: true}}, nil
+				return []api.TestResultsUploadResult{
+					{OriginalPaths: []string{testResultsFilePath}, Uploaded: true},
+					{OriginalPaths: []string{"./fake/path/1.json", "./fake/path/2.json"}, Uploaded: false},
+				}, nil
 			}
 			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
 		})
@@ -241,6 +244,19 @@ var _ = Describe("Run", func() {
 				executionError, ok := errors.AsExecutionError(err)
 				Expect(ok).To(BeTrue(), "Error is an execution error")
 				Expect(executionError.Code).To(Equal(exitCode))
+			})
+
+			It("logs details about the file uploads", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).To(ContainElement(ContainSubstring("Found 3 test result files:")))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- Uploaded %v", testResultsFilePath)))
+				Expect(logMessages).To(ContainElement("- Unable to upload ./fake/path/1.json"))
+				Expect(logMessages).To(ContainElement("- Unable to upload ./fake/path/2.json"))
 			})
 		})
 
