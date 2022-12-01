@@ -10,6 +10,7 @@ import (
 var (
 	partitionIndex  int
 	totalPartitions int
+	delimiter       string
 	partitionCmd    = &cobra.Command{
 		Use:     "partition",
 		Short:   "Partition a test suite using historical file timings recorded by Captain",
@@ -22,6 +23,7 @@ var (
 				SuiteID:         suiteID,
 				TestFilePaths:   args,
 				TotalPartitions: totalPartitions,
+				Delimiter:       delimiter,
 			})
 			return errors.Wrap(err)
 		},
@@ -34,6 +36,7 @@ func init() {
 	partitionCmd.Flags().StringVar(&suiteID, "suite-id", "", "the id of the test suite (required)")
 	partitionCmd.Flags().IntVar(&partitionIndex, "index", 0, "the index of a particular partition (required)")
 	partitionCmd.Flags().IntVar(&totalPartitions, "total", 0, "the total number of partitions (required)")
+	partitionCmd.Flags().StringVar(&delimiter, "delimiter", " ", "the delimiter used to separate partitioned files")
 
 	if err := partitionCmd.MarkFlagRequired("suite-id"); err != nil {
 		initializationErrors = append(initializationErrors, err)

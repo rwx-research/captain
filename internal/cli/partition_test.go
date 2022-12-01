@@ -19,17 +19,18 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func cfgWithArgs(index int, total int, args []string) cli.PartitionConfig {
+func cfgWithArgs(index int, total int, args []string, delimiter string) cli.PartitionConfig {
 	return cli.PartitionConfig{
 		TestFilePaths:   args,
 		PartitionIndex:  index,
 		TotalPartitions: total,
 		SuiteID:         "captain-cli-test",
+		Delimiter:       delimiter,
 	}
 }
 
 func cfgWithGlob(index int, total int, glob string) cli.PartitionConfig {
-	return cfgWithArgs(index, total, []string{glob})
+	return cfgWithArgs(index, total, []string{glob}, " ")
 }
 
 var _ = Describe("Partition", func() {
@@ -73,7 +74,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("must specify filepath args", func() {
-			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}))
+			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}, " "))
 			Expect(err.Error()).To(ContainSubstring("no test file paths provided"))
 		})
 	})
@@ -91,7 +92,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("only considers unique filepaths", func() {
-			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test", "*.test"}))
+			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test", "*.test"}, " "))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -562,6 +563,41 @@ var _ = Describe("Partition", func() {
 		It("raises an error because partitioning one index and round-robining another is problematic ", func() {
 			err = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 			Expect(err.Error()).To(ContainSubstring("something bad!"))
+		})
+	})
+
+	Context("when using a custom delimiter", func() {
+		BeforeEach(func() {
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
+			mockGetTimingManifest := func(
+				ctx context.Context,
+				testSuiteIdentifier string,
+			) ([]testing.TestFileTiming, error) {
+				fetchedTimingManifest = true
+				a, _ := filepath.Abs("a.test")
+				b, _ := filepath.Abs("b.test")
+				c, _ := filepath.Abs("c.test")
+				d, _ := filepath.Abs("d.test")
+				return []testing.TestFileTiming{
+					{Filepath: a, Duration: 4},
+					{Filepath: b, Duration: 3},
+					{Filepath: c, Duration: 2},
+					{Filepath: d, Duration: 1},
+				}, nil
+			}
+			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+		})
+
+		It("raises an error because partitioning one index and round-robining another is problematic ", func() {
+			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test"}, ","))
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+				logMessages = append(logMessages, log.Message)
+			}
+			Expect(logMessages).To(ContainElement("a.test,b.test,c.test,d.test"))
 		})
 	})
 })

@@ -15,6 +15,7 @@ type PartitionConfig struct {
 	SuiteID         string
 	TestFilePaths   []string
 	TotalPartitions int
+	Delimiter       string
 }
 
 func (pc PartitionConfig) Validate() error {

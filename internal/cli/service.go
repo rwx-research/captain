@@ -431,7 +431,7 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 	}
 
 	activePartition := partitions[cfg.PartitionIndex]
-	s.Log.Infoln(strings.Join(activePartition.TestFilePaths, " "))
+	s.Log.Infoln(strings.Join(activePartition.TestFilePaths, cfg.Delimiter))
 
 	return nil
 }
