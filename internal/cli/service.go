@@ -543,7 +543,7 @@ func (s Service) performTestResultsUpload(
 
 	uploadResults, err := s.API.UploadTestResults(ctx, testSuiteID, testResultsFiles)
 	if err != nil {
-		return nil, s.logError(errors.WithMessage(err, "unable to upload test result"))
+		return nil, s.logError(errors.Wrap(err, "unable to upload test result"))
 	}
 
 	return uploadResults, nil

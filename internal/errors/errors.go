@@ -15,8 +15,8 @@ func (e ConfigurationError) Error() string {
 }
 
 // NewConfigurationError returns a new ConfigurationError
-func NewConfigurationError(msg string, a ...any) ConfigurationError {
-	return ConfigurationError{errors.Errorf(msg, a...)}
+func NewConfigurationError(msg string, a ...any) error {
+	return WithStack(ConfigurationError{errors.Errorf(msg, a...)})
 }
 
 // AsConfigurationError checks whether the error is a configuration error
@@ -39,8 +39,8 @@ func (e ExecutionError) Error() string {
 }
 
 // NewExecutionError returns a new ExecutionError
-func NewExecutionError(code int, msg string, a ...any) ExecutionError {
-	return ExecutionError{Code: code, E: errors.Errorf(msg, a...)}
+func NewExecutionError(code int, msg string, a ...any) error {
+	return WithStack(ExecutionError{Code: code, E: errors.Errorf(msg, a...)})
 }
 
 // AsExecutionError checks whether the error is an execution error.
@@ -60,8 +60,8 @@ func (e InputError) Error() string {
 }
 
 // InputError returns a new InputError
-func NewInputError(msg string, a ...any) InputError {
-	return InputError{errors.Errorf(msg, a...)}
+func NewInputError(msg string, a ...any) error {
+	return WithStack(InputError{errors.Errorf(msg, a...)})
 }
 
 // AsInputError checks whether the error is an input error
@@ -82,8 +82,8 @@ func (e InternalError) Error() string {
 }
 
 // InternalError returns a new InternalError
-func NewInternalError(msg string, a ...any) InternalError {
-	return InternalError{errors.Errorf(msg, a...)}
+func NewInternalError(msg string, a ...any) error {
+	return WithStack(InternalError{errors.Errorf(msg, a...)})
 }
 
 // AsInternalError checks whether the error is an internal error
@@ -104,8 +104,8 @@ func (e SystemError) Error() string {
 }
 
 // SystemError returns a new SystemError
-func NewSystemError(msg string, a ...any) SystemError {
-	return SystemError{errors.Errorf(msg, a...)}
+func NewSystemError(msg string, a ...any) error {
+	return WithStack(SystemError{errors.Errorf(msg, a...)})
 }
 
 // AsSystemError checks whether the error is a system error

@@ -54,6 +54,9 @@ linters-settings:
       - default
       - prefix(github.com/rwx-research)
       - dot
+  wrapcheck:
+    ignoreSigRegexps:
+      - errors\.New.*Error\(
 
 issues:
   exclude-rules:
