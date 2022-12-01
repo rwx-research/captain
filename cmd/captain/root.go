@@ -31,7 +31,7 @@ var (
 				return nil
 			}
 
-			return errors.Wrap(cmd.Usage())
+			return errors.WithStack(cmd.Usage())
 		},
 	}
 )

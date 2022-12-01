@@ -1,17 +1,22 @@
-// Package errors is our internal errors package. It should be used in place of the standard "errors" package,
-// "golang.org/x/xerrors", or "fmt.Errorf".
+// Package errors is our internal errors package. It should be used in place of the standard "errors" package.
 // This package ensures that all errors have a correct category & collect stack-traces.
 package errors
 
-import "golang.org/x/xerrors"
+import "github.com/pkg/errors"
 
 // ConfigurationError represent a configuration error. When used, it should ideally also point towards the configuration
 // value that caused this error to occur.
-type ConfigurationError error
+type ConfigurationError struct {
+	E error
+}
+
+func (e ConfigurationError) Error() string {
+	return e.E.Error()
+}
 
 // NewConfigurationError returns a new ConfigurationError
 func NewConfigurationError(msg string, a ...any) ConfigurationError {
-	return xerrors.Errorf(msg, a...)
+	return ConfigurationError{errors.Errorf(msg, a...)}
 }
 
 // AsConfigurationError checks whether the error is a configuration error
@@ -29,9 +34,13 @@ type ExecutionError struct {
 	Code int
 }
 
+func (e ExecutionError) Error() string {
+	return e.E.Error()
+}
+
 // NewExecutionError returns a new ExecutionError
 func NewExecutionError(code int, msg string, a ...any) ExecutionError {
-	return ExecutionError{Code: code, E: xerrors.Errorf(msg, a...)}
+	return ExecutionError{Code: code, E: errors.Errorf(msg, a...)}
 }
 
 // AsExecutionError checks whether the error is an execution error.
@@ -41,17 +50,18 @@ func AsExecutionError(err error) (ExecutionError, bool) {
 	return e, ok
 }
 
-// Error returns the error message of this error
-func (e ExecutionError) Error() string {
+// InputError is an error caused by user input
+type InputError struct {
+	E error
+}
+
+func (e InputError) Error() string {
 	return e.E.Error()
 }
 
-// InputError is an error caused by user input
-type InputError error
-
 // InputError returns a new InputError
 func NewInputError(msg string, a ...any) InputError {
-	return xerrors.Errorf(msg, a...)
+	return InputError{errors.Errorf(msg, a...)}
 }
 
 // AsInputError checks whether the error is an input error
@@ -63,11 +73,17 @@ func AsInputError(err error) (InputError, bool) {
 
 // InternalError is an internal error. This error type should only be used if an end-user cannot act upon it and would
 // need to reach out to us for support.
-type InternalError error
+type InternalError struct {
+	E error
+}
+
+func (e InternalError) Error() string {
+	return e.E.Error()
+}
 
 // InternalError returns a new InternalError
 func NewInternalError(msg string, a ...any) InternalError {
-	return xerrors.Errorf(msg, a...)
+	return InternalError{errors.Errorf(msg, a...)}
 }
 
 // AsInternalError checks whether the error is an internal error
@@ -79,11 +95,17 @@ func AsInternalError(err error) (InternalError, bool) {
 
 // SystemError is returned when the CLI encountered a system error. This is most likely either an error during file read
 // or a network error.
-type SystemError error
+type SystemError struct {
+	E error
+}
+
+func (e SystemError) Error() string {
+	return e.E.Error()
+}
 
 // SystemError returns a new SystemError
 func NewSystemError(msg string, a ...any) SystemError {
-	return xerrors.Errorf(msg, a...)
+	return SystemError{errors.Errorf(msg, a...)}
 }
 
 // AsSystemError checks whether the error is a system error

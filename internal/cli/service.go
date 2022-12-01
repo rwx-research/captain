@@ -46,7 +46,7 @@ func (s Service) logError(err error) error {
 func (s Service) Parse(ctx context.Context, filepaths []string) error {
 	results, err := s.parse(filepaths)
 	if err != nil {
-		return s.logError(errors.Wrap(err))
+		return s.logError(errors.WithStack(err))
 	}
 
 	for _, result := range results {
@@ -180,7 +180,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	eg.Go(func() error {
 		testCases, err := s.API.GetQuarantinedTestCases(egCtx, cfg.SuiteID)
 		if err != nil {
-			return errors.Wrap(err)
+			return errors.WithStack(err)
 		}
 
 		if len(testCases) == 0 {
@@ -194,7 +194,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	// Run sub-command
 	runErr := s.runCommand(ctx, cfg.Args)
 	if _, ok := errors.AsExecutionError(runErr); runErr != nil && !ok {
-		return errors.Wrap(runErr)
+		return errors.WithStack(runErr)
 	}
 
 	// Return early if not testResultsFiles were defined over the CLI. If there was an error
@@ -217,7 +217,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	// Parse testResultsFiles
 	testResults, err := s.parse(testResultsFiles)
 	if err != nil {
-		return s.logError(errors.Wrap(err))
+		return s.logError(errors.WithStack(err))
 	}
 
 	quarantinedFailedTests := make([]v1.Test, 0)
@@ -342,11 +342,11 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 	err := cfg.Validate()
 	if err != nil {
-		return errors.Wrap(err)
+		return errors.WithStack(err)
 	}
 	fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
 	if err != nil {
-		return errors.Wrap(err)
+		return errors.WithStack(err)
 	}
 
 	testFilePaths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
@@ -488,7 +488,7 @@ func (s Service) UploadTestResults(
 
 	parsedResults, err := s.parse(expandedFilepaths)
 	if err != nil {
-		return nil, s.logError(errors.Wrap(err))
+		return nil, s.logError(errors.WithStack(err))
 	}
 
 	return s.performTestResultsUpload(
@@ -543,7 +543,7 @@ func (s Service) performTestResultsUpload(
 
 	uploadResults, err := s.API.UploadTestResults(ctx, testSuiteID, testResultsFiles)
 	if err != nil {
-		return nil, s.logError(errors.WithMessage("unable to upload test result: %s", err))
+		return nil, s.logError(errors.WithMessage(err, "unable to upload test result"))
 	}
 
 	return uploadResults, nil

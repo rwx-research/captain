@@ -21,13 +21,13 @@ type summaryStatus struct {
 
 func (ss SummaryStatus) MarshalJSON() ([]byte, error) {
 	json, err := json.Marshal(&summaryStatus{Kind: (string)(ss)})
-	return json, errors.Wrap(err)
+	return json, errors.WithStack(err)
 }
 
 func (ss *SummaryStatus) UnmarshalJSON(b []byte) error {
 	var s summaryStatus
 	if err := json.Unmarshal(b, &s); err != nil {
-		return errors.Wrap(err)
+		return errors.WithStack(err)
 	}
 
 	*ss = SummaryStatus(s.Kind)

@@ -20,7 +20,7 @@ var (
 	parseResultsCmd = &cobra.Command{
 		Use: "results [file]",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return errors.Wrap(captain.Parse(cmd.Context(), args))
+			return errors.WithStack(captain.Parse(cmd.Context(), args))
 		},
 	}
 )

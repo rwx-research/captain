@@ -25,7 +25,7 @@ var (
 				TotalPartitions: totalPartitions,
 				Delimiter:       delimiter,
 			})
-			return errors.Wrap(err)
+			return errors.WithStack(err)
 		},
 	}
 )

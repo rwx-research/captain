@@ -18,7 +18,7 @@ var (
 		PreRunE: initCLIService,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return errors.Wrap(cmd.Usage())
+				return errors.WithStack(cmd.Usage())
 			}
 
 			runConfig := cli.RunConfig{
@@ -28,7 +28,7 @@ var (
 				SuiteID:             suiteID,
 			}
 
-			return errors.Wrap(captain.RunSuite(cmd.Context(), runConfig))
+			return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))
 		},
 	}
 )

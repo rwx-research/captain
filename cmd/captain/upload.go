@@ -22,7 +22,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Should also support reading from stdin
 			_, err := captain.UploadTestResults(cmd.Context(), suiteID, args)
-			return errors.Wrap(err)
+			return errors.WithStack(err)
 		},
 	}
 )

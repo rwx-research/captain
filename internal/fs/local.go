@@ -18,7 +18,7 @@ type Local struct{}
 func (l Local) Open(name string) (File, error) {
 	f, err := os.Open(name)
 	if err != nil {
-		return nil, errors.Wrap(err)
+		return nil, errors.WithStack(err)
 	}
 
 	return f, nil
@@ -27,7 +27,7 @@ func (l Local) Open(name string) (File, error) {
 func (l Local) Glob(pattern string) ([]string, error) {
 	filepaths, err := filepathx.Glob(pattern)
 	if err != nil {
-		return nil, errors.Wrap(err)
+		return nil, errors.WithStack(err)
 	}
 
 	return filepaths, nil
@@ -38,7 +38,7 @@ func (l Local) GlobMany(patterns []string) ([]string, error) {
 	for _, pattern := range patterns {
 		expandedPaths, err := l.Glob(pattern)
 		if err != nil {
-			return nil, errors.Wrap(err)
+			return nil, errors.WithStack(err)
 		}
 		for _, filePath := range expandedPaths {
 			pathSet[filePath] = struct{}{}

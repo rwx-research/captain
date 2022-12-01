@@ -44,10 +44,10 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 
 	file, err := os.Open(cfg.CI.Github.Run.EventPath)
 	if err != nil && !os.IsNotExist(err) {
-		return errors.WithMessage("unable to open event payload file: %v", err)
+		return errors.WithMessage(err, "unable to open event payload file")
 	} else if err == nil {
 		if err := json.NewDecoder(file).Decode(&eventPayloadData); err != nil {
-			return errors.WithMessage("failed to decode event payload data: %v", err)
+			return errors.WithMessage(err, "failed to decode event payload data")
 		}
 	}
 
@@ -77,7 +77,7 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		Token:          cfg.Captain.Token,
 	})
 	if err != nil {
-		return errors.WithMessage("unable to create API client: %w", err)
+		return errors.WithMessage(err, "unable to create API client")
 	}
 
 	captain = cli.Service{

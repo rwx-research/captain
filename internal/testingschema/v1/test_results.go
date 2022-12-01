@@ -27,7 +27,7 @@ func (tr TestResults) MarshalJSON() ([]byte, error) {
 		Alias:  (Alias)(tr),
 	})
 
-	return json, errors.Wrap(err)
+	return json, errors.WithStack(err)
 }
 
 func (tr *TestResults) UnmarshalJSON(b []byte) error {
@@ -38,7 +38,7 @@ func (tr *TestResults) UnmarshalJSON(b []byte) error {
 	}
 
 	if err := json.Unmarshal(b, &a); err != nil {
-		return errors.Wrap(err)
+		return errors.WithStack(err)
 	}
 	if a.Schema != "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json" {
 		return errors.NewInputError("The parsed JSON is not the v1 RWX test results schema")
