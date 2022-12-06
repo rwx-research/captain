@@ -1,0 +1,71 @@
+[
+  {
+    "id": "rule-sample",
+    "uri": "features/rule.feature",
+    "keyword": "Feature",
+    "name": "Rule Sample",
+    "description": "",
+    "line": 2,
+    "tags": [
+      {
+        "name": "@feature_tag",
+        "line": 1
+      }
+    ],
+    "elements": [
+      {
+        "id": "rule-sample;an-undefined-example",
+        "keyword": "Example",
+        "name": "An undefined example",
+        "description": "",
+        "line": 28,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this is undefined",
+            "line": 29,
+            "match": {
+              "location": "features/rule.feature:29"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 30,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "skipped"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "nothing should happen",
+            "line": 31,
+            "match": {
+              "location": "features/rule.feature:31"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Ruby",
+    "kind": "Cucumber"
+  },
+  "summary": {
+    "status": {
+      "kind": "successful"
+    },
+    "tests": 3,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 0,
+    "pended": 1,
+    "quarantined": 0,
+    "skipped": 1,
+    "successful": 0,
+    "timedOut": 0,
+    "todo": 1
+  },
+  "tests": [
+    {
+      "name": "Rule Sample \u003e A pending example \u003e this is pending",
+      "lineage": [
+        "Rule Sample",
+        "A pending example",
+        "this is pending"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 21
+      },
+      "attempt": {
+        "durationInNanoseconds": 158000,
+        "meta": {
+          "elementStart": "features/rule.feature:18",
+          "stepLocation": "features/step_definitions/steps.rb:16",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "pended"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A pending example \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "A pending example",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 21
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:18",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A pending example \u003e nothing should happen",
+      "lineage": [
+        "Rule Sample",
+        "A pending example",
+        "nothing should happen"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 21
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:18",
+          "stepLocation": "features/rule.feature:21",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "todo"
+        }
+      }
+    }
+  ]
+}

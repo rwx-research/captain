@@ -1,0 +1,121 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Ruby",
+    "kind": "Cucumber"
+  },
+  "summary": {
+    "status": {
+      "kind": "successful"
+    },
+    "tests": 3,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 0,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 0,
+    "successful": 3,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "Rule Sample \u003e A passing example \u003e this will pass",
+      "lineage": [
+        "Rule Sample",
+        "A passing example",
+        "this will pass"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 48000,
+        "meta": {
+          "elementStart": "features/rule.feature:7",
+          "stepLocation": "features/step_definitions/steps.rb:1",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A passing example \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "A passing example",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 8000,
+        "meta": {
+          "elementStart": "features/rule.feature:7",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A passing example \u003e some results should be there",
+      "lineage": [
+        "Rule Sample",
+        "A passing example",
+        "some results should be there"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 1133000,
+        "meta": {
+          "elementStart": "features/rule.feature:7",
+          "stepLocation": "features/step_definitions/steps.rb:12",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ]
+}

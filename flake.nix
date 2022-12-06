@@ -8,10 +8,11 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let pkgs = import nixpkgs { system = system; };
-      in {
+      in
+      {
         formatter = pkgs.nixpkgs-fmt;
         devShell = pkgs.mkShell {
-          packages = with pkgs; [ ginkgo go_1_19 golangci-lint mage nixfmt ];
+          packages = with pkgs; [ ginkgo go_1_19 golangci-lint mage ];
         };
       });
 }

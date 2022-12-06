@@ -171,9 +171,9 @@ func (p JavaScriptCypressParser) Parse(data io.Reader) (*v1.TestResults, error) 
 		}
 	}
 
-	return &v1.TestResults{
-		Framework: v1.NewJavaScriptCypressFramework(),
-		Summary:   v1.NewSummary(tests, nil),
-		Tests:     tests,
-	}, nil
+	return v1.NewTestResults(
+		v1.NewJavaScriptCypressFramework(),
+		tests,
+		nil,
+	), nil
 }

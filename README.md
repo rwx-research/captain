@@ -88,6 +88,8 @@ Targets:
 * default target
 ```
 
+Note: Some tests use snapshot tests. If you need to update the snapshot tests, run `UPDATE_SNAPSHOTS=true mage test`. Don't forget to check the diffs!
+
 ### Configuration
 
 The following environment variables can / should be used to configure the CLI:
@@ -122,6 +124,8 @@ conventions from the core Go team:
 [https://github.com/golang/go/wiki/CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments)
 
 Our linters should handle common scenarios already, however they're not perfect.
+
+Specifically, we're using gofumpt. It's not included in the nix flake as it's recommended that you use it via the go language server.
 
 ### Tips
 

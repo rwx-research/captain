@@ -1,0 +1,79 @@
+[
+  {
+    "id": "rule-sample",
+    "uri": "features/rule.feature",
+    "keyword": "Feature",
+    "name": "Rule Sample",
+    "description": "",
+    "line": 2,
+    "tags": [
+      {
+        "name": "@feature_tag",
+        "line": 1
+      }
+    ],
+    "elements": [
+      {
+        "id": "rule-sample;a-failing-example",
+        "keyword": "Example",
+        "name": "A failing example",
+        "description": "",
+        "line": 13,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this will fail",
+            "line": 14,
+            "match": {
+              "location": "features/step_definitions/steps.rb:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 11000
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 15,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 7000
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "some results should be there",
+            "line": 16,
+            "match": {
+              "location": "features/step_definitions/steps.rb:12"
+            },
+            "result": {
+              "status": "failed",
+              "error_message": "\nexpected true\n     got false\n (RSpec::Expectations::ExpectationNotMetError)\n./features/step_definitions/steps.rb:13:in `\"some results should be there\"'\nfeatures/rule.feature:16:in `some results should be there'",
+              "duration": 26510000
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          },
+          {
+            "name": "@failing",
+            "line": 12
+          }
+        ]
+      }
+    ]
+  }
+]

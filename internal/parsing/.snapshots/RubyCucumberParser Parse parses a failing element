@@ -1,0 +1,134 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Ruby",
+    "kind": "Cucumber"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 3,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 1,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 0,
+    "successful": 2,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "Rule Sample \u003e A failing example \u003e this will fail",
+      "lineage": [
+        "Rule Sample",
+        "A failing example",
+        "this will fail"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 16
+      },
+      "attempt": {
+        "durationInNanoseconds": 11000,
+        "meta": {
+          "elementStart": "features/rule.feature:13",
+          "stepLocation": "features/step_definitions/steps.rb:5",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing",
+              "line": 12
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A failing example \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "A failing example",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 16
+      },
+      "attempt": {
+        "durationInNanoseconds": 7000,
+        "meta": {
+          "elementStart": "features/rule.feature:13",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing",
+              "line": 12
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A failing example \u003e some results should be there",
+      "lineage": [
+        "Rule Sample",
+        "A failing example",
+        "some results should be there"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 16
+      },
+      "attempt": {
+        "durationInNanoseconds": 26510000,
+        "meta": {
+          "elementStart": "features/rule.feature:13",
+          "stepLocation": "features/step_definitions/steps.rb:12",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing",
+              "line": 12
+            }
+          ]
+        },
+        "status": {
+          "kind": "failed",
+          "message": "\nexpected true\n     got false\n (RSpec::Expectations::ExpectationNotMetError)\n./features/step_definitions/steps.rb:13:in `\"some results should be there\"'\nfeatures/rule.feature:16:in `some results should be there'"
+        }
+      }
+    }
+  ]
+}

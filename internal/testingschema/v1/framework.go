@@ -5,10 +5,11 @@ type FrameworkLanguage string
 type FrameworkKind string
 
 const (
-	FrameworkKindCypress FrameworkKind = "Cypress"
-	FrameworkKindJest    FrameworkKind = "Jest"
-	FrameworkKindRSpec   FrameworkKind = "RSpec"
-	FrameworkKindxUnit   FrameworkKind = "xUnit"
+	FrameworkKindCypress  FrameworkKind = "Cypress"
+	FrameworkKindCucumber FrameworkKind = "Cucumber"
+	FrameworkKindJest     FrameworkKind = "Jest"
+	FrameworkKindRSpec    FrameworkKind = "RSpec"
+	FrameworkKindxUnit    FrameworkKind = "xUnit"
 
 	FrameworkLanguageDotNet     FrameworkLanguage = ".NET"
 	FrameworkLanguageJavaScript FrameworkLanguage = "JavaScript"
@@ -27,6 +28,10 @@ type Framework struct {
 
 func NewRubyRSpecFramework() Framework {
 	return Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindRSpec}
+}
+
+func NewRubyCucumberFramework() Framework {
+	return Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindCucumber}
 }
 
 func NewJavaScriptJestFramework() Framework {

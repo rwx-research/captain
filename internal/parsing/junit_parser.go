@@ -161,11 +161,11 @@ func (p JUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 	}
 
-	return &v1.TestResults{
-		Framework: v1.NewOtherFramework(nil, nil),
-		Summary:   v1.NewSummary(tests, nil),
-		Tests:     tests,
-	}, nil
+	return v1.NewTestResults(
+		v1.NewOtherFramework(nil, nil),
+		tests,
+		nil,
+	), nil
 }
 
 func (p JUnitParser) NewFailedTestStatus(failure JUnitFailure) v1.TestStatus {

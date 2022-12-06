@@ -1,0 +1,756 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Ruby",
+    "kind": "Cucumber"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 21,
+    "otherErrors": 2,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 1,
+    "pended": 1,
+    "quarantined": 0,
+    "skipped": 7,
+    "successful": 8,
+    "timedOut": 0,
+    "todo": 4
+  },
+  "tests": [
+    {
+      "name": "Rule Sample \u003e A passing example \u003e this will pass",
+      "lineage": [
+        "Rule Sample",
+        "A passing example",
+        "this will pass"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 48000,
+        "meta": {
+          "elementStart": "features/rule.feature:7",
+          "stepLocation": "features/step_definitions/steps.rb:1",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A passing example \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "A passing example",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 8000,
+        "meta": {
+          "elementStart": "features/rule.feature:7",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A passing example \u003e some results should be there",
+      "lineage": [
+        "Rule Sample",
+        "A passing example",
+        "some results should be there"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 1133000,
+        "meta": {
+          "elementStart": "features/rule.feature:7",
+          "stepLocation": "features/step_definitions/steps.rb:12",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A failing example \u003e this will fail",
+      "lineage": [
+        "Rule Sample",
+        "A failing example",
+        "this will fail"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 16
+      },
+      "attempt": {
+        "durationInNanoseconds": 11000,
+        "meta": {
+          "elementStart": "features/rule.feature:13",
+          "stepLocation": "features/step_definitions/steps.rb:5",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing",
+              "line": 12
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A failing example \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "A failing example",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 16
+      },
+      "attempt": {
+        "durationInNanoseconds": 7000,
+        "meta": {
+          "elementStart": "features/rule.feature:13",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing",
+              "line": 12
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A failing example \u003e some results should be there",
+      "lineage": [
+        "Rule Sample",
+        "A failing example",
+        "some results should be there"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 16
+      },
+      "attempt": {
+        "durationInNanoseconds": 26510000,
+        "meta": {
+          "elementStart": "features/rule.feature:13",
+          "stepLocation": "features/step_definitions/steps.rb:12",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing",
+              "line": 12
+            }
+          ]
+        },
+        "status": {
+          "kind": "failed",
+          "message": "\nexpected true\n     got false\n (RSpec::Expectations::ExpectationNotMetError)\n./features/step_definitions/steps.rb:13:in `\"some results should be there\"'\nfeatures/rule.feature:16:in `some results should be there'"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A pending example \u003e this is pending",
+      "lineage": [
+        "Rule Sample",
+        "A pending example",
+        "this is pending"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 21
+      },
+      "attempt": {
+        "durationInNanoseconds": 158000,
+        "meta": {
+          "elementStart": "features/rule.feature:18",
+          "stepLocation": "features/step_definitions/steps.rb:16",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "pended"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A pending example \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "A pending example",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 21
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:18",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A pending example \u003e nothing should happen",
+      "lineage": [
+        "Rule Sample",
+        "A pending example",
+        "nothing should happen"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 21
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:18",
+          "stepLocation": "features/rule.feature:21",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "todo"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A skipped example \u003e this is skipped",
+      "lineage": [
+        "Rule Sample",
+        "A skipped example",
+        "this is skipped"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 26
+      },
+      "attempt": {
+        "durationInNanoseconds": 139000,
+        "meta": {
+          "elementStart": "features/rule.feature:23",
+          "stepLocation": "features/step_definitions/steps.rb:20",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A skipped example \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "A skipped example",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 26
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:23",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e A skipped example \u003e nothing should happen",
+      "lineage": [
+        "Rule Sample",
+        "A skipped example",
+        "nothing should happen"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 26
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:23",
+          "stepLocation": "features/rule.feature:26",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "todo"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e An undefined example \u003e this is undefined",
+      "lineage": [
+        "Rule Sample",
+        "An undefined example",
+        "this is undefined"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 31
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:28",
+          "stepLocation": "features/rule.feature:29",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "todo"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e An undefined example \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "An undefined example",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 31
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:28",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e An undefined example \u003e nothing should happen",
+      "lineage": [
+        "Rule Sample",
+        "An undefined example",
+        "nothing should happen"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 31
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:28",
+          "stepLocation": "features/rule.feature:31",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            }
+          ]
+        },
+        "status": {
+          "kind": "todo"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e With a failing before hook \u003e this will pass",
+      "lineage": [
+        "Rule Sample",
+        "With a failing before hook",
+        "this will pass"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 37
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:34",
+          "stepLocation": "features/step_definitions/steps.rb:1",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing_before_hook",
+              "line": 33
+            }
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e With a failing before hook \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "With a failing before hook",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 37
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:34",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing_before_hook",
+              "line": 33
+            }
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e With a failing before hook \u003e some results should be there",
+      "lineage": [
+        "Rule Sample",
+        "With a failing before hook",
+        "some results should be there"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 37
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "elementStart": "features/rule.feature:34",
+          "stepLocation": "features/step_definitions/steps.rb:12",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing_before_hook",
+              "line": 33
+            }
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e With a failing after hook \u003e this will pass",
+      "lineage": [
+        "Rule Sample",
+        "With a failing after hook",
+        "this will pass"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 44
+      },
+      "attempt": {
+        "durationInNanoseconds": 12000,
+        "meta": {
+          "elementStart": "features/rule.feature:41",
+          "stepLocation": "features/step_definitions/steps.rb:1",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing_after_hook",
+              "line": 40
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e With a failing after hook \u003e I do an action",
+      "lineage": [
+        "Rule Sample",
+        "With a failing after hook",
+        "I do an action"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 44
+      },
+      "attempt": {
+        "durationInNanoseconds": 7000,
+        "meta": {
+          "elementStart": "features/rule.feature:41",
+          "stepLocation": "features/step_definitions/steps.rb:9",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing_after_hook",
+              "line": 40
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Rule Sample \u003e With a failing after hook \u003e some results should be there",
+      "lineage": [
+        "Rule Sample",
+        "With a failing after hook",
+        "some results should be there"
+      ],
+      "location": {
+        "file": "features/rule.feature",
+        "line": 44
+      },
+      "attempt": {
+        "durationInNanoseconds": 30000,
+        "meta": {
+          "elementStart": "features/rule.feature:41",
+          "stepLocation": "features/step_definitions/steps.rb:12",
+          "tags": [
+            {
+              "name": "@feature_tag",
+              "line": 1
+            },
+            {
+              "name": "@rule_tag",
+              "line": 4
+            },
+            {
+              "name": "@failing_after_hook",
+              "line": 40
+            }
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ],
+  "otherErrors": [
+    {
+      "location": {
+        "file": "features/step_definitions/steps.rb",
+        "line": 24
+      },
+      "message": "failed in before hook (RuntimeError)\n./features/step_definitions/steps.rb:25:in `Before'",
+      "meta": {
+        "type": "before hook"
+      }
+    },
+    {
+      "location": {
+        "file": "features/step_definitions/steps.rb",
+        "line": 28
+      },
+      "message": "failed in after hook (RuntimeError)\n./features/step_definitions/steps.rb:29:in `After'",
+      "meta": {
+        "type": "after hook"
+      }
+    }
+  ]
+}

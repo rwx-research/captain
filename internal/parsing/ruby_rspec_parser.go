@@ -132,10 +132,9 @@ func (p RubyRSpecParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 	}
 
-	return &v1.TestResults{
-		Framework:   v1.NewRubyRSpecFramework(),
-		Summary:     v1.NewSummary(tests, otherErrors),
-		Tests:       tests,
-		OtherErrors: otherErrors,
-	}, nil
+	return v1.NewTestResults(
+		v1.NewRubyRSpecFramework(),
+		tests,
+		otherErrors,
+	), nil
 }

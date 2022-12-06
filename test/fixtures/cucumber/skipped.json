@@ -1,0 +1,438 @@
+[
+  {
+    "id": "rule-sample",
+    "uri": "features/rule.feature",
+    "keyword": "Feature",
+    "name": "Rule Sample",
+    "description": "",
+    "line": 2,
+    "tags": [
+      {
+        "name": "@feature_tag",
+        "line": 1
+      }
+    ],
+    "elements": [
+      {
+        "id": "rule-sample;a-passing-example",
+        "keyword": "Example",
+        "name": "A passing example",
+        "description": "",
+        "line": 7,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this will pass",
+            "line": 8,
+            "match": {
+              "location": "features/step_definitions/steps.rb:1"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 48000
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 9,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 8000
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "some results should be there",
+            "line": 10,
+            "match": {
+              "location": "features/step_definitions/steps.rb:12"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1133000
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          }
+        ]
+      },
+      {
+        "id": "rule-sample;a-failing-example",
+        "keyword": "Example",
+        "name": "A failing example",
+        "description": "",
+        "line": 13,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this will fail",
+            "line": 14,
+            "match": {
+              "location": "features/step_definitions/steps.rb:5"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 11000
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 15,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 7000
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "some results should be there",
+            "line": 16,
+            "match": {
+              "location": "features/step_definitions/steps.rb:12"
+            },
+            "result": {
+              "status": "failed",
+              "error_message": "\nexpected true\n     got false\n (RSpec::Expectations::ExpectationNotMetError)\n./features/step_definitions/steps.rb:13:in `\"some results should be there\"'\nfeatures/rule.feature:16:in `some results should be there'",
+              "duration": 26510000
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          },
+          {
+            "name": "@failing",
+            "line": 12
+          }
+        ]
+      },
+      {
+        "id": "rule-sample;a-pending-example",
+        "keyword": "Example",
+        "name": "A pending example",
+        "description": "",
+        "line": 18,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this is pending",
+            "line": 19,
+            "match": {
+              "location": "features/step_definitions/steps.rb:16"
+            },
+            "result": {
+              "status": "pending",
+              "error_message": "TODO (Cucumber::Pending)\n./features/step_definitions/steps.rb:17:in `\"this is pending\"'\nfeatures/rule.feature:19:in `this is pending'",
+              "duration": 158000
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 20,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "skipped"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "nothing should happen",
+            "line": 21,
+            "match": {
+              "location": "features/rule.feature:21"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          }
+        ]
+      },
+      {
+        "id": "rule-sample;a-skipped-example",
+        "keyword": "Example",
+        "name": "A skipped example",
+        "description": "",
+        "line": 23,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this is skipped",
+            "line": 24,
+            "match": {
+              "location": "features/step_definitions/steps.rb:20"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 139000
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 25,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "skipped"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "nothing should happen",
+            "line": 26,
+            "match": {
+              "location": "features/rule.feature:26"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          }
+        ]
+      },
+      {
+        "id": "rule-sample;an-undefined-example",
+        "keyword": "Example",
+        "name": "An undefined example",
+        "description": "",
+        "line": 28,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this is undefined",
+            "line": 29,
+            "match": {
+              "location": "features/rule.feature:29"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 30,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "skipped"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "nothing should happen",
+            "line": 31,
+            "match": {
+              "location": "features/rule.feature:31"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          }
+        ]
+      },
+      {
+        "id": "rule-sample;with-a-failing-before-hook",
+        "keyword": "Example",
+        "name": "With a failing before hook",
+        "description": "",
+        "line": 34,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this will pass",
+            "line": 35,
+            "match": {
+              "location": "features/step_definitions/steps.rb:1"
+            },
+            "result": {
+              "status": "skipped"
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 36,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "skipped"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "some results should be there",
+            "line": 37,
+            "match": {
+              "location": "features/step_definitions/steps.rb:12"
+            },
+            "result": {
+              "status": "skipped"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          },
+          {
+            "name": "@failing_before_hook",
+            "line": 33
+          }
+        ],
+        "before": [
+          {
+            "match": {
+              "location": "features/step_definitions/steps.rb:24"
+            },
+            "result": {
+              "status": "failed",
+              "error_message": "failed in before hook (RuntimeError)\n./features/step_definitions/steps.rb:25:in `Before'",
+              "duration": 141000
+            }
+          }
+        ]
+      },
+      {
+        "id": "rule-sample;with-a-failing-after-hook",
+        "keyword": "Example",
+        "name": "With a failing after hook",
+        "description": "",
+        "line": 41,
+        "type": "scenario",
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "this will pass",
+            "line": 42,
+            "match": {
+              "location": "features/step_definitions/steps.rb:1"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 12000
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "I do an action",
+            "line": 43,
+            "match": {
+              "location": "features/step_definitions/steps.rb:9"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 7000
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "some results should be there",
+            "line": 44,
+            "match": {
+              "location": "features/step_definitions/steps.rb:12"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 30000
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag",
+            "line": 4
+          },
+          {
+            "name": "@failing_after_hook",
+            "line": 40
+          }
+        ],
+        "after": [
+          {
+            "match": {
+              "location": "features/step_definitions/steps.rb:28"
+            },
+            "result": {
+              "status": "failed",
+              "error_message": "failed in after hook (RuntimeError)\n./features/step_definitions/steps.rb:29:in `After'",
+              "duration": 129000
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

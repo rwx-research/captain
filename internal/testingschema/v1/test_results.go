@@ -30,6 +30,15 @@ func (tr TestResults) MarshalJSON() ([]byte, error) {
 	return json, errors.WithStack(err)
 }
 
+func NewTestResults(framework Framework, tests []Test, otherErrors []OtherError) *TestResults {
+	return &TestResults{
+		Framework:   framework,
+		Summary:     NewSummary(tests, otherErrors),
+		Tests:       tests,
+		OtherErrors: otherErrors,
+	}
+}
+
 func (tr *TestResults) UnmarshalJSON(b []byte) error {
 	type Alias TestResults
 	var a struct {

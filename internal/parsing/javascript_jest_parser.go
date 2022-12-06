@@ -228,12 +228,11 @@ func (p JavaScriptJestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		otherErrors = append(otherErrors, v1.OtherError{Message: "An open handle was detected"})
 	}
 
-	return &v1.TestResults{
-		Framework:   v1.NewJavaScriptJestFramework(),
-		Summary:     v1.NewSummary(tests, otherErrors),
-		Tests:       tests,
-		OtherErrors: otherErrors,
-	}, nil
+	return v1.NewTestResults(
+		v1.NewJavaScriptJestFramework(),
+		tests,
+		otherErrors,
+	), nil
 }
 
 func (p JavaScriptJestParser) extractFailureMetadata(failureMessages []string) (*string, []string) {

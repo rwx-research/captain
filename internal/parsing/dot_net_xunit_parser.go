@@ -237,12 +237,11 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 	}
 
-	return &v1.TestResults{
-		Framework:   v1.NewDotNetxUnitFramework(),
-		Summary:     v1.NewSummary(tests, otherErrors),
-		Tests:       tests,
-		OtherErrors: otherErrors,
-	}, nil
+	return v1.NewTestResults(
+		v1.NewDotNetxUnitFramework(),
+		tests,
+		otherErrors,
+	), nil
 }
 
 func (p DotNetxUnitParser) FailureDetails(failure DotNetxUnitFailure) (*string, []string) {

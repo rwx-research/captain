@@ -119,6 +119,7 @@ func unsafeInitParsingOnly(cmd *cobra.Command, args []string) error {
 		FileSystem: fs.Local{},
 		Parsers: []parsing.Parser{
 			new(parsing.RWXParser),
+			new(parsing.RubyCucumberParser),
 			new(parsing.DotNetxUnitParser),
 			new(parsing.JavaScriptCypressParser),
 			new(parsing.JavaScriptJestParser),
