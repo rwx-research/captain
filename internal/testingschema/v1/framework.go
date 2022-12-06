@@ -5,9 +5,10 @@ type FrameworkLanguage string
 type FrameworkKind string
 
 const (
-	FrameworkKindCypress  FrameworkKind = "Cypress"
 	FrameworkKindCucumber FrameworkKind = "Cucumber"
+	FrameworkKindCypress  FrameworkKind = "Cypress"
 	FrameworkKindJest     FrameworkKind = "Jest"
+	FrameworkKindMocha    FrameworkKind = "Mocha"
 	FrameworkKindRSpec    FrameworkKind = "RSpec"
 	FrameworkKindxUnit    FrameworkKind = "xUnit"
 
@@ -34,12 +35,16 @@ func NewRubyCucumberFramework() Framework {
 	return Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindCucumber}
 }
 
+func NewJavaScriptCypressFramework() Framework {
+	return Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindCypress}
+}
+
 func NewJavaScriptJestFramework() Framework {
 	return Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindJest}
 }
 
-func NewJavaScriptCypressFramework() Framework {
-	return Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindCypress}
+func NewJavaScriptMochaFramework() Framework {
+	return Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindMocha}
 }
 
 func NewDotNetxUnitFramework() Framework {

@@ -8,11 +8,29 @@ import (
 )
 
 var _ = Describe("Framework", func() {
+	Describe("NewRubyCucumberFramework", func() {
+		It("produces a framework of the expected configuration", func() {
+			Expect(v1.NewRubyCucumberFramework()).To(Equal(v1.Framework{
+				Language: v1.FrameworkLanguageRuby,
+				Kind:     v1.FrameworkKindCucumber,
+			}))
+		})
+	})
+
 	Describe("NewRubyRSpecFramework", func() {
 		It("produces a framework of the expected configuration", func() {
 			Expect(v1.NewRubyRSpecFramework()).To(Equal(v1.Framework{
 				Language: v1.FrameworkLanguageRuby,
 				Kind:     v1.FrameworkKindRSpec,
+			}))
+		})
+	})
+
+	Describe("NewJavaScriptCypressFramework", func() {
+		It("produces a framework of the expected configuration", func() {
+			Expect(v1.NewJavaScriptCypressFramework()).To(Equal(v1.Framework{
+				Language: v1.FrameworkLanguageJavaScript,
+				Kind:     v1.FrameworkKindCypress,
 			}))
 		})
 	})
@@ -26,11 +44,11 @@ var _ = Describe("Framework", func() {
 		})
 	})
 
-	Describe("NewJavaScriptCypressFramework", func() {
+	Describe("NewJavaScriptMochaFramework", func() {
 		It("produces a framework of the expected configuration", func() {
-			Expect(v1.NewJavaScriptCypressFramework()).To(Equal(v1.Framework{
+			Expect(v1.NewJavaScriptMochaFramework()).To(Equal(v1.Framework{
 				Language: v1.FrameworkLanguageJavaScript,
-				Kind:     v1.FrameworkKindCypress,
+				Kind:     v1.FrameworkKindMocha,
 			}))
 		})
 	})

@@ -1,0 +1,232 @@
+{
+  "stats": {
+    "suites": 2,
+    "tests": 10,
+    "passes": 6,
+    "pending": 1,
+    "failures": 3,
+    "start": "2022-12-06T20:48:23.924Z",
+    "end": "2022-12-06T20:48:24.505Z",
+    "duration": 581
+  },
+  "tests": [
+    {
+      "title": "is an async test",
+      "fullTitle": "is an async test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/async.js",
+      "duration": 570,
+      "currentRetry": 0,
+      "speed": "slow",
+      "err": {}
+    },
+    {
+      "title": "is a passing retried test",
+      "fullTitle": "is a passing retried test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/retries.js",
+      "duration": 0,
+      "currentRetry": 2,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "is a failing retried test",
+      "fullTitle": "is a failing retried test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/retries.js",
+      "duration": 0,
+      "currentRetry": 10,
+      "err": {
+        "stack": "AssertionError [ERR_ASSERTION]: true == false\n    at Context.<anonymous> (test/retries.js:12:10)\n    at processImmediate (node:internal/timers:466:21)",
+        "message": "true == false",
+        "generatedMessage": true,
+        "name": "AssertionError",
+        "code": "ERR_ASSERTION",
+        "actual": "true",
+        "expected": "false",
+        "operator": "=="
+      }
+    },
+    {
+      "title": "is a top-level sync passing test",
+      "fullTitle": "is a top-level sync passing test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "is a top-level sync failing test",
+      "fullTitle": "is a top-level sync failing test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "stack": "AssertionError [ERR_ASSERTION]: true == false\n    at Context.<anonymous> (test/top-level-sync.js:8:10)\n    at processImmediate (node:internal/timers:466:21)",
+        "message": "true == false",
+        "generatedMessage": true,
+        "name": "AssertionError",
+        "code": "ERR_ASSERTION",
+        "actual": "true",
+        "expected": "false",
+        "operator": "=="
+      }
+    },
+    {
+      "title": "is a top-level sync exceptional test",
+      "fullTitle": "is a top-level sync exceptional test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Error: Uh oh\n    at Context.<anonymous> (test/top-level-sync.js:12:9)\n    at processImmediate (node:internal/timers:466:21)",
+        "message": "Uh oh"
+      }
+    },
+    {
+      "title": "is a top-level pended test",
+      "fullTitle": "is a top-level pended test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "is nested one level",
+      "fullTitle": "nesting is nested one level",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "is nested one level",
+      "fullTitle": "nesting more is nested one level",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "is nested two levels",
+      "fullTitle": "nesting more is nested two levels",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    }
+  ],
+  "pending": [
+    {
+      "title": "is a top-level pended test",
+      "fullTitle": "is a top-level pended test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+      "currentRetry": 0,
+      "err": {}
+    }
+  ],
+  "failures": [
+    {
+      "title": "is a failing retried test",
+      "fullTitle": "is a failing retried test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/retries.js",
+      "duration": 0,
+      "currentRetry": 10,
+      "err": {
+        "stack": "AssertionError [ERR_ASSERTION]: true == false\n    at Context.<anonymous> (test/retries.js:12:10)\n    at processImmediate (node:internal/timers:466:21)",
+        "message": "true == false",
+        "generatedMessage": true,
+        "name": "AssertionError",
+        "code": "ERR_ASSERTION",
+        "actual": "true",
+        "expected": "false",
+        "operator": "=="
+      }
+    },
+    {
+      "title": "is a top-level sync failing test",
+      "fullTitle": "is a top-level sync failing test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "stack": "AssertionError [ERR_ASSERTION]: true == false\n    at Context.<anonymous> (test/top-level-sync.js:8:10)\n    at processImmediate (node:internal/timers:466:21)",
+        "message": "true == false",
+        "generatedMessage": true,
+        "name": "AssertionError",
+        "code": "ERR_ASSERTION",
+        "actual": "true",
+        "expected": "false",
+        "operator": "=="
+      }
+    },
+    {
+      "title": "is a top-level sync exceptional test",
+      "fullTitle": "is a top-level sync exceptional test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Error: Uh oh\n    at Context.<anonymous> (test/top-level-sync.js:12:9)\n    at processImmediate (node:internal/timers:466:21)",
+        "message": "Uh oh"
+      }
+    }
+  ],
+  "passes": [
+    {
+      "title": "is an async test",
+      "fullTitle": "is an async test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/async.js",
+      "duration": 570,
+      "currentRetry": 0,
+      "speed": "slow",
+      "err": {}
+    },
+    {
+      "title": "is a passing retried test",
+      "fullTitle": "is a passing retried test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/retries.js",
+      "duration": 0,
+      "currentRetry": 2,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "is a top-level sync passing test",
+      "fullTitle": "is a top-level sync passing test",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "is nested one level",
+      "fullTitle": "nesting is nested one level",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "is nested one level",
+      "fullTitle": "nesting more is nested one level",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "is nested two levels",
+      "fullTitle": "nesting more is nested two levels",
+      "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    }
+  ]
+}
