@@ -1,0 +1,294 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Cypress"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 19,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 3,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 2,
+    "successful": 14,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "displays two todo items by default",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 490000000,
+        "meta": {
+          "other-key": "1",
+          "some-key": "some-value"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app one displays two todo items by default",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "failed",
+          "message": "Timed out retrying after 4000ms: expected '\u003cli\u003e' to have text 'Walk the cat', but the text was 'Walk the dog'",
+          "exception": "AssertionError",
+          "backtrace": [
+            "at Context.eval (webpack:///./cypress/e2e/todo-one.cy.js:59:35)",
+            "",
+            "+ expected - actual",
+            "",
+            "-'Walk the dog'",
+            "+'Walk the cat'",
+            ""
+          ]
+        },
+        "stderr": "line 1\n      line 2\n      line 3"
+      }
+    },
+    {
+      "name": "example to-do app one can add new todo items",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "failed",
+          "message": "uh oh something broke",
+          "exception": "Error",
+          "backtrace": [
+            "at Context.eval (webpack:///./cypress/e2e/todo-one.cy.js:73:10)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "example to-do app one can check off an item as completed",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 232000000,
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "line 1\n      line 2\n      line 3"
+      }
+    },
+    {
+      "name": "example to-do app one with a checked task can filter for uncompleted tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "failed",
+          "message": "not a custom error",
+          "exception": "Error",
+          "backtrace": [
+            "at $Cy.fail (https://example.cypress.io/__cypress/runner/cypress_runner.js:157093:13)",
+            "at runnable.fn (https://example.cypress.io/__cypress/runner/cypress_runner.js:157707:19)",
+            "at callFn (https://example.cypress.io/__cypress/runner/cypress_runner.js:107910:21)",
+            "at ../driver/node_modules/mocha/lib/runnable.js.Runnable.run (https://example.cypress.io/__cypress/runner/cypress_runner.js:107897:7)",
+            "at \u003cunknown\u003e (https://example.cypress.io/__cypress/runner/cypress_runner.js:164958:30)",
+            "at PassThroughHandlerContext.finallyHandler (https://example.cypress.io/__cypress/runner/cypress_runner.js:7872:23)",
+            "at PassThroughHandlerContext.tryCatcher (https://example.cypress.io/__cypress/runner/cypress_runner.js:11318:23)",
+            "at Promise._settlePromiseFromHandler (https://example.cypress.io/__cypress/runner/cypress_runner.js:9253:31)",
+            "at Promise._settlePromise (https://example.cypress.io/__cypress/runner/cypress_runner.js:9310:18)",
+            "at Promise._settlePromise0 (https://example.cypress.io/__cypress/runner/cypress_runner.js:9355:10)",
+            "at Promise._settlePromises (https://example.cypress.io/__cypress/runner/cypress_runner.js:9435:18)",
+            "at _drainQueueStep (https://example.cypress.io/__cypress/runner/cypress_runner.js:6025:12)",
+            "at _drainQueue (https://example.cypress.io/__cypress/runner/cypress_runner.js:6018:9)",
+            "at ../../node_modules/bluebird/js/release/async.js.Async._drainQueues (https://example.cypress.io/__cypress/runner/cypress_runner.js:6034:5)",
+            "at Async.drainQueues (https://example.cypress.io/__cypress/runner/cypress_runner.js:5904:14)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "example to-do app one with a checked task can filter for completed tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 307000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app one with a checked task can delete all completed tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 308000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app one with a checked task more nesting can filter for uncompleted tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 309000000,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "example to-do app one with a checked task more nesting can filter for completed tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 324000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app one with a checked task more nesting can delete all completed tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 362000000,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "example to-do app one with something else can filter for uncompleted tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 318000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app one with something else can filter for completed tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 318000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app one with something else can delete all completed tasks",
+      "location": {
+        "file": "cypress/e2e/todo-one.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 317000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app two displays two todo items by default",
+      "location": {
+        "file": "cypress/e2e/todo-two.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 270000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app two can add new todo items",
+      "location": {
+        "file": "cypress/e2e/todo-two.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 374000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app two can check off an item as completed",
+      "location": {
+        "file": "cypress/e2e/todo-two.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 165000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app two with a checked task can filter for uncompleted tasks",
+      "location": {
+        "file": "cypress/e2e/todo-two.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 273000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app two with a checked task can filter for completed tasks",
+      "location": {
+        "file": "cypress/e2e/todo-two.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 318000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "example to-do app two with a checked task can delete all completed tasks",
+      "location": {
+        "file": "cypress/e2e/todo-two.cy.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 258000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ]
+}

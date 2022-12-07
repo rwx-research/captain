@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bradleyjkemp/cupaloy"
+
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
@@ -20,9 +21,6 @@ var _ = Describe("RWXParser", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			testResults, err := parsing.RWXParser{}.Parse(fixture)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(testResults).NotTo(BeNil())
-
 			Expect(err).ToNot(HaveOccurred())
 			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
 			Expect(err).ToNot(HaveOccurred())

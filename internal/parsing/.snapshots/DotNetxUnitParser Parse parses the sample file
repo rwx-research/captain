@@ -1,0 +1,256 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": ".NET",
+    "kind": "xUnit"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 15,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 1,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 1,
+    "successful": 13,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "NullAssertsTests+Null.Success",
+      "attempt": {
+        "durationInNanoseconds": 6370900,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "Success",
+          "trait-Assembly": "Trait",
+          "type": "NullAssertsTests+Null"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "NullAssertsTests+Null.Failure",
+      "attempt": {
+        "durationInNanoseconds": 11433500,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "Failure",
+          "trait-Assembly": "Trait",
+          "type": "NullAssertsTests+Null"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RangeAssertsTests+InRange.DoubleNotWithinRange",
+      "attempt": {
+        "durationInNanoseconds": 2485800,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "DoubleNotWithinRange",
+          "trait-Assembly": "Trait",
+          "type": "RangeAssertsTests+InRange"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RangeAssertsTests+InRange.IntValueWithinRange",
+      "attempt": {
+        "durationInNanoseconds": 559500,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "IntValueWithinRange",
+          "trait-Assembly": "Trait",
+          "type": "RangeAssertsTests+InRange"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RangeAssertsTests+InRange.DoubleValueWithinRange",
+      "attempt": {
+        "durationInNanoseconds": 104400,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "DoubleValueWithinRange",
+          "trait-Assembly": "Trait",
+          "type": "RangeAssertsTests+InRange"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RangeAssertsTests+InRange.IntNotWithinRangeWithZeroMinimum",
+      "attempt": {
+        "durationInNanoseconds": 307700,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "IntNotWithinRangeWithZeroMinimum",
+          "trait-Assembly": "Trait",
+          "type": "RangeAssertsTests+InRange"
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "for some reason"
+        }
+      }
+    },
+    {
+      "name": "RangeAssertsTests+InRange.IntNotWithinRangeWithZeroActual",
+      "attempt": {
+        "durationInNanoseconds": 299900,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "IntNotWithinRangeWithZeroActual",
+          "trait-Assembly": "Trait",
+          "type": "RangeAssertsTests+InRange"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RangeAssertsTests+InRange.StringNotWithinRange",
+      "attempt": {
+        "durationInNanoseconds": 1059900,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "StringNotWithinRange",
+          "trait-Assembly": "Trait",
+          "type": "RangeAssertsTests+InRange"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RangeAssertsTests+InRange.StringValueWithinRange",
+      "attempt": {
+        "durationInNanoseconds": 129800,
+        "meta": {
+          "assembly": "test.xunit.assert.dll",
+          "method": "StringValueWithinRange",
+          "trait-Assembly": "Trait",
+          "type": "RangeAssertsTests+InRange"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "CommandLineTests+MethodArgument.MultipleValidMethodArguments",
+      "attempt": {
+        "durationInNanoseconds": 11454300,
+        "meta": {
+          "assembly": "test.xunit.console.dll",
+          "method": "MultipleValidMethodArguments",
+          "trait-Assembly": "Trait",
+          "type": "CommandLineTests+MethodArgument"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "CommandLineTests+MethodArgument.MethodArgumentNotPassed",
+      "attempt": {
+        "durationInNanoseconds": 323400,
+        "meta": {
+          "assembly": "test.xunit.console.dll",
+          "method": "MethodArgumentNotPassed",
+          "trait-Assembly": "Trait",
+          "type": "CommandLineTests+MethodArgument"
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Assert.Equal() Failure\\r\\nExpected: 10\\r\\nActual: 3",
+          "exception": "Xunit.Sdk.EqualException",
+          "backtrace": [
+            "at xunit.console.CommandLineTests.MethodArgument.MethodArgumentNotPassed() in some/path/to/FileName.cs:line 30"
+          ]
+        }
+      }
+    },
+    {
+      "name": "CommandLineTests+MethodArgument.SingleValidMethodArgument",
+      "attempt": {
+        "durationInNanoseconds": 425700,
+        "meta": {
+          "assembly": "test.xunit.console.dll",
+          "method": "SingleValidMethodArgument",
+          "trait-Assembly": "Trait",
+          "type": "CommandLineTests+MethodArgument"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "CommandLineTests+MethodArgument.MissingOptionValue",
+      "attempt": {
+        "durationInNanoseconds": 2254700,
+        "meta": {
+          "assembly": "test.xunit.console.dll",
+          "method": "MissingOptionValue",
+          "trait-Assembly": "Trait",
+          "type": "CommandLineTests+MethodArgument"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "CommandLineTests+SerializeOption.SerializeSetSerializeIsTrue",
+      "attempt": {
+        "durationInNanoseconds": 288600,
+        "meta": {
+          "assembly": "test.xunit.console.dll",
+          "method": "SerializeSetSerializeIsTrue",
+          "trait-Assembly": "Trait",
+          "type": "CommandLineTests+SerializeOption"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "CommandLineTests+SerializeOption.SerializeNotSetSerializeIsFalse",
+      "attempt": {
+        "durationInNanoseconds": 403900,
+        "meta": {
+          "assembly": "test.xunit.console.dll",
+          "method": "SerializeNotSetSerializeIsFalse",
+          "trait-Assembly": "Trait",
+          "type": "CommandLineTests+SerializeOption"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ]
+}

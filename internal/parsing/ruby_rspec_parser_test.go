@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bradleyjkemp/cupaloy"
+
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
@@ -21,15 +23,10 @@ var _ = Describe("RubyRSpecParser", func() {
 
 			testResults, err := parsing.RubyRSpecParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(testResults).NotTo(BeNil())
 
-			Expect(testResults.Framework.Language).To(Equal(v1.FrameworkLanguageRuby))
-			Expect(testResults.Framework.Kind).To(Equal(v1.FrameworkKindRSpec))
-			Expect(testResults.Summary.Tests).To(Equal(72))
-			Expect(testResults.Summary.Failed).To(Equal(36))
-			Expect(testResults.Summary.Pended).To(Equal(24))
-			Expect(testResults.Summary.Successful).To(Equal(12))
-			Expect(testResults.Summary.OtherErrors).To(Equal(0))
+			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
+			Expect(err).ToNot(HaveOccurred())
+			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
 		It("errors on malformed JSON", func() {

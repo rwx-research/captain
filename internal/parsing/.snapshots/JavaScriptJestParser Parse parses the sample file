@@ -1,0 +1,379 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Jest"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 18,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 6,
+    "pended": 3,
+    "quarantined": 0,
+    "skipped": 0,
+    "successful": 6,
+    "timedOut": 0,
+    "todo": 3
+  },
+  "tests": [
+    {
+      "name": "is top-level pending",
+      "lineage": [
+        "is top-level pending"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "todo"
+        }
+      }
+    },
+    {
+      "name": "is top-level skipped",
+      "lineage": [
+        "is top-level skipped"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "pended"
+        }
+      }
+    },
+    {
+      "name": "is top-level passing",
+      "lineage": [
+        "is top-level passing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "is top-level failing",
+      "lineage": [
+        "is top-level failing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 2000000,
+        "status": {
+          "kind": "failed",
+          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js:12:16)",
+            "at Promise.then.completed (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:333:28)",
+            "at new Promise (\u003canonymous\u003e)",
+            "at callAsyncCircusFn (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:259:10)",
+            "at _callCircusTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:277:40)",
+            "at processTicksAndRejections (node:internal/process/task_queues:96:5)",
+            "at _runTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:209:3)",
+            "at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:97:9)",
+            "at run (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:31:3)",
+            "at runAndTransformResultsToJestFormat (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:136:21)",
+            "at jestAdapter (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:92:19)",
+            "at runTestInternal (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:407:16)",
+            "at runTest (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:491:34)",
+            "at Object.worker (/home/runner/work/captain/captain/node_modules/jest-runner/build/testWorker.js:133:12)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "is asynchronously top-level passing",
+      "lineage": [
+        "is asynchronously top-level passing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 653000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "is asynchronously top-level failing",
+      "lineage": [
+        "is asynchronously top-level failing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 651000000,
+        "status": {
+          "kind": "failed",
+          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js:22:16)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "even \u003e more nesting \u003e is pending",
+      "lineage": [
+        "even",
+        "more nesting",
+        "is pending"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "todo"
+        }
+      }
+    },
+    {
+      "name": "even \u003e more nesting \u003e is skipped",
+      "lineage": [
+        "even",
+        "more nesting",
+        "is skipped"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "pended"
+        }
+      }
+    },
+    {
+      "name": "even \u003e more nesting \u003e is passing",
+      "lineage": [
+        "even",
+        "more nesting",
+        "is passing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "even \u003e more nesting \u003e is failing",
+      "lineage": [
+        "even",
+        "more nesting",
+        "is failing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "status": {
+          "kind": "failed",
+          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js:14:20)",
+            "at Promise.then.completed (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:333:28)",
+            "at new Promise (\u003canonymous\u003e)",
+            "at callAsyncCircusFn (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:259:10)",
+            "at _callCircusTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:277:40)",
+            "at processTicksAndRejections (node:internal/process/task_queues:96:5)",
+            "at _runTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:209:3)",
+            "at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:97:9)",
+            "at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:91:9)",
+            "at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:91:9)",
+            "at run (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:31:3)",
+            "at runAndTransformResultsToJestFormat (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:136:21)",
+            "at jestAdapter (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:92:19)",
+            "at runTestInternal (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:407:16)",
+            "at runTest (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:491:34)",
+            "at Object.worker (/home/runner/work/captain/captain/node_modules/jest-runner/build/testWorker.js:133:12)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "even \u003e more nesting \u003e is asynchronously passing",
+      "lineage": [
+        "even",
+        "more nesting",
+        "is asynchronously passing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 654000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "even \u003e more nesting \u003e is asynchronously failing",
+      "lineage": [
+        "even",
+        "more nesting",
+        "is asynchronously failing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 651000000,
+        "status": {
+          "kind": "failed",
+          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js:24:20)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "one level of nesting \u003e is pending",
+      "lineage": [
+        "one level of nesting",
+        "is pending"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "todo"
+        }
+      }
+    },
+    {
+      "name": "one level of nesting \u003e is skipped",
+      "lineage": [
+        "one level of nesting",
+        "is skipped"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "pended"
+        }
+      }
+    },
+    {
+      "name": "one level of nesting \u003e is passing",
+      "lineage": [
+        "one level of nesting",
+        "is passing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "one level of nesting \u003e is failing",
+      "lineage": [
+        "one level of nesting",
+        "is failing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "status": {
+          "kind": "failed",
+          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js:13:18)",
+            "at Promise.then.completed (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:333:28)",
+            "at new Promise (\u003canonymous\u003e)",
+            "at callAsyncCircusFn (/home/runner/work/captain/captain/node_modules/jest-circus/build/utils.js:259:10)",
+            "at _callCircusTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:277:40)",
+            "at processTicksAndRejections (node:internal/process/task_queues:96:5)",
+            "at _runTest (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:209:3)",
+            "at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:97:9)",
+            "at _runTestsForDescribeBlock (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:91:9)",
+            "at run (/home/runner/work/captain/captain/node_modules/jest-circus/build/run.js:31:3)",
+            "at runAndTransformResultsToJestFormat (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:136:21)",
+            "at jestAdapter (/home/runner/work/captain/captain/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:92:19)",
+            "at runTestInternal (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:407:16)",
+            "at runTest (/home/runner/work/captain/captain/node_modules/jest-runner/build/runTest.js:491:34)",
+            "at Object.worker (/home/runner/work/captain/captain/node_modules/jest-runner/build/testWorker.js:133:12)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "one level of nesting \u003e is asynchronously passing",
+      "lineage": [
+        "one level of nesting",
+        "is asynchronously passing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 653000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "one level of nesting \u003e is asynchronously failing",
+      "lineage": [
+        "one level of nesting",
+        "is asynchronously failing"
+      ],
+      "location": {
+        "file": "/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 652000000,
+        "status": {
+          "kind": "failed",
+          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at Object.toBe (/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js:23:18)"
+          ]
+        }
+      }
+    }
+  ]
+}
