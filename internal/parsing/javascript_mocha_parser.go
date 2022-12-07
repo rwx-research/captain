@@ -2,7 +2,11 @@ package parsing
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"regexp"
+	"strings"
+	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
@@ -38,6 +42,7 @@ type JavaScriptMochaTest struct {
 	File         string                `json:"file"`
 	Duration     int                   `json:"duration"`
 	CurrentRetry int                   `json:"currentRetry"`
+	Speed        *string               `json:"speed"`
 	Err          *JavaScriptMochaError `json:"err"`
 }
 
@@ -48,6 +53,8 @@ type JavaScriptMochaTestResults struct {
 	Failures []JavaScriptMochaTest `json:"failures"`
 	Passes   []JavaScriptMochaTest `json:"passes"`
 }
+
+var javaScriptMochaBacktraceSeparatorRegexp = regexp.MustCompile(`\r?\n\s{4}at`)
 
 func (p JavaScriptMochaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	var testResults JavaScriptMochaTestResults
@@ -63,10 +70,76 @@ func (p JavaScriptMochaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	}
 
 	tests := make([]v1.Test, 0)
+	for _, mochaTest := range testResults.Passes {
+		tests = append(tests, p.successfulTestFrom(mochaTest))
+	}
+	for _, mochaTest := range testResults.Pending {
+		tests = append(tests, p.pendedTestFrom(mochaTest))
+	}
+	for _, mochaTest := range testResults.Failures {
+		tests = append(tests, p.failedTestFrom(mochaTest))
+	}
+	if len(tests) != len(testResults.Tests) {
+		return nil, errors.NewInputError("The mocha JSON has inconsistently defined passes, pending, failures, and tests")
+	}
 
 	return v1.NewTestResults(
 		v1.NewJavaScriptMochaFramework(),
 		tests,
 		nil,
 	), nil
+}
+
+func (p JavaScriptMochaParser) successfulTestFrom(mochaTest JavaScriptMochaTest) v1.Test {
+	test := p.testFrom(mochaTest)
+	test.Attempt.Status = v1.NewSuccessfulTestStatus()
+	return test
+}
+
+func (p JavaScriptMochaParser) failedTestFrom(mochaTest JavaScriptMochaTest) v1.Test {
+	var message *string
+	var exception *string
+	var backtrace []string
+
+	if mochaTest.Err != nil {
+		message = &mochaTest.Err.Message
+		exception = mochaTest.Err.Name
+
+		stackParts := javaScriptMochaBacktraceSeparatorRegexp.Split(mochaTest.Err.Stack, -1)[1:]
+		for _, part := range stackParts {
+			backtrace = append(backtrace, fmt.Sprintf("at%s", part))
+		}
+	}
+
+	test := p.testFrom(mochaTest)
+	test.Attempt.Status = v1.NewFailedTestStatus(message, exception, backtrace)
+	return test
+}
+
+func (p JavaScriptMochaParser) pendedTestFrom(mochaTest JavaScriptMochaTest) v1.Test {
+	test := p.testFrom(mochaTest)
+	test.Attempt.Status = v1.NewPendedTestStatus(nil)
+	return test
+}
+
+func (p JavaScriptMochaParser) testFrom(mochaTest JavaScriptMochaTest) v1.Test {
+	lineage := []string{strings.TrimSuffix(mochaTest.FullTitle, fmt.Sprintf(" %v", mochaTest.Title))}
+	if mochaTest.FullTitle != mochaTest.Title {
+		lineage = append(lineage, mochaTest.Title)
+	}
+
+	duration := time.Duration(mochaTest.Duration * int(time.Millisecond))
+
+	pastAttempts := make([]v1.TestAttempt, mochaTest.CurrentRetry)
+	for i := range pastAttempts {
+		pastAttempts[i] = v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)}
+	}
+
+	return v1.Test{
+		Name:         mochaTest.FullTitle,
+		Lineage:      lineage,
+		Location:     &v1.Location{File: mochaTest.File},
+		Attempt:      v1.TestAttempt{Duration: &duration},
+		PastAttempts: pastAttempts,
+	}
 }

@@ -1,8 +1,11 @@
 package parsing_test
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
+
+	"github.com/bradleyjkemp/cupaloy"
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
@@ -19,15 +22,9 @@ var _ = Describe("JavaScriptMochaParser", func() {
 
 			testResults, err := parsing.JavaScriptMochaParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(testResults).NotTo(BeNil())
-
-			Expect(testResults.Framework.Language).To(Equal(v1.FrameworkLanguageJavaScript))
-			Expect(testResults.Framework.Kind).To(Equal(v1.FrameworkKindMocha))
-			Expect(testResults.Summary.Tests).To(Equal(0))
-			Expect(testResults.Summary.Successful).To(Equal(0))
-			Expect(testResults.Summary.Failed).To(Equal(0))
-			Expect(testResults.Summary.Pended).To(Equal(0))
-			Expect(testResults.Summary.OtherErrors).To(Equal(0))
+			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
+			Expect(err).ToNot(HaveOccurred())
+			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
 		It("errors on malformed JSON", func() {
@@ -63,6 +60,28 @@ var _ = Describe("JavaScriptMochaParser", func() {
 			)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(testResults).NotTo(BeNil())
+		})
+
+		It("errors when the Mocha JSON has inconsistent results", func() {
+			var testResults *v1.TestResults
+			var err error
+
+			testResults, err = parsing.JavaScriptMochaParser{}.Parse(
+				strings.NewReader(`
+					{
+						"stats": { "suites": 1, "passes": 1 },
+						"tests": [{}, {}, {}, {}],
+						"passes": [{}],
+						"failures": [{}],
+						"pending": [{}]
+					}
+				`),
+			)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(
+				ContainSubstring("The mocha JSON has inconsistently defined passes, pending, failures, and tests"),
+			)
+			Expect(testResults).To(BeNil())
 		})
 	})
 })

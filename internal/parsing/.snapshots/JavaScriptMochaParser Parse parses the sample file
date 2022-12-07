@@ -1,0 +1,271 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Mocha"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 10,
+    "otherErrors": 0,
+    "retries": 2,
+    "canceled": 0,
+    "failed": 3,
+    "pended": 1,
+    "quarantined": 0,
+    "skipped": 0,
+    "successful": 6,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "is an async test",
+      "lineage": [
+        "is an async test"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/async.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 570000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "is a passing retried test",
+      "lineage": [
+        "is a passing retried test"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/retries.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        }
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "is a top-level sync passing test",
+      "lineage": [
+        "is a top-level sync passing test"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "nesting is nested one level",
+      "lineage": [
+        "nesting",
+        "is nested one level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "nesting more is nested one level",
+      "lineage": [
+        "nesting more",
+        "is nested one level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "nesting more is nested two levels",
+      "lineage": [
+        "nesting more",
+        "is nested two levels"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/nested/nesting.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "is a top-level pended test",
+      "lineage": [
+        "is a top-level pended test"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "pended"
+        }
+      }
+    },
+    {
+      "name": "is a failing retried test",
+      "lineage": [
+        "is a failing retried test"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/retries.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "failed",
+          "message": "true == false",
+          "exception": "AssertionError",
+          "backtrace": [
+            "at Context.\u003canonymous\u003e (test/retries.js:12:10)",
+            "at processImmediate (node:internal/timers:466:21)"
+          ]
+        }
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        },
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "is a top-level sync failing test",
+      "lineage": [
+        "is a top-level sync failing test"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "failed",
+          "message": "true == false",
+          "exception": "AssertionError",
+          "backtrace": [
+            "at Context.\u003canonymous\u003e (test/top-level-sync.js:8:10)",
+            "at processImmediate (node:internal/timers:466:21)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "is a top-level sync exceptional test",
+      "lineage": [
+        "is a top-level sync exceptional test"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "failed",
+          "message": "Uh oh",
+          "backtrace": [
+            "at Context.\u003canonymous\u003e (test/top-level-sync.js:12:9)",
+            "at processImmediate (node:internal/timers:466:21)"
+          ]
+        }
+      }
+    }
+  ]
+}
