@@ -1,9 +1,11 @@
 package parsing_test
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 
+	"github.com/bradleyjkemp/cupaloy"
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
@@ -21,14 +23,10 @@ var _ = Describe("RWXParser", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(testResults).NotTo(BeNil())
 
-			Expect(testResults.Framework.Language).To(Equal(v1.FrameworkLanguageRuby))
-			Expect(testResults.Framework.Kind).To(Equal(v1.FrameworkKindRSpec))
-			Expect(testResults.Summary.Tests).To(Equal(3))
-			Expect(testResults.Summary.OtherErrors).To(Equal(3))
-			Expect(testResults.Summary.Retries).To(Equal(1))
-			Expect(testResults.Summary.Failed).To(Equal(1))
-			Expect(testResults.Summary.Quarantined).To(Equal(1))
-			Expect(testResults.Summary.Successful).To(Equal(1))
+			Expect(err).ToNot(HaveOccurred())
+			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
+			Expect(err).ToNot(HaveOccurred())
+			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
 		It("errors on malformed JSON", func() {
