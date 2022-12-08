@@ -193,7 +193,7 @@ outer:
 	}
 
 	return v1.NewTestResults(
-		v1.NewRubyCucumberFramework(),
+		v1.RubyCucumberFramework,
 		tests,
 		otherErrors,
 	), nil

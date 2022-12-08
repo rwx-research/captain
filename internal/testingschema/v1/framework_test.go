@@ -8,60 +8,6 @@ import (
 )
 
 var _ = Describe("Framework", func() {
-	Describe("NewRubyCucumberFramework", func() {
-		It("produces a framework of the expected configuration", func() {
-			Expect(v1.NewRubyCucumberFramework()).To(Equal(v1.Framework{
-				Language: v1.FrameworkLanguageRuby,
-				Kind:     v1.FrameworkKindCucumber,
-			}))
-		})
-	})
-
-	Describe("NewRubyRSpecFramework", func() {
-		It("produces a framework of the expected configuration", func() {
-			Expect(v1.NewRubyRSpecFramework()).To(Equal(v1.Framework{
-				Language: v1.FrameworkLanguageRuby,
-				Kind:     v1.FrameworkKindRSpec,
-			}))
-		})
-	})
-
-	Describe("NewJavaScriptCypressFramework", func() {
-		It("produces a framework of the expected configuration", func() {
-			Expect(v1.NewJavaScriptCypressFramework()).To(Equal(v1.Framework{
-				Language: v1.FrameworkLanguageJavaScript,
-				Kind:     v1.FrameworkKindCypress,
-			}))
-		})
-	})
-
-	Describe("NewJavaScriptJestFramework", func() {
-		It("produces a framework of the expected configuration", func() {
-			Expect(v1.NewJavaScriptJestFramework()).To(Equal(v1.Framework{
-				Language: v1.FrameworkLanguageJavaScript,
-				Kind:     v1.FrameworkKindJest,
-			}))
-		})
-	})
-
-	Describe("NewJavaScriptMochaFramework", func() {
-		It("produces a framework of the expected configuration", func() {
-			Expect(v1.NewJavaScriptMochaFramework()).To(Equal(v1.Framework{
-				Language: v1.FrameworkLanguageJavaScript,
-				Kind:     v1.FrameworkKindMocha,
-			}))
-		})
-	})
-
-	Describe("NewDotNetxUnitFramework", func() {
-		It("produces a framework of the expected configuration", func() {
-			Expect(v1.NewDotNetxUnitFramework()).To(Equal(v1.Framework{
-				Language: v1.FrameworkLanguageDotNet,
-				Kind:     v1.FrameworkKindxUnit,
-			}))
-		})
-	})
-
 	Describe("NewOtherFramework", func() {
 		It("produces a framework of the expected configuration", func() {
 			providedLanguage := "provided language"
@@ -81,7 +27,7 @@ var _ = Describe("Framework", func() {
 		})
 
 		It("is false when called for a known framework", func() {
-			Expect(v1.NewRubyRSpecFramework().IsOther()).To(BeFalse())
+			Expect(v1.RubyRSpecFramework.IsOther()).To(BeFalse())
 		})
 	})
 
@@ -101,7 +47,30 @@ var _ = Describe("Framework", func() {
 		})
 
 		It("is false when called for a known framework", func() {
-			Expect(v1.NewRubyRSpecFramework().IsProvided()).To(BeFalse())
+			Expect(v1.RubyRSpecFramework.IsProvided()).To(BeFalse())
+		})
+	})
+
+	Describe("CoerceFramework", func() {
+		It("can construct a well-known framework", func() {
+			providedLanguage := "rUbY"
+			providedKind := "rspec"
+			framework := v1.CoerceFramework(providedLanguage, providedKind)
+			Expect(framework).To(Equal(v1.RubyRSpecFramework))
+		})
+
+		It("cannot mix well-known languages and kinds", func() {
+			providedLanguage := "rUbY"
+			providedKind := "mocha"
+			framework := v1.CoerceFramework(providedLanguage, providedKind)
+			Expect(framework).To(Equal(v1.NewOtherFramework(&providedLanguage, &providedKind)))
+		})
+
+		It("returns other frameworks with their provided kind and language", func() {
+			providedLanguage := "something"
+			providedKind := "unknown"
+			framework := v1.CoerceFramework(providedLanguage, providedKind)
+			Expect(framework).To(Equal(v1.NewOtherFramework(&providedLanguage, &providedKind)))
 		})
 	})
 })

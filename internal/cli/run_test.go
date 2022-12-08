@@ -49,14 +49,18 @@ var _ = Describe("Run", func() {
 		fileOpened = false
 
 		core, recordedLogs = observer.New(zapcore.InfoLevel)
+		log := zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
+			zap.WrapCore(func(original zapcore.Core) zapcore.Core { return core }),
+		)).Sugar()
 		service = cli.Service{
-			API: new(mocks.API),
-			Log: zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
-				zap.WrapCore(func(original zapcore.Core) zapcore.Core { return core }),
-			)).Sugar(),
+			API:        new(mocks.API),
+			Log:        log,
 			FileSystem: new(mocks.FileSystem),
 			TaskRunner: new(mocks.TaskRunner),
-			Parsers:    []parsing.Parser{new(mocks.Parser)},
+			ParseConfig: parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{new(mocks.Parser)},
+				Logger:                   log,
+			},
 		}
 
 		mockCommand = new(mocks.Command)
@@ -72,7 +76,10 @@ var _ = Describe("Run", func() {
 		}
 		service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
 
-		service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (*v1.TestResults, error) {
+		service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+			*v1.TestResults,
+			error,
+		) {
 			return &v1.TestResults{}, nil
 		}
 
@@ -190,7 +197,10 @@ var _ = Describe("Run", func() {
 			}
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
-			service.Parsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (*v1.TestResults, error) {
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+				*v1.TestResults,
+				error,
+			) {
 				return &v1.TestResults{
 					Tests: []v1.Test{
 						{

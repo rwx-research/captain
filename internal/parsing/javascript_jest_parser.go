@@ -229,7 +229,7 @@ func (p JavaScriptJestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	}
 
 	return v1.NewTestResults(
-		v1.NewJavaScriptJestFramework(),
+		v1.JavaScriptJestFramework,
 		tests,
 		otherErrors,
 	), nil

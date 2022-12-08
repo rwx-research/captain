@@ -14,12 +14,64 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-func Parse(file fs.File, parsers []Parser, log *zap.SugaredLogger) (*v1.TestResults, error) {
+type Config struct {
+	ProvidedFrameworkKind     string
+	ProvidedFrameworkLanguage string
+	MutuallyExclusiveParsers  []Parser
+	GenericParsers            []Parser
+	FrameworkParsers          map[v1.Framework][]Parser
+	Logger                    *zap.SugaredLogger
+}
+
+func Parse(file fs.File, cfg Config) (*v1.TestResults, error) {
+	if cfg.Logger == nil {
+		return nil, errors.NewInternalError("No logger was provided")
+	}
+
+	if (cfg.ProvidedFrameworkKind != "" && cfg.ProvidedFrameworkLanguage == "") ||
+		(cfg.ProvidedFrameworkKind == "" && cfg.ProvidedFrameworkLanguage != "") {
+		return nil, errors.NewInputError("Must provide both language and kind when one is provided")
+	}
+
+	var parsers []Parser
+	var coercedFramework *v1.Framework
+	if cfg.ProvidedFrameworkKind == "" && cfg.ProvidedFrameworkLanguage == "" {
+		parsers = append(parsers, cfg.MutuallyExclusiveParsers...)
+		parsers = append(parsers, cfg.GenericParsers...)
+	} else {
+		framework := v1.CoerceFramework(cfg.ProvidedFrameworkLanguage, cfg.ProvidedFrameworkKind)
+
+		if framework.IsOther() {
+			parsers = cfg.GenericParsers
+		} else {
+			parsers = append(parsers, cfg.FrameworkParsers[framework]...)
+		}
+
+		coercedFramework = &framework
+	}
+
+	results, err := parseWith(file, parsers, cfg.Logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if coercedFramework != nil {
+		results.Framework = *coercedFramework
+	}
+
+	if results.Framework.IsOther() && !results.Framework.IsProvided() {
+		cfg.Logger.Warnf(
+			"We could not determine which framework produced your test results. " +
+				"For a better experience in Captain, specify both your --language and --framework.",
+		)
+	}
+
+	return results, nil
+}
+
+func parseWith(file fs.File, parsers []Parser, log *zap.SugaredLogger) (*v1.TestResults, error) {
 	if len(parsers) == 0 {
 		return nil, errors.NewInternalError("No parsers were provided")
-	}
-	if log == nil {
-		return nil, errors.NewInternalError("No logger was provided")
 	}
 
 	parsedTestResults := make([]v1.TestResults, 0)

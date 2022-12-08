@@ -31,6 +31,7 @@ func init() {
 	// Although `suite-id` is a global flag, we need to re-define it here in order to mark it as required.
 	// This is due to a bug in 'spf13/cobra'. See https://github.com/spf13/cobra/issues/921
 	uploadResultsCmd.Flags().StringVar(&suiteID, "suite-id", "", "the id of the test suite (required)")
+	addFrameworkFlags(uploadResultsCmd)
 
 	if err := uploadResultsCmd.MarkFlagRequired("suite-id"); err != nil {
 		initializationErrors = append(initializationErrors, err)

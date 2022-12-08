@@ -26,7 +26,7 @@ func (p SuccessfulParserOne) Parse(testResults io.Reader) (*v1.TestResults, erro
 	Expect(string(buf)).To(Equal("the fake contents to base64 encode"))
 	Expect(err).NotTo(HaveOccurred())
 	one := "one"
-	return &v1.TestResults{Framework: v1.NewOtherFramework(&one, &one)}, nil
+	return &v1.TestResults{Summary: v1.Summary{Tests: 1}, Framework: v1.NewOtherFramework(&one, &one)}, nil
 }
 
 type SuccessfulParserTwo struct{}
@@ -36,7 +36,7 @@ func (p SuccessfulParserTwo) Parse(testResults io.Reader) (*v1.TestResults, erro
 	Expect(string(buf)).To(Equal("the fake contents to base64 encode"))
 	Expect(err).NotTo(HaveOccurred())
 	two := "two"
-	return &v1.TestResults{Framework: v1.NewOtherFramework(&two, &two)}, nil
+	return &v1.TestResults{Summary: v1.Summary{Tests: 2}, Framework: v1.NewOtherFramework(&two, &two)}, nil
 }
 
 type ErrorParser struct{}
@@ -72,24 +72,47 @@ var _ = Describe("Parse", func() {
 		file.MockName = func() string { return "some/path/to/file" }
 	})
 
-	It("is an error when no parsers are provided", func() {
-		results, err := parsing.Parse(file, make([]parsing.Parser, 0), log)
-
-		Expect(results).To(BeNil())
-		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(ContainSubstring("No parsers were provided"))
-	})
-
 	It("is an error when no logger is provided", func() {
-		results, err := parsing.Parse(file, []parsing.Parser{SuccessfulParserOne{}}, nil)
+		results, err := parsing.Parse(
+			file,
+			parsing.Config{},
+		)
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(ContainSubstring("No logger was provided"))
 	})
 
+	It("is an error when only language is provided", func() {
+		results, err := parsing.Parse(
+			file,
+			parsing.Config{Logger: log, ProvidedFrameworkLanguage: "foo"},
+		)
+
+		Expect(results).To(BeNil())
+		Expect(err).NotTo(BeNil())
+		Expect(err.Error()).To(ContainSubstring("Must provide both language and kind when one is provided"))
+	})
+
+	It("is an error when only kind is provided", func() {
+		results, err := parsing.Parse(
+			file,
+			parsing.Config{Logger: log, ProvidedFrameworkKind: "foo"},
+		)
+
+		Expect(results).To(BeNil())
+		Expect(err).NotTo(BeNil())
+		Expect(err.Error()).To(ContainSubstring("Must provide both language and kind when one is provided"))
+	})
+
 	It("is an error when a parser returns neither a result nor an error", func() {
-		results, err := parsing.Parse(file, []parsing.Parser{NeitherErrorNorResultsParser{}}, log)
+		results, err := parsing.Parse(
+			file,
+			parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{NeitherErrorNorResultsParser{}},
+				Logger:                   log,
+			},
+		)
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
@@ -101,12 +124,14 @@ var _ = Describe("Parse", func() {
 	It("is an error when no parsers can parse", func() {
 		results, err := parsing.Parse(
 			file,
-			[]parsing.Parser{
-				ErrorParser{},
-				ErrorParser{},
-				ErrorParser{},
+			parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{
+					ErrorParser{},
+					ErrorParser{},
+					ErrorParser{},
+				},
+				Logger: log,
 			},
-			log,
 		)
 
 		Expect(results).To(BeNil())
@@ -131,12 +156,14 @@ var _ = Describe("Parse", func() {
 	It("returns the first test results with the base64 encoded content", func() {
 		results, err := parsing.Parse(
 			file,
-			[]parsing.Parser{
-				SuccessfulParserTwo{},
-				ErrorParser{},
-				SuccessfulParserOne{},
+			parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{
+					SuccessfulParserTwo{},
+					ErrorParser{},
+					SuccessfulParserOne{},
+				},
+				Logger: log,
 			},
-			log,
 		)
 
 		Expect(results).NotTo(BeNil())
@@ -174,5 +201,153 @@ var _ = Describe("Parse", func() {
 		buf, err := io.ReadAll(file)
 		Expect(string(buf)).To(Equal("the fake contents to base64 encode"))
 		Expect(err).NotTo(HaveOccurred())
+	})
+
+	Describe("when no language and kind are provided", func() {
+		It("uses the mutually exclusive and generic parsers to auto-detect framework", func() {
+			results, err := parsing.Parse(
+				file,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "",
+					ProvidedFrameworkKind:     "",
+					MutuallyExclusiveParsers: []parsing.Parser{
+						SuccessfulParserTwo{},
+						ErrorParser{},
+					},
+					GenericParsers: []parsing.Parser{SuccessfulParserOne{}},
+					Logger:         log,
+				},
+			)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results).NotTo(BeNil())
+			Expect(*results.Framework.ProvidedKind).To(Equal("two"))
+
+			results, err = parsing.Parse(
+				file,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "",
+					ProvidedFrameworkKind:     "",
+					MutuallyExclusiveParsers: []parsing.Parser{
+						ErrorParser{},
+					},
+					GenericParsers: []parsing.Parser{SuccessfulParserOne{}},
+					Logger:         log,
+				},
+			)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results).NotTo(BeNil())
+			Expect(*results.Framework.ProvidedKind).To(Equal("one"))
+		})
+
+		It("is an error when no parsers are provided", func() {
+			results, err := parsing.Parse(
+				file,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "",
+					ProvidedFrameworkKind:     "",
+					Logger:                    log,
+				},
+			)
+
+			Expect(results).To(BeNil())
+			Expect(err).NotTo(BeNil())
+			Expect(err.Error()).To(ContainSubstring("No parsers were provided"))
+		})
+	})
+
+	Describe("when an unknown language and kind are provided", func() {
+		It("uses the generic parsers and sets the provided language and kind", func() {
+			results, err := parsing.Parse(
+				file,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "bar",
+					ProvidedFrameworkKind:     "foo",
+					MutuallyExclusiveParsers: []parsing.Parser{
+						SuccessfulParserTwo{},
+						ErrorParser{},
+					},
+					GenericParsers: []parsing.Parser{SuccessfulParserOne{}},
+					Logger:         log,
+				},
+			)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results).NotTo(BeNil())
+			Expect(results.Framework.IsOther()).To(Equal(true))
+			Expect(*results.Framework.ProvidedLanguage).To(Equal("bar"))
+			Expect(*results.Framework.ProvidedKind).To(Equal("foo"))
+		})
+
+		It("is an error when no parsers are provided", func() {
+			results, err := parsing.Parse(
+				file,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "bar",
+					ProvidedFrameworkKind:     "foo",
+					Logger:                    log,
+				},
+			)
+
+			Expect(results).To(BeNil())
+			Expect(err).NotTo(BeNil())
+			Expect(err.Error()).To(ContainSubstring("No parsers were provided"))
+		})
+	})
+
+	Describe("when a known language and kind are provided", func() {
+		It("uses the framework parsers", func() {
+			results, err := parsing.Parse(
+				file,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "RuBy",
+					ProvidedFrameworkKind:     "RspEc",
+					FrameworkParsers: map[v1.Framework][]parsing.Parser{
+						v1.RubyRSpecFramework:         {SuccessfulParserOne{}},
+						v1.JavaScriptCypressFramework: {SuccessfulParserTwo{}},
+					},
+					Logger: log,
+				},
+			)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results).NotTo(BeNil())
+			Expect(results.Summary.Tests).To(Equal(1))
+			Expect(results.Framework).To(Equal(v1.RubyRSpecFramework))
+
+			results, err = parsing.Parse(
+				file,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "javascript",
+					ProvidedFrameworkKind:     "cypress",
+					FrameworkParsers: map[v1.Framework][]parsing.Parser{
+						v1.RubyRSpecFramework:         {SuccessfulParserOne{}},
+						v1.JavaScriptCypressFramework: {SuccessfulParserTwo{}},
+					},
+					Logger: log,
+				},
+			)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results).NotTo(BeNil())
+			Expect(results.Summary.Tests).To(Equal(2))
+			Expect(results.Framework).To(Equal(v1.JavaScriptCypressFramework))
+		})
+
+		It("is an error when no parsers are provided", func() {
+			results, err := parsing.Parse(
+				file,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "RspEc",
+					ProvidedFrameworkKind:     "RuBy",
+					Logger:                    log,
+				},
+			)
+
+			Expect(results).To(BeNil())
+			Expect(err).NotTo(BeNil())
+			Expect(err.Error()).To(ContainSubstring("No parsers were provided"))
+		})
 	})
 })

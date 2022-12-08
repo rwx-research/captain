@@ -84,7 +84,7 @@ func (p JavaScriptMochaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	}
 
 	return v1.NewTestResults(
-		v1.NewJavaScriptMochaFramework(),
+		v1.JavaScriptMochaFramework,
 		tests,
 		nil,
 	), nil

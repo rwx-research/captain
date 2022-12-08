@@ -21,7 +21,7 @@ var _ = Describe("Merge", func() {
 				{OriginalFilePath: "path 1"},
 				{OriginalFilePath: "path 2"},
 			},
-			Framework: v1.NewRubyRSpecFramework(),
+			Framework: v1.RubyRSpecFramework,
 			OtherErrors: []v1.OtherError{
 				{Message: "other error 1"},
 			},
@@ -43,7 +43,7 @@ var _ = Describe("Merge", func() {
 			DerivedFrom: []v1.OriginalTestResults{
 				{OriginalFilePath: "path 3"},
 			},
-			Framework: v1.NewRubyRSpecFramework(),
+			Framework: v1.RubyRSpecFramework,
 			OtherErrors: []v1.OtherError{
 				{Message: "other error 2"},
 				{Message: "other error 3"},
@@ -67,7 +67,7 @@ var _ = Describe("Merge", func() {
 				{OriginalFilePath: "path 4"},
 				{OriginalFilePath: "path 5"},
 			},
-			Framework:   v1.NewJavaScriptJestFramework(),
+			Framework:   v1.JavaScriptJestFramework,
 			OtherErrors: []v1.OtherError{},
 			Summary: v1.Summary{
 				Status:     v1.SummaryStatusSuccessful,
@@ -82,7 +82,7 @@ var _ = Describe("Merge", func() {
 		}
 		javaScriptJest2 = &v1.TestResults{
 			DerivedFrom: []v1.OriginalTestResults{},
-			Framework:   v1.NewJavaScriptJestFramework(),
+			Framework:   v1.JavaScriptJestFramework,
 			OtherErrors: []v1.OtherError{},
 			Summary: v1.Summary{
 				Status:     v1.SummaryStatusSuccessful,
@@ -112,7 +112,7 @@ var _ = Describe("Merge", func() {
 						{OriginalFilePath: "path 4"},
 						{OriginalFilePath: "path 5"},
 					},
-					Framework:   v1.NewJavaScriptJestFramework(),
+					Framework:   v1.JavaScriptJestFramework,
 					OtherErrors: []v1.OtherError{},
 					Summary: v1.Summary{
 						Status:     v1.SummaryStatusSuccessful,
@@ -132,7 +132,7 @@ var _ = Describe("Merge", func() {
 						{OriginalFilePath: "path 2"},
 						{OriginalFilePath: "path 3"},
 					},
-					Framework: v1.NewRubyRSpecFramework(),
+					Framework: v1.RubyRSpecFramework,
 					OtherErrors: []v1.OtherError{
 						{Message: "other error 1"},
 						{Message: "other error 2"},

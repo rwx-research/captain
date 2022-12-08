@@ -30,11 +30,11 @@ import (
 
 // Service is the main CLI service.
 type Service struct {
-	API        APIClient
-	Log        *zap.SugaredLogger
-	FileSystem FileSystem
-	TaskRunner TaskRunner
-	Parsers    []parsing.Parser
+	API         APIClient
+	Log         *zap.SugaredLogger
+	FileSystem  FileSystem
+	TaskRunner  TaskRunner
+	ParseConfig parsing.Config
 }
 
 func (s Service) logError(err error) error {
@@ -72,7 +72,7 @@ func (s Service) parse(filepaths []string) ([]v1.TestResults, error) {
 		}
 		defer fd.Close()
 
-		results, err := parsing.Parse(fd, s.Parsers, s.Log)
+		results, err := parsing.Parse(fd, s.ParseConfig)
 		if err != nil {
 			return nil, errors.NewInputError("Unable to parse %q with the available parsers", testResultsFilePath)
 		}

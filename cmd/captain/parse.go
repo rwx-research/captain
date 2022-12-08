@@ -26,6 +26,8 @@ var (
 )
 
 func init() {
+	addFrameworkFlags(parseResultsCmd)
+
 	parseCmd.AddCommand(parseResultsCmd)
 	rootCmd.AddCommand(parseCmd)
 }

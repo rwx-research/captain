@@ -48,5 +48,7 @@ func init() {
 		"return a non-zero exit code in case the test results upload fails",
 	)
 
+	addFrameworkFlags(runCmd)
+
 	rootCmd.AddCommand(runCmd)
 }

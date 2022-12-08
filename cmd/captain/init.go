@@ -16,15 +16,28 @@ import (
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/logging"
 	"github.com/rwx-research/captain-cli/internal/parsing"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-var parsers []parsing.Parser = []parsing.Parser{
+var mutuallyExclusiveParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.DotNetxUnitParser),
 	new(parsing.JavaScriptCypressParser),
 	new(parsing.JavaScriptJestParser),
 	new(parsing.JavaScriptMochaParser),
 	new(parsing.RubyCucumberParser),
 	new(parsing.RubyRSpecParser),
+}
+
+var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]parsing.Parser{
+	v1.RubyRSpecFramework:         {new(parsing.RubyRSpecParser)},
+	v1.RubyCucumberFramework:      {new(parsing.RubyCucumberParser)},
+	v1.JavaScriptCypressFramework: {new(parsing.JavaScriptCypressParser)},
+	v1.JavaScriptJestFramework:    {new(parsing.JavaScriptJestParser)},
+	v1.JavaScriptMochaFramework:   {new(parsing.JavaScriptMochaParser)},
+	v1.DotNetxUnitFramework:       {new(parsing.DotNetxUnitParser)},
+}
+
+var genericParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.RWXParser),
 	new(parsing.JUnitParser),
 }
@@ -96,7 +109,14 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		Log:        logger,
 		FileSystem: fs.Local{},
 		TaskRunner: exec.Local{},
-		Parsers:    parsers,
+		ParseConfig: parsing.Config{
+			ProvidedFrameworkKind:     providedFrameworkKind,
+			ProvidedFrameworkLanguage: providedFrameworkLanguage,
+			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+			FrameworkParsers:          frameworkParsers,
+			GenericParsers:            genericParsers,
+			Logger:                    logger,
+		},
 	}
 
 	return nil
@@ -121,7 +141,14 @@ func unsafeInitParsingOnly(cmd *cobra.Command, args []string) error {
 	captain = cli.Service{
 		Log:        logger,
 		FileSystem: fs.Local{},
-		Parsers:    parsers,
+		ParseConfig: parsing.Config{
+			ProvidedFrameworkKind:     providedFrameworkKind,
+			ProvidedFrameworkLanguage: providedFrameworkLanguage,
+			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+			FrameworkParsers:          frameworkParsers,
+			GenericParsers:            genericParsers,
+			Logger:                    logger,
+		},
 	}
 
 	return nil

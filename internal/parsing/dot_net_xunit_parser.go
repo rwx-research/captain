@@ -238,7 +238,7 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	}
 
 	return v1.NewTestResults(
-		v1.NewDotNetxUnitFramework(),
+		v1.DotNetxUnitFramework,
 		tests,
 		otherErrors,
 	), nil

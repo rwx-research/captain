@@ -54,9 +54,9 @@ var _ = Describe("Partition", func() {
 			Log: zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
 				zap.WrapCore(func(original zapcore.Core) zapcore.Core { return core }),
 			)).Sugar(),
-			FileSystem: new(mocks.FileSystem),
-			TaskRunner: new(mocks.TaskRunner),
-			Parsers:    []parsing.Parser{},
+			FileSystem:  new(mocks.FileSystem),
+			TaskRunner:  new(mocks.TaskRunner),
+			ParseConfig: parsing.Config{},
 		}
 	})
 

@@ -1,5 +1,7 @@
 package v1
 
+import "strings"
+
 type FrameworkLanguage string
 
 type FrameworkKind string
@@ -27,29 +29,33 @@ type Framework struct {
 	ProvidedKind     *string           `json:"providedKind,omitempty"`
 }
 
-func NewRubyRSpecFramework() Framework {
-	return Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindRSpec}
+var KnownFrameworks []Framework
+
+func registerFramework(framework Framework) Framework {
+	KnownFrameworks = append(KnownFrameworks, framework)
+	return framework
 }
 
-func NewRubyCucumberFramework() Framework {
-	return Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindCucumber}
-}
-
-func NewJavaScriptCypressFramework() Framework {
-	return Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindCypress}
-}
-
-func NewJavaScriptJestFramework() Framework {
-	return Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindJest}
-}
-
-func NewJavaScriptMochaFramework() Framework {
-	return Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindMocha}
-}
-
-func NewDotNetxUnitFramework() Framework {
-	return Framework{Language: FrameworkLanguageDotNet, Kind: FrameworkKindxUnit}
-}
+var (
+	RubyRSpecFramework = registerFramework(
+		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindRSpec},
+	)
+	RubyCucumberFramework = registerFramework(
+		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindCucumber},
+	)
+	JavaScriptCypressFramework = registerFramework(
+		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindCypress},
+	)
+	JavaScriptJestFramework = registerFramework(
+		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindJest},
+	)
+	JavaScriptMochaFramework = registerFramework(
+		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindMocha},
+	)
+	DotNetxUnitFramework = registerFramework(
+		Framework{Language: FrameworkLanguageDotNet, Kind: FrameworkKindxUnit},
+	)
+)
 
 func NewOtherFramework(providedLanguage *string, providedKind *string) Framework {
 	return Framework{
@@ -58,6 +64,25 @@ func NewOtherFramework(providedLanguage *string, providedKind *string) Framework
 		ProvidedLanguage: providedLanguage,
 		ProvidedKind:     providedKind,
 	}
+}
+
+func CoerceFramework(providedLanguage string, providedKind string) Framework {
+	framework := NewOtherFramework(&providedLanguage, &providedKind)
+
+	for _, knownFramework := range KnownFrameworks {
+		if !strings.EqualFold(string(knownFramework.Language), strings.TrimSpace(providedLanguage)) {
+			continue
+		}
+
+		if !strings.EqualFold(string(knownFramework.Kind), strings.TrimSpace(providedKind)) {
+			continue
+		}
+
+		framework = knownFramework
+		break
+	}
+
+	return framework
 }
 
 func (f Framework) IsOther() bool {
