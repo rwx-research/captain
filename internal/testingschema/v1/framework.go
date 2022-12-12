@@ -11,11 +11,13 @@ const (
 	FrameworkKindCypress  FrameworkKind = "Cypress"
 	FrameworkKindJest     FrameworkKind = "Jest"
 	FrameworkKindMocha    FrameworkKind = "Mocha"
+	FrameworkKindPytest   FrameworkKind = "pytest"
 	FrameworkKindRSpec    FrameworkKind = "RSpec"
 	FrameworkKindxUnit    FrameworkKind = "xUnit"
 
 	FrameworkLanguageDotNet     FrameworkLanguage = ".NET"
 	FrameworkLanguageJavaScript FrameworkLanguage = "JavaScript"
+	FrameworkLanguagePython     FrameworkLanguage = "Python"
 	FrameworkLanguageRuby       FrameworkLanguage = "Ruby"
 
 	FrameworkKindOther     FrameworkKind     = "other"
@@ -37,11 +39,8 @@ func registerFramework(framework Framework) Framework {
 }
 
 var (
-	RubyRSpecFramework = registerFramework(
-		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindRSpec},
-	)
-	RubyCucumberFramework = registerFramework(
-		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindCucumber},
+	DotNetxUnitFramework = registerFramework(
+		Framework{Language: FrameworkLanguageDotNet, Kind: FrameworkKindxUnit},
 	)
 	JavaScriptCypressFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindCypress},
@@ -52,8 +51,14 @@ var (
 	JavaScriptMochaFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindMocha},
 	)
-	DotNetxUnitFramework = registerFramework(
-		Framework{Language: FrameworkLanguageDotNet, Kind: FrameworkKindxUnit},
+	PythonPytestFramework = registerFramework(
+		Framework{Language: FrameworkLanguagePython, Kind: FrameworkKindPytest},
+	)
+	RubyRSpecFramework = registerFramework(
+		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindRSpec},
+	)
+	RubyCucumberFramework = registerFramework(
+		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindCucumber},
 	)
 )
 

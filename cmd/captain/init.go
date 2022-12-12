@@ -24,17 +24,19 @@ var mutuallyExclusiveParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.JavaScriptCypressParser),
 	new(parsing.JavaScriptJestParser),
 	new(parsing.JavaScriptMochaParser),
+	new(parsing.PythonPytestParser),
 	new(parsing.RubyCucumberParser),
 	new(parsing.RubyRSpecParser),
 }
 
 var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]parsing.Parser{
-	v1.RubyRSpecFramework:         {new(parsing.RubyRSpecParser)},
-	v1.RubyCucumberFramework:      {new(parsing.RubyCucumberParser)},
+	v1.DotNetxUnitFramework:       {new(parsing.DotNetxUnitParser)},
 	v1.JavaScriptCypressFramework: {new(parsing.JavaScriptCypressParser)},
 	v1.JavaScriptJestFramework:    {new(parsing.JavaScriptJestParser)},
 	v1.JavaScriptMochaFramework:   {new(parsing.JavaScriptMochaParser)},
-	v1.DotNetxUnitFramework:       {new(parsing.DotNetxUnitParser)},
+	v1.PythonPytestFramework:      {new(parsing.PythonPytestParser)},
+	v1.RubyCucumberFramework:      {new(parsing.RubyCucumberParser)},
+	v1.RubyRSpecFramework:         {new(parsing.RubyRSpecParser)},
 }
 
 var genericParsers []parsing.Parser = []parsing.Parser{

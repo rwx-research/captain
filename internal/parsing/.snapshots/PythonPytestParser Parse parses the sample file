@@ -1,0 +1,561 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Python",
+    "kind": "pytest"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 23,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 8,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 7,
+    "successful": 8,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "id": "nested/test_nested.py::TestSomeClass::test_some_method",
+      "name": "nested/test_nested.py::TestSomeClass::test_some_method",
+      "lineage": [
+        "nested/test_nested.py",
+        "TestSomeClass",
+        "test_some_method"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 5
+      },
+      "attempt": {
+        "durationInNanoseconds": 249500,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "failed",
+          "message": "assert True == False",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/pytest/nested/test_nested.py:7"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::TestSomeClassFailingSetup::test_some_method",
+      "name": "nested/test_nested.py::TestSomeClassFailingSetup::test_some_method",
+      "lineage": [
+        "nested/test_nested.py",
+        "TestSomeClassFailingSetup",
+        "test_some_method"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 12
+      },
+      "attempt": {
+        "durationInNanoseconds": 338209,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "failed",
+          "message": "assert True == False",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/pytest/nested/test_nested.py:11"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::TestSomeClassFailingSetup::test_some_skipped_method",
+      "name": "nested/test_nested.py::TestSomeClassFailingSetup::test_some_skipped_method",
+      "lineage": [
+        "nested/test_nested.py",
+        "TestSomeClassFailingSetup",
+        "test_some_skipped_method"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 15
+      },
+      "attempt": {
+        "durationInNanoseconds": 80291,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "to test skipping a test"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::TestSomeClassFailingTeardown::test_some_method",
+      "name": "nested/test_nested.py::TestSomeClassFailingTeardown::test_some_method",
+      "lineage": [
+        "nested/test_nested.py",
+        "TestSomeClassFailingTeardown",
+        "test_some_method"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 23
+      },
+      "attempt": {
+        "durationInNanoseconds": 501500,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "failed",
+          "message": "assert True == False",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/pytest/nested/test_nested.py:22"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::TestSomeClassFailingTeardown::test_some_skipped_method",
+      "name": "nested/test_nested.py::TestSomeClassFailingTeardown::test_some_skipped_method",
+      "lineage": [
+        "nested/test_nested.py",
+        "TestSomeClassFailingTeardown",
+        "test_some_skipped_method"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 26
+      },
+      "attempt": {
+        "durationInNanoseconds": 116291,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "to test skipping a test"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_exception",
+      "name": "nested/test_nested.py::test_exception",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_exception"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 43
+      },
+      "attempt": {
+        "durationInNanoseconds": 263167,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Exception: Uh oh",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/pytest/nested/test_nested.py:45"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_expected_fail_failing",
+      "name": "nested/test_nested.py::test_expected_fail_failing",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_expected_fail_failing"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 65
+      },
+      "attempt": {
+        "durationInNanoseconds": 236542,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "Expected failure was skipped"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_expected_fail_passing",
+      "name": "nested/test_nested.py::test_expected_fail_passing",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_expected_fail_passing"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 69
+      },
+      "attempt": {
+        "durationInNanoseconds": 223416,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_nested_failing",
+      "name": "nested/test_nested.py::test_nested_failing",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_nested_failing"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 33
+      },
+      "attempt": {
+        "durationInNanoseconds": 234375,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "failed",
+          "message": "assert True == False",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/pytest/nested/test_nested.py:35"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_nested_passing",
+      "name": "nested/test_nested.py::test_nested_passing",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_nested_passing"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 30
+      },
+      "attempt": {
+        "durationInNanoseconds": 308042,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_one",
+      "name": "nested/test_nested.py::test_one",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_one"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 36
+      },
+      "attempt": {
+        "durationInNanoseconds": 310792,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_parameterized[2+4-6]",
+      "name": "nested/test_nested.py::test_parameterized[2+4-6]",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_parameterized[2+4-6]"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 58
+      },
+      "attempt": {
+        "durationInNanoseconds": 392124,
+        "meta": {
+          "user_properties": {
+            "arbitrary": "value",
+            "expected": 6,
+            "test_input": "2+4"
+          }
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_parameterized[3+5-8]",
+      "name": "nested/test_nested.py::test_parameterized[3+5-8]",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_parameterized[3+5-8]"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 58
+      },
+      "attempt": {
+        "durationInNanoseconds": 586999,
+        "meta": {
+          "user_properties": {
+            "arbitrary": "value",
+            "expected": 8,
+            "test_input": "3+5"
+          }
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_parameterized[6*9-42]",
+      "name": "nested/test_nested.py::test_parameterized[6*9-42]",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_parameterized[6*9-42]"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 58
+      },
+      "attempt": {
+        "durationInNanoseconds": 529750,
+        "meta": {
+          "user_properties": {
+            "arbitrary": "value",
+            "expected": 42,
+            "test_input": "6*9"
+          }
+        },
+        "status": {
+          "kind": "failed",
+          "message": "AssertionError: assert 54 == 42\n +  where 54 = eval('6*9')",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/pytest/nested/test_nested.py:64"
+          ]
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_skipped",
+      "name": "nested/test_nested.py::test_skipped",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_skipped"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 46
+      },
+      "attempt": {
+        "durationInNanoseconds": 100708,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "to test skipping a test"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_skipped_conditionally",
+      "name": "nested/test_nested.py::test_skipped_conditionally",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_skipped_conditionally"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 54
+      },
+      "attempt": {
+        "durationInNanoseconds": 92250,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "does not run on mac"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_skipped_no_reason",
+      "name": "nested/test_nested.py::test_skipped_no_reason",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_skipped_no_reason"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 50
+      },
+      "attempt": {
+        "durationInNanoseconds": 159666,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "unconditional skip"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_slow",
+      "name": "nested/test_nested.py::test_slow",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_slow"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 39
+      },
+      "attempt": {
+        "durationInNanoseconds": 1505849000,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_strict_expected_fail_failing",
+      "name": "nested/test_nested.py::test_strict_expected_fail_failing",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_strict_expected_fail_failing"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 73
+      },
+      "attempt": {
+        "durationInNanoseconds": 207042,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "Expected failure was skipped"
+        }
+      }
+    },
+    {
+      "id": "nested/test_nested.py::test_strict_expected_fail_passing",
+      "name": "nested/test_nested.py::test_strict_expected_fail_passing",
+      "lineage": [
+        "nested/test_nested.py",
+        "test_strict_expected_fail_passing"
+      ],
+      "location": {
+        "file": "nested/test_nested.py",
+        "line": 77
+      },
+      "attempt": {
+        "durationInNanoseconds": 230043,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Unexpectedly passed"
+        }
+      }
+    },
+    {
+      "id": "test_top_level.py::test_one",
+      "name": "test_top_level.py::test_one",
+      "lineage": [
+        "test_top_level.py",
+        "test_one"
+      ],
+      "location": {
+        "file": "test_top_level.py",
+        "line": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 314167,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "test_top_level.py::test_top_level_failing",
+      "name": "test_top_level.py::test_top_level_failing",
+      "lineage": [
+        "test_top_level.py",
+        "test_top_level_failing"
+      ],
+      "location": {
+        "file": "test_top_level.py",
+        "line": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 251666,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "failed",
+          "message": "assert True == False",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/pytest/test_top_level.py:5"
+          ]
+        }
+      }
+    },
+    {
+      "id": "test_top_level.py::test_top_level_passing",
+      "name": "test_top_level.py::test_top_level_passing",
+      "lineage": [
+        "test_top_level.py",
+        "test_top_level_passing"
+      ],
+      "location": {
+        "file": "test_top_level.py",
+        "line": 0
+      },
+      "attempt": {
+        "durationInNanoseconds": 332000,
+        "meta": {
+          "user_properties": {}
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ]
+}
