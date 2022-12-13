@@ -1,0 +1,480 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Go",
+    "kind": "go test"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 35,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 9,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 2,
+    "successful": 24,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "FuzzHex",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   FuzzHex\n--- PASS: FuzzHex (0.00s)\n"
+      }
+    },
+    {
+      "name": "FuzzHex/seed#0",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   FuzzHex/seed#0\n    --- PASS: FuzzHex/seed#0 (0.00s)\n"
+      }
+    },
+    {
+      "name": "FuzzHex/seed#1",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   FuzzHex/seed#1\n    --- PASS: FuzzHex/seed#1 (0.00s)\n"
+      }
+    },
+    {
+      "name": "FuzzHex/seed#2",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   FuzzHex/seed#2\n    --- PASS: FuzzHex/seed#2 (0.00s)\n"
+      }
+    },
+    {
+      "name": "FuzzHex/seed#3",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   FuzzHex/seed#3\n    --- PASS: FuzzHex/seed#3 (0.00s)\n"
+      }
+    },
+    {
+      "name": "FuzzHex/seed#4",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   FuzzHex/seed#4\n    --- PASS: FuzzHex/seed#4 (0.00s)\n"
+      }
+    },
+    {
+      "name": "FuzzHex/seed#5",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   FuzzHex/seed#5\n    --- PASS: FuzzHex/seed#5 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestBar",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestBar\n--- PASS: TestBar (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestBarFailing",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestBarFailing\n    bar_test.go:18: Bar: arg != Bar: not arg\n--- FAIL: TestBarFailing (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFoo",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFoo\n--- PASS: TestFoo (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFoo",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFoo\n--- PASS: TestFoo (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooFailing",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestFooFailing\n    foo_test.go:18: Foo: arg != Foo: not arg\n--- FAIL: TestFooFailing (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooParallelTable",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooParallelTable\n--- PASS: TestFooParallelTable (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooParallelTable/0",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooParallelTable/0\n=== PAUSE TestFooParallelTable/0\n=== CONT  TestFooParallelTable/0\n    foo_test.go:46: running in parallel 1\n    foo_test.go:47: running in parallel 2\n    foo_test.go:48: running in parallel 3\n    foo_test.go:49: running in parallel 4\n    foo_test.go:50: running in parallel 5\n    --- PASS: TestFooParallelTable/0 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooParallelTable/1",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooParallelTable/1\n=== PAUSE TestFooParallelTable/1\n=== CONT  TestFooParallelTable/1\n    foo_test.go:46: running in parallel 1\n    foo_test.go:47: running in parallel 2\n=== CONT  TestFooParallelTable/1\n    foo_test.go:48: running in parallel 3\n    foo_test.go:49: running in parallel 4\n=== CONT  TestFooParallelTable/1\n    foo_test.go:50: running in parallel 5\n    --- PASS: TestFooParallelTable/1 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooParallelTable/2",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooParallelTable/2\n=== PAUSE TestFooParallelTable/2\n=== CONT  TestFooParallelTable/2\n    foo_test.go:46: running in parallel 1\n    foo_test.go:47: running in parallel 2\n    foo_test.go:48: running in parallel 3\n=== CONT  TestFooParallelTable/2\n    foo_test.go:49: running in parallel 4\n    foo_test.go:50: running in parallel 5\n    --- PASS: TestFooParallelTable/2 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooParallelTable/3",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooParallelTable/3\n=== PAUSE TestFooParallelTable/3\n=== CONT  TestFooParallelTable/3\n=== CONT  TestFooParallelTable/3\n    foo_test.go:46: running in parallel 1\n    foo_test.go:47: running in parallel 2\n    foo_test.go:48: running in parallel 3\n    foo_test.go:49: running in parallel 4\n    foo_test.go:50: running in parallel 5\n    --- PASS: TestFooParallelTable/3 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooParallelTable/4",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooParallelTable/4\n=== PAUSE TestFooParallelTable/4\n=== CONT  TestFooParallelTable/4\n    foo_test.go:46: running in parallel 1\n    foo_test.go:47: running in parallel 2\n    foo_test.go:48: running in parallel 3\n    foo_test.go:49: running in parallel 4\n    foo_test.go:50: running in parallel 5\n    --- PASS: TestFooParallelTable/4 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooTable",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooTable\n--- PASS: TestFooTable (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooTable/0",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooTable/0\n    foo_test.go:25: running 1\n    foo_test.go:26: running 2\n    foo_test.go:27: running 3\n    foo_test.go:28: running 4\n    foo_test.go:29: running 5\n    --- PASS: TestFooTable/0 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooTable/1",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooTable/1\n    foo_test.go:25: running 1\n    foo_test.go:26: running 2\n    foo_test.go:27: running 3\n    foo_test.go:28: running 4\n    foo_test.go:29: running 5\n    --- PASS: TestFooTable/1 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooTable/2",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooTable/2\n    foo_test.go:25: running 1\n    foo_test.go:26: running 2\n    foo_test.go:27: running 3\n    foo_test.go:28: running 4\n    foo_test.go:29: running 5\n    --- PASS: TestFooTable/2 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooTable/3",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooTable/3\n    foo_test.go:25: running 1\n    foo_test.go:26: running 2\n    foo_test.go:27: running 3\n    foo_test.go:28: running 4\n    foo_test.go:29: running 5\n    --- PASS: TestFooTable/3 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestFooTable/4",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestFooTable/4\n    foo_test.go:25: running 1\n    foo_test.go:26: running 2\n    foo_test.go:27: running 3\n    foo_test.go:28: running 4\n    foo_test.go:29: running 5\n    --- PASS: TestFooTable/4 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestSkipNoReason",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stdout": "=== RUN   TestSkipNoReason\n    other_test.go:64: \n--- SKIP: TestSkipNoReason (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestSkipReason",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stdout": "=== RUN   TestSkipReason\n    other_test.go:68: for a reason\n--- SKIP: TestSkipReason (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestSlow",
+      "attempt": {
+        "durationInNanoseconds": 1500000000,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestSlow\n--- PASS: TestSlow (1.50s)\n"
+      }
+    },
+    {
+      "name": "TestTableFailing",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestTableFailing\n--- FAIL: TestTableFailing (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestTableFailing/0",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestTableFailing/0\n    foo_test.go:37: failed\n    --- FAIL: TestTableFailing/0 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestTableFailing/1",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestTableFailing/1\n    foo_test.go:37: failed\n    --- FAIL: TestTableFailing/1 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestTableFailing/2",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestTableFailing/2\n    foo_test.go:37: failed\n    --- FAIL: TestTableFailing/2 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestTableFailing/3",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestTableFailing/3\n    foo_test.go:37: failed\n    --- FAIL: TestTableFailing/3 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestTableFailing/4",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg1"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestTableFailing/4\n    foo_test.go:37: failed\n    --- FAIL: TestTableFailing/4 (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestWhatever",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stdout": "=== RUN   TestWhatever\n--- PASS: TestWhatever (0.00s)\n"
+      }
+    },
+    {
+      "name": "TestWhateverFailing",
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "package": "github.com/captain-examples/go-testing/internal/pkg2"
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stdout": "=== RUN   TestWhateverFailing\n    other_test.go:25: Foo: arg != Foo: not arg\n--- FAIL: TestWhateverFailing (0.00s)\n"
+      }
+    }
+  ]
+}

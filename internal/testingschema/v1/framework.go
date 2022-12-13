@@ -14,8 +14,10 @@ const (
 	FrameworkKindPytest   FrameworkKind = "pytest"
 	FrameworkKindRSpec    FrameworkKind = "RSpec"
 	FrameworkKindxUnit    FrameworkKind = "xUnit"
+	FrameworkKindGoTest   FrameworkKind = "go test"
 
 	FrameworkLanguageDotNet     FrameworkLanguage = ".NET"
+	FrameworkLanguageGo         FrameworkLanguage = "Go"
 	FrameworkLanguageJavaScript FrameworkLanguage = "JavaScript"
 	FrameworkLanguagePython     FrameworkLanguage = "Python"
 	FrameworkLanguageRuby       FrameworkLanguage = "Ruby"
@@ -41,6 +43,9 @@ func registerFramework(framework Framework) Framework {
 var (
 	DotNetxUnitFramework = registerFramework(
 		Framework{Language: FrameworkLanguageDotNet, Kind: FrameworkKindxUnit},
+	)
+	GoTestFramework = registerFramework(
+		Framework{Language: FrameworkLanguageGo, Kind: FrameworkKindGoTest},
 	)
 	JavaScriptCypressFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindCypress},

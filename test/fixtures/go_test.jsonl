@@ -1,0 +1,237 @@
+AAAHHHHHHHHH not json
+{"Time":"2022-12-13T15:06:09.346716-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBar"}
+{"Time":"2022-12-13T15:06:09.34685-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBar","Output":"=== RUN   TestBar\n"}
+{"Time":"2022-12-13T15:06:09.34686-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBar","Output":"--- PASS: TestBar (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.346874-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBar","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.346884-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBarFailing"}
+{"Time":"2022-12-13T15:06:09.346886-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBarFailing","Output":"=== RUN   TestBarFailing\n"}
+{"Time":"2022-12-13T15:06:09.346889-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBarFailing","Output":"    bar_test.go:18: Bar: arg != Bar: not arg\n"}
+{"Time":"2022-12-13T15:06:09.346908-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBarFailing","Output":"--- FAIL: TestBarFailing (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.346915-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestBarFailing","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.346919-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestSlow"}
+{"Time":"2022-12-13T15:06:09.346921-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestSlow","Output":"=== RUN   TestSlow\n"}
+{"Time":"2022-12-13T15:06:09.398832-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestFoo"}
+{"Time":"2022-12-13T15:06:09.398862-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestFoo","Output":"=== RUN   TestFoo\n"}
+{"Time":"2022-12-13T15:06:09.39889-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestFoo","Output":"--- PASS: TestFoo (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.398892-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestFoo","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.398895-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhatever"}
+{"Time":"2022-12-13T15:06:09.398897-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhatever","Output":"=== RUN   TestWhatever\n"}
+{"Time":"2022-12-13T15:06:09.398899-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhatever","Output":"--- PASS: TestWhatever (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.398907-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhatever","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.398908-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhateverFailing"}
+{"Time":"2022-12-13T15:06:09.398909-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhateverFailing","Output":"=== RUN   TestWhateverFailing\n"}
+{"Time":"2022-12-13T15:06:09.398912-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhateverFailing","Output":"    other_test.go:25: Foo: arg != Foo: not arg\n"}
+{"Time":"2022-12-13T15:06:09.398921-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhateverFailing","Output":"--- FAIL: TestWhateverFailing (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.398924-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestWhateverFailing","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.398926-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipNoReason"}
+{"Time":"2022-12-13T15:06:09.398931-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipNoReason","Output":"=== RUN   TestSkipNoReason\n"}
+{"Time":"2022-12-13T15:06:09.398932-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipNoReason","Output":"    other_test.go:64: \n"}
+{"Time":"2022-12-13T15:06:09.398935-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipNoReason","Output":"--- SKIP: TestSkipNoReason (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.398936-05:00","Action":"skip","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipNoReason","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.398937-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipReason"}
+{"Time":"2022-12-13T15:06:09.398939-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipReason","Output":"=== RUN   TestSkipReason\n"}
+{"Time":"2022-12-13T15:06:09.39894-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipReason","Output":"    other_test.go:68: for a reason\n"}
+{"Time":"2022-12-13T15:06:09.398942-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipReason","Output":"--- SKIP: TestSkipReason (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.398944-05:00","Action":"skip","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"TestSkipReason","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.398945-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex"}
+{"Time":"2022-12-13T15:06:09.398946-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex","Output":"=== RUN   FuzzHex\n"}
+{"Time":"2022-12-13T15:06:09.398951-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#0"}
+{"Time":"2022-12-13T15:06:09.398953-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#0","Output":"=== RUN   FuzzHex/seed#0\n"}
+{"Time":"2022-12-13T15:06:09.399014-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#1"}
+{"Time":"2022-12-13T15:06:09.399019-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#1","Output":"=== RUN   FuzzHex/seed#1\n"}
+{"Time":"2022-12-13T15:06:09.399024-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#2"}
+{"Time":"2022-12-13T15:06:09.399026-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#2","Output":"=== RUN   FuzzHex/seed#2\n"}
+{"Time":"2022-12-13T15:06:09.399028-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#3"}
+{"Time":"2022-12-13T15:06:09.399031-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#3","Output":"=== RUN   FuzzHex/seed#3\n"}
+{"Time":"2022-12-13T15:06:09.399033-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#4"}
+{"Time":"2022-12-13T15:06:09.399036-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#4","Output":"=== RUN   FuzzHex/seed#4\n"}
+{"Time":"2022-12-13T15:06:09.399046-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#5"}
+{"Time":"2022-12-13T15:06:09.399052-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#5","Output":"=== RUN   FuzzHex/seed#5\n"}
+{"Time":"2022-12-13T15:06:09.399056-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex","Output":"--- PASS: FuzzHex (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.399059-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#0","Output":"    --- PASS: FuzzHex/seed#0 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.399061-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#0","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.399063-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#1","Output":"    --- PASS: FuzzHex/seed#1 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.399065-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#1","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.399067-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#2","Output":"    --- PASS: FuzzHex/seed#2 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.399068-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#2","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.399071-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#3","Output":"    --- PASS: FuzzHex/seed#3 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.399077-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#3","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.399081-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#4","Output":"    --- PASS: FuzzHex/seed#4 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.399082-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#4","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.399084-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#5","Output":"    --- PASS: FuzzHex/seed#5 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:09.399086-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex/seed#5","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.399087-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg2","Test":"FuzzHex","Elapsed":0}
+{"Time":"2022-12-13T15:06:09.399089-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Output":"FAIL\n"}
+{"Time":"2022-12-13T15:06:09.399388-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg2","Output":"FAIL\tgithub.com/captain-examples/go-testing/internal/pkg2\t0.119s\n"}
+{"Time":"2022-12-13T15:06:09.39941-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg2","Elapsed":0.119}
+{"Time":"2022-12-13T15:06:10.847015-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestSlow","Output":"--- PASS: TestSlow (1.50s)\n"}
+{"Time":"2022-12-13T15:06:10.847053-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestSlow","Elapsed":1.5}
+{"Time":"2022-12-13T15:06:10.847067-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFoo"}
+{"Time":"2022-12-13T15:06:10.847073-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFoo","Output":"=== RUN   TestFoo\n"}
+{"Time":"2022-12-13T15:06:10.847082-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFoo","Output":"--- PASS: TestFoo (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847089-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFoo","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847092-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooFailing"}
+{"Time":"2022-12-13T15:06:10.847095-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooFailing","Output":"=== RUN   TestFooFailing\n"}
+{"Time":"2022-12-13T15:06:10.847099-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooFailing","Output":"    foo_test.go:18: Foo: arg != Foo: not arg\n"}
+{"Time":"2022-12-13T15:06:10.847104-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooFailing","Output":"--- FAIL: TestFooFailing (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847109-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooFailing","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847118-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable"}
+{"Time":"2022-12-13T15:06:10.847126-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable","Output":"=== RUN   TestFooTable\n"}
+{"Time":"2022-12-13T15:06:10.84713-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0"}
+{"Time":"2022-12-13T15:06:10.847133-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0","Output":"=== RUN   TestFooTable/0\n"}
+{"Time":"2022-12-13T15:06:10.847136-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0","Output":"    foo_test.go:25: running 1\n"}
+{"Time":"2022-12-13T15:06:10.847139-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0","Output":"    foo_test.go:26: running 2\n"}
+{"Time":"2022-12-13T15:06:10.847143-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0","Output":"    foo_test.go:27: running 3\n"}
+{"Time":"2022-12-13T15:06:10.847146-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0","Output":"    foo_test.go:28: running 4\n"}
+{"Time":"2022-12-13T15:06:10.847149-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0","Output":"    foo_test.go:29: running 5\n"}
+{"Time":"2022-12-13T15:06:10.847158-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1"}
+{"Time":"2022-12-13T15:06:10.847162-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1","Output":"=== RUN   TestFooTable/1\n"}
+{"Time":"2022-12-13T15:06:10.847165-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1","Output":"    foo_test.go:25: running 1\n"}
+{"Time":"2022-12-13T15:06:10.847168-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1","Output":"    foo_test.go:26: running 2\n"}
+{"Time":"2022-12-13T15:06:10.847171-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1","Output":"    foo_test.go:27: running 3\n"}
+{"Time":"2022-12-13T15:06:10.847175-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1","Output":"    foo_test.go:28: running 4\n"}
+{"Time":"2022-12-13T15:06:10.847179-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1","Output":"    foo_test.go:29: running 5\n"}
+{"Time":"2022-12-13T15:06:10.847182-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2"}
+{"Time":"2022-12-13T15:06:10.847185-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2","Output":"=== RUN   TestFooTable/2\n"}
+{"Time":"2022-12-13T15:06:10.847189-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2","Output":"    foo_test.go:25: running 1\n"}
+{"Time":"2022-12-13T15:06:10.847192-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2","Output":"    foo_test.go:26: running 2\n"}
+{"Time":"2022-12-13T15:06:10.847195-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2","Output":"    foo_test.go:27: running 3\n"}
+{"Time":"2022-12-13T15:06:10.847198-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2","Output":"    foo_test.go:28: running 4\n"}
+{"Time":"2022-12-13T15:06:10.847203-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2","Output":"    foo_test.go:29: running 5\n"}
+{"Time":"2022-12-13T15:06:10.847208-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3"}
+{"Time":"2022-12-13T15:06:10.847227-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3","Output":"=== RUN   TestFooTable/3\n"}
+{"Time":"2022-12-13T15:06:10.847232-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3","Output":"    foo_test.go:25: running 1\n"}
+{"Time":"2022-12-13T15:06:10.847237-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3","Output":"    foo_test.go:26: running 2\n"}
+{"Time":"2022-12-13T15:06:10.847253-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3","Output":"    foo_test.go:27: running 3\n"}
+{"Time":"2022-12-13T15:06:10.847257-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3","Output":"    foo_test.go:28: running 4\n"}
+{"Time":"2022-12-13T15:06:10.847259-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3","Output":"    foo_test.go:29: running 5\n"}
+{"Time":"2022-12-13T15:06:10.847263-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4"}
+{"Time":"2022-12-13T15:06:10.847265-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4","Output":"=== RUN   TestFooTable/4\n"}
+{"Time":"2022-12-13T15:06:10.847268-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4","Output":"    foo_test.go:25: running 1\n"}
+{"Time":"2022-12-13T15:06:10.847276-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4","Output":"    foo_test.go:26: running 2\n"}
+{"Time":"2022-12-13T15:06:10.847279-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4","Output":"    foo_test.go:27: running 3\n"}
+{"Time":"2022-12-13T15:06:10.847298-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4","Output":"    foo_test.go:28: running 4\n"}
+{"Time":"2022-12-13T15:06:10.847302-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4","Output":"    foo_test.go:29: running 5\n"}
+{"Time":"2022-12-13T15:06:10.847306-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable","Output":"--- PASS: TestFooTable (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847329-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0","Output":"    --- PASS: TestFooTable/0 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847333-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/0","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847337-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1","Output":"    --- PASS: TestFooTable/1 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.84734-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/1","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847343-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2","Output":"    --- PASS: TestFooTable/2 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847347-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/2","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.84735-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3","Output":"    --- PASS: TestFooTable/3 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847353-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/3","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847371-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4","Output":"    --- PASS: TestFooTable/4 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847386-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable/4","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847392-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooTable","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847395-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing"}
+{"Time":"2022-12-13T15:06:10.847398-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing","Output":"=== RUN   TestTableFailing\n"}
+{"Time":"2022-12-13T15:06:10.847405-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/0"}
+{"Time":"2022-12-13T15:06:10.847408-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/0","Output":"=== RUN   TestTableFailing/0\n"}
+{"Time":"2022-12-13T15:06:10.847412-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/0","Output":"    foo_test.go:37: failed\n"}
+{"Time":"2022-12-13T15:06:10.847415-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/1"}
+{"Time":"2022-12-13T15:06:10.847418-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/1","Output":"=== RUN   TestTableFailing/1\n"}
+{"Time":"2022-12-13T15:06:10.847422-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/1","Output":"    foo_test.go:37: failed\n"}
+{"Time":"2022-12-13T15:06:10.847426-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/2"}
+{"Time":"2022-12-13T15:06:10.847429-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/2","Output":"=== RUN   TestTableFailing/2\n"}
+{"Time":"2022-12-13T15:06:10.847435-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/2","Output":"    foo_test.go:37: failed\n"}
+{"Time":"2022-12-13T15:06:10.847439-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/3"}
+{"Time":"2022-12-13T15:06:10.847445-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/3","Output":"=== RUN   TestTableFailing/3\n"}
+{"Time":"2022-12-13T15:06:10.847462-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/3","Output":"    foo_test.go:37: failed\n"}
+{"Time":"2022-12-13T15:06:10.847466-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/4"}
+{"Time":"2022-12-13T15:06:10.847468-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/4","Output":"=== RUN   TestTableFailing/4\n"}
+{"Time":"2022-12-13T15:06:10.847472-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/4","Output":"    foo_test.go:37: failed\n"}
+{"Time":"2022-12-13T15:06:10.847484-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing","Output":"--- FAIL: TestTableFailing (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847489-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/0","Output":"    --- FAIL: TestTableFailing/0 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847493-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/0","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847496-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/1","Output":"    --- FAIL: TestTableFailing/1 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847499-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/1","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847507-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/2","Output":"    --- FAIL: TestTableFailing/2 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.84751-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/2","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847513-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/3","Output":"    --- FAIL: TestTableFailing/3 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847517-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/3","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847519-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/4","Output":"    --- FAIL: TestTableFailing/4 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.847523-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing/4","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.84753-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestTableFailing","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.847533-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable"}
+{"Time":"2022-12-13T15:06:10.847541-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable","Output":"=== RUN   TestFooParallelTable\n"}
+{"Time":"2022-12-13T15:06:10.847544-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0"}
+{"Time":"2022-12-13T15:06:10.847547-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"=== RUN   TestFooParallelTable/0\n"}
+{"Time":"2022-12-13T15:06:10.84755-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"=== PAUSE TestFooParallelTable/0\n"}
+{"Time":"2022-12-13T15:06:10.847553-05:00","Action":"pause","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0"}
+{"Time":"2022-12-13T15:06:10.847556-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1"}
+{"Time":"2022-12-13T15:06:10.847559-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"=== RUN   TestFooParallelTable/1\n"}
+{"Time":"2022-12-13T15:06:10.84759-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"=== PAUSE TestFooParallelTable/1\n"}
+{"Time":"2022-12-13T15:06:10.847616-05:00","Action":"pause","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1"}
+{"Time":"2022-12-13T15:06:10.847622-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2"}
+{"Time":"2022-12-13T15:06:10.847628-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"=== RUN   TestFooParallelTable/2\n"}
+{"Time":"2022-12-13T15:06:10.847634-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"=== PAUSE TestFooParallelTable/2\n"}
+{"Time":"2022-12-13T15:06:10.847657-05:00","Action":"pause","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2"}
+{"Time":"2022-12-13T15:06:10.847669-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3"}
+{"Time":"2022-12-13T15:06:10.847674-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"=== RUN   TestFooParallelTable/3\n"}
+{"Time":"2022-12-13T15:06:10.84768-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"=== PAUSE TestFooParallelTable/3\n"}
+{"Time":"2022-12-13T15:06:10.847683-05:00","Action":"pause","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3"}
+{"Time":"2022-12-13T15:06:10.847688-05:00","Action":"run","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4"}
+{"Time":"2022-12-13T15:06:10.847703-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"=== RUN   TestFooParallelTable/4\n"}
+{"Time":"2022-12-13T15:06:10.847714-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"=== PAUSE TestFooParallelTable/4\n"}
+{"Time":"2022-12-13T15:06:10.847717-05:00","Action":"pause","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4"}
+{"Time":"2022-12-13T15:06:10.84772-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0"}
+{"Time":"2022-12-13T15:06:10.847746-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"=== CONT  TestFooParallelTable/0\n"}
+{"Time":"2022-12-13T15:06:10.847758-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"    foo_test.go:46: running in parallel 1\n"}
+{"Time":"2022-12-13T15:06:10.847791-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"    foo_test.go:47: running in parallel 2\n"}
+{"Time":"2022-12-13T15:06:10.847807-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"    foo_test.go:48: running in parallel 3\n"}
+{"Time":"2022-12-13T15:06:10.847837-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"    foo_test.go:49: running in parallel 4\n"}
+{"Time":"2022-12-13T15:06:10.847841-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"    foo_test.go:50: running in parallel 5\n"}
+{"Time":"2022-12-13T15:06:10.847846-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1"}
+{"Time":"2022-12-13T15:06:10.847862-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"=== CONT  TestFooParallelTable/1\n"}
+{"Time":"2022-12-13T15:06:10.847869-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"    foo_test.go:46: running in parallel 1\n"}
+{"Time":"2022-12-13T15:06:10.847873-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"    foo_test.go:47: running in parallel 2\n"}
+{"Time":"2022-12-13T15:06:10.847878-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3"}
+{"Time":"2022-12-13T15:06:10.847882-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"=== CONT  TestFooParallelTable/3\n"}
+{"Time":"2022-12-13T15:06:10.847885-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1"}
+{"Time":"2022-12-13T15:06:10.847888-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"=== CONT  TestFooParallelTable/1\n"}
+{"Time":"2022-12-13T15:06:10.847891-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"    foo_test.go:48: running in parallel 3\n"}
+{"Time":"2022-12-13T15:06:10.847895-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"    foo_test.go:49: running in parallel 4\n"}
+{"Time":"2022-12-13T15:06:10.847899-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4"}
+{"Time":"2022-12-13T15:06:10.847902-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"=== CONT  TestFooParallelTable/4\n"}
+{"Time":"2022-12-13T15:06:10.847905-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"    foo_test.go:46: running in parallel 1\n"}
+{"Time":"2022-12-13T15:06:10.847909-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"    foo_test.go:47: running in parallel 2\n"}
+{"Time":"2022-12-13T15:06:10.847912-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"    foo_test.go:48: running in parallel 3\n"}
+{"Time":"2022-12-13T15:06:10.847915-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"    foo_test.go:49: running in parallel 4\n"}
+{"Time":"2022-12-13T15:06:10.847919-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"    foo_test.go:50: running in parallel 5\n"}
+{"Time":"2022-12-13T15:06:10.847937-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2"}
+{"Time":"2022-12-13T15:06:10.84794-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"=== CONT  TestFooParallelTable/2\n"}
+{"Time":"2022-12-13T15:06:10.847945-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"    foo_test.go:46: running in parallel 1\n"}
+{"Time":"2022-12-13T15:06:10.847949-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"    foo_test.go:47: running in parallel 2\n"}
+{"Time":"2022-12-13T15:06:10.847952-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"    foo_test.go:48: running in parallel 3\n"}
+{"Time":"2022-12-13T15:06:10.847956-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3"}
+{"Time":"2022-12-13T15:06:10.847959-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"=== CONT  TestFooParallelTable/3\n"}
+{"Time":"2022-12-13T15:06:10.847963-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"    foo_test.go:46: running in parallel 1\n"}
+{"Time":"2022-12-13T15:06:10.847966-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"    foo_test.go:47: running in parallel 2\n"}
+{"Time":"2022-12-13T15:06:10.847971-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"    foo_test.go:48: running in parallel 3\n"}
+{"Time":"2022-12-13T15:06:10.847974-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"    foo_test.go:49: running in parallel 4\n"}
+{"Time":"2022-12-13T15:06:10.847977-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"    foo_test.go:50: running in parallel 5\n"}
+{"Time":"2022-12-13T15:06:10.84798-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1"}
+{"Time":"2022-12-13T15:06:10.847984-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"=== CONT  TestFooParallelTable/1\n"}
+{"Time":"2022-12-13T15:06:10.847987-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"    foo_test.go:50: running in parallel 5\n"}
+{"Time":"2022-12-13T15:06:10.847991-05:00","Action":"cont","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2"}
+{"Time":"2022-12-13T15:06:10.847994-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"=== CONT  TestFooParallelTable/2\n"}
+{"Time":"2022-12-13T15:06:10.847999-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"    foo_test.go:49: running in parallel 4\n"}
+{"Time":"2022-12-13T15:06:10.848002-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"    foo_test.go:50: running in parallel 5\n"}
+{"Time":"2022-12-13T15:06:10.848008-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable","Output":"--- PASS: TestFooParallelTable (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.848012-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Output":"    --- PASS: TestFooParallelTable/0 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.848016-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/0","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.848019-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Output":"    --- PASS: TestFooParallelTable/4 (0.00s)\n"}
+AAAHHHHHHHHH not json
+{"Time":"2022-12-13T15:06:10.848023-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/4","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.848027-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Output":"    --- PASS: TestFooParallelTable/3 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.84803-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/3","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.848035-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Output":"    --- PASS: TestFooParallelTable/1 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.848038-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/1","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.848042-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Output":"    --- PASS: TestFooParallelTable/2 (0.00s)\n"}
+{"Time":"2022-12-13T15:06:10.848045-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable/2","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.848048-05:00","Action":"pass","Package":"github.com/captain-examples/go-testing/internal/pkg1","Test":"TestFooParallelTable","Elapsed":0}
+{"Time":"2022-12-13T15:06:10.848051-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Output":"FAIL\n"}
+{"Time":"2022-12-13T15:06:10.848963-05:00","Action":"output","Package":"github.com/captain-examples/go-testing/internal/pkg1","Output":"FAIL\tgithub.com/captain-examples/go-testing/internal/pkg1\t1.584s\n"}
+{"Time":"2022-12-13T15:06:10.848972-05:00","Action":"fail","Package":"github.com/captain-examples/go-testing/internal/pkg1","Elapsed":1.584}
+AAAHHHHHHHHH not json

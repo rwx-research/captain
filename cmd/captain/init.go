@@ -21,6 +21,7 @@ import (
 
 var mutuallyExclusiveParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.DotNetxUnitParser),
+	new(parsing.GoTestParser),
 	new(parsing.JavaScriptCypressParser),
 	new(parsing.JavaScriptJestParser),
 	new(parsing.JavaScriptMochaParser),
@@ -31,6 +32,7 @@ var mutuallyExclusiveParsers []parsing.Parser = []parsing.Parser{
 
 var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]parsing.Parser{
 	v1.DotNetxUnitFramework:       {new(parsing.DotNetxUnitParser)},
+	v1.GoTestFramework:            {new(parsing.GoTestParser)},
 	v1.JavaScriptCypressFramework: {new(parsing.JavaScriptCypressParser)},
 	v1.JavaScriptJestFramework:    {new(parsing.JavaScriptJestParser)},
 	v1.JavaScriptMochaFramework:   {new(parsing.JavaScriptMochaParser)},
