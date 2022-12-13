@@ -23,9 +23,8 @@
   "tests": [
     {
       "id": "nested/test_nested.py::TestSomeClass::test_some_method",
-      "name": "nested/test_nested.py::TestSomeClass::test_some_method",
+      "name": "TestSomeClass::test_some_method",
       "lineage": [
-        "nested/test_nested.py",
         "TestSomeClass",
         "test_some_method"
       ],
@@ -49,9 +48,8 @@
     },
     {
       "id": "nested/test_nested.py::TestSomeClassFailingSetup::test_some_method",
-      "name": "nested/test_nested.py::TestSomeClassFailingSetup::test_some_method",
+      "name": "TestSomeClassFailingSetup::test_some_method",
       "lineage": [
-        "nested/test_nested.py",
         "TestSomeClassFailingSetup",
         "test_some_method"
       ],
@@ -75,9 +73,8 @@
     },
     {
       "id": "nested/test_nested.py::TestSomeClassFailingSetup::test_some_skipped_method",
-      "name": "nested/test_nested.py::TestSomeClassFailingSetup::test_some_skipped_method",
+      "name": "TestSomeClassFailingSetup::test_some_skipped_method",
       "lineage": [
-        "nested/test_nested.py",
         "TestSomeClassFailingSetup",
         "test_some_skipped_method"
       ],
@@ -98,9 +95,8 @@
     },
     {
       "id": "nested/test_nested.py::TestSomeClassFailingTeardown::test_some_method",
-      "name": "nested/test_nested.py::TestSomeClassFailingTeardown::test_some_method",
+      "name": "TestSomeClassFailingTeardown::test_some_method",
       "lineage": [
-        "nested/test_nested.py",
         "TestSomeClassFailingTeardown",
         "test_some_method"
       ],
@@ -124,9 +120,8 @@
     },
     {
       "id": "nested/test_nested.py::TestSomeClassFailingTeardown::test_some_skipped_method",
-      "name": "nested/test_nested.py::TestSomeClassFailingTeardown::test_some_skipped_method",
+      "name": "TestSomeClassFailingTeardown::test_some_skipped_method",
       "lineage": [
-        "nested/test_nested.py",
         "TestSomeClassFailingTeardown",
         "test_some_skipped_method"
       ],
@@ -147,9 +142,8 @@
     },
     {
       "id": "nested/test_nested.py::test_exception",
-      "name": "nested/test_nested.py::test_exception",
+      "name": "test_exception",
       "lineage": [
-        "nested/test_nested.py",
         "test_exception"
       ],
       "location": {
@@ -172,9 +166,8 @@
     },
     {
       "id": "nested/test_nested.py::test_expected_fail_failing",
-      "name": "nested/test_nested.py::test_expected_fail_failing",
+      "name": "test_expected_fail_failing",
       "lineage": [
-        "nested/test_nested.py",
         "test_expected_fail_failing"
       ],
       "location": {
@@ -194,9 +187,8 @@
     },
     {
       "id": "nested/test_nested.py::test_expected_fail_passing",
-      "name": "nested/test_nested.py::test_expected_fail_passing",
+      "name": "test_expected_fail_passing",
       "lineage": [
-        "nested/test_nested.py",
         "test_expected_fail_passing"
       ],
       "location": {
@@ -215,9 +207,8 @@
     },
     {
       "id": "nested/test_nested.py::test_nested_failing",
-      "name": "nested/test_nested.py::test_nested_failing",
+      "name": "test_nested_failing",
       "lineage": [
-        "nested/test_nested.py",
         "test_nested_failing"
       ],
       "location": {
@@ -240,9 +231,8 @@
     },
     {
       "id": "nested/test_nested.py::test_nested_passing",
-      "name": "nested/test_nested.py::test_nested_passing",
+      "name": "test_nested_passing",
       "lineage": [
-        "nested/test_nested.py",
         "test_nested_passing"
       ],
       "location": {
@@ -261,9 +251,8 @@
     },
     {
       "id": "nested/test_nested.py::test_one",
-      "name": "nested/test_nested.py::test_one",
+      "name": "test_one",
       "lineage": [
-        "nested/test_nested.py",
         "test_one"
       ],
       "location": {
@@ -282,9 +271,8 @@
     },
     {
       "id": "nested/test_nested.py::test_parameterized[2+4-6]",
-      "name": "nested/test_nested.py::test_parameterized[2+4-6]",
+      "name": "test_parameterized[2+4-6]",
       "lineage": [
-        "nested/test_nested.py",
         "test_parameterized[2+4-6]"
       ],
       "location": {
@@ -307,9 +295,8 @@
     },
     {
       "id": "nested/test_nested.py::test_parameterized[3+5-8]",
-      "name": "nested/test_nested.py::test_parameterized[3+5-8]",
+      "name": "test_parameterized[3+5-8]",
       "lineage": [
-        "nested/test_nested.py",
         "test_parameterized[3+5-8]"
       ],
       "location": {
@@ -332,9 +319,8 @@
     },
     {
       "id": "nested/test_nested.py::test_parameterized[6*9-42]",
-      "name": "nested/test_nested.py::test_parameterized[6*9-42]",
+      "name": "test_parameterized[6*9-42]",
       "lineage": [
-        "nested/test_nested.py",
         "test_parameterized[6*9-42]"
       ],
       "location": {
@@ -361,9 +347,8 @@
     },
     {
       "id": "nested/test_nested.py::test_skipped",
-      "name": "nested/test_nested.py::test_skipped",
+      "name": "test_skipped",
       "lineage": [
-        "nested/test_nested.py",
         "test_skipped"
       ],
       "location": {
@@ -383,9 +368,8 @@
     },
     {
       "id": "nested/test_nested.py::test_skipped_conditionally",
-      "name": "nested/test_nested.py::test_skipped_conditionally",
+      "name": "test_skipped_conditionally",
       "lineage": [
-        "nested/test_nested.py",
         "test_skipped_conditionally"
       ],
       "location": {
@@ -405,9 +389,8 @@
     },
     {
       "id": "nested/test_nested.py::test_skipped_no_reason",
-      "name": "nested/test_nested.py::test_skipped_no_reason",
+      "name": "test_skipped_no_reason",
       "lineage": [
-        "nested/test_nested.py",
         "test_skipped_no_reason"
       ],
       "location": {
@@ -427,9 +410,8 @@
     },
     {
       "id": "nested/test_nested.py::test_slow",
-      "name": "nested/test_nested.py::test_slow",
+      "name": "test_slow",
       "lineage": [
-        "nested/test_nested.py",
         "test_slow"
       ],
       "location": {
@@ -448,9 +430,8 @@
     },
     {
       "id": "nested/test_nested.py::test_strict_expected_fail_failing",
-      "name": "nested/test_nested.py::test_strict_expected_fail_failing",
+      "name": "test_strict_expected_fail_failing",
       "lineage": [
-        "nested/test_nested.py",
         "test_strict_expected_fail_failing"
       ],
       "location": {
@@ -470,9 +451,8 @@
     },
     {
       "id": "nested/test_nested.py::test_strict_expected_fail_passing",
-      "name": "nested/test_nested.py::test_strict_expected_fail_passing",
+      "name": "test_strict_expected_fail_passing",
       "lineage": [
-        "nested/test_nested.py",
         "test_strict_expected_fail_passing"
       ],
       "location": {
@@ -492,9 +472,8 @@
     },
     {
       "id": "test_top_level.py::test_one",
-      "name": "test_top_level.py::test_one",
+      "name": "test_one",
       "lineage": [
-        "test_top_level.py",
         "test_one"
       ],
       "location": {
@@ -513,9 +492,8 @@
     },
     {
       "id": "test_top_level.py::test_top_level_failing",
-      "name": "test_top_level.py::test_top_level_failing",
+      "name": "test_top_level_failing",
       "lineage": [
-        "test_top_level.py",
         "test_top_level_failing"
       ],
       "location": {
@@ -538,9 +516,8 @@
     },
     {
       "id": "test_top_level.py::test_top_level_passing",
-      "name": "test_top_level.py::test_top_level_passing",
+      "name": "test_top_level_passing",
       "lineage": [
-        "test_top_level.py",
         "test_top_level_passing"
       ],
       "location": {

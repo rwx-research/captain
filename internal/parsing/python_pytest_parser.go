@@ -114,10 +114,11 @@ func (p PythonPytestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 
 			test.Attempt.Status = *status
 		} else {
+			name := strings.TrimPrefix(testResult.Nodeid, fmt.Sprintf("%v::", location.File))
 			test = v1.Test{
 				ID:       &testResult.Nodeid,
-				Name:     testResult.Nodeid,
-				Lineage:  strings.Split(testResult.Nodeid, "::"),
+				Name:     name,
+				Lineage:  strings.Split(name, "::"),
 				Location: &location,
 				Attempt: v1.TestAttempt{
 					Duration: &duration,
@@ -137,7 +138,7 @@ func (p PythonPytestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	}
 
 	// For determinism
-	sort.Slice(tests, func(i, j int) bool { return tests[i].Name < tests[j].Name })
+	sort.Slice(tests, func(i, j int) bool { return *tests[i].ID < *tests[j].ID })
 
 	return v1.NewTestResults(
 		v1.PythonPytestFramework,
