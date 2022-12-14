@@ -1,0 +1,3534 @@
+[
+  {
+    "SuitePath": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1",
+    "SuiteDescription": "Pkg1 Suite",
+    "SuiteLabels": [],
+    "SuiteSucceeded": false,
+    "SuiteHasProgrammaticFocus": false,
+    "SpecialSuiteFailureReasons": null,
+    "PreRunStats": {
+      "TotalSpecs": 17,
+      "SpecsThatWillRun": 16
+    },
+    "StartTime": "2022-12-14T13:20:51.079027-05:00",
+    "EndTime": "2022-12-14T13:20:55.587717-05:00",
+    "RunTime": 4508667167,
+    "SuiteConfig": {
+      "RandomSeed": 1671042050,
+      "RandomizeAllSpecs": false,
+      "FocusStrings": null,
+      "SkipStrings": null,
+      "FocusFiles": null,
+      "SkipFiles": null,
+      "LabelFilter": "",
+      "FailOnPending": false,
+      "FailFast": false,
+      "FlakeAttempts": 2,
+      "DryRun": false,
+      "PollProgressAfter": 0,
+      "PollProgressInterval": 0,
+      "Timeout": 3599078667125,
+      "OutputInterceptorMode": "",
+      "SourceRoots": null,
+      "GracePeriod": 30000000000,
+      "ParallelProcess": 1,
+      "ParallelTotal": 1,
+      "ParallelHost": ""
+    },
+    "SpecReports": [
+      {
+        "ContainerHierarchyTexts": [],
+        "ContainerHierarchyLocations": [],
+        "ContainerHierarchyLabels": [],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+          "LineNumber": 53
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails at the top-level",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:51.079143-05:00",
+        "EndTime": "2022-12-14T13:20:51.079458-05:00",
+        "RunTime": 314792,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 54,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:54 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 6,
+            "Time": "2022-12-14T13:20:51.079452-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 53
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+                "LineNumber": 54,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:54 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 2,
+                "Time": "2022-12-14T13:20:51.079359-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+                "LineNumber": 53
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 53
+            },
+            "TimelineLocation": {
+              "Order": 1,
+              "Time": "2022-12-14T13:20:51.079145-05:00"
+            },
+            "Message": "fails at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 53
+            },
+            "TimelineLocation": {
+              "Order": 3,
+              "Time": "2022-12-14T13:20:51.079366-05:00"
+            },
+            "Message": "fails at the top-level",
+            "Duration": 220666,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 4,
+              "Time": "2022-12-14T13:20:51.079372-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 53
+            },
+            "TimelineLocation": {
+              "Order": 5,
+              "Time": "2022-12-14T13:20:51.079374-05:00"
+            },
+            "Message": "fails at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 53
+            },
+            "TimelineLocation": {
+              "Order": 7,
+              "Time": "2022-12-14T13:20:51.079457-05:00"
+            },
+            "Message": "fails at the top-level",
+            "Duration": 83000,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 10
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+          "LineNumber": 15
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes outside a context",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:51.079601-05:00",
+        "EndTime": "2022-12-14T13:20:51.079629-05:00",
+        "RunTime": 27833,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 8,
+              "Time": "2022-12-14T13:20:51.079603-05:00"
+            },
+            "Message": "Bar",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 10,
+              "Time": "2022-12-14T13:20:51.079614-05:00"
+            },
+            "Message": "Bar",
+            "Duration": 11667,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 15
+            },
+            "TimelineLocation": {
+              "Order": 11,
+              "Time": "2022-12-14T13:20:51.079615-05:00"
+            },
+            "Message": "passes outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 15
+            },
+            "TimelineLocation": {
+              "Order": 13,
+              "Time": "2022-12-14T13:20:51.079628-05:00"
+            },
+            "Message": "passes outside a context",
+            "Duration": 12250,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 10
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+          "LineNumber": 19
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails outside a context",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:51.079639-05:00",
+        "EndTime": "2022-12-14T13:20:51.079801-05:00",
+        "RunTime": 161666,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 20,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:20 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 25,
+            "Time": "2022-12-14T13:20:51.079796-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 19
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+                "LineNumber": 20,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:20 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 18,
+                "Time": "2022-12-14T13:20:51.079716-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+                "LineNumber": 19
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 14,
+              "Time": "2022-12-14T13:20:51.07964-05:00"
+            },
+            "Message": "Bar",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 16,
+              "Time": "2022-12-14T13:20:51.079645-05:00"
+            },
+            "Message": "Bar",
+            "Duration": 4667,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 19
+            },
+            "TimelineLocation": {
+              "Order": 17,
+              "Time": "2022-12-14T13:20:51.079646-05:00"
+            },
+            "Message": "fails outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 19
+            },
+            "TimelineLocation": {
+              "Order": 19,
+              "Time": "2022-12-14T13:20:51.079719-05:00"
+            },
+            "Message": "fails outside a context",
+            "Duration": 73500,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 20,
+              "Time": "2022-12-14T13:20:51.079721-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 21,
+              "Time": "2022-12-14T13:20:51.079724-05:00"
+            },
+            "Message": "Bar",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 23,
+              "Time": "2022-12-14T13:20:51.079727-05:00"
+            },
+            "Message": "Bar",
+            "Duration": 3291,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 19
+            },
+            "TimelineLocation": {
+              "Order": 24,
+              "Time": "2022-12-14T13:20:51.079728-05:00"
+            },
+            "Message": "fails outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 19
+            },
+            "TimelineLocation": {
+              "Order": 26,
+              "Time": "2022-12-14T13:20:51.0798-05:00"
+            },
+            "Message": "fails outside a context",
+            "Duration": 72625,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar",
+          "within a context"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 10
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 23
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+          "LineNumber": 28
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:51.079909-05:00",
+        "EndTime": "2022-12-14T13:20:51.079944-05:00",
+        "RunTime": 35416,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 27,
+              "Time": "2022-12-14T13:20:51.079912-05:00"
+            },
+            "Message": "Bar",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 29,
+              "Time": "2022-12-14T13:20:51.079925-05:00"
+            },
+            "Message": "Bar",
+            "Duration": 12792,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 30,
+              "Time": "2022-12-14T13:20:51.079926-05:00"
+            },
+            "Message": "within a context",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 32,
+              "Time": "2022-12-14T13:20:51.07993-05:00"
+            },
+            "Message": "within a context",
+            "Duration": 3875,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 28
+            },
+            "TimelineLocation": {
+              "Order": 33,
+              "Time": "2022-12-14T13:20:51.079931-05:00"
+            },
+            "Message": "passes",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 28
+            },
+            "TimelineLocation": {
+              "Order": 35,
+              "Time": "2022-12-14T13:20:51.079943-05:00"
+            },
+            "Message": "passes",
+            "Duration": 12542,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar",
+          "within a context"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 10
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 23
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+          "LineNumber": 32
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:51.079952-05:00",
+        "EndTime": "2022-12-14T13:20:51.080139-05:00",
+        "RunTime": 187750,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 33,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.4.3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:33 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 53,
+            "Time": "2022-12-14T13:20:51.080135-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 32
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+                "LineNumber": 33,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.4.3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:33 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 43,
+                "Time": "2022-12-14T13:20:51.080052-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+                "LineNumber": 32
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 36,
+              "Time": "2022-12-14T13:20:51.079953-05:00"
+            },
+            "Message": "Bar",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 38,
+              "Time": "2022-12-14T13:20:51.07996-05:00"
+            },
+            "Message": "Bar",
+            "Duration": 6792,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 39,
+              "Time": "2022-12-14T13:20:51.079961-05:00"
+            },
+            "Message": "within a context",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 41,
+              "Time": "2022-12-14T13:20:51.079965-05:00"
+            },
+            "Message": "within a context",
+            "Duration": 4375,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 32
+            },
+            "TimelineLocation": {
+              "Order": 42,
+              "Time": "2022-12-14T13:20:51.079965-05:00"
+            },
+            "Message": "fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 32
+            },
+            "TimelineLocation": {
+              "Order": 44,
+              "Time": "2022-12-14T13:20:51.080056-05:00"
+            },
+            "Message": "fails",
+            "Duration": 90458,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 45,
+              "Time": "2022-12-14T13:20:51.080058-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 46,
+              "Time": "2022-12-14T13:20:51.080059-05:00"
+            },
+            "Message": "Bar",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 48,
+              "Time": "2022-12-14T13:20:51.080063-05:00"
+            },
+            "Message": "Bar",
+            "Duration": 3375,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 49,
+              "Time": "2022-12-14T13:20:51.080063-05:00"
+            },
+            "Message": "within a context",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 51,
+              "Time": "2022-12-14T13:20:51.080066-05:00"
+            },
+            "Message": "within a context",
+            "Duration": 3125,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 32
+            },
+            "TimelineLocation": {
+              "Order": 52,
+              "Time": "2022-12-14T13:20:51.080067-05:00"
+            },
+            "Message": "fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 32
+            },
+            "TimelineLocation": {
+              "Order": 54,
+              "Time": "2022-12-14T13:20:51.080138-05:00"
+            },
+            "Message": "fails",
+            "Duration": 71459,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar",
+          "failing before each"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 10
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 37
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+          "LineNumber": 42
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails even with the test passing",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:51.080202-05:00",
+        "EndTime": "2022-12-14T13:20:51.080403-05:00",
+        "RunTime": 201083,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cint\u003e: 1\nto equal\n    \u003cint\u003e: 2",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 39,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.5.1()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:39 +0x90"
+          },
+          "TimelineLocation": {
+            "Order": 66,
+            "Time": "2022-12-14T13:20:51.080396-05:00"
+          },
+          "FailureNodeContext": "in-container",
+          "FailureNodeType": "BeforeEach",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+            "LineNumber": 38
+          },
+          "FailureNodeContainerIndex": 1,
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cint\u003e: 1\nto equal\n    \u003cint\u003e: 2",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+                "LineNumber": 39,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.5.1()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:39 +0x90"
+              },
+              "TimelineLocation": {
+                "Order": 59,
+                "Time": "2022-12-14T13:20:51.080281-05:00"
+              },
+              "FailureNodeContext": "in-container",
+              "FailureNodeType": "BeforeEach",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+                "LineNumber": 38
+              },
+              "FailureNodeContainerIndex": 1,
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 55,
+              "Time": "2022-12-14T13:20:51.080205-05:00"
+            },
+            "Message": "Bar",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 57,
+              "Time": "2022-12-14T13:20:51.080212-05:00"
+            },
+            "Message": "Bar",
+            "Duration": 6500,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 38
+            },
+            "TimelineLocation": {
+              "Order": 58,
+              "Time": "2022-12-14T13:20:51.080212-05:00"
+            },
+            "Message": "failing before each",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 38
+            },
+            "TimelineLocation": {
+              "Order": 60,
+              "Time": "2022-12-14T13:20:51.080284-05:00"
+            },
+            "Message": "failing before each",
+            "Duration": 71500,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 61,
+              "Time": "2022-12-14T13:20:51.080286-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 62,
+              "Time": "2022-12-14T13:20:51.080292-05:00"
+            },
+            "Message": "Bar",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 64,
+              "Time": "2022-12-14T13:20:51.080295-05:00"
+            },
+            "Message": "Bar",
+            "Duration": 3209,
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 38
+            },
+            "TimelineLocation": {
+              "Order": 65,
+              "Time": "2022-12-14T13:20:51.080295-05:00"
+            },
+            "Message": "failing before each",
+            "NodeType": "BeforeEach"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 38
+            },
+            "TimelineLocation": {
+              "Order": 67,
+              "Time": "2022-12-14T13:20:51.080401-05:00"
+            },
+            "Message": "failing before each",
+            "Duration": 105750,
+            "NodeType": "BeforeEach"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 14
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes outside a context",
+        "State": "pending",
+        "StartTime": "2022-12-14T13:20:51.080478-05:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 18
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails while skipped",
+        "State": "skipped",
+        "StartTime": "2022-12-14T13:20:51.080484-05:00",
+        "EndTime": "2022-12-14T13:20:51.080556-05:00",
+        "RunTime": 71125,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "for a reason",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 19,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func4.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:19 +0x34"
+          },
+          "TimelineLocation": {
+            "Order": 69,
+            "Time": "2022-12-14T13:20:51.080551-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 18
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 18
+            },
+            "TimelineLocation": {
+              "Order": 68,
+              "Time": "2022-12-14T13:20:51.080486-05:00"
+            },
+            "Message": "fails while skipped",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 18
+            },
+            "TimelineLocation": {
+              "Order": 70,
+              "Time": "2022-12-14T13:20:51.080554-05:00"
+            },
+            "Message": "fails while skipped",
+            "Duration": 68167,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 23
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes while skipped",
+        "State": "skipped",
+        "StartTime": "2022-12-14T13:20:51.080563-05:00",
+        "EndTime": "2022-12-14T13:20:51.080615-05:00",
+        "RunTime": 52000,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "for a reason",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 24,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func4.3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:24 +0x34"
+          },
+          "TimelineLocation": {
+            "Order": 72,
+            "Time": "2022-12-14T13:20:51.08061-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 23
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 23
+            },
+            "TimelineLocation": {
+              "Order": 71,
+              "Time": "2022-12-14T13:20:51.080564-05:00"
+            },
+            "Message": "passes while skipped",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 23
+            },
+            "TimelineLocation": {
+              "Order": 73,
+              "Time": "2022-12-14T13:20:51.080614-05:00"
+            },
+            "Message": "passes while skipped",
+            "Duration": 49958,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo",
+          "within a context"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 28
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 29
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:51.080626-05:00",
+        "EndTime": "2022-12-14T13:20:51.080635-05:00",
+        "RunTime": 9208,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 29
+            },
+            "TimelineLocation": {
+              "Order": 74,
+              "Time": "2022-12-14T13:20:51.080627-05:00"
+            },
+            "Message": "passes",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 29
+            },
+            "TimelineLocation": {
+              "Order": 76,
+              "Time": "2022-12-14T13:20:51.080634-05:00"
+            },
+            "Message": "passes",
+            "Duration": 7459,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo",
+          "within a context"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 28
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 33
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:51.08064-05:00",
+        "EndTime": "2022-12-14T13:20:51.080805-05:00",
+        "RunTime": 164750,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 34,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func4.4.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:34 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 82,
+            "Time": "2022-12-14T13:20:51.0808-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 33
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+                "LineNumber": 34,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func4.4.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:34 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 78,
+                "Time": "2022-12-14T13:20:51.080711-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+                "LineNumber": 33
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 33
+            },
+            "TimelineLocation": {
+              "Order": 77,
+              "Time": "2022-12-14T13:20:51.080641-05:00"
+            },
+            "Message": "fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 33
+            },
+            "TimelineLocation": {
+              "Order": 79,
+              "Time": "2022-12-14T13:20:51.080715-05:00"
+            },
+            "Message": "fails",
+            "Duration": 73750,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 80,
+              "Time": "2022-12-14T13:20:51.080716-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 33
+            },
+            "TimelineLocation": {
+              "Order": 81,
+              "Time": "2022-12-14T13:20:51.080719-05:00"
+            },
+            "Message": "fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 33
+            },
+            "TimelineLocation": {
+              "Order": 83,
+              "Time": "2022-12-14T13:20:51.080804-05:00"
+            },
+            "Message": "fails",
+            "Duration": 84542,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo",
+          "Fooing with different args"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 38
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 41
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "When a",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:51.080859-05:00",
+        "EndTime": "2022-12-14T13:20:51.080934-05:00",
+        "RunTime": 74334,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 41
+            },
+            "TimelineLocation": {
+              "Order": 84,
+              "Time": "2022-12-14T13:20:51.08086-05:00"
+            },
+            "Message": "When a",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 41
+            },
+            "TimelineLocation": {
+              "Order": 86,
+              "Time": "2022-12-14T13:20:51.080933-05:00"
+            },
+            "Message": "When a",
+            "Duration": 72750,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo",
+          "Fooing with different args"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 38
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 42
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "When b",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:51.080943-05:00",
+        "EndTime": "2022-12-14T13:20:51.080951-05:00",
+        "RunTime": 7750,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 42
+            },
+            "TimelineLocation": {
+              "Order": 87,
+              "Time": "2022-12-14T13:20:51.080944-05:00"
+            },
+            "Message": "When b",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 42
+            },
+            "TimelineLocation": {
+              "Order": 89,
+              "Time": "2022-12-14T13:20:51.08095-05:00"
+            },
+            "Message": "When b",
+            "Duration": 6541,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo",
+          "Fooing with different args"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 38
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 43
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "When c",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:51.080955-05:00",
+        "EndTime": "2022-12-14T13:20:51.080961-05:00",
+        "RunTime": 6292,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 43
+            },
+            "TimelineLocation": {
+              "Order": 90,
+              "Time": "2022-12-14T13:20:51.080955-05:00"
+            },
+            "Message": "When c",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 43
+            },
+            "TimelineLocation": {
+              "Order": 92,
+              "Time": "2022-12-14T13:20:51.080961-05:00"
+            },
+            "Message": "When c",
+            "Duration": 5208,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [],
+        "ContainerHierarchyLocations": [],
+        "ContainerHierarchyLabels": [],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 52
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails slowly at the top-level",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:51.080965-05:00",
+        "EndTime": "2022-12-14T13:20:54.084629-05:00",
+        "RunTime": 3003648416,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 54,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func6()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:54 +0xdc"
+          },
+          "TimelineLocation": {
+            "Order": 98,
+            "Time": "2022-12-14T13:20:54.084571-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 52
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+                "LineNumber": 54,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func6()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:54 +0xdc"
+              },
+              "TimelineLocation": {
+                "Order": 94,
+                "Time": "2022-12-14T13:20:52.582619-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+                "LineNumber": 52
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 52
+            },
+            "TimelineLocation": {
+              "Order": 93,
+              "Time": "2022-12-14T13:20:51.080966-05:00"
+            },
+            "Message": "fails slowly at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 52
+            },
+            "TimelineLocation": {
+              "Order": 95,
+              "Time": "2022-12-14T13:20:52.58265-05:00"
+            },
+            "Message": "fails slowly at the top-level",
+            "Duration": 1501676833,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 96,
+              "Time": "2022-12-14T13:20:52.582678-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 52
+            },
+            "TimelineLocation": {
+              "Order": 97,
+              "Time": "2022-12-14T13:20:52.582686-05:00"
+            },
+            "Message": "fails slowly at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 52
+            },
+            "TimelineLocation": {
+              "Order": 99,
+              "Time": "2022-12-14T13:20:54.084604-05:00"
+            },
+            "Message": "fails slowly at the top-level",
+            "Duration": 1501909708,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [],
+        "ContainerHierarchyLocations": [],
+        "ContainerHierarchyLabels": [],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+          "LineNumber": 48
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes at the top-level",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:54.085975-05:00",
+        "EndTime": "2022-12-14T13:20:54.086236-05:00",
+        "RunTime": 261333,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "CapturedGinkgoWriterOutput": "passing at the top-level, tada!",
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 48
+            },
+            "TimelineLocation": {
+              "Order": 100,
+              "Time": "2022-12-14T13:20:54.085983-05:00"
+            },
+            "Message": "passes at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+              "LineNumber": 48
+            },
+            "TimelineLocation": {
+              "Offset": 31,
+              "Order": 102,
+              "Time": "2022-12-14T13:20:54.086229-05:00"
+            },
+            "Message": "passes at the top-level",
+            "Duration": 246208,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [],
+        "ContainerHierarchyLocations": [],
+        "ContainerHierarchyLabels": [],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 47
+        },
+        "LeafNodeLabels": [
+          "has",
+          "labels"
+        ],
+        "LeafNodeText": "passes slowly at the top-level",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:54.086315-05:00",
+        "EndTime": "2022-12-14T13:20:55.587613-05:00",
+        "RunTime": 1501290417,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 47
+            },
+            "TimelineLocation": {
+              "Order": 103,
+              "Time": "2022-12-14T13:20:54.086319-05:00"
+            },
+            "Message": "passes slowly at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+              "LineNumber": 47
+            },
+            "TimelineLocation": {
+              "Order": 105,
+              "Time": "2022-12-14T13:20:55.587595-05:00"
+            },
+            "Message": "passes slowly at the top-level",
+            "Duration": 1501268292,
+            "NodeType": "It"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "SuitePath": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2",
+    "SuiteDescription": "Pkg2 Suite",
+    "SuiteLabels": [],
+    "SuiteSucceeded": false,
+    "SuiteHasProgrammaticFocus": false,
+    "SpecialSuiteFailureReasons": null,
+    "PreRunStats": {
+      "TotalSpecs": 14,
+      "SpecsThatWillRun": 14
+    },
+    "StartTime": "2022-12-14T13:20:55.749543-05:00",
+    "EndTime": "2022-12-14T13:20:55.756371-05:00",
+    "RunTime": 6827833,
+    "SuiteConfig": {
+      "RandomSeed": 1671042050,
+      "RandomizeAllSpecs": false,
+      "FocusStrings": null,
+      "SkipStrings": null,
+      "FocusFiles": null,
+      "SkipFiles": null,
+      "LabelFilter": "",
+      "FailOnPending": false,
+      "FailFast": false,
+      "FlakeAttempts": 2,
+      "DryRun": false,
+      "PollProgressAfter": 0,
+      "PollProgressInterval": 0,
+      "Timeout": 3594425193875,
+      "OutputInterceptorMode": "",
+      "SourceRoots": null,
+      "GracePeriod": 30000000000,
+      "ParallelProcess": 1,
+      "ParallelTotal": 1,
+      "ParallelHost": ""
+    },
+    "SpecReports": [
+      {
+        "ContainerHierarchyTexts": [],
+        "ContainerHierarchyLocations": [],
+        "ContainerHierarchyLabels": [],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+          "LineNumber": 34
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails at the top-level",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:55.749969-05:00",
+        "EndTime": "2022-12-14T13:20:55.750871-05:00",
+        "RunTime": 902250,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 35,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:35 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 6,
+            "Time": "2022-12-14T13:20:55.750864-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 34
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+                "LineNumber": 35,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func3()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:35 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 2,
+                "Time": "2022-12-14T13:20:55.750652-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+                "LineNumber": 34
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 34
+            },
+            "TimelineLocation": {
+              "Order": 1,
+              "Time": "2022-12-14T13:20:55.749973-05:00"
+            },
+            "Message": "fails at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 34
+            },
+            "TimelineLocation": {
+              "Order": 3,
+              "Time": "2022-12-14T13:20:55.75066-05:00"
+            },
+            "Message": "fails at the top-level",
+            "Duration": 687125,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 4,
+              "Time": "2022-12-14T13:20:55.75067-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 34
+            },
+            "TimelineLocation": {
+              "Order": 5,
+              "Time": "2022-12-14T13:20:55.750673-05:00"
+            },
+            "Message": "fails at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 34
+            },
+            "TimelineLocation": {
+              "Order": 7,
+              "Time": "2022-12-14T13:20:55.750869-05:00"
+            },
+            "Message": "fails at the top-level",
+            "Duration": 196125,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 10
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+          "LineNumber": 11
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes outside a context",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:55.751146-05:00",
+        "EndTime": "2022-12-14T13:20:55.75117-05:00",
+        "RunTime": 24333,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 8,
+              "Time": "2022-12-14T13:20:55.751148-05:00"
+            },
+            "Message": "passes outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 11
+            },
+            "TimelineLocation": {
+              "Order": 10,
+              "Time": "2022-12-14T13:20:55.751168-05:00"
+            },
+            "Message": "passes outside a context",
+            "Duration": 20041,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 10
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+          "LineNumber": 15
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails outside a context",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:55.751191-05:00",
+        "EndTime": "2022-12-14T13:20:55.751562-05:00",
+        "RunTime": 370250,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 16,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func1.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:16 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 16,
+            "Time": "2022-12-14T13:20:55.751557-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 15
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+                "LineNumber": 16,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func1.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:16 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 12,
+                "Time": "2022-12-14T13:20:55.751381-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+                "LineNumber": 15
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 15
+            },
+            "TimelineLocation": {
+              "Order": 11,
+              "Time": "2022-12-14T13:20:55.751193-05:00"
+            },
+            "Message": "fails outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 15
+            },
+            "TimelineLocation": {
+              "Order": 13,
+              "Time": "2022-12-14T13:20:55.751383-05:00"
+            },
+            "Message": "fails outside a context",
+            "Duration": 190000,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 14,
+              "Time": "2022-12-14T13:20:55.751387-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 15
+            },
+            "TimelineLocation": {
+              "Order": 15,
+              "Time": "2022-12-14T13:20:55.751389-05:00"
+            },
+            "Message": "fails outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 15
+            },
+            "TimelineLocation": {
+              "Order": 17,
+              "Time": "2022-12-14T13:20:55.75156-05:00"
+            },
+            "Message": "fails outside a context",
+            "Duration": 170583,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar",
+          "within a context"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 10
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 19
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+          "LineNumber": 20
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:55.751959-05:00",
+        "EndTime": "2022-12-14T13:20:55.751991-05:00",
+        "RunTime": 31375,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 18,
+              "Time": "2022-12-14T13:20:55.751962-05:00"
+            },
+            "Message": "passes",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 20
+            },
+            "TimelineLocation": {
+              "Order": 20,
+              "Time": "2022-12-14T13:20:55.751988-05:00"
+            },
+            "Message": "passes",
+            "Duration": 25917,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Bar",
+          "within a context"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 10
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 19
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+          "LineNumber": 24
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:55.752172-05:00",
+        "EndTime": "2022-12-14T13:20:55.752562-05:00",
+        "RunTime": 390125,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 25,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func1.3.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:25 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 26,
+            "Time": "2022-12-14T13:20:55.752558-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+            "LineNumber": 24
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+                "LineNumber": 25,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func1.3.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:25 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 22,
+                "Time": "2022-12-14T13:20:55.752369-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+                "LineNumber": 24
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 21,
+              "Time": "2022-12-14T13:20:55.752174-05:00"
+            },
+            "Message": "fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 23,
+              "Time": "2022-12-14T13:20:55.752372-05:00"
+            },
+            "Message": "fails",
+            "Duration": 197375,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 24,
+              "Time": "2022-12-14T13:20:55.752376-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 25,
+              "Time": "2022-12-14T13:20:55.752378-05:00"
+            },
+            "Message": "fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 27,
+              "Time": "2022-12-14T13:20:55.75256-05:00"
+            },
+            "Message": "fails",
+            "Duration": 181917,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 13
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+          "LineNumber": 14
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails then passes",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:55.752989-05:00",
+        "EndTime": "2022-12-14T13:20:55.753942-05:00",
+        "RunTime": 952667,
+        "ParallelProcess": 1,
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nuh oh",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+                "LineNumber": 18,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.1()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:18 +0x124"
+              },
+              "TimelineLocation": {
+                "Order": 29,
+                "Time": "2022-12-14T13:20:55.753391-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+                "LineNumber": 14
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 14
+            },
+            "TimelineLocation": {
+              "Order": 28,
+              "Time": "2022-12-14T13:20:55.752991-05:00"
+            },
+            "Message": "fails then passes",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 14
+            },
+            "TimelineLocation": {
+              "Order": 30,
+              "Time": "2022-12-14T13:20:55.753395-05:00"
+            },
+            "Message": "fails then passes",
+            "Duration": 403250,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 31,
+              "Time": "2022-12-14T13:20:55.7534-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 14
+            },
+            "TimelineLocation": {
+              "Order": 32,
+              "Time": "2022-12-14T13:20:55.753402-05:00"
+            },
+            "Message": "fails then passes",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 14
+            },
+            "TimelineLocation": {
+              "Order": 34,
+              "Time": "2022-12-14T13:20:55.753936-05:00"
+            },
+            "Message": "fails then passes",
+            "Duration": 534000,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 13
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+          "LineNumber": 24
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes then fails",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:55.753993-05:00",
+        "EndTime": "2022-12-14T13:20:55.75441-05:00",
+        "RunTime": 417125,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "uh oh",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 30,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:30 +0x44"
+          },
+          "TimelineLocation": {
+            "Order": 40,
+            "Time": "2022-12-14T13:20:55.754398-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 24
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 2,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 35,
+              "Time": "2022-12-14T13:20:55.753996-05:00"
+            },
+            "Message": "passes then fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 37,
+              "Time": "2022-12-14T13:20:55.754013-05:00"
+            },
+            "Message": "passes then fails",
+            "Duration": 17500,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Repeat",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 38,
+              "Time": "2022-12-14T13:20:55.754015-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 39,
+              "Time": "2022-12-14T13:20:55.754017-05:00"
+            },
+            "Message": "passes then fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 24
+            },
+            "TimelineLocation": {
+              "Order": 41,
+              "Time": "2022-12-14T13:20:55.754401-05:00"
+            },
+            "Message": "passes then fails",
+            "Duration": 384000,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 13
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+          "LineNumber": 34
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes outside a context",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:55.755427-05:00",
+        "EndTime": "2022-12-14T13:20:55.755457-05:00",
+        "RunTime": 30417,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 34
+            },
+            "TimelineLocation": {
+              "Order": 42,
+              "Time": "2022-12-14T13:20:55.75543-05:00"
+            },
+            "Message": "passes outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 34
+            },
+            "TimelineLocation": {
+              "Order": 44,
+              "Time": "2022-12-14T13:20:55.755455-05:00"
+            },
+            "Message": "passes outside a context",
+            "Duration": 25292,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 13
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+          "LineNumber": 38
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails outside a context",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:55.755472-05:00",
+        "EndTime": "2022-12-14T13:20:55.755701-05:00",
+        "RunTime": 229208,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 39,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.4()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:39 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 50,
+            "Time": "2022-12-14T13:20:55.755697-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 38
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+                "LineNumber": 39,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.4()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:39 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 46,
+                "Time": "2022-12-14T13:20:55.755595-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+                "LineNumber": 38
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 38
+            },
+            "TimelineLocation": {
+              "Order": 45,
+              "Time": "2022-12-14T13:20:55.755473-05:00"
+            },
+            "Message": "fails outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 38
+            },
+            "TimelineLocation": {
+              "Order": 47,
+              "Time": "2022-12-14T13:20:55.755605-05:00"
+            },
+            "Message": "fails outside a context",
+            "Duration": 132000,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 48,
+              "Time": "2022-12-14T13:20:55.755608-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 38
+            },
+            "TimelineLocation": {
+              "Order": 49,
+              "Time": "2022-12-14T13:20:55.755611-05:00"
+            },
+            "Message": "fails outside a context",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 38
+            },
+            "TimelineLocation": {
+              "Order": 51,
+              "Time": "2022-12-14T13:20:55.7557-05:00"
+            },
+            "Message": "fails outside a context",
+            "Duration": 88292,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo",
+          "within a context"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 13
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 42
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+          "LineNumber": 43
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:55.75577-05:00",
+        "EndTime": "2022-12-14T13:20:55.755782-05:00",
+        "RunTime": 12042,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 43
+            },
+            "TimelineLocation": {
+              "Order": 52,
+              "Time": "2022-12-14T13:20:55.755771-05:00"
+            },
+            "Message": "passes",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 43
+            },
+            "TimelineLocation": {
+              "Order": 54,
+              "Time": "2022-12-14T13:20:55.755781-05:00"
+            },
+            "Message": "passes",
+            "Duration": 9792,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [
+          "Foo",
+          "within a context"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 13
+          },
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 42
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          [],
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+          "LineNumber": 47
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:55.755789-05:00",
+        "EndTime": "2022-12-14T13:20:55.756017-05:00",
+        "RunTime": 227958,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 48,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.5.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:48 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 60,
+            "Time": "2022-12-14T13:20:55.756014-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 47
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+                "LineNumber": 48,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.5.2()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:48 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 56,
+                "Time": "2022-12-14T13:20:55.755867-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+                "LineNumber": 47
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 47
+            },
+            "TimelineLocation": {
+              "Order": 55,
+              "Time": "2022-12-14T13:20:55.755789-05:00"
+            },
+            "Message": "fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 47
+            },
+            "TimelineLocation": {
+              "Order": 57,
+              "Time": "2022-12-14T13:20:55.75587-05:00"
+            },
+            "Message": "fails",
+            "Duration": 80625,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 58,
+              "Time": "2022-12-14T13:20:55.755872-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 47
+            },
+            "TimelineLocation": {
+              "Order": 59,
+              "Time": "2022-12-14T13:20:55.755873-05:00"
+            },
+            "Message": "fails",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 47
+            },
+            "TimelineLocation": {
+              "Order": 61,
+              "Time": "2022-12-14T13:20:55.756015-05:00"
+            },
+            "Message": "fails",
+            "Duration": 142500,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [],
+        "ContainerHierarchyLocations": [],
+        "ContainerHierarchyLabels": [],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+          "LineNumber": 57
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "fails at the top-level",
+        "State": "failed",
+        "StartTime": "2022-12-14T13:20:55.756113-05:00",
+        "EndTime": "2022-12-14T13:20:55.756283-05:00",
+        "RunTime": 170208,
+        "ParallelProcess": 1,
+        "Failure": {
+          "Message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "Location": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 58,
+            "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func6()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:58 +0xd4"
+          },
+          "TimelineLocation": {
+            "Order": 67,
+            "Time": "2022-12-14T13:20:55.756277-05:00"
+          },
+          "FailureNodeContext": "leaf-node",
+          "FailureNodeType": "It",
+          "FailureNodeLocation": {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+            "LineNumber": 57
+          },
+          "ProgressReport": {
+            "LeafNodeLocation": {},
+            "SpecStartTime": "0001-01-01T00:00:00Z",
+            "CurrentNodeLocation": {},
+            "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+            "CurrentStepLocation": {},
+            "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+            "TimelineLocation": {
+              "Time": "0001-01-01T00:00:00Z"
+            }
+          }
+        },
+        "NumAttempts": 2,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "AdditionalFailures": [
+          {
+            "State": "failed",
+            "Failure": {
+              "Message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+              "Location": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+                "LineNumber": 58,
+                "FullStackTrace": "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func6()\n\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:58 +0xd4"
+              },
+              "TimelineLocation": {
+                "Order": 63,
+                "Time": "2022-12-14T13:20:55.756199-05:00"
+              },
+              "FailureNodeContext": "leaf-node",
+              "FailureNodeType": "It",
+              "FailureNodeLocation": {
+                "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+                "LineNumber": 57
+              },
+              "ProgressReport": {
+                "LeafNodeLocation": {},
+                "SpecStartTime": "0001-01-01T00:00:00Z",
+                "CurrentNodeLocation": {},
+                "CurrentNodeStartTime": "0001-01-01T00:00:00Z",
+                "CurrentStepLocation": {},
+                "CurrentStepStartTime": "0001-01-01T00:00:00Z",
+                "TimelineLocation": {
+                  "Time": "0001-01-01T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 57
+            },
+            "TimelineLocation": {
+              "Order": 62,
+              "Time": "2022-12-14T13:20:55.756115-05:00"
+            },
+            "Message": "fails at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 57
+            },
+            "TimelineLocation": {
+              "Order": 64,
+              "Time": "2022-12-14T13:20:55.756201-05:00"
+            },
+            "Message": "fails at the top-level",
+            "Duration": 86000,
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Retry",
+            "CodeLocation": {},
+            "TimelineLocation": {
+              "Order": 65,
+              "Time": "2022-12-14T13:20:55.756203-05:00"
+            },
+            "Attempt": 1
+          },
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 57
+            },
+            "TimelineLocation": {
+              "Order": 66,
+              "Time": "2022-12-14T13:20:55.756204-05:00"
+            },
+            "Message": "fails at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 57
+            },
+            "TimelineLocation": {
+              "Order": 68,
+              "Time": "2022-12-14T13:20:55.756282-05:00"
+            },
+            "Message": "fails at the top-level",
+            "Duration": 77958,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [],
+        "ContainerHierarchyLocations": [],
+        "ContainerHierarchyLabels": [],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+          "LineNumber": 30
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes at the top-level",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:55.756339-05:00",
+        "EndTime": "2022-12-14T13:20:55.75635-05:00",
+        "RunTime": 10708,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 30
+            },
+            "TimelineLocation": {
+              "Order": 69,
+              "Time": "2022-12-14T13:20:55.75634-05:00"
+            },
+            "Message": "passes at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+              "LineNumber": 30
+            },
+            "TimelineLocation": {
+              "Order": 71,
+              "Time": "2022-12-14T13:20:55.756349-05:00"
+            },
+            "Message": "passes at the top-level",
+            "Duration": 9084,
+            "NodeType": "It"
+          }
+        ]
+      },
+      {
+        "ContainerHierarchyTexts": [],
+        "ContainerHierarchyLocations": [],
+        "ContainerHierarchyLabels": [],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+          "LineNumber": 53
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes at the top-level",
+        "State": "passed",
+        "StartTime": "2022-12-14T13:20:55.756357-05:00",
+        "EndTime": "2022-12-14T13:20:55.756366-05:00",
+        "RunTime": 9625,
+        "ParallelProcess": 1,
+        "NumAttempts": 1,
+        "MaxFlakeAttempts": 2,
+        "MaxMustPassRepeatedly": 0,
+        "SpecEvents": [
+          {
+            "SpecEventType": "Node",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 53
+            },
+            "TimelineLocation": {
+              "Order": 72,
+              "Time": "2022-12-14T13:20:55.756358-05:00"
+            },
+            "Message": "passes at the top-level",
+            "NodeType": "It"
+          },
+          {
+            "SpecEventType": "Node (End)",
+            "CodeLocation": {
+              "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+              "LineNumber": 53
+            },
+            "TimelineLocation": {
+              "Order": 74,
+              "Time": "2022-12-14T13:20:55.756366-05:00"
+            },
+            "Message": "passes at the top-level",
+            "Duration": 8084,
+            "NodeType": "It"
+          }
+        ]
+      }
+    ]
+  }
+]

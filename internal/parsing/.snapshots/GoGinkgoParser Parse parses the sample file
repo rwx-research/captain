@@ -1,0 +1,1012 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Go",
+    "kind": "Ginkgo"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 31,
+    "otherErrors": 0,
+    "retries": 13,
+    "canceled": 0,
+    "failed": 13,
+    "pended": 1,
+    "quarantined": 0,
+    "skipped": 2,
+    "successful": 15,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "fails at the top-level",
+      "lineage": [
+        "fails at the top-level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+        "line": 53
+      },
+      "attempt": {
+        "durationInNanoseconds": 314792,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func3()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:54 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.079143-05:00",
+        "finishedAt": "2022-12-14T13:20:51.079458-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func3()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:54 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bar passes outside a context",
+      "lineage": [
+        "Bar",
+        "passes outside a context"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+        "line": 15
+      },
+      "attempt": {
+        "durationInNanoseconds": 27833,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.079601-05:00",
+        "finishedAt": "2022-12-14T13:20:51.079629-05:00"
+      }
+    },
+    {
+      "name": "Bar fails outside a context",
+      "lineage": [
+        "Bar",
+        "fails outside a context"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+        "line": 19
+      },
+      "attempt": {
+        "durationInNanoseconds": 161666,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.3()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:20 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.079639-05:00",
+        "finishedAt": "2022-12-14T13:20:51.079801-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.3()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:20 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bar within a context passes",
+      "lineage": [
+        "Bar",
+        "within a context",
+        "passes"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+        "line": 28
+      },
+      "attempt": {
+        "durationInNanoseconds": 35416,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.079909-05:00",
+        "finishedAt": "2022-12-14T13:20:51.079944-05:00"
+      }
+    },
+    {
+      "name": "Bar within a context fails",
+      "lineage": [
+        "Bar",
+        "within a context",
+        "fails"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+        "line": 32
+      },
+      "attempt": {
+        "durationInNanoseconds": 187750,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.4.3()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:33 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.079952-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080139-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.4.3()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:33 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bar failing before each fails even with the test passing",
+      "lineage": [
+        "Bar",
+        "failing before each",
+        "fails even with the test passing"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+        "line": 42
+      },
+      "attempt": {
+        "durationInNanoseconds": 201083,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cint\u003e: 1\nto equal\n    \u003cint\u003e: 2",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.5.1()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:39 +0x90"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080202-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080403-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cint\u003e: 1\nto equal\n    \u003cint\u003e: 2",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func1.5.1()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go:39 +0x90"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Foo passes outside a context",
+      "lineage": [
+        "Foo",
+        "passes outside a context"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 14
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "pended"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080478-05:00",
+        "finishedAt": "0001-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "Foo fails while skipped",
+      "lineage": [
+        "Foo",
+        "fails while skipped"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 18
+      },
+      "attempt": {
+        "durationInNanoseconds": 71125,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "for a reason"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080484-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080556-05:00"
+      }
+    },
+    {
+      "name": "Foo passes while skipped",
+      "lineage": [
+        "Foo",
+        "passes while skipped"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 23
+      },
+      "attempt": {
+        "durationInNanoseconds": 52000,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "skipped",
+          "message": "for a reason"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080563-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080615-05:00"
+      }
+    },
+    {
+      "name": "Foo within a context passes",
+      "lineage": [
+        "Foo",
+        "within a context",
+        "passes"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 29
+      },
+      "attempt": {
+        "durationInNanoseconds": 9208,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080626-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080635-05:00"
+      }
+    },
+    {
+      "name": "Foo within a context fails",
+      "lineage": [
+        "Foo",
+        "within a context",
+        "fails"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 33
+      },
+      "attempt": {
+        "durationInNanoseconds": 164750,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func4.4.2()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:34 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.08064-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080805-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func4.4.2()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:34 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Foo Fooing with different args When a",
+      "lineage": [
+        "Foo",
+        "Fooing with different args",
+        "When a"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 41
+      },
+      "attempt": {
+        "durationInNanoseconds": 74334,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080859-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080934-05:00"
+      }
+    },
+    {
+      "name": "Foo Fooing with different args When b",
+      "lineage": [
+        "Foo",
+        "Fooing with different args",
+        "When b"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 42
+      },
+      "attempt": {
+        "durationInNanoseconds": 7750,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080943-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080951-05:00"
+      }
+    },
+    {
+      "name": "Foo Fooing with different args When c",
+      "lineage": [
+        "Foo",
+        "Fooing with different args",
+        "When c"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 43
+      },
+      "attempt": {
+        "durationInNanoseconds": 6292,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080955-05:00",
+        "finishedAt": "2022-12-14T13:20:51.080961-05:00"
+      }
+    },
+    {
+      "name": "fails slowly at the top-level",
+      "lineage": [
+        "fails slowly at the top-level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 52
+      },
+      "attempt": {
+        "durationInNanoseconds": 3003648416,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func6()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:54 +0xdc"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:51.080965-05:00",
+        "finishedAt": "2022-12-14T13:20:54.084629-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg1_test.glob..func6()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go:54 +0xdc"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "passes at the top-level",
+      "lineage": [
+        "passes at the top-level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/bar_test.go",
+        "line": 48
+      },
+      "attempt": {
+        "durationInNanoseconds": 261333,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "passing at the top-level, tada!",
+        "startedAt": "2022-12-14T13:20:54.085975-05:00",
+        "finishedAt": "2022-12-14T13:20:54.086236-05:00"
+      }
+    },
+    {
+      "name": "passes slowly at the top-level",
+      "lineage": [
+        "passes slowly at the top-level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 47
+      },
+      "attempt": {
+        "durationInNanoseconds": 1501290417,
+        "meta": {
+          "labels": [
+            "has",
+            "labels"
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:54.086315-05:00",
+        "finishedAt": "2022-12-14T13:20:55.587613-05:00"
+      }
+    },
+    {
+      "name": "fails at the top-level",
+      "lineage": [
+        "fails at the top-level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+        "line": 34
+      },
+      "attempt": {
+        "durationInNanoseconds": 902250,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func3()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:35 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.749969-05:00",
+        "finishedAt": "2022-12-14T13:20:55.750871-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func3()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:35 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bar passes outside a context",
+      "lineage": [
+        "Bar",
+        "passes outside a context"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+        "line": 11
+      },
+      "attempt": {
+        "durationInNanoseconds": 24333,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.751146-05:00",
+        "finishedAt": "2022-12-14T13:20:55.75117-05:00"
+      }
+    },
+    {
+      "name": "Bar fails outside a context",
+      "lineage": [
+        "Bar",
+        "fails outside a context"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+        "line": 15
+      },
+      "attempt": {
+        "durationInNanoseconds": 370250,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func1.2()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:16 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.751191-05:00",
+        "finishedAt": "2022-12-14T13:20:55.751562-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func1.2()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:16 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bar within a context passes",
+      "lineage": [
+        "Bar",
+        "within a context",
+        "passes"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+        "line": 20
+      },
+      "attempt": {
+        "durationInNanoseconds": 31375,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.751959-05:00",
+        "finishedAt": "2022-12-14T13:20:55.751991-05:00"
+      }
+    },
+    {
+      "name": "Bar within a context fails",
+      "lineage": [
+        "Bar",
+        "within a context",
+        "fails"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+        "line": 24
+      },
+      "attempt": {
+        "durationInNanoseconds": 390125,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func1.3.2()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:25 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.752172-05:00",
+        "finishedAt": "2022-12-14T13:20:55.752562-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Bar: not arg\nto equal\n    \u003cstring\u003e: Bar: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func1.3.2()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go:25 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Foo fails then passes",
+      "lineage": [
+        "Foo",
+        "fails then passes"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+        "line": 14
+      },
+      "attempt": {
+        "durationInNanoseconds": 952667,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.752989-05:00",
+        "finishedAt": "2022-12-14T13:20:55.753942-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nuh oh",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.1()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:18 +0x124"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Foo passes then fails",
+      "lineage": [
+        "Foo",
+        "passes then fails"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+        "line": 24
+      },
+      "attempt": {
+        "durationInNanoseconds": 417125,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "uh oh",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.2()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:30 +0x44"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.753993-05:00",
+        "finishedAt": "2022-12-14T13:20:55.75441-05:00"
+      }
+    },
+    {
+      "name": "Foo passes outside a context",
+      "lineage": [
+        "Foo",
+        "passes outside a context"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+        "line": 34
+      },
+      "attempt": {
+        "durationInNanoseconds": 30417,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.755427-05:00",
+        "finishedAt": "2022-12-14T13:20:55.755457-05:00"
+      }
+    },
+    {
+      "name": "Foo fails outside a context",
+      "lineage": [
+        "Foo",
+        "fails outside a context"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+        "line": 38
+      },
+      "attempt": {
+        "durationInNanoseconds": 229208,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.4()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:39 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.755472-05:00",
+        "finishedAt": "2022-12-14T13:20:55.755701-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.4()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:39 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Foo within a context passes",
+      "lineage": [
+        "Foo",
+        "within a context",
+        "passes"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+        "line": 43
+      },
+      "attempt": {
+        "durationInNanoseconds": 12042,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.75577-05:00",
+        "finishedAt": "2022-12-14T13:20:55.755782-05:00"
+      }
+    },
+    {
+      "name": "Foo within a context fails",
+      "lineage": [
+        "Foo",
+        "within a context",
+        "fails"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+        "line": 47
+      },
+      "attempt": {
+        "durationInNanoseconds": 227958,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.5.2()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:48 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.755789-05:00",
+        "finishedAt": "2022-12-14T13:20:55.756017-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func4.5.2()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:48 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "fails at the top-level",
+      "lineage": [
+        "fails at the top-level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+        "line": 57
+      },
+      "attempt": {
+        "durationInNanoseconds": 170208,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+          "backtrace": [
+            "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func6()",
+            "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:58 +0xd4"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.756113-05:00",
+        "finishedAt": "2022-12-14T13:20:55.756283-05:00"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": null,
+          "status": {
+            "kind": "failed",
+            "message": "Failure recorded during attempt 1:\nExpected\n    \u003cstring\u003e: Foo: not arg\nto equal\n    \u003cstring\u003e: Foo: arg",
+            "backtrace": [
+              "github.com/captain-examples/go-ginkgo/internal/pkg2_test.glob..func6()",
+              "\t/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go:58 +0xd4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "passes at the top-level",
+      "lineage": [
+        "passes at the top-level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/bar_test.go",
+        "line": 30
+      },
+      "attempt": {
+        "durationInNanoseconds": 10708,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.756339-05:00",
+        "finishedAt": "2022-12-14T13:20:55.75635-05:00"
+      }
+    },
+    {
+      "name": "passes at the top-level",
+      "lineage": [
+        "passes at the top-level"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2/foo_test.go",
+        "line": 53
+      },
+      "attempt": {
+        "durationInNanoseconds": 9625,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T13:20:55.756357-05:00",
+        "finishedAt": "2022-12-14T13:20:55.756366-05:00"
+      }
+    }
+  ]
+}

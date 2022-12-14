@@ -41,10 +41,10 @@ var _ = Describe("GoTestParser", func() {
 			var testResults *v1.TestResults
 			var err error
 
-			// testResults, err = parsing.GoTestParser{}.Parse(strings.NewReader(`{}`))
-			// Expect(err).To(HaveOccurred())
-			// Expect(err.Error()).To(ContainSubstring("Test results do not look like go test"))
-			// Expect(testResults).To(BeNil())
+			testResults, err = parsing.GoTestParser{}.Parse(strings.NewReader(`{}`))
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Test results do not look like go test"))
+			Expect(testResults).To(BeNil())
 
 			testResults, err = parsing.GoTestParser{}.Parse(strings.NewReader(
 				`

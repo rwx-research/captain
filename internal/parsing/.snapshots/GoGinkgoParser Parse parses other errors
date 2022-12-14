@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Go",
+    "kind": "Ginkgo"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 1,
+    "otherErrors": 1,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 0,
+    "pended": 1,
+    "quarantined": 0,
+    "skipped": 0,
+    "successful": 0,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "Foo passes outside a context",
+      "lineage": [
+        "Foo",
+        "passes outside a context"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+        "line": 14
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "labels": []
+        },
+        "status": {
+          "kind": "pended"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-14T14:22:04.752611-05:00",
+        "finishedAt": "0001-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "otherErrors": [
+    {
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1"
+      },
+      "message": "Detected pending specs and --fail-on-pending is set"
+    }
+  ]
+}

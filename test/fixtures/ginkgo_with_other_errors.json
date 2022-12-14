@@ -1,0 +1,110 @@
+[
+  {
+    "SuitePath": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1",
+    "SuiteDescription": "Pkg1 Suite",
+    "SuiteLabels": [],
+    "SuiteSucceeded": false,
+    "SuiteHasProgrammaticFocus": false,
+    "SpecialSuiteFailureReasons": [
+      "Detected pending specs and --fail-on-pending is set"
+    ],
+    "PreRunStats": {
+      "TotalSpecs": 1,
+      "SpecsThatWillRun": 0
+    },
+    "StartTime": "2022-12-14T14:22:04.752533-05:00",
+    "EndTime": "2022-12-14T14:22:09.264838-05:00",
+    "RunTime": 4512296166,
+    "SuiteConfig": {
+      "RandomSeed": 1671045723,
+      "RandomizeAllSpecs": false,
+      "FocusStrings": null,
+      "SkipStrings": null,
+      "FocusFiles": null,
+      "SkipFiles": null,
+      "LabelFilter": "",
+      "FailOnPending": true,
+      "FailFast": false,
+      "FlakeAttempts": 2,
+      "DryRun": false,
+      "PollProgressAfter": 0,
+      "PollProgressInterval": 0,
+      "Timeout": 3599122317125,
+      "OutputInterceptorMode": "",
+      "SourceRoots": null,
+      "GracePeriod": 30000000000,
+      "ParallelProcess": 1,
+      "ParallelTotal": 1,
+      "ParallelHost": ""
+    },
+    "SpecReports": [
+      {
+        "ContainerHierarchyTexts": [
+          "Foo"
+        ],
+        "ContainerHierarchyLocations": [
+          {
+            "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+            "LineNumber": 13
+          }
+        ],
+        "ContainerHierarchyLabels": [
+          []
+        ],
+        "LeafNodeType": "It",
+        "LeafNodeLocation": {
+          "FileName": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg1/foo_test.go",
+          "LineNumber": 14
+        },
+        "LeafNodeLabels": [],
+        "LeafNodeText": "passes outside a context",
+        "State": "pending",
+        "StartTime": "2022-12-14T14:22:04.752611-05:00",
+        "EndTime": "0001-01-01T00:00:00Z",
+        "RunTime": 0,
+        "ParallelProcess": 1,
+        "NumAttempts": 0,
+        "MaxFlakeAttempts": 0,
+        "MaxMustPassRepeatedly": 0
+      }
+    ]
+  },
+  {
+    "SuitePath": "/Users/kylekthompson/src/captain-examples/go-ginkgo/internal/pkg2",
+    "SuiteDescription": "Pkg2 Suite",
+    "SuiteLabels": [],
+    "SuiteSucceeded": false,
+    "SuiteHasProgrammaticFocus": false,
+    "SpecialSuiteFailureReasons": null,
+    "PreRunStats": {
+      "TotalSpecs": 0,
+      "SpecsThatWillRun": 0
+    },
+    "StartTime": "2022-12-14T14:22:09.424879-05:00",
+    "EndTime": "2022-12-14T14:22:09.428265-05:00",
+    "RunTime": 3386208,
+    "SuiteConfig": {
+      "RandomSeed": 1671045723,
+      "RandomizeAllSpecs": false,
+      "FocusStrings": null,
+      "SkipStrings": null,
+      "FocusFiles": null,
+      "SkipFiles": null,
+      "LabelFilter": "",
+      "FailOnPending": true,
+      "FailFast": false,
+      "FlakeAttempts": 2,
+      "DryRun": false,
+      "PollProgressAfter": 0,
+      "PollProgressInterval": 0,
+      "Timeout": 3594427686959,
+      "OutputInterceptorMode": "",
+      "SourceRoots": null,
+      "GracePeriod": 30000000000,
+      "ParallelProcess": 1,
+      "ParallelTotal": 1,
+      "ParallelHost": ""
+    },
+    "SpecReports": []
+  }
+]
