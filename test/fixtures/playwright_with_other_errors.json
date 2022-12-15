@@ -1,0 +1,291 @@
+{
+  "config": {
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/kylekthompson/src/captain-examples/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/?(*.)@(spec|test).*"
+        ],
+        "timeout": 5000
+      },
+      {
+        "outputDir": "/Users/kylekthompson/src/captain-examples/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/?(*.)@(spec|test).*"
+        ],
+        "timeout": 5000
+      },
+      {
+        "outputDir": "/Users/kylekthompson/src/captain-examples/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/?(*.)@(spec|test).*"
+        ],
+        "timeout": 5000
+      },
+      {
+        "outputDir": "/Users/kylekthompson/src/captain-examples/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/?(*.)@(spec|test).*"
+        ],
+        "timeout": 5000
+      },
+      {
+        "outputDir": "/Users/kylekthompson/src/captain-examples/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/?(*.)@(spec|test).*"
+        ],
+        "timeout": 5000
+      },
+      {
+        "outputDir": "/Users/kylekthompson/src/captain-examples/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "id": "Microsoft Edge",
+        "name": "Microsoft Edge",
+        "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/?(*.)@(spec|test).*"
+        ],
+        "timeout": 5000
+      },
+      {
+        "outputDir": "/Users/kylekthompson/src/captain-examples/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 2,
+        "id": "Google Chrome",
+        "name": "Google Chrome",
+        "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/?(*.)@(spec|test).*"
+        ],
+        "timeout": 5000
+      }
+    ],
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 15000
+    },
+    "configFile": "/Users/kylekthompson/src/captain-examples/playwright/playwright.config.ts",
+    "rootDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
+    "quiet": false,
+    "shard": null,
+    "updateSnapshots": "missing",
+    "version": "1.28.1",
+    "workers": 5,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "error.spec.ts",
+      "file": "error.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "homepage has title and links to intro page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 0,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4fd29ac3310d82f3bf5a-385805a0b9b707ec90b9",
+          "file": "error.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "homepage has title and links to intro page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 0,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4fd29ac3310d82f3bf5a-7105e51c68fe510fe2c6",
+          "file": "error.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "homepage has title and links to intro page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 0,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4fd29ac3310d82f3bf5a-4c78831f5bf257fea641",
+          "file": "error.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "homepage has title and links to intro page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 0,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "Mobile Chrome",
+              "projectName": "Mobile Chrome",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4fd29ac3310d82f3bf5a-8053b5143eb263a12c8b",
+          "file": "error.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "homepage has title and links to intro page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 0,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "Mobile Safari",
+              "projectName": "Mobile Safari",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4fd29ac3310d82f3bf5a-234ffbadaafb44f680a5",
+          "file": "error.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "homepage has title and links to intro page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 0,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "Microsoft Edge",
+              "projectName": "Microsoft Edge",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4fd29ac3310d82f3bf5a-ecf2d56d349d38de7035",
+          "file": "error.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "homepage has title and links to intro page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 0,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "Google Chrome",
+              "projectName": "Google Chrome",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4fd29ac3310d82f3bf5a-85490c817b7139c58916",
+          "file": "error.spec.ts",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "it broke",
+      "stack": "Error: it broke\n    at Object.<anonymous> (/Users/kylekthompson/src/captain-examples/playwright/tests/error.spec.ts:22:7)"
+    }
+  ]
+}
