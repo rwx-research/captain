@@ -1,0 +1,152 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Playwright"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 7,
+    "otherErrors": 1,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 0,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 7,
+    "successful": 0,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "error.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "error.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "error.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "error.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "error.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "error.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "error.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    }
+  ],
+  "otherErrors": [
+    {
+      "backtrace": [
+        "at Object.\u003canonymous\u003e (/Users/kylekthompson/src/captain-examples/playwright/tests/error.spec.ts:22:7)"
+      ],
+      "message": "it broke"
+    }
+  ]
+}

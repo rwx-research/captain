@@ -1,0 +1,2433 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Playwright"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 64,
+    "otherErrors": 0,
+    "retries": 20,
+    "canceled": 0,
+    "failed": 12,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 8,
+    "successful": 40,
+    "timedOut": 4,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "should allow me to add todo items",
+      "lineage": [
+        "should allow me to add todo items"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 14,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 778000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:02.753Z"
+      }
+    },
+    {
+      "name": "should clear text input field when an item is added",
+      "lineage": [
+        "should clear text input field when an item is added"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 40,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 764000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:02.752Z"
+      }
+    },
+    {
+      "name": "should append new items to the bottom of the list",
+      "lineage": [
+        "should append new items to the bottom of the list"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 53,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 806000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:02.756Z"
+      }
+    },
+    {
+      "name": "should allow me to add todo items",
+      "lineage": [
+        "should allow me to add todo items"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 14,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 928000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:10.426Z"
+      }
+    },
+    {
+      "name": "should clear text input field when an item is added",
+      "lineage": [
+        "should clear text input field when an item is added"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 40,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 792000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:10.655Z"
+      }
+    },
+    {
+      "name": "should append new items to the bottom of the list",
+      "lineage": [
+        "should append new items to the bottom of the list"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 53,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 1103000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:11.33Z"
+      }
+    },
+    {
+      "name": "should allow me to mark all items as completed",
+      "lineage": [
+        "should allow me to mark all items as completed"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 82,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 851000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:02.754Z"
+      }
+    },
+    {
+      "name": "should allow me to clear the complete state of all items",
+      "lineage": [
+        "should allow me to clear the complete state of all items"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 91,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 882000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:02.757Z"
+      }
+    },
+    {
+      "name": "complete all checkbox should update state when items are completed / cleared",
+      "lineage": [
+        "complete all checkbox should update state when items are completed / cleared"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 101,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 446000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:03.899Z"
+      }
+    },
+    {
+      "name": "should allow me to mark all items as completed",
+      "lineage": [
+        "should allow me to mark all items as completed"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 82,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 1278000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:11.845Z"
+      }
+    },
+    {
+      "name": "should allow me to clear the complete state of all items",
+      "lineage": [
+        "should allow me to clear the complete state of all items"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 91,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 803000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:11.711Z"
+      }
+    },
+    {
+      "name": "complete all checkbox should update state when items are completed / cleared",
+      "lineage": [
+        "complete all checkbox should update state when items are completed / cleared"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 101,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 834000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:11.717Z"
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 607000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "some stdout\nhappened in here\n",
+        "startedAt": "2022-12-15T20:31:03.915Z"
+      }
+    },
+    {
+      "name": "skipped test",
+      "lineage": [
+        "skipped test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 25,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "annotations": [
+            {
+              "type": "skip"
+            }
+          ],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:03.944Z"
+      }
+    },
+    {
+      "name": "fixme test",
+      "lineage": [
+        "fixme test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 31,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fixme"
+            }
+          ],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:03.945Z"
+      }
+    },
+    {
+      "name": "failing test",
+      "lineage": [
+        "failing test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 37,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 487000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:39:16"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:05.655Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 352000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:39:16"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:03.945Z"
+        },
+        {
+          "durationInNanoseconds": 711000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:39:16"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:04.561Z"
+        }
+      ]
+    },
+    {
+      "name": "throw error test",
+      "lineage": [
+        "throw error test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 42,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 496000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "uh oh",
+          "backtrace": [
+            "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:44:9"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:05.655Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 395000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "uh oh",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:44:9"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:03.988Z"
+        },
+        {
+          "durationInNanoseconds": 622000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "uh oh",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:44:9"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:04.638Z"
+        }
+      ]
+    },
+    {
+      "name": "throw string",
+      "lineage": [
+        "throw string"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 47,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 436000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:05.611Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 353000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:04.02Z"
+        },
+        {
+          "durationInNanoseconds": 618000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:04.629Z"
+        }
+      ]
+    },
+    {
+      "name": "passing test",
+      "lineage": [
+        "passing test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 52,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 277000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:04.351Z"
+      }
+    },
+    {
+      "name": "failing w/ fail annotation",
+      "lineage": [
+        "failing w/ fail annotation"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 71,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 2780000000,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fail"
+            }
+          ],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "some stderr\nhappened in here\n",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:04.841Z"
+      }
+    },
+    {
+      "name": "passing w/ fail annotation",
+      "lineage": [
+        "passing w/ fail annotation"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 82,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 415000000,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fail"
+            }
+          ],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected the test to fail, but it did not"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:06.587Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 383000000,
+          "meta": {
+            "annotations": [
+              {
+                "type": "fail"
+              }
+            ],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "successful"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:04.964Z"
+        },
+        {
+          "durationInNanoseconds": 573000000,
+          "meta": {
+            "annotations": [
+              {
+                "type": "fail"
+              }
+            ],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "successful"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:05.598Z"
+        }
+      ]
+    },
+    {
+      "name": "fails then passes",
+      "lineage": [
+        "fails then passes"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 90,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 158000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:07.441Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 145000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:91:26"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:06.407Z"
+        },
+        {
+          "durationInNanoseconds": 138000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:91:26"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:06.966Z"
+        }
+      ]
+    },
+    {
+      "name": "times out",
+      "lineage": [
+        "times out"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 94,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1001000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "timedOut"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:09.293Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 1001000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "timedOut"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:06.525Z"
+        },
+        {
+          "durationInNanoseconds": 1000000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "timedOut"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:07.92Z"
+        }
+      ]
+    },
+    {
+      "name": "slow",
+      "lineage": [
+        "slow"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 99,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1658000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:06.555Z"
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 598000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "some stdout\nhappened in here\n",
+        "startedAt": "2022-12-15T20:31:12.518Z"
+      }
+    },
+    {
+      "name": "skipped test",
+      "lineage": [
+        "skipped test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 25,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "annotations": [
+            {
+              "type": "skip"
+            }
+          ],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:12.554Z"
+      }
+    },
+    {
+      "name": "fixme test",
+      "lineage": [
+        "fixme test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 31,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fixme"
+            }
+          ],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:12.555Z"
+      }
+    },
+    {
+      "name": "failing test",
+      "lineage": [
+        "failing test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 37,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1008000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:39:16"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:17.7Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 407000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:39:16"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:12.555Z"
+        },
+        {
+          "durationInNanoseconds": 1077000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:39:16"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:14.175Z"
+        }
+      ]
+    },
+    {
+      "name": "throw error test",
+      "lineage": [
+        "throw error test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 42,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 758000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "uh oh",
+          "backtrace": [
+            "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:44:9"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:18.483Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 459000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "uh oh",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:44:9"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:12.72Z"
+        },
+        {
+          "durationInNanoseconds": 873000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "uh oh",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:44:9"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:14.894Z"
+        }
+      ]
+    },
+    {
+      "name": "throw string",
+      "lineage": [
+        "throw string"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 47,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 855000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:17.565Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 392000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:13.117Z"
+        },
+        {
+          "durationInNanoseconds": 1089000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:14.046Z"
+        }
+      ]
+    },
+    {
+      "name": "passing test",
+      "lineage": [
+        "passing test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 52,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 829000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:13.491Z"
+      }
+    },
+    {
+      "name": "failing w/ fail annotation",
+      "lineage": [
+        "failing w/ fail annotation"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 71,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 2929000000,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fail"
+            }
+          ],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "some stderr\nhappened in here\n",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:14.227Z"
+      }
+    },
+    {
+      "name": "passing w/ fail annotation",
+      "lineage": [
+        "passing w/ fail annotation"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 82,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 824000000,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fail"
+            }
+          ],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected the test to fail, but it did not"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:20.474Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 498000000,
+          "meta": {
+            "annotations": [
+              {
+                "type": "fail"
+              }
+            ],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "successful"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:14.607Z"
+        },
+        {
+          "durationInNanoseconds": 1024000000,
+          "meta": {
+            "annotations": [
+              {
+                "type": "fail"
+              }
+            ],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "successful"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:17.007Z"
+        }
+      ]
+    },
+    {
+      "name": "fails then passes",
+      "lineage": [
+        "fails then passes"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 90,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 464000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:21.361Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 113000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:91:26"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:17.156Z"
+        },
+        {
+          "durationInNanoseconds": 568000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/example.spec.ts:91:26"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:17.784Z"
+        }
+      ]
+    },
+    {
+      "name": "times out",
+      "lineage": [
+        "times out"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 94,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "timedOut"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:28.119Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 1001000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "timedOut"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:21.097Z"
+        },
+        {
+          "durationInNanoseconds": 1000000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "timedOut"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:24.612Z"
+        }
+      ]
+    },
+    {
+      "name": "slow",
+      "lineage": [
+        "slow"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 99,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1974000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:21.245Z"
+      }
+    },
+    {
+      "name": "passing test",
+      "lineage": [
+        "passing test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 58,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 316000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:04.523Z"
+      }
+    },
+    {
+      "name": "passing test",
+      "lineage": [
+        "passing test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 58,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 413000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:13.465Z"
+      }
+    },
+    {
+      "name": "first level passing test",
+      "lineage": [
+        "first level",
+        "passing test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 64,
+        "column": 5
+      },
+      "attempt": {
+        "durationInNanoseconds": 334000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:04.629Z"
+      }
+    },
+    {
+      "name": "first level passing test",
+      "lineage": [
+        "first level",
+        "passing test"
+      ],
+      "location": {
+        "file": "example.spec.ts",
+        "line": 64,
+        "column": 5
+      },
+      "attempt": {
+        "durationInNanoseconds": 346000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:13.88Z"
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 573000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "some stdout\nhappened in here\n",
+        "startedAt": "2022-12-15T20:31:07.335Z"
+      }
+    },
+    {
+      "name": "skipped test",
+      "lineage": [
+        "skipped test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 25,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "annotations": [
+            {
+              "type": "skip"
+            }
+          ],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:07.624Z"
+      }
+    },
+    {
+      "name": "fixme test",
+      "lineage": [
+        "fixme test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 31,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fixme"
+            }
+          ],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:07.625Z"
+      }
+    },
+    {
+      "name": "failing test",
+      "lineage": [
+        "failing test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 37,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 435000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:39:16"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:09.063Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 310000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:39:16"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:07.626Z"
+        },
+        {
+          "durationInNanoseconds": 519000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:39:16"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:08.194Z"
+        }
+      ]
+    },
+    {
+      "name": "passing test",
+      "lineage": [
+        "passing test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 42,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 344000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:07.695Z"
+      }
+    },
+    {
+      "name": "failing w/ fail annotation",
+      "lineage": [
+        "failing w/ fail annotation"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 61,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 2800000000,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fail"
+            }
+          ],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "some stderr\nhappened in here\n",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:08.278Z"
+      }
+    },
+    {
+      "name": "passing w/ fail annotation",
+      "lineage": [
+        "passing w/ fail annotation"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 72,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 386000000,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fail"
+            }
+          ],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected the test to fail, but it did not"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:09.692Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 296000000,
+          "meta": {
+            "annotations": [
+              {
+                "type": "fail"
+              }
+            ],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "successful"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:08.312Z"
+        },
+        {
+          "durationInNanoseconds": 481000000,
+          "meta": {
+            "annotations": [
+              {
+                "type": "fail"
+              }
+            ],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "successful"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:08.86Z"
+        }
+      ]
+    },
+    {
+      "name": "fails then passes",
+      "lineage": [
+        "fails then passes"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 80,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 152000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:09.134Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 53000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:81:26"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:08.317Z"
+        },
+        {
+          "durationInNanoseconds": 163000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:81:26"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:08.62Z"
+        }
+      ]
+    },
+    {
+      "name": "times out",
+      "lineage": [
+        "times out"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 84,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "timedOut"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:12.072Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 1000000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "timedOut"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:09.386Z"
+        },
+        {
+          "durationInNanoseconds": 999000000,
+          "meta": {
+            "annotations": [],
+            "project": "chromium",
+            "tags": []
+          },
+          "status": {
+            "kind": "timedOut"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:10.628Z"
+        }
+      ]
+    },
+    {
+      "name": "slow",
+      "lineage": [
+        "slow"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 89,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1625000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:09.858Z"
+      }
+    },
+    {
+      "name": "homepage has title and links to intro page",
+      "lineage": [
+        "homepage has title and links to intro page"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 3,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 899000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "some stdout\nhappened in here\n",
+        "startedAt": "2022-12-15T20:31:22.074Z"
+      }
+    },
+    {
+      "name": "skipped test",
+      "lineage": [
+        "skipped test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 25,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "annotations": [
+            {
+              "type": "skip"
+            }
+          ],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:22.115Z"
+      }
+    },
+    {
+      "name": "fixme test",
+      "lineage": [
+        "fixme test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 31,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fixme"
+            }
+          ],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:22.118Z"
+      }
+    },
+    {
+      "name": "failing test",
+      "lineage": [
+        "failing test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 37,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 826000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+          "backtrace": [
+            "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:39:16"
+          ]
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:28.468Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 536000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:39:16"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:22.119Z"
+        },
+        {
+          "durationInNanoseconds": 878000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:39:16"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:24.887Z"
+        }
+      ]
+    },
+    {
+      "name": "passing test",
+      "lineage": [
+        "passing test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 42,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 573000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:23.254Z"
+      }
+    },
+    {
+      "name": "failing w/ fail annotation",
+      "lineage": [
+        "failing w/ fail annotation"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 61,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 2869000000,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fail"
+            }
+          ],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "some stderr\nhappened in here\n",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:23.828Z"
+      }
+    },
+    {
+      "name": "passing w/ fail annotation",
+      "lineage": [
+        "passing w/ fail annotation"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 72,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 896000000,
+        "meta": {
+          "annotations": [
+            {
+              "type": "fail"
+            }
+          ],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected the test to fail, but it did not"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:28.374Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 386000000,
+          "meta": {
+            "annotations": [
+              {
+                "type": "fail"
+              }
+            ],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "successful"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:23.947Z"
+        },
+        {
+          "durationInNanoseconds": 945000000,
+          "meta": {
+            "annotations": [
+              {
+                "type": "fail"
+              }
+            ],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "successful"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:24.843Z"
+        }
+      ]
+    },
+    {
+      "name": "fails then passes",
+      "lineage": [
+        "fails then passes"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 80,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 380000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:30.93Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 139000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:81:26"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:25.064Z"
+        },
+        {
+          "durationInNanoseconds": 459000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "failed",
+            "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m",
+            "backtrace": [
+              "at /Users/kylekthompson/src/captain-examples/playwright/tests/nested/example.spec.ts:81:26"
+            ]
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:27.484Z"
+        }
+      ]
+    },
+    {
+      "name": "times out",
+      "lineage": [
+        "times out"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 84,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1001000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "timedOut"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:31.758Z"
+      },
+      "pastAttempts": [
+        {
+          "durationInNanoseconds": 1000000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "timedOut"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:26.698Z"
+        },
+        {
+          "durationInNanoseconds": 1000000000,
+          "meta": {
+            "annotations": [],
+            "project": "firefox",
+            "tags": []
+          },
+          "status": {
+            "kind": "timedOut"
+          },
+          "stderr": "",
+          "stdout": "",
+          "startedAt": "2022-12-15T20:31:28.204Z"
+        }
+      ]
+    },
+    {
+      "name": "slow",
+      "lineage": [
+        "slow"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 89,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1857000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:31.648Z"
+      }
+    },
+    {
+      "name": "passing test",
+      "lineage": [
+        "passing test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 48,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 269000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:08.008Z"
+      }
+    },
+    {
+      "name": "passing test",
+      "lineage": [
+        "passing test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 48,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 435000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:23.511Z"
+      }
+    },
+    {
+      "name": "first level passing test",
+      "lineage": [
+        "first level",
+        "passing test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 54,
+        "column": 5
+      },
+      "attempt": {
+        "durationInNanoseconds": 269000000,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:08.041Z"
+      }
+    },
+    {
+      "name": "first level passing test",
+      "lineage": [
+        "first level",
+        "passing test"
+      ],
+      "location": {
+        "file": "nested/example.spec.ts",
+        "line": 54,
+        "column": 5
+      },
+      "attempt": {
+        "durationInNanoseconds": 813000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:23.975Z"
+      }
+    }
+  ]
+}

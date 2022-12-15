@@ -7,15 +7,16 @@ type FrameworkLanguage string
 type FrameworkKind string
 
 const (
-	FrameworkKindCucumber FrameworkKind = "Cucumber"
-	FrameworkKindCypress  FrameworkKind = "Cypress"
-	FrameworkKindGinkgo   FrameworkKind = "Ginkgo"
-	FrameworkKindGoTest   FrameworkKind = "go test"
-	FrameworkKindJest     FrameworkKind = "Jest"
-	FrameworkKindMocha    FrameworkKind = "Mocha"
-	FrameworkKindPytest   FrameworkKind = "pytest"
-	FrameworkKindRSpec    FrameworkKind = "RSpec"
-	FrameworkKindxUnit    FrameworkKind = "xUnit"
+	FrameworkKindCucumber   FrameworkKind = "Cucumber"
+	FrameworkKindCypress    FrameworkKind = "Cypress"
+	FrameworkKindGinkgo     FrameworkKind = "Ginkgo"
+	FrameworkKindGoTest     FrameworkKind = "go test"
+	FrameworkKindJest       FrameworkKind = "Jest"
+	FrameworkKindMocha      FrameworkKind = "Mocha"
+	FrameworkKindPlaywright FrameworkKind = "Playwright"
+	FrameworkKindPytest     FrameworkKind = "pytest"
+	FrameworkKindRSpec      FrameworkKind = "RSpec"
+	FrameworkKindxUnit      FrameworkKind = "xUnit"
 
 	FrameworkLanguageDotNet     FrameworkLanguage = ".NET"
 	FrameworkLanguageGo         FrameworkLanguage = "Go"
@@ -59,6 +60,9 @@ var (
 	)
 	JavaScriptMochaFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindMocha},
+	)
+	JavaScriptPlaywrightFramework = registerFramework(
+		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindPlaywright},
 	)
 	PythonPytestFramework = registerFramework(
 		Framework{Language: FrameworkLanguagePython, Kind: FrameworkKindPytest},

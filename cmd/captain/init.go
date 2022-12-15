@@ -26,21 +26,23 @@ var mutuallyExclusiveParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.JavaScriptCypressParser),
 	new(parsing.JavaScriptJestParser),
 	new(parsing.JavaScriptMochaParser),
+	new(parsing.JavaScriptPlaywrightParser),
 	new(parsing.PythonPytestParser),
 	new(parsing.RubyCucumberParser),
 	new(parsing.RubyRSpecParser),
 }
 
 var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]parsing.Parser{
-	v1.DotNetxUnitFramework:       {new(parsing.DotNetxUnitParser)},
-	v1.GoGinkgoFramework:          {new(parsing.GoGinkgoParser)},
-	v1.GoTestFramework:            {new(parsing.GoTestParser)},
-	v1.JavaScriptCypressFramework: {new(parsing.JavaScriptCypressParser)},
-	v1.JavaScriptJestFramework:    {new(parsing.JavaScriptJestParser)},
-	v1.JavaScriptMochaFramework:   {new(parsing.JavaScriptMochaParser)},
-	v1.PythonPytestFramework:      {new(parsing.PythonPytestParser)},
-	v1.RubyCucumberFramework:      {new(parsing.RubyCucumberParser)},
-	v1.RubyRSpecFramework:         {new(parsing.RubyRSpecParser)},
+	v1.DotNetxUnitFramework:          {new(parsing.DotNetxUnitParser)},
+	v1.GoGinkgoFramework:             {new(parsing.GoGinkgoParser)},
+	v1.GoTestFramework:               {new(parsing.GoTestParser)},
+	v1.JavaScriptCypressFramework:    {new(parsing.JavaScriptCypressParser)},
+	v1.JavaScriptJestFramework:       {new(parsing.JavaScriptJestParser)},
+	v1.JavaScriptMochaFramework:      {new(parsing.JavaScriptMochaParser)},
+	v1.JavaScriptPlaywrightFramework: {new(parsing.JavaScriptPlaywrightParser)},
+	v1.PythonPytestFramework:         {new(parsing.PythonPytestParser)},
+	v1.RubyCucumberFramework:         {new(parsing.RubyCucumberParser)},
+	v1.RubyRSpecFramework:            {new(parsing.RubyRSpecParser)},
 }
 
 var genericParsers []parsing.Parser = []parsing.Parser{

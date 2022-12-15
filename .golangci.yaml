@@ -67,4 +67,4 @@ issues:
     # Comments sometimes _have_ to be longer than the limit (e.g. URLs)
     - linters:
         - lll
-      source: "^// "
+      source: "^\\s*// "
