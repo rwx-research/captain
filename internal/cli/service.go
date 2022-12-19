@@ -5,7 +5,6 @@
 package cli
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -96,23 +95,11 @@ func (s Service) runCommand(ctx context.Context, args []string) error {
 		return s.logError(errors.NewSystemError("unable to spawn sub-process: %s", err))
 	}
 
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		s.Log.Warnf("unable to attach to stdout of sub-process: %s", err)
-	}
-
 	s.Log.Debugf("Executing %q", strings.Join(args, " "))
 	if err := cmd.Start(); err != nil {
 		return s.logError(errors.NewSystemError("unable to execute sub-command: %s", err))
 	}
 	defer s.Log.Debugf("Finished executing %q", strings.Join(args, " "))
-
-	if stdout != nil {
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			s.Log.Info(scanner.Text())
-		}
-	}
 
 	if err := cmd.Wait(); err != nil {
 		if code, e := s.TaskRunner.GetExitStatusFromError(err); e == nil {

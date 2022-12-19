@@ -12,6 +12,46 @@ echo Testing Quarantining...
   -- bash -c "exit 1"
 echo PASSED;
 
+echo Testing command output passthrough...
+
+set +e
+result=$(./captain run \
+  --suite-id "captain-cli-functional-tests" \
+  --test-results .github/workflows/fixtures/rspec-passed.json \
+  --github-job-name "Build & Test" \
+  --fail-on-upload-error \
+  -- bash -c "echo abc; echo def 1>&2; echo ghi" \
+  2>&1)
+expected='abc
+def
+ghi'
+if [[ "$result" == "$expected"* ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  echo "expected result to start with 'abc\ndef\nghi\n' but it was: $result"
+  exit 1;
+fi
+
+echo Testing command stderr goes to stderr...
+
+set +e
+result=$(./captain run \
+  --suite-id "captain-cli-functional-tests" \
+  --test-results .github/workflows/fixtures/rspec-passed.json \
+  --github-job-name "Build & Test" \
+  --fail-on-upload-error \
+  -- bash -c "echo abc; echo def 1>&2" \
+  2>&1 > /dev/null)
+expected='def'
+if [[ "$result" == "$expected"* ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  echo "expected result to start with 'def' but it was: $result"
+  exit 1;
+fi
+
 echo Testing Failures not Quarantined...
 
 set +e

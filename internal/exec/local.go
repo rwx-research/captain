@@ -5,6 +5,7 @@ package exec
 
 import (
 	"context"
+	"os"
 	"os/exec"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -15,7 +16,10 @@ type Local struct{}
 
 // NewCommand returns a new command that can then be executed.
 func (l Local) NewCommand(ctx context.Context, name string, args ...string) (Command, error) {
-	return exec.CommandContext(ctx, name, args...), nil
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	return cmd, nil
 }
 
 // GetExitStatus extracts the exit code from an error
