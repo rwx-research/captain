@@ -167,3 +167,18 @@ else
   exit 1;
 fi
 set -e
+
+echo Testing --version outputs in the correct format...
+
+set +e
+# The setup-captain GitHub action requires `captain --version` to
+# output something exactly in the format `v#.#.#` and nothing else
+version_output=$(./captain --version)
+if [[ "$version_output" =~ ^\v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  echo "$version_output did not match format v#.#.#";
+  exit 1;
+fi
+set -e
