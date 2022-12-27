@@ -1,0 +1,358 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "PHP",
+    "kind": "PHPUnit"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 14,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 5,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 4,
+    "successful": 5,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "Tests\\Unit\\ExampleTest::test_that_true_is_true",
+      "lineage": [
+        "Tests\\Unit\\ExampleTest",
+        "test_that_true_is_true"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/ExampleTest.php",
+        "line": 16
+      },
+      "attempt": {
+        "durationInNanoseconds": 13692000,
+        "meta": {
+          "class": "Tests\\Unit\\ExampleTest",
+          "name": "test_that_true_is_true",
+          "risky": false
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\ExampleTest::test_that_true_is_false",
+      "lineage": [
+        "Tests\\Unit\\ExampleTest",
+        "test_that_true_is_false"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/ExampleTest.php",
+        "line": 21
+      },
+      "attempt": {
+        "durationInNanoseconds": 2771000,
+        "meta": {
+          "class": "Tests\\Unit\\ExampleTest",
+          "name": "test_that_true_is_false",
+          "risky": false
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Failed asserting that true is false.",
+          "exception": "PHPUnit\\Framework\\ExpectationFailedException",
+          "backtrace": [
+            "/var/www/html/tests/Unit/ExampleTest.php:23"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\ExampleTest::test_that_is_incomplete_and_failing",
+      "lineage": [
+        "Tests\\Unit\\ExampleTest",
+        "test_that_is_incomplete_and_failing"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/ExampleTest.php",
+        "line": 26
+      },
+      "attempt": {
+        "durationInNanoseconds": 1486000,
+        "meta": {
+          "class": "Tests\\Unit\\ExampleTest",
+          "name": "test_that_is_incomplete_and_failing",
+          "risky": false
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\ExampleTest::test_that_is_incomplete_and_passing",
+      "lineage": [
+        "Tests\\Unit\\ExampleTest",
+        "test_that_is_incomplete_and_passing"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/ExampleTest.php",
+        "line": 32
+      },
+      "attempt": {
+        "durationInNanoseconds": 35000,
+        "meta": {
+          "class": "Tests\\Unit\\ExampleTest",
+          "name": "test_that_is_incomplete_and_passing",
+          "risky": false
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\ExampleTest::test_that_is_skipped_and_failing",
+      "lineage": [
+        "Tests\\Unit\\ExampleTest",
+        "test_that_is_skipped_and_failing"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/ExampleTest.php",
+        "line": 38
+      },
+      "attempt": {
+        "durationInNanoseconds": 2180000,
+        "meta": {
+          "class": "Tests\\Unit\\ExampleTest",
+          "name": "test_that_is_skipped_and_failing",
+          "risky": false
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\ExampleTest::test_that_is_skipped_and_passing",
+      "lineage": [
+        "Tests\\Unit\\ExampleTest",
+        "test_that_is_skipped_and_passing"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/ExampleTest.php",
+        "line": 44
+      },
+      "attempt": {
+        "durationInNanoseconds": 63000,
+        "meta": {
+          "class": "Tests\\Unit\\ExampleTest",
+          "name": "test_that_is_skipped_and_passing",
+          "risky": false
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\ExampleTest::test_that_is_an_exception",
+      "lineage": [
+        "Tests\\Unit\\ExampleTest",
+        "test_that_is_an_exception"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/ExampleTest.php",
+        "line": 50
+      },
+      "attempt": {
+        "durationInNanoseconds": 861000,
+        "meta": {
+          "class": "Tests\\Unit\\ExampleTest",
+          "name": "test_that_is_an_exception",
+          "risky": false
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Exception: an exception was thrown",
+          "exception": "Exception",
+          "backtrace": [
+            "/var/www/html/tests/Unit/ExampleTest.php:52"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\ExampleTest::test_that_is_a_custom_exception",
+      "lineage": [
+        "Tests\\Unit\\ExampleTest",
+        "test_that_is_a_custom_exception"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/ExampleTest.php",
+        "line": 55
+      },
+      "attempt": {
+        "durationInNanoseconds": 118000,
+        "meta": {
+          "class": "Tests\\Unit\\ExampleTest",
+          "name": "test_that_is_a_custom_exception",
+          "risky": false
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Tests\\Unit\\CustomException: an exception was thrown",
+          "exception": "Tests\\Unit\\CustomException",
+          "backtrace": [
+            "/var/www/html/tests/Unit/ExampleTest.php:57"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\Nested\\ExampleTest::test_that_true_is_true",
+      "lineage": [
+        "Tests\\Unit\\Nested\\ExampleTest",
+        "test_that_true_is_true"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/Nested/ExampleTest.php",
+        "line": 14
+      },
+      "attempt": {
+        "durationInNanoseconds": 69000,
+        "meta": {
+          "class": "Tests\\Unit\\Nested\\ExampleTest",
+          "name": "test_that_true_is_true",
+          "risky": false
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\Nested\\ExampleTest::test_that_true_is_false",
+      "lineage": [
+        "Tests\\Unit\\Nested\\ExampleTest",
+        "test_that_true_is_false"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/Nested/ExampleTest.php",
+        "line": 19
+      },
+      "attempt": {
+        "durationInNanoseconds": 310000,
+        "meta": {
+          "class": "Tests\\Unit\\Nested\\ExampleTest",
+          "name": "test_that_true_is_false",
+          "risky": false
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Failed asserting that true is false.",
+          "exception": "PHPUnit\\Framework\\ExpectationFailedException",
+          "backtrace": [
+            "/var/www/html/tests/Unit/Nested/ExampleTest.php:21"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\Nested\\ExampleTest::test_that_is_slow",
+      "lineage": [
+        "Tests\\Unit\\Nested\\ExampleTest",
+        "test_that_is_slow"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/Nested/ExampleTest.php",
+        "line": 24
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000279000,
+        "meta": {
+          "class": "Tests\\Unit\\Nested\\ExampleTest",
+          "name": "test_that_is_slow",
+          "risky": false
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Failed asserting that true is false.",
+          "exception": "PHPUnit\\Framework\\ExpectationFailedException",
+          "backtrace": [
+            "/var/www/html/tests/Unit/Nested/ExampleTest.php:27"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\Nested\\ExampleTest::test_with_no_assertion",
+      "lineage": [
+        "Tests\\Unit\\Nested\\ExampleTest",
+        "test_with_no_assertion"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/Nested/ExampleTest.php",
+        "line": 30
+      },
+      "attempt": {
+        "durationInNanoseconds": 68000,
+        "meta": {
+          "class": "Tests\\Unit\\Nested\\ExampleTest",
+          "name": "test_with_no_assertion",
+          "risky": true
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Tests\\Unit\\Nested\\ExampleTest::test_with_printing",
+      "lineage": [
+        "Tests\\Unit\\Nested\\ExampleTest",
+        "test_with_printing"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Unit/Nested/ExampleTest.php",
+        "line": 34
+      },
+      "attempt": {
+        "durationInNanoseconds": 3980000,
+        "meta": {
+          "class": "Tests\\Unit\\Nested\\ExampleTest",
+          "name": "test_with_printing",
+          "risky": false
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Tests\\Feature\\ExampleTest::test_the_application_returns_a_successful_response",
+      "lineage": [
+        "Tests\\Feature\\ExampleTest",
+        "test_the_application_returns_a_successful_response"
+      ],
+      "location": {
+        "file": "/var/www/html/tests/Feature/ExampleTest.php",
+        "line": 15
+      },
+      "attempt": {
+        "durationInNanoseconds": 421043000,
+        "meta": {
+          "class": "Tests\\Feature\\ExampleTest",
+          "name": "test_the_application_returns_a_successful_response",
+          "risky": false
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ]
+}

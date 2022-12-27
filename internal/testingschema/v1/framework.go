@@ -13,6 +13,7 @@ const (
 	FrameworkKindGoTest     FrameworkKind = "go test"
 	FrameworkKindJest       FrameworkKind = "Jest"
 	FrameworkKindMocha      FrameworkKind = "Mocha"
+	FrameworkKindPHPUnit    FrameworkKind = "PHPUnit"
 	FrameworkKindPlaywright FrameworkKind = "Playwright"
 	FrameworkKindPytest     FrameworkKind = "pytest"
 	FrameworkKindRSpec      FrameworkKind = "RSpec"
@@ -21,6 +22,7 @@ const (
 	FrameworkLanguageDotNet     FrameworkLanguage = ".NET"
 	FrameworkLanguageGo         FrameworkLanguage = "Go"
 	FrameworkLanguageJavaScript FrameworkLanguage = "JavaScript"
+	FrameworkLanguagePHP        FrameworkLanguage = "PHP"
 	FrameworkLanguagePython     FrameworkLanguage = "Python"
 	FrameworkLanguageRuby       FrameworkLanguage = "Ruby"
 
@@ -63,6 +65,9 @@ var (
 	)
 	JavaScriptPlaywrightFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindPlaywright},
+	)
+	PHPUnitFramework = registerFramework(
+		Framework{Language: FrameworkLanguagePHP, Kind: FrameworkKindPHPUnit},
 	)
 	PythonPytestFramework = registerFramework(
 		Framework{Language: FrameworkLanguagePython, Kind: FrameworkKindPytest},

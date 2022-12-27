@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="" tests="14" assertions="7" errors="3" warnings="0" failures="3" skipped="4" time="1.446955">
+    <testsuite name="Unit" tests="13" assertions="6" errors="3" warnings="0" failures="3" skipped="4" time="1.025912">
+      <testsuite name="Tests\Unit\ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" tests="8" assertions="2" errors="2" warnings="0" failures="1" skipped="4" time="0.021205">
+        <testcase name="test_that_true_is_true" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" line="16" assertions="1" time="0.013692"/>
+        <testcase name="test_that_true_is_false" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" line="21" assertions="1" time="0.002771">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Unit\ExampleTest::test_that_true_is_false
+Failed asserting that true is false.
+
+/var/www/html/tests/Unit/ExampleTest.php:23</failure>
+        </testcase>
+        <testcase name="test_that_is_incomplete_and_failing" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" line="26" assertions="0" time="0.001486">
+          <skipped/>
+        </testcase>
+        <testcase name="test_that_is_incomplete_and_passing" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" line="32" assertions="0" time="0.000035">
+          <skipped/>
+        </testcase>
+        <testcase name="test_that_is_skipped_and_failing" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" line="38" assertions="0" time="0.002180">
+          <skipped/>
+        </testcase>
+        <testcase name="test_that_is_skipped_and_passing" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" line="44" assertions="0" time="0.000063">
+          <skipped/>
+        </testcase>
+        <testcase name="test_that_is_an_exception" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" line="50" assertions="0" time="0.000861">
+          <error type="Exception">Tests\Unit\ExampleTest::test_that_is_an_exception
+Exception: an exception was thrown
+
+/var/www/html/tests/Unit/ExampleTest.php:52</error>
+        </testcase>
+        <testcase name="test_that_is_a_custom_exception" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" file="/var/www/html/tests/Unit/ExampleTest.php" line="55" assertions="0" time="0.000118">
+          <error type="Tests\Unit\CustomException">Tests\Unit\ExampleTest::test_that_is_a_custom_exception
+Tests\Unit\CustomException: an exception was thrown
+
+/var/www/html/tests/Unit/ExampleTest.php:57</error>
+        </testcase>
+      </testsuite>
+      <testsuite name="Tests\Unit\Nested\ExampleTest" file="/var/www/html/tests/Unit/Nested/ExampleTest.php" tests="5" assertions="4" errors="1" warnings="0" failures="2" skipped="0" time="1.004707">
+        <testcase name="test_that_true_is_true" class="Tests\Unit\Nested\ExampleTest" classname="Tests.Unit.Nested.ExampleTest" file="/var/www/html/tests/Unit/Nested/ExampleTest.php" line="14" assertions="1" time="0.000069"/>
+        <testcase name="test_that_true_is_false" class="Tests\Unit\Nested\ExampleTest" classname="Tests.Unit.Nested.ExampleTest" file="/var/www/html/tests/Unit/Nested/ExampleTest.php" line="19" assertions="1" time="0.000310">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Unit\Nested\ExampleTest::test_that_true_is_false
+Failed asserting that true is false.
+
+/var/www/html/tests/Unit/Nested/ExampleTest.php:21</failure>
+        </testcase>
+        <testcase name="test_that_is_slow" class="Tests\Unit\Nested\ExampleTest" classname="Tests.Unit.Nested.ExampleTest" file="/var/www/html/tests/Unit/Nested/ExampleTest.php" line="24" assertions="1" time="1.000279">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Unit\Nested\ExampleTest::test_that_is_slow
+Failed asserting that true is false.
+
+/var/www/html/tests/Unit/Nested/ExampleTest.php:27</failure>
+        </testcase>
+        <testcase name="test_with_no_assertion" class="Tests\Unit\Nested\ExampleTest" classname="Tests.Unit.Nested.ExampleTest" file="/var/www/html/tests/Unit/Nested/ExampleTest.php" line="30" assertions="0" time="0.000068">
+          <error type="PHPUnit\Framework\RiskyTestError">Tests\Unit\Nested\ExampleTest::test_with_no_assertion
+This test did not perform any assertions
+
+/var/www/html/tests/Unit/Nested/ExampleTest.php:30</error>
+        </testcase>
+        <testcase name="test_with_printing" class="Tests\Unit\Nested\ExampleTest" classname="Tests.Unit.Nested.ExampleTest" file="/var/www/html/tests/Unit/Nested/ExampleTest.php" line="34" assertions="1" time="0.003980"/>
+      </testsuite>
+    </testsuite>
+    <testsuite name="Feature" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="0.421043">
+      <testsuite name="Tests\Feature\ExampleTest" file="/var/www/html/tests/Feature/ExampleTest.php" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="0.421043">
+        <testcase name="test_the_application_returns_a_successful_response" class="Tests\Feature\ExampleTest" classname="Tests.Feature.ExampleTest" file="/var/www/html/tests/Feature/ExampleTest.php" line="15" assertions="1" time="0.421043"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>
