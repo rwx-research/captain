@@ -1,0 +1,240 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Ruby",
+    "kind": "minitest"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 10,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 3,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 2,
+    "successful": 5,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "TestFailing#test_fails",
+      "lineage": [
+        "TestFailing",
+        "test_fails"
+      ],
+      "location": {
+        "file": "test/failing_test.rb",
+        "line": 4
+      },
+      "attempt": {
+        "durationInNanoseconds": 23000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected false to be truthy.",
+          "exception": "Minitest::Assertion",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:5"
+          ]
+        }
+      }
+    },
+    {
+      "name": "TestFailing#test_raises",
+      "lineage": [
+        "TestFailing",
+        "test_raises"
+      ],
+      "location": {
+        "file": "test/failing_test.rb",
+        "line": 8
+      },
+      "attempt": {
+        "durationInNanoseconds": 43000,
+        "meta": {
+          "assertions": 0
+        },
+        "status": {
+          "kind": "failed",
+          "message": "RuntimeError: uh oh...",
+          "exception": "RuntimeError",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:9"
+          ]
+        }
+      }
+    },
+    {
+      "name": "TestFailing#test_raises_custom",
+      "lineage": [
+        "TestFailing",
+        "test_raises_custom"
+      ],
+      "location": {
+        "file": "test/failing_test.rb",
+        "line": 12
+      },
+      "attempt": {
+        "durationInNanoseconds": 26000,
+        "meta": {
+          "assertions": 0
+        },
+        "status": {
+          "kind": "failed",
+          "message": "RWX::Example::MyError: uh oh...",
+          "exception": "RWX::Example::MyError",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13"
+          ]
+        }
+      }
+    },
+    {
+      "name": "RWX::TestExample#test_is_slow",
+      "lineage": [
+        "RWX::TestExample",
+        "test_is_slow"
+      ],
+      "location": {
+        "file": "test/rwx/example_test.rb",
+        "line": 25
+      },
+      "attempt": {
+        "durationInNanoseconds": 1503885000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RWX::TestExample#test_returns_one",
+      "lineage": [
+        "RWX::TestExample",
+        "test_returns_one"
+      ],
+      "location": {
+        "file": "test/rwx/example_test.rb",
+        "line": 21
+      },
+      "attempt": {
+        "durationInNanoseconds": 37000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RWX::TestExample#test_raises_custom_error",
+      "lineage": [
+        "RWX::TestExample",
+        "test_raises_custom_error"
+      ],
+      "location": {
+        "file": "test/rwx/example_test.rb",
+        "line": 15
+      },
+      "attempt": {
+        "durationInNanoseconds": 55000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "RWX::TestExample#test_raises_runtime_error",
+      "lineage": [
+        "RWX::TestExample",
+        "test_raises_runtime_error"
+      ],
+      "location": {
+        "file": "test/rwx/example_test.rb",
+        "line": 9
+      },
+      "attempt": {
+        "durationInNanoseconds": 19000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "TestSkipped#test_not_skipped",
+      "lineage": [
+        "TestSkipped",
+        "test_not_skipped"
+      ],
+      "location": {
+        "file": "test/skipped_test.rb",
+        "line": 4
+      },
+      "attempt": {
+        "durationInNanoseconds": 14000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "TestSkipped#test_skipped_failing",
+      "lineage": [
+        "TestSkipped",
+        "test_skipped_failing"
+      ],
+      "location": {
+        "file": "test/skipped_test.rb",
+        "line": 8
+      },
+      "attempt": {
+        "durationInNanoseconds": 68000,
+        "meta": {
+          "assertions": 0
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "TestSkipped#test_skipped_passing",
+      "lineage": [
+        "TestSkipped",
+        "test_skipped_passing"
+      ],
+      "location": {
+        "file": "test/skipped_test.rb",
+        "line": 13
+      },
+      "attempt": {
+        "durationInNanoseconds": 37000,
+        "meta": {
+          "assertions": 0
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    }
+  ]
+}

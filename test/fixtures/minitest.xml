@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="TestFailing" filepath="test/failing_test.rb" skipped="0" failures="1" errors="2" tests="3" assertions="1" time="9.200000204145908e-05">
+    <testcase name="test_fails" lineno="4" classname="TestFailing" assertions="1" time="2.3000058718025684e-05" file="test/failing_test.rb">
+    <failure type="Minitest::Assertion" message="Expected false to be truthy.">
+Failure:
+test_fails(Minitest::Result) [/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:5]:
+Expected false to be truthy.
+    </failure>
+    </testcase>
+    <testcase name="test_raises" lineno="8" classname="TestFailing" assertions="0" time="4.299997817724943e-05" file="test/failing_test.rb">
+    <error type="RuntimeError" message="RuntimeError: uh oh...">
+Failure:
+test_raises(Minitest::Result) [/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:9]:
+RuntimeError: uh oh
+    /Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:9:in `test_raises'
+    </error>
+    </testcase>
+    <testcase name="test_raises_custom" lineno="12" classname="TestFailing" assertions="0" time="2.5999965146183968e-05" file="test/failing_test.rb">
+    <error type="RWX::Example::MyError" message="RWX::Example::MyError: uh oh...">
+Failure:
+test_raises_custom(Minitest::Result) [/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13]:
+RWX::Example::MyError: uh oh
+    /Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13:in `test_raises_custom'
+    </error>
+    </testcase>
+  </testsuite>
+  <testsuite name="RWX::TestExample" filepath="test/rwx/example_test.rb" skipped="0" failures="0" errors="0" tests="4" assertions="4" time="1.5039960000431165">
+    <testcase name="test_is_slow" lineno="25" classname="RWX::TestExample" assertions="1" time="1.503885000012815" file="test/rwx/example_test.rb">
+    </testcase>
+    <testcase name="test_returns_one" lineno="21" classname="RWX::TestExample" assertions="1" time="3.700004890561104e-05" file="test/rwx/example_test.rb">
+    </testcase>
+    <testcase name="test_raises_custom_error" lineno="15" classname="RWX::TestExample" assertions="1" time="5.500006955116987e-05" file="test/rwx/example_test.rb">
+    </testcase>
+    <testcase name="test_raises_runtime_error" lineno="9" classname="RWX::TestExample" assertions="1" time="1.8999911844730377e-05" file="test/rwx/example_test.rb">
+    </testcase>
+  </testsuite>
+  <testsuite name="TestSkipped" filepath="test/skipped_test.rb" skipped="2" failures="0" errors="0" tests="3" assertions="1" time="0.00011899997480213642">
+    <testcase name="test_not_skipped" lineno="4" classname="TestSkipped" assertions="1" time="1.3999990187585354e-05" file="test/skipped_test.rb">
+    </testcase>
+    <testcase name="test_skipped_failing" lineno="8" classname="TestSkipped" assertions="0" time="6.800005212426186e-05" file="test/skipped_test.rb">
+    <skipped type="Minitest::Skip"/>
+    </testcase>
+    <testcase name="test_skipped_passing" lineno="13" classname="TestSkipped" assertions="0" time="3.699993249028921e-05" file="test/skipped_test.rb">
+    <skipped type="Minitest::Skip"/>
+    </testcase>
+  </testsuite>
+</testsuites>

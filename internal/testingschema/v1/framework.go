@@ -12,6 +12,7 @@ const (
 	FrameworkKindGinkgo     FrameworkKind = "Ginkgo"
 	FrameworkKindGoTest     FrameworkKind = "go test"
 	FrameworkKindJest       FrameworkKind = "Jest"
+	FrameworkKindMinitest   FrameworkKind = "minitest"
 	FrameworkKindMocha      FrameworkKind = "Mocha"
 	FrameworkKindPHPUnit    FrameworkKind = "PHPUnit"
 	FrameworkKindPlaywright FrameworkKind = "Playwright"
@@ -72,11 +73,14 @@ var (
 	PythonPytestFramework = registerFramework(
 		Framework{Language: FrameworkLanguagePython, Kind: FrameworkKindPytest},
 	)
-	RubyRSpecFramework = registerFramework(
-		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindRSpec},
-	)
 	RubyCucumberFramework = registerFramework(
 		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindCucumber},
+	)
+	RubyMinitestFramework = registerFramework(
+		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindMinitest},
+	)
+	RubyRSpecFramework = registerFramework(
+		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindRSpec},
 	)
 )
 
