@@ -140,7 +140,7 @@ func (c Client) GetTestTimingManifest(
 
 	queryValues := req.URL.Query()
 	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
-	queryValues.Add("commit_sha", c.CommitSha)
+	queryValues.Add("commit_sha", c.Provider.GetCommitSha())
 	req.URL.RawQuery = queryValues.Encode()
 
 	resp, err := c.RoundTrip(req)
@@ -222,15 +222,6 @@ func (c Client) registerTestResults(
 ) ([]TestResultsFile, error) {
 	endpoint := "/api/test_suites/bulk_test_results"
 
-	type JobTags struct {
-		GithubRunID          string           `json:"github_run_id"`
-		GithubRunAttempt     string           `json:"github_run_attempt"`
-		GithubRepositoryName string           `json:"github_repository_name"`
-		GithubAccountOwner   string           `json:"github_account_owner"`
-		GithubJobMatrix      *json.RawMessage `json:"github_job_matrix"`
-		GithubJobName        string           `json:"github_job_name"`
-	}
-
 	reqBody := struct {
 		AttemptedBy         string            `json:"attempted_by"`
 		Provider            string            `json:"provider"`
@@ -239,30 +230,20 @@ func (c Client) registerTestResults(
 		CommitSha           string            `json:"commit_sha"`
 		TestSuiteIdentifier string            `json:"test_suite_identifier"`
 		TestResultsFiles    []TestResultsFile `json:"test_results_files"`
-		JobTags             JobTags           `json:"job_tags"`
+		JobTags             map[string]any    `json:"job_tags"`
 	}{
-		AttemptedBy:         c.AttemptedBy,
-		Provider:            c.Provider,
-		BranchName:          c.BranchName,
-		CommitSha:           c.CommitSha,
+		AttemptedBy:         c.Provider.GetAttemptedBy(),
+		Provider:            c.Provider.GetProviderName(),
+		BranchName:          c.Provider.GetBranchName(),
+		CommitSha:           c.Provider.GetCommitSha(),
 		TestSuiteIdentifier: testSuite,
 		TestResultsFiles:    testResultsFiles,
-		JobTags: JobTags{
-			GithubRunID:          c.RunID,
-			GithubRunAttempt:     c.RunAttempt,
-			GithubRepositoryName: c.RepositoryName,
-			GithubAccountOwner:   c.AccountName,
-			GithubJobName:        c.JobName,
-		},
+		JobTags:             c.Provider.GetJobTags(),
 	}
 
-	if c.CommitMessage != "" {
-		reqBody.CommitMessage = &c.CommitMessage
-	}
-
-	if c.JobMatrix != "" {
-		rawJobMatrix := json.RawMessage(c.JobMatrix)
-		reqBody.JobTags.GithubJobMatrix = &rawJobMatrix
+	commitMessage := c.Provider.GetCommitMessage()
+	if commitMessage != "" {
+		reqBody.CommitMessage = &commitMessage
 	}
 
 	resp, err := c.postJSON(ctx, endpoint, reqBody)

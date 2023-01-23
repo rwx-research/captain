@@ -16,6 +16,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/logging"
 	"github.com/rwx-research/captain-cli/internal/parsing"
+	"github.com/rwx-research/captain-cli/internal/providers"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -65,50 +66,18 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		logger = logging.NewDebugLogger()
 	}
 
-	branchName := cfg.VCS.Github.RefName
-	if cfg.CI.Github.Run.EventName == "pull_request" {
-		branchName = cfg.VCS.Github.HeadRef
+	providerAdapter, err := MakeProviderAdapter(cfg)
+	if err != nil {
+		return errors.Wrap(err, "failed to construct provider adapter")
 	}
-
-	eventPayloadData := struct {
-		HeadCommit struct {
-			Message string `json:"message"`
-		} `json:"head_commit"`
-	}{}
-
-	file, err := os.Open(cfg.CI.Github.Run.EventPath)
-	if err != nil && !os.IsNotExist(err) {
-		return errors.Wrap(err, "unable to open event payload file")
-	} else if err == nil {
-		if err := json.NewDecoder(file).Decode(&eventPayloadData); err != nil {
-			return errors.Wrap(err, "failed to decode event payload data")
-		}
-	}
-
-	attemptedBy := cfg.CI.Github.Run.TriggeringActor
-	if attemptedBy == "" {
-		attemptedBy = cfg.CI.Github.Run.ExecutingActor
-	}
-
-	owner, repository := path.Split(cfg.VCS.Github.Repository)
 
 	apiClient, err := api.NewClient(api.ClientConfig{
-		AccountName:    strings.TrimSuffix(owner, "/"),
-		AttemptedBy:    attemptedBy,
-		BranchName:     branchName,
-		CommitMessage:  eventPayloadData.HeadCommit.Message,
-		CommitSha:      cfg.VCS.Github.CommitSha,
-		Debug:          cfg.Debug,
-		Host:           cfg.Captain.Host,
-		Insecure:       cfg.Insecure,
-		JobName:        cfg.CI.Github.Job.Name,
-		JobMatrix:      cfg.CI.Github.Job.Matrix,
-		Log:            logger,
-		Provider:       "github",
-		RunAttempt:     cfg.CI.Github.Run.Attempt,
-		RunID:          cfg.CI.Github.Run.ID,
-		RepositoryName: repository,
-		Token:          cfg.Captain.Token,
+		Debug:    cfg.Debug,
+		Host:     cfg.Captain.Host,
+		Insecure: cfg.Insecure,
+		Log:      logger,
+		Token:    cfg.Captain.Token,
+		Provider: providerAdapter,
 	})
 	if err != nil {
 		return errors.Wrap(err, "unable to create API client")
@@ -130,6 +99,52 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func MakeProviderAdapter(cfg config) (providers.Provider, error) {
+	return MakeGithubProviderAdapter(cfg)
+}
+
+func MakeGithubProviderAdapter(cfg config) (providers.GithubProvider, error) {
+	branchName := cfg.VCS.Github.RefName
+	if cfg.CI.Github.Run.EventName == "pull_request" {
+		branchName = cfg.VCS.Github.HeadRef
+	}
+
+	eventPayloadData := struct {
+		HeadCommit struct {
+			Message string `json:"message"`
+		} `json:"head_commit"`
+	}{}
+
+	file, err := os.Open(cfg.CI.Github.Run.EventPath)
+	if err != nil && !os.IsNotExist(err) {
+		return providers.GithubProvider{}, errors.Wrap(err, "unable to open event payload file")
+	} else if err == nil {
+		if err := json.NewDecoder(file).Decode(&eventPayloadData); err != nil {
+			return providers.GithubProvider{}, errors.Wrap(err, "failed to decode event payload data")
+		}
+	}
+
+	attemptedBy := cfg.CI.Github.Run.TriggeringActor
+	if attemptedBy == "" {
+		attemptedBy = cfg.CI.Github.Run.ExecutingActor
+	}
+
+	owner, repository := path.Split(cfg.VCS.Github.Repository)
+
+	return providers.GithubProvider{
+		AccountName:    strings.TrimSuffix(owner, "/"),
+		AttemptedBy:    attemptedBy,
+		BranchName:     branchName,
+		CommitMessage:  eventPayloadData.HeadCommit.Message,
+		CommitSha:      cfg.VCS.Github.CommitSha,
+		JobName:        cfg.CI.Github.Job.Name,
+		JobMatrix:      cfg.CI.Github.Job.Matrix,
+		RunAttempt:     cfg.CI.Github.Run.Attempt,
+		RunID:          cfg.CI.Github.Run.ID,
+		RepositoryName: repository,
+	}, nil
 }
 
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running

@@ -13,6 +13,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/mocks"
+	"github.com/rwx-research/captain-cli/internal/providers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -40,7 +41,8 @@ var _ = Describe("Uploading Test Results", func() {
 	})
 
 	JustBeforeEach(func() {
-		apiClient = api.Client{ClientConfig: api.ClientConfig{Log: zap.NewNop().Sugar()}, RoundTrip: mockRoundTripper}
+		apiClientConfig := api.ClientConfig{Log: zap.NewNop().Sugar(), Provider: providers.GithubProvider{}}
+		apiClient = api.Client{ClientConfig: apiClientConfig, RoundTrip: mockRoundTripper}
 	})
 
 	Context("under expected conditions", func() {
