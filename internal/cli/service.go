@@ -209,7 +209,10 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 
 	quarantinedFailedTests := make([]v1.Test, 0)
 	unquarantinedFailedTests := make([]v1.Test, 0)
+	otherErrors := make([]v1.OtherError, 0)
 	for i, testResult := range testResults {
+		otherErrors = append(otherErrors, testResult.OtherErrors...)
+
 		for i, test := range testResult.Tests {
 			if !s.isQuarantined(test, quarantinedTestCases) {
 				if test.Attempt.Status.Kind == v1.TestStatusFailed {
@@ -315,6 +318,11 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 
 	// Return original exit code in case there are failed tests.
 	if runErr != nil && len(unquarantinedFailedTests) > 0 {
+		return runErr
+	}
+
+	// Return original exit code in case there are other errors.
+	if runErr != nil && len(otherErrors) > 0 {
 		return runErr
 	}
 

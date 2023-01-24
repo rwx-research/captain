@@ -12,6 +12,23 @@ echo Testing Quarantining...
   -- bash -c "exit 1"
 echo PASSED;
 
+echo Testing all failures quarantined, but with other errors...
+
+set +e
+./captain run \
+  --suite-id "captain-cli-quarantine-test" \
+  --test-results .github/workflows/fixtures/rspec-quarantined-with-other-errors.json \
+  --github-job-name "Build & Test" \
+  --fail-on-upload-error \
+  -- bash -c "exit 123"
+if [[ $? -eq 123 ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  exit 1;
+fi
+set -e
+
 echo Testing command output passthrough...
 
 set +e

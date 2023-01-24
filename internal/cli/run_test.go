@@ -424,6 +424,96 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("all tests quarantined, but there are other errors", func() {
+			BeforeEach(func() {
+				mockGetQuarantinedTestCases := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) ([]api.QuarantinedTestCase, error) {
+					return []api.QuarantinedTestCase{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					return &v1.TestResults{
+						OtherErrors: []v1.OtherError{
+							{Message: "uh oh another error"},
+						},
+						Tests: []v1.Test{
+							{
+								Name:     firstSuccessfulTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: v1.NewSuccessfulTestStatus(),
+								},
+							},
+							{
+								Name:     firstFailedTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: v1.NewFailedTestStatus(nil, nil, nil),
+								},
+							},
+							{
+								Name:     secondFailedTestDescription,
+								Location: &v1.Location{File: "/other/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: v1.NewFailedTestStatus(nil, nil, nil),
+								},
+							},
+						},
+					}, nil
+				}
+			})
+
+			It("returns the error code of the command", func() {
+				Expect(err).To(HaveOccurred())
+				executionError, ok := errors.AsExecutionError(err)
+				Expect(ok).To(BeTrue(), "Error is an execution error")
+				Expect(executionError.Code).To(Equal(exitCode))
+			})
+
+			It("logs the quarantined tests", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).To(ContainElement(ContainSubstring("2 of 2 failures under quarantine")))
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring("remaining actionable")))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).To(BeNil())
+
+				Expect(testResults.Summary.Quarantined).To(Equal(2))
+				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+
+				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+			})
+		})
+
 		Context("some quarantined tests successful", func() {
 			BeforeEach(func() {
 				mockGetQuarantinedTestCases := func(
