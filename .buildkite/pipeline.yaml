@@ -1,0 +1,5 @@
+steps:
+  - label: "Functional Tests"
+    command:
+      - cp /tmp/captain ./captain
+      - ./test/functional.sh

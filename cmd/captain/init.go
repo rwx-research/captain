@@ -102,10 +102,23 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 }
 
 func MakeProviderAdapter(cfg config) (providers.Provider, error) {
-	return MakeGithubProviderAdapter(cfg)
+	switch {
+	case cfg.CI.Github.Detected:
+		return MakeGithubProvider(cfg)
+	case cfg.CI.Buildkite.Detected:
+		return MakeBuildkiteProvider(cfg)
+	default:
+		return providers.NullProvider{}, errors.NewConfigurationError("Failed to detect supported CI context")
+	}
 }
 
-func MakeGithubProviderAdapter(cfg config) (providers.GithubProvider, error) {
+func MakeBuildkiteProvider(cfg config) (providers.BuildkiteProvider, error) {
+	return providers.BuildkiteProvider{
+		Env: cfg.CI.Buildkite.Env,
+	}, nil
+}
+
+func MakeGithubProvider(cfg config) (providers.GithubProvider, error) {
 	branchName := cfg.VCS.Github.RefName
 	if cfg.CI.Github.Run.EventName == "pull_request" {
 		branchName = cfg.VCS.Github.HeadRef
