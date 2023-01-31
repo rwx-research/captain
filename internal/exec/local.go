@@ -15,10 +15,20 @@ import (
 type Local struct{}
 
 // NewCommand returns a new command that can then be executed.
-func (l Local) NewCommand(ctx context.Context, name string, args ...string) (Command, error) {
+func (l Local) NewCommand(
+	ctx context.Context,
+	name string,
+	args []string,
+	environ []string,
+) (Command, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
+
+	for _, override := range environ {
+		cmd.Env = append(cmd.Environ(), override)
+	}
+
 	return cmd, nil
 }
 

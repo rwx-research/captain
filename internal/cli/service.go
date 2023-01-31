@@ -82,34 +82,34 @@ func (s Service) parse(filepaths []string) ([]v1.TestResults, error) {
 	return v1.Merge(allResults), nil
 }
 
-func (s Service) runCommand(ctx context.Context, args []string) error {
+func (s Service) runCommand(ctx context.Context, args []string, setAbqEnviron bool) (context.Context, error) {
 	var cmd exec.Command
 	var err error
+	var environ []string
 
-	if len(args) == 1 {
-		cmd, err = s.TaskRunner.NewCommand(ctx, args[0])
-	} else {
-		cmd, err = s.TaskRunner.NewCommand(ctx, args[0], args[1:]...)
+	if setAbqEnviron {
+		ctx, environ = s.applyAbqEnvironment(ctx)
 	}
+	cmd, err = s.TaskRunner.NewCommand(ctx, args[0], args[1:], environ)
 	if err != nil {
-		return s.logError(errors.NewSystemError("unable to spawn sub-process: %s", err))
+		return ctx, s.logError(errors.NewSystemError("unable to spawn sub-process: %s", err))
 	}
 
 	s.Log.Debugf("Executing %q", strings.Join(args, " "))
 	if err := cmd.Start(); err != nil {
-		return s.logError(errors.NewSystemError("unable to execute sub-command: %s", err))
+		return ctx, s.logError(errors.NewSystemError("unable to execute sub-command: %s", err))
 	}
 	defer s.Log.Debugf("Finished executing %q", strings.Join(args, " "))
 
 	if err := cmd.Wait(); err != nil {
 		if code, e := s.TaskRunner.GetExitStatusFromError(err); e == nil {
-			return errors.NewExecutionError(code, "encountered error during execution of sub-process")
+			return ctx, errors.NewExecutionError(code, "encountered error during execution of sub-process")
 		}
 
-		return s.logError(errors.NewSystemError("Error during program execution: %s", err))
+		return ctx, s.logError(errors.NewSystemError("Error during program execution: %s", err))
 	}
 
-	return nil
+	return ctx, nil
 }
 
 func (s Service) isQuarantined(failedTest v1.Test, quarantinedTestCases []api.QuarantinedTestCase) bool {
@@ -155,7 +155,7 @@ func pluralize(count int, singular string, plural string) string {
 }
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
-func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
+func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	if len(cfg.Args) == 0 {
 		s.Log.Debug("No arguments provided to `RunSuite`")
 		return nil
@@ -179,7 +179,16 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 	})
 
 	// Run sub-command
-	runErr := s.runCommand(ctx, cfg.Args)
+	ctx, runErr := s.runCommand(ctx, cfg.Args, true)
+	defer func() {
+		if abqErr := s.setAbqExitCode(ctx, finalErr); abqErr != nil {
+			finalErr = errors.Wrap(finalErr, abqErr.Error())
+			if finalErr == nil {
+				finalErr = abqErr
+			}
+			s.Log.Errorf("Error setting ABQ exit code: %v", finalErr)
+		}
+	}()
 	if _, ok := errors.AsExecutionError(runErr); runErr != nil && !ok {
 		return errors.WithStack(runErr)
 	}

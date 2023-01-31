@@ -10,6 +10,7 @@ type FileSystem struct {
 	MockOpen     func(name string) (fs.File, error)
 	MockGlob     func(pattern string) ([]string, error)
 	MockGlobMany func(patterns []string) ([]string, error)
+	MockTempDir  func() string
 }
 
 // Open either calls the configured mock of itself or returns an error if that doesn't exist.
@@ -35,4 +36,12 @@ func (f *FileSystem) GlobMany(patterns []string) ([]string, error) {
 	}
 
 	return nil, errors.NewConfigurationError("MockGlob was not configured")
+}
+
+func (f *FileSystem) TempDir() string {
+	if f.MockTempDir != nil {
+		return f.MockTempDir()
+	}
+
+	return "tmp"
 }

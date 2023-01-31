@@ -56,3 +56,7 @@ func (l Local) GlobMany(patterns []string) ([]string, error) {
 
 	return expandedPaths, nil
 }
+
+func (l Local) TempDir() string {
+	return os.TempDir()
+}

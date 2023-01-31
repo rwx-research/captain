@@ -14,6 +14,26 @@ import (
 // Default is the default build target.
 var Default = Build
 
+// All cleans output, builds, tests, and lints.
+func All(ctx context.Context) error {
+	type target func(context.Context) error
+
+	targets := []target{
+		Clean,
+		Build,
+		Test,
+		Lint,
+	}
+
+	for _, t := range targets {
+		if err := t(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Build builds the Captain CLI
 func Build(ctx context.Context) error {
 	args := []string{"./cmd/captain"}

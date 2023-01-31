@@ -9,6 +9,11 @@ func As(err error, target any) bool {
 	return errors.As(err, target)
 }
 
+// Is is a wrapper around the standard library `errors.Is`
+func Is(err, target error) bool {
+	return errors.Is(err, target)
+}
+
 // Adds a stack trace to an error without doing anything further
 func WithStack(err error) error {
 	return errors.WithStack(err)
