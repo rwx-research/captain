@@ -209,33 +209,25 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 
 	quarantinedFailedTests := make([]v1.Test, 0)
 	unquarantinedFailedTests := make([]v1.Test, 0)
-	otherErrors := make([]v1.OtherError, 0)
+	otherErrorCount := 0
 	for i, testResult := range testResults {
-		otherErrors = append(otherErrors, testResult.OtherErrors...)
+		otherErrorCount += testResult.Summary.OtherErrors
 
 		for i, test := range testResult.Tests {
-			if !s.isQuarantined(test, quarantinedTestCases) {
-				if test.Attempt.Status.Kind == v1.TestStatusFailed {
-					s.Log.Debugf("did not quarantine failed test: %v", test)
-					unquarantinedFailedTests = append(unquarantinedFailedTests, test)
+			if s.isQuarantined(test, quarantinedTestCases) {
+				testResult.Tests[i] = test.Quarantine()
+
+				if test.Attempt.Status.ImpliesFailure() {
+					s.Log.Debugf("quarantined %v test: %v", test.Attempt.Status, test)
+					quarantinedFailedTests = append(quarantinedFailedTests, test)
 				}
-				continue
-			}
-
-			testResult.Tests[i] = test.Quarantine()
-
-			if test.Attempt.Status.Kind == v1.TestStatusFailed {
-				s.Log.Debugf("quarantined failed test: %v", test)
-				quarantinedFailedTests = append(quarantinedFailedTests, test)
+			} else if test.Attempt.Status.ImpliesFailure() {
+				s.Log.Debugf("did not quarantine %v test: %v", test.Attempt.Status, test)
+				unquarantinedFailedTests = append(unquarantinedFailedTests, test)
 			}
 		}
 		testResult.Summary = v1.NewSummary(testResult.Tests, testResult.OtherErrors)
 		testResults[i] = testResult
-	}
-
-	// This protects against an edge-case where the test-suite fails before writing any results to a test results file.
-	if runErr != nil && len(quarantinedFailedTests)+len(unquarantinedFailedTests) == 0 {
-		return runErr
 	}
 
 	var uploadResults []api.TestResultsUploadResult
@@ -316,13 +308,19 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) error {
 		}
 	}
 
-	// Return original exit code in case there are failed tests.
-	if runErr != nil && len(unquarantinedFailedTests) > 0 {
+	// Return the original exit code if there was a non-test error
+	if runErr != nil && otherErrorCount > 0 {
 		return runErr
 	}
 
-	// Return original exit code in case there are other errors.
-	if runErr != nil && len(otherErrors) > 0 {
+	// Return the original exit code if we didn't detect any failures
+	// (perhaps an error in parsing, failure of the framework to output an artifact, or coverage requirement)
+	if runErr != nil && len(quarantinedFailedTests)+len(unquarantinedFailedTests) == 0 {
+		return runErr
+	}
+
+	// Return the original exit code if we didn't quarantine all of the failures we saw
+	if runErr != nil && len(unquarantinedFailedTests) > 0 {
 		return runErr
 	}
 

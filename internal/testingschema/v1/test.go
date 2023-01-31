@@ -66,6 +66,10 @@ func NewQuarantinedTestStatus(originalStatus TestStatus) TestStatus {
 	return TestStatus{Kind: TestStatusQuarantined, OriginalStatus: &originalStatus}
 }
 
+func (s TestStatus) ImpliesFailure() bool {
+	return s.Kind == TestStatusFailed || s.Kind == TestStatusCanceled || s.Kind == TestStatusTimedOut
+}
+
 type TestAttempt struct {
 	Duration   *time.Duration `json:"durationInNanoseconds"`
 	Meta       map[string]any `json:"meta,omitempty"`

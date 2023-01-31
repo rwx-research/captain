@@ -221,7 +221,7 @@ var _ = Describe("Run", func() {
 							Name:     secondFailedTestDescription,
 							Location: &v1.Location{File: "/other/path/to/file.test"},
 							Attempt: v1.TestAttempt{
-								Status: v1.NewFailedTestStatus(nil, nil, nil),
+								Status: v1.NewTimedOutTestStatus(),
 							},
 						},
 					},
@@ -420,7 +420,7 @@ var _ = Describe("Run", func() {
 				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
 
 				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
 			})
 		})
 
@@ -568,7 +568,7 @@ var _ = Describe("Run", func() {
 				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
 
 				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
 			})
 		})
 	})

@@ -61,12 +61,15 @@ func NewSummary(tests []Test, otherErrors []OtherError) Summary {
 		if len(test.PastAttempts) > 0 {
 			summary.Retries++
 		}
-		if test.Attempt.Status.Kind == TestStatusCanceled {
+
+		if test.Attempt.Status.ImpliesFailure() {
 			status = SummaryStatusFailed
+		}
+
+		if test.Attempt.Status.Kind == TestStatusCanceled {
 			summary.Canceled++
 		}
 		if test.Attempt.Status.Kind == TestStatusFailed {
-			status = SummaryStatusFailed
 			summary.Failed++
 		}
 		if test.Attempt.Status.Kind == TestStatusPended {
@@ -82,7 +85,6 @@ func NewSummary(tests []Test, otherErrors []OtherError) Summary {
 			summary.Successful++
 		}
 		if test.Attempt.Status.Kind == TestStatusTimedOut {
-			status = SummaryStatusFailed
 			summary.TimedOut++
 		}
 		if test.Attempt.Status.Kind == TestStatusTodo {

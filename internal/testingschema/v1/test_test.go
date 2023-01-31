@@ -122,6 +122,24 @@ var _ = Describe("Test", func() {
 		})
 	})
 
+	Describe("ImpliesFailure", func() {
+		It("implies failure for failed statuses", func() {
+			Expect(v1.NewFailedTestStatus(nil, nil, nil).ImpliesFailure()).To(Equal(true))
+		})
+
+		It("implies failure for canceled statuses", func() {
+			Expect(v1.NewCanceledTestStatus().ImpliesFailure()).To(Equal(true))
+		})
+
+		It("implies failure for timed out statuses", func() {
+			Expect(v1.NewTimedOutTestStatus().ImpliesFailure()).To(Equal(true))
+		})
+
+		It("does not imply failure for other statuses", func() {
+			Expect(v1.NewSuccessfulTestStatus().ImpliesFailure()).To(Equal(false))
+		})
+	})
+
 	Describe("Quarantine", func() {
 		It("quarantines a test that is not quarantined", func() {
 			originalStatus := v1.NewFailedTestStatus(nil, nil, nil)
