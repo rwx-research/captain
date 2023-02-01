@@ -199,7 +199,7 @@ func (p JavaScriptPlaywrightParser) testsWithinSuite(
 		test := spec.Tests[0]
 
 		lineage := make([]string, 0)
-		for _, parent := range parents {
+		for _, parent := range nestedParents {
 			// We differentiate by file already in v1.Test.Location.File
 			if parent.File == parent.Title {
 				continue

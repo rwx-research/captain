@@ -22,8 +22,9 @@
   },
   "tests": [
     {
-      "name": "should allow me to add todo items",
+      "name": "New Todo should allow me to add todo items",
       "lineage": [
+        "New Todo",
         "should allow me to add todo items"
       ],
       "location": {
@@ -47,8 +48,9 @@
       }
     },
     {
-      "name": "should clear text input field when an item is added",
+      "name": "New Todo should clear text input field when an item is added",
       "lineage": [
+        "New Todo",
         "should clear text input field when an item is added"
       ],
       "location": {
@@ -72,8 +74,9 @@
       }
     },
     {
-      "name": "should append new items to the bottom of the list",
+      "name": "New Todo should append new items to the bottom of the list",
       "lineage": [
+        "New Todo",
         "should append new items to the bottom of the list"
       ],
       "location": {
@@ -97,8 +100,9 @@
       }
     },
     {
-      "name": "should allow me to add todo items",
+      "name": "New Todo should allow me to add todo items",
       "lineage": [
+        "New Todo",
         "should allow me to add todo items"
       ],
       "location": {
@@ -122,8 +126,9 @@
       }
     },
     {
-      "name": "should clear text input field when an item is added",
+      "name": "New Todo should clear text input field when an item is added",
       "lineage": [
+        "New Todo",
         "should clear text input field when an item is added"
       ],
       "location": {
@@ -147,8 +152,9 @@
       }
     },
     {
-      "name": "should append new items to the bottom of the list",
+      "name": "New Todo should append new items to the bottom of the list",
       "lineage": [
+        "New Todo",
         "should append new items to the bottom of the list"
       ],
       "location": {
@@ -172,8 +178,9 @@
       }
     },
     {
-      "name": "should allow me to mark all items as completed",
+      "name": "Mark all as completed should allow me to mark all items as completed",
       "lineage": [
+        "Mark all as completed",
         "should allow me to mark all items as completed"
       ],
       "location": {
@@ -197,8 +204,9 @@
       }
     },
     {
-      "name": "should allow me to clear the complete state of all items",
+      "name": "Mark all as completed should allow me to clear the complete state of all items",
       "lineage": [
+        "Mark all as completed",
         "should allow me to clear the complete state of all items"
       ],
       "location": {
@@ -222,8 +230,9 @@
       }
     },
     {
-      "name": "complete all checkbox should update state when items are completed / cleared",
+      "name": "Mark all as completed complete all checkbox should update state when items are completed / cleared",
       "lineage": [
+        "Mark all as completed",
         "complete all checkbox should update state when items are completed / cleared"
       ],
       "location": {
@@ -247,8 +256,9 @@
       }
     },
     {
-      "name": "should allow me to mark all items as completed",
+      "name": "Mark all as completed should allow me to mark all items as completed",
       "lineage": [
+        "Mark all as completed",
         "should allow me to mark all items as completed"
       ],
       "location": {
@@ -272,8 +282,9 @@
       }
     },
     {
-      "name": "should allow me to clear the complete state of all items",
+      "name": "Mark all as completed should allow me to clear the complete state of all items",
       "lineage": [
+        "Mark all as completed",
         "should allow me to clear the complete state of all items"
       ],
       "location": {
@@ -297,8 +308,9 @@
       }
     },
     {
-      "name": "complete all checkbox should update state when items are completed / cleared",
+      "name": "Mark all as completed complete all checkbox should update state when items are completed / cleared",
       "lineage": [
+        "Mark all as completed",
         "complete all checkbox should update state when items are completed / cleared"
       ],
       "location": {
@@ -1396,8 +1408,9 @@
       }
     },
     {
-      "name": "passing test",
+      "name": "first level passing test",
       "lineage": [
+        "first level",
         "passing test"
       ],
       "location": {
@@ -1421,8 +1434,9 @@
       }
     },
     {
-      "name": "passing test",
+      "name": "first level passing test",
       "lineage": [
+        "first level",
         "passing test"
       ],
       "location": {
@@ -1446,9 +1460,10 @@
       }
     },
     {
-      "name": "first level passing test",
+      "name": "first level second level passing test",
       "lineage": [
         "first level",
+        "second level",
         "passing test"
       ],
       "location": {
@@ -1472,9 +1487,10 @@
       }
     },
     {
-      "name": "first level passing test",
+      "name": "first level second level passing test",
       "lineage": [
         "first level",
+        "second level",
         "passing test"
       ],
       "location": {
@@ -2328,8 +2344,9 @@
       }
     },
     {
-      "name": "passing test",
+      "name": "first level passing test",
       "lineage": [
+        "first level",
         "passing test"
       ],
       "location": {
@@ -2353,8 +2370,9 @@
       }
     },
     {
-      "name": "passing test",
+      "name": "first level passing test",
       "lineage": [
+        "first level",
         "passing test"
       ],
       "location": {
@@ -2378,9 +2396,10 @@
       }
     },
     {
-      "name": "first level passing test",
+      "name": "first level second level passing test",
       "lineage": [
         "first level",
+        "second level",
         "passing test"
       ],
       "location": {
@@ -2404,9 +2423,10 @@
       }
     },
     {
-      "name": "first level passing test",
+      "name": "first level second level passing test",
       "lineage": [
         "first level",
+        "second level",
         "passing test"
       ],
       "location": {
