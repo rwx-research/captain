@@ -9,10 +9,6 @@ on:
     types:
       - completed
 
-env:
-  OS_MATRIX: "[\"linux\", \"darwin\", \"windows\"]"
-  ARCH_MATRIX: "[\"amd64\", \"arm64\"]"
-
 jobs:
   upload:
     name: Upload artifacts
@@ -24,8 +20,8 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
-        os: ${{ fromJSON(env.OS_MATRIX) }}
-        arch: ${{ fromJSON(env.ARCH_MATRIX) }}
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
@@ -96,8 +92,8 @@ jobs:
     needs: update-versions-json
     strategy:
       matrix:
-        os: ${{ fromJSON(env.OS_MATRIX) }}
-        arch: ${{ fromJSON(env.ARCH_MATRIX) }}
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64]
     steps:
       - uses: aws-actions/configure-aws-credentials@v1
         with:
