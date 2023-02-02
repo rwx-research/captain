@@ -8,6 +8,11 @@ on:
       - main
     types:
       - completed
+
+env:
+  OS_MATRIX: "[\"linux\", \"darwin\", \"windows\"]"
+  ARCH_MATRIX: "[\"amd64\", \"arm64\"]"
+
 jobs:
   upload:
     name: Upload artifacts
@@ -19,8 +24,8 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
-        os: [linux, darwin, windows]
-        arch: [amd64, arm64]
+        os: ${{ fromJSON(env.OS_MATRIX) }}
+        arch: ${{ fromJSON(env.ARCH_MATRIX) }}
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
@@ -49,7 +54,7 @@ jobs:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
         if: ${{ matrix.os == 'windows' }}
 
-  update-versions:
+  update-versions-json:
     name: Update versions.json
     runs-on: ubuntu-latest
     environment: Production
@@ -66,16 +71,42 @@ jobs:
       - run: |
           versions=$(
             aws s3api list-objects --bucket terraform-20221109133415397600000001 --no-paginate --query 'Contents[].Key' --output=json \
-            | jq -r '.[]' | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' \
+            | jq -r '.[]' | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' | grep -v "^v1$" \
           )
           encodedVersions=$(printf "%s\n" $versions | jq --raw-input | jq --slurp)
-          latest=$(printf "%s\n" $versions | grep -v "-" | head -n 1)
           latestV1=$(printf "%s\n" $versions | grep -v "-" | grep "v1" | head -n 1)
 
           jq -n \
             --argjson versions "$encodedVersions" \
-            --arg latest "$latest" \
             --arg latestV1 "$latestV1" \
-           '{captain: {latest: $latest, v1: $latestV1, versions: $versions}}' > versions.json
+           '{captain: {v1: $latestV1, versions: $versions}}' > versions.json
 
           aws s3 mv ./versions.json "s3://terraform-20221109133415397600000001/versions.json"
+
+          echo "latestV1=$latestV1" >> "$GITHUB_OUTPUT"
+
+  update-versioned-binaries:
+    name: Update versioned binaries
+    runs-on: ubuntu-latest
+    environment: Production
+    permissions:
+      contents: read
+      id-token: write
+    needs: update-versions-json
+    strategy:
+      matrix:
+        os: ${{ fromJSON(env.OS_MATRIX) }}
+        arch: ${{ fromJSON(env.ARCH_MATRIX) }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
+          role-duration-seconds: 900
+      - run: |
+          latestV1="${{ steps.update-versions-json.outputs.latestV1 }}"
+          sourceArtifactName=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$latestV1" | tr '[:upper:]' '[:lower:]')
+          destinationArtifactName=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-v1" | tr '[:upper:]' '[:lower:]')
+
+          aws s3 cp "s3://terraform-20221109133415397600000001/$sourceArtifactName" "s3://terraform-20221109133415397600000001/$destinationArtifactName"
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/$destinationArtifactName"
