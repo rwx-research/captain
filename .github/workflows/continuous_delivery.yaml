@@ -85,8 +85,8 @@ jobs:
       - id: release-versions
         run: |
           jq -n \
-            --argjson versions "${{ steps.find-versions.outputs.allVersions }}" \
-            --arg latestV1 "${{ steps.find-versions.outputs.latestV1 }}" \
+            --argjson versions '${{ steps.find-versions.outputs.allVersions }}' \
+            --arg latestV1 '${{ steps.find-versions.outputs.latestV1 }}' \
             '{captain: {v1: $latestV1, versions: $versions}}' > versions.json
 
           latestV1Binaries=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep -E '^captain-[^-]+-[^-]+-${{ steps.find-versions.outputs.latestV1 }}$')
