@@ -93,15 +93,15 @@ jobs:
 
           echo "Uploading versions.json"
           aws s3 mv ./versions.json "s3://terraform-20221109133415397600000001/versions.json"
-          paths="/versions.json"
+          paths="\"/versions.json\""
 
           for binary in $latestV1Binaries
           do
             aliasedBinary=$(echo "$binary" | sed "s/${{ steps.find-versions.outputs.latestV1 }}/v1/g")
             echo "Uploading $binary to $aliasedBinary"
             aws s3 cp "s3://terraform-20221109133415397600000001/$binary" "s3://terraform-20221109133415397600000001/$aliasedBinary"
-            paths="$paths /$aliasedBinary"
+            paths="$paths \"/$aliasedBinary\""
           done
 
           echo "updatedPaths=$paths" >> "$GITHUB_OUTPUT"
-      - run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "${{ steps.release-versions.outputs.updatedPaths }}"
+      - run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths ${{ steps.release-versions.outputs.updatedPaths }}
