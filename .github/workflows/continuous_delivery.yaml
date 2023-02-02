@@ -101,7 +101,7 @@ jobs:
           role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
           role-duration-seconds: 900
       - run: |
-          latestV1="${{ steps.update-versions-json.outputs.latestV1 }}"
+          latestV1="${{ needs.update-versions-json.outputs.latestV1 }}"
           sourceArtifactName=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$latestV1" | tr '[:upper:]' '[:lower:]')
           destinationArtifactName=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-v1" | tr '[:upper:]' '[:lower:]')
 
