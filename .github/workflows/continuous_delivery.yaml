@@ -68,14 +68,19 @@ jobs:
         run: |
           objects=$(aws s3api list-objects --bucket terraform-20221109133415397600000001 --no-paginate --query 'Contents[].Key' --output=json | jq -r '.[]')
 
-          echo "objects=$objects" >> "$GITHUB_OUTPUT"
+          echo "objects<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$objects" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
       - id: find-versions
         run: |
           versions=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' | grep -v "^v1$")
           allVersions=$(printf "%s\n" $versions | jq --raw-input | jq --slurp)
           latestV1=$(printf "%s\n" $versions | grep -v "-" | grep "v1" | head -n 1)
 
-          echo "allVersions=$allVersions" >> "$GITHUB_OUTPUT"
+          echo "allVersions<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$allVersions" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
           echo "latestV1=$latestV1" >> "$GITHUB_OUTPUT"
       - id: release-versions
         run: |
