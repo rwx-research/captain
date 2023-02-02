@@ -50,63 +50,53 @@ jobs:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
         if: ${{ matrix.os == 'windows' }}
 
-  update-versions-json:
-    name: Update versions.json
+  deliver-binaries:
+    name: Deliver binaries
     runs-on: ubuntu-latest
     environment: Production
     permissions:
       contents: read
       id-token: write
     needs: upload
-    outputs:
-      latestV1: ${{ steps.update.outputs.latestV1 }}
     steps:
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
           role-duration-seconds: 900
-      - id: update
+      - id: list-bucket
         run: |
-          versions=$(
-            aws s3api list-objects --bucket terraform-20221109133415397600000001 --no-paginate --query 'Contents[].Key' --output=json \
-            | jq -r '.[]' | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' | grep -v "^v1$" \
-          )
-          encodedVersions=$(printf "%s\n" $versions | jq --raw-input | jq --slurp)
+          objects=$(aws s3api list-objects --bucket terraform-20221109133415397600000001 --no-paginate --query 'Contents[].Key' --output=json | jq -r '.[]')
+
+          echo "objects=$objects" >> "$GITHUB_OUTPUT"
+      - id: find-versions
+        run: |
+          versions=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' | grep -v "^v1$")
+          allVersions=$(printf "%s\n" $versions | jq --raw-input | jq --slurp)
           latestV1=$(printf "%s\n" $versions | grep -v "-" | grep "v1" | head -n 1)
 
-          jq -n \
-            --argjson versions "$encodedVersions" \
-            --arg latestV1 "$latestV1" \
-           '{captain: {v1: $latestV1, versions: $versions}}' > versions.json
-
-          aws s3 mv ./versions.json "s3://terraform-20221109133415397600000001/versions.json"
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/versions.json"
-
+          echo "allVersions=$allVersions" >> "$GITHUB_OUTPUT"
           echo "latestV1=$latestV1" >> "$GITHUB_OUTPUT"
+      - id: release-versions
+        run: |
+          jq -n \
+            --argjson versions "${{ steps.find-versions.outputs.allVersions }}" \
+            --arg latestV1 "${{ steps.find-versions.outputs.latestV1 }}" \
+            '{captain: {v1: $latestV1, versions: $versions}}' > versions.json
 
-  update-versioned-binaries:
-    name: Update versioned binaries
-    runs-on: ubuntu-latest
-    environment: Production
-    permissions:
-      contents: read
-      id-token: write
-    needs: update-versions-json
-    strategy:
-      matrix:
-        os: [linux, darwin, windows]
-        arch: [amd64, arm64]
-    steps:
-      - uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-region: us-east-1
-          role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
-          role-duration-seconds: 900
-      - run: |
-          latestV1="${{ needs.update-versions-json.outputs.latestV1 }}"
-          sourceArtifactName=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$latestV1" | tr '[:upper:]' '[:lower:]')
-          destinationArtifactName=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-v1" | tr '[:upper:]' '[:lower:]')
+          latestV1Binaries=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep -E '^captain-[^-]+-[^-]+-${{ steps.find-versions.outputs.latestV1 }}$')
 
-          aws s3 cp "s3://terraform-20221109133415397600000001/$sourceArtifactName" "s3://terraform-20221109133415397600000001/$destinationArtifactName"
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/$destinationArtifactName"
+          echo "Uploading versions.json"
+          aws s3 mv ./versions.json "s3://terraform-20221109133415397600000001/versions.json"
+          paths="/versions.json"
+
+          for binary in $latestV1Binaries
+          do
+            aliasedBinary=$(echo "$binary" | sed "s/${{ steps.find-versions.outputs.latestV1 }}/v1/g")
+            echo "Uploading $binary to $aliasedBinary"
+            aws s3 cp "s3://terraform-20221109133415397600000001/$binary" "s3://terraform-20221109133415397600000001/$aliasedBinary"
+            paths="$paths /$aliasedBinary"
+          done
+
+          echo "updatedPaths=$paths" >> "$GITHUB_OUTPUT"
+      - run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "${{ steps.release-versions.outputs.updatedPaths }}"
