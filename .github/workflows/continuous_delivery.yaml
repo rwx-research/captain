@@ -58,13 +58,16 @@ jobs:
       contents: read
       id-token: write
     needs: upload
+    outputs:
+      latestV1: ${{ steps.update.outputs.latestV1 }}
     steps:
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
           role-duration-seconds: 900
-      - run: |
+      - id: update
+        run: |
           versions=$(
             aws s3api list-objects --bucket terraform-20221109133415397600000001 --no-paginate --query 'Contents[].Key' --output=json \
             | jq -r '.[]' | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' | grep -v "^v1$" \
