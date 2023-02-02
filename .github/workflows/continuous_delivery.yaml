@@ -82,6 +82,7 @@ jobs:
            '{captain: {v1: $latestV1, versions: $versions}}' > versions.json
 
           aws s3 mv ./versions.json "s3://terraform-20221109133415397600000001/versions.json"
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/versions.json"
 
           echo "latestV1=$latestV1" >> "$GITHUB_OUTPUT"
 
