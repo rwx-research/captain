@@ -157,6 +157,60 @@ var _ = Describe("GithubProvider.Validate", func() {
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing commit sha"))
 	})
+
+	It("requires a json object be passed as the job matrix", func() {
+		github := providers.GithubProvider{
+			AttemptedBy:    "test",
+			AccountName:    "rwx",
+			JobName:        "some-job",
+			RunAttempt:     "1",
+			RunID:          "123",
+			RepositoryName: "captain-cli",
+			BranchName:     "main",
+			CommitSha:      "abc123",
+			CommitMessage:  "fixed it",
+			JobMatrix:      "0",
+		}
+		err := github.Validate()
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(
+			`invalid github-job-matrix value supplied.
+Please provide '${{ toJSON(matrix) }}' with single quotes.
+This information is required due to a limitation with GitHub`,
+		))
+	})
+
+	It("accepts a json object job matrix", func() {
+		github := providers.GithubProvider{
+			AttemptedBy:    "test",
+			AccountName:    "rwx",
+			JobName:        "some-job",
+			RunAttempt:     "1",
+			RunID:          "123",
+			RepositoryName: "captain-cli",
+			BranchName:     "main",
+			CommitSha:      "abc123",
+			CommitMessage:  "fixed it",
+			JobMatrix:      `{"index": 0, "total": 4}`,
+		}
+		Expect(github.Validate()).To(BeNil())
+	})
+
+	It("allows a null job matrix if someone blindly copies the docs but doesnt actually have a matrix", func() {
+		github := providers.GithubProvider{
+			AttemptedBy:    "test",
+			AccountName:    "rwx",
+			JobName:        "some-job",
+			RunAttempt:     "1",
+			RunID:          "123",
+			RepositoryName: "captain-cli",
+			BranchName:     "main",
+			CommitSha:      "abc123",
+			CommitMessage:  "fixed it",
+			JobMatrix:      "null",
+		}
+		Expect(github.Validate()).To(BeNil())
+	})
 })
 
 var _ = Describe("GithubProvider.GetJobTags", func() {

@@ -87,5 +87,14 @@ func (g GithubProvider) Validate() error {
 		return errors.NewConfigurationError("missing commit sha")
 	}
 
+	if g.JobMatrix != "" && g.JobMatrix != "null" {
+		if !json.Valid([]byte(g.JobMatrix)) || g.JobMatrix[0] != byte('{') {
+			return errors.NewConfigurationError(
+				`invalid github-job-matrix value supplied.
+Please provide '${{ toJSON(matrix) }}' with single quotes.
+This information is required due to a limitation with GitHub.`)
+		}
+	}
+
 	return nil
 }
