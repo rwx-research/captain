@@ -37,15 +37,37 @@ jobs:
           role-duration-seconds: 900
       - run: |
           version=$(nix develop --command go run ./cmd/captain --version)
-          artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
-          aws s3 mv ./captain "s3://terraform-20221109133415397600000001/$artifact_name"
+          old_artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
+          aws s3 mv ./captain "s3://terraform-20221109133415397600000001/$old_artifact_name"
+
+          if [[ "${{ matrix.arch }}" == "amd64"]]; then
+            new_arch="x86_64"
+          elif [[ "${{ matrix.arch }}" == "arm64"]]; then
+            new_arch="aarch64"
+          else
+            echo "unmapped arch: ${{ matrix.arch }}"
+            exit 1
+          fi
+          new_artifact_name=$(echo "$version/${{ matrix.os }}/$new_arch/captain" | tr '[:upper:]' '[:lower:]')
+          aws s3 mv ./captain "s3://terraform-20221109133415397600000001/$new_artifact_name"
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
         if: ${{ matrix.os != 'windows' }}
       - run: |
           version=$(nix develop --command go run ./cmd/captain --version)
-          artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
-          aws s3 mv ./captain.exe "s3://terraform-20221109133415397600000001/$artifact_name"
+          old_artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
+          aws s3 mv ./captain.exe "s3://terraform-20221109133415397600000001/$old_artifact_name"
+
+          if [[ "${{ matrix.arch }}" == "amd64"]]; then
+            new_arch="x86_64"
+          elif [[ "${{ matrix.arch }}" == "arm64"]]; then
+            new_arch="aarch64"
+          else
+            echo "unmapped arch: ${{ matrix.arch }}"
+            exit 1
+          fi
+          new_artifact_name=$(echo "$version/${{ matrix.os }}/$new_arch/captain.exe" | tr '[:upper:]' '[:lower:]')
+          aws s3 mv ./captain.exe "s3://terraform-20221109133415397600000001/$new_artifact_name"
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
         if: ${{ matrix.os == 'windows' }}
@@ -66,11 +88,12 @@ jobs:
           role-duration-seconds: 900
       - id: list-bucket
         run: |
-          objects=$(aws s3api list-objects --bucket terraform-20221109133415397600000001 --no-paginate --query 'Contents[].Key' --output=json | jq -r '.[]')
+          objects=$(aws s3api list-objects --bucket terraform-20221109133415397600000001 --query 'Contents[].Key' --output=json | jq -r '.[]')
 
           echo "objects<<EOF" >> "$GITHUB_OUTPUT"
           echo "$objects" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
+      # Note: when removing support for the old version paths, update this to look at the new version paths
       - id: find-versions
         run: |
           versions=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' | grep -v "^v1$")
@@ -89,13 +112,21 @@ jobs:
             --arg latestV1 '${{ steps.find-versions.outputs.latestV1 }}' \
             '{captain: {v1: $latestV1, versions: $versions}}' > versions.json
 
-          latestV1Binaries=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep -E '^captain-[^-]+-[^-]+-${{ steps.find-versions.outputs.latestV1 }}$')
-
           echo "Uploading versions.json"
           aws s3 mv ./versions.json "s3://terraform-20221109133415397600000001/versions.json"
           paths="\"/versions.json\""
 
-          for binary in $latestV1Binaries
+          latestOldV1Binaries=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep -E '^captain-[^-]+-[^-]+-${{ steps.find-versions.outputs.latestV1 }}$')
+          for binary in $latestOldV1Binaries
+          do
+            aliasedBinary=$(echo "$binary" | sed "s/${{ steps.find-versions.outputs.latestV1 }}/v1/g")
+            echo "Uploading $binary to $aliasedBinary"
+            aws s3 cp "s3://terraform-20221109133415397600000001/$binary" "s3://terraform-20221109133415397600000001/$aliasedBinary"
+            paths="$paths \"/$aliasedBinary\""
+          done
+
+          latestNewV1Binaries=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep -E '^${{ steps.find-versions.outputs.latestV1 }}/[^/]+/[^/]+/captain(\.exe)?$')
+          for binary in $latestNewV1Binaries
           do
             aliasedBinary=$(echo "$binary" | sed "s/${{ steps.find-versions.outputs.latestV1 }}/v1/g")
             echo "Uploading $binary to $aliasedBinary"
