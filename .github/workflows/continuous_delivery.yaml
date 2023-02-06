@@ -40,9 +40,9 @@ jobs:
           old_artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
           aws s3 mv ./captain "s3://terraform-20221109133415397600000001/$old_artifact_name"
 
-          if [[ "${{ matrix.arch }}" == "amd64"]]; then
+          if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             new_arch="x86_64"
-          elif [[ "${{ matrix.arch }}" == "arm64"]]; then
+          elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
             new_arch="aarch64"
           else
             echo "unmapped arch: ${{ matrix.arch }}"
@@ -58,9 +58,9 @@ jobs:
           old_artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
           aws s3 mv ./captain.exe "s3://terraform-20221109133415397600000001/$old_artifact_name"
 
-          if [[ "${{ matrix.arch }}" == "amd64"]]; then
+          if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             new_arch="x86_64"
-          elif [[ "${{ matrix.arch }}" == "arm64"]]; then
+          elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
             new_arch="aarch64"
           else
             echo "unmapped arch: ${{ matrix.arch }}"
