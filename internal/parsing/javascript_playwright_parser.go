@@ -217,7 +217,14 @@ func (p JavaScriptPlaywrightParser) testsWithinSuite(
 			Column: &column,
 		}
 
-		attempt := v1.TestAttempt{Status: v1.NewSkippedTestStatus(nil)}
+		attempt := v1.TestAttempt{
+			Status: v1.NewSkippedTestStatus(nil),
+			Meta: map[string]any{
+				"annotations": test.Annotations,
+				"project":     test.ProjectName,
+				"tags":        spec.Tags,
+			},
+		}
 		pastAttempts := make([]v1.TestAttempt, 0)
 		resultCount := len(test.Results)
 		for i, result := range test.Results {

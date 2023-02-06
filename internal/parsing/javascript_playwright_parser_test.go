@@ -38,6 +38,17 @@ var _ = Describe("JavaScriptPlaywrightParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("parses the sample file with an error in global setup", func() {
+			fixture, err := os.Open("../../test/fixtures/playwright_global_other_error.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
+			Expect(err).ToNot(HaveOccurred())
+			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
+		})
+
 		It("errors on malformed JSON", func() {
 			testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(strings.NewReader(`{`))
 			Expect(err).To(HaveOccurred())

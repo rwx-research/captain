@@ -1,0 +1,494 @@
+{
+  "config": {
+    "forbidOnly": true,
+    "fullyParallel": true,
+    "globalSetup": "/__w/captain/captain/playwright/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/__w/captain/captain/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/__w/captain/captain/playwright/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/?(*.)@(spec|test).*"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 15000
+    },
+    "configFile": "/__w/captain/captain/playwright.config.ts",
+    "rootDir": "/__w/captain/captain/playwright/tests",
+    "quiet": false,
+    "shard": null,
+    "updateSnapshots": "missing",
+    "version": "1.30.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Auth Flow",
+          "file": "auth.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "You can signup and login with GitHub",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-6ea3e65eeb3e4b7faf86",
+              "file": "auth.spec.ts",
+              "line": 9,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "deep-link.spec.ts",
+      "file": "deep-link.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Deep links",
+          "file": "deep-link.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "work across domains when choosing an organization",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7b3622b94d166c44c4f8-d2fcafd16a18e8f62f2b",
+              "file": "deep-link.spec.ts",
+              "line": 11,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "feedback.spec.ts",
+      "file": "feedback.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Feedback submission functionality",
+          "file": "feedback.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Allows the submission of feedback to the support email address",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "eccc8495635fa8823817-d22990fc313eb1664223",
+              "file": "feedback.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "forgot-password.spec.ts",
+      "file": "forgot-password.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Forgot Password Flow",
+          "file": "forgot-password.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "You can sign up with email, forget your password, ask to reset it, reset it, and sign in with the new password",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852acb1e2419f9f859ad-7ca4ba4123f9edb9435f",
+              "file": "forgot-password.spec.ts",
+              "line": 9,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "login.spec.ts",
+      "file": "login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Login Flow",
+          "file": "login.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "When you are logged out and visit an authenticated path, you are redirected to the authenticated path after login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "41d3fd2474a19feb00a1-730520150833593d6f71",
+              "file": "login.spec.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "When you are logged out and visit an authenticated path, you are redirected to the authenticated path after signup",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "41d3fd2474a19feb00a1-58e4816d1573573303c6",
+              "file": "login.spec.ts",
+              "line": 32,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "onboarding.spec.ts",
+      "file": "onboarding.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Onboarding Flow",
+          "file": "onboarding.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "You can sign up to captain with email, create an organization, invite someone to that organization, and then they can signup with the invite code and automatically be added to the organization.",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fe534f0825407f213faa-23400fb099cd169aaa19",
+              "file": "onboarding.spec.ts",
+              "line": 60,
+              "column": 7
+            },
+            {
+              "title": "You can sign up to captain with email, create an organization, invite someone who already has an account to that organization, and then they can be deeplink logged in and added to the organization.",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fe534f0825407f213faa-d3776a4870cf50739602",
+              "file": "onboarding.spec.ts",
+              "line": 76,
+              "column": 7
+            },
+            {
+              "title": "You can sign up for abq with email and create an organization.",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fe534f0825407f213faa-46797fbc80c6cee73957",
+              "file": "onboarding.spec.ts",
+              "line": 95,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "one-click-onboarding.spec.ts",
+      "file": "one-click-onboarding.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "One Click Onboarding Flow",
+          "file": "one-click-onboarding.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "You can sign up with Github through the one click flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a99fa0985f1dabea6453-538d9f010aa8e905fbe1",
+              "file": "one-click-onboarding.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "You can see the unsupported message and form for non-Github selections in the one click flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a99fa0985f1dabea6453-bcda8c2f97d8014ffbce",
+              "file": "one-click-onboarding.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "You can see the unsupported message and form for not-listed selections in the one click flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a99fa0985f1dabea6453-5c035f701518fc30a3cb",
+              "file": "one-click-onboarding.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "telemetry.spec.ts",
+      "file": "telemetry.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Telemetry functionality",
+          "file": "telemetry.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Telemetry is enabled by default but can be opted out of",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a7cf16ab6d0dd51a5bfe-4c41a79e04dfa8d335d6",
+              "file": "telemetry.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "time-zone.spec.ts",
+      "file": "time-zone.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Automatic time zone detection",
+          "file": "time-zone.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Initially sets user's time zones to the browser's and lets them change it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 0,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "14ec9e8289095a74f7c1-1bab191cfd2400997e5b",
+              "file": "time-zone.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "expect(received).toHaveProperty(path)\n\nExpected path: \"pollingVal\"\nReceived path: []\n\nReceived value: \"Error while fetching Rails Config:\nSyntaxError: Unexpected token H in JSON at position 0\n    at JSON.parse (<anonymous>)\n    at APIResponse.json (/__w/captain/captain/node_modules/playwright-core/lib/client/fetch.js:238:17)\n    at runNextTicks (node:internal/process/task_queues:61:5)\n    at processImmediate (node:internal/timers:437:9)\n    at _test.expect.poll.timeout (/__w/captain/captain/playwright/global-setup.ts:17:26)\n    at /__w/captain/captain/node_modules/@playwright/test/lib/expect.js:179:19\n    at TimeoutRunner.run (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:46:14)\n    at raceAgainstTimeout (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:90:15)\n    at pollAgainstTimeout (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:110:38)\n    at pollMatcher (/__w/captain/captain/node_modules/@playwright/test/lib/expect.js:178:18)\n    at globalSetup (/__w/captain/captain/playwright/global-setup.ts:5:3)\n    at /__w/captain/captain/node_modules/@playwright/test/lib/runner.js:484:11\n    at Runner._runAndReportError (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:501:7)\n    at Runner._performGlobalSetup (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:470:5)\n    at Runner._run (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:380:28)\"\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate",
+      "stack": "Error: expect(received).toHaveProperty(path)\n\nExpected path: \"pollingVal\"\nReceived path: []\n\nReceived value: \"Error while fetching Rails Config:\nSyntaxError: Unexpected token H in JSON at position 0\n    at JSON.parse (<anonymous>)\n    at APIResponse.json (/__w/captain/captain/node_modules/playwright-core/lib/client/fetch.js:238:17)\n    at runNextTicks (node:internal/process/task_queues:61:5)\n    at processImmediate (node:internal/timers:437:9)\n    at _test.expect.poll.timeout (/__w/captain/captain/playwright/global-setup.ts:17:26)\n    at /__w/captain/captain/node_modules/@playwright/test/lib/expect.js:179:19\n    at TimeoutRunner.run (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:46:14)\n    at raceAgainstTimeout (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:90:15)\n    at pollAgainstTimeout (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:110:38)\n    at pollMatcher (/__w/captain/captain/node_modules/@playwright/test/lib/expect.js:178:18)\n    at globalSetup (/__w/captain/captain/playwright/global-setup.ts:5:3)\n    at /__w/captain/captain/node_modules/@playwright/test/lib/runner.js:484:11\n    at Runner._runAndReportError (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:501:7)\n    at Runner._performGlobalSetup (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:470:5)\n    at Runner._run (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:380:28)\"\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate\n    at globalSetup (/__w/captain/captain/playwright/global-setup.ts:5:3)"
+    }
+  ]
+}

@@ -33,6 +33,11 @@
       },
       "attempt": {
         "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
         "status": {
           "kind": "skipped"
         }
@@ -50,6 +55,11 @@
       },
       "attempt": {
         "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
         "status": {
           "kind": "skipped"
         }
@@ -67,6 +77,11 @@
       },
       "attempt": {
         "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "webkit",
+          "tags": []
+        },
         "status": {
           "kind": "skipped"
         }
@@ -84,6 +99,11 @@
       },
       "attempt": {
         "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "Mobile Chrome",
+          "tags": []
+        },
         "status": {
           "kind": "skipped"
         }
@@ -101,6 +121,11 @@
       },
       "attempt": {
         "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "Mobile Safari",
+          "tags": []
+        },
         "status": {
           "kind": "skipped"
         }
@@ -118,6 +143,11 @@
       },
       "attempt": {
         "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "Microsoft Edge",
+          "tags": []
+        },
         "status": {
           "kind": "skipped"
         }
@@ -135,6 +165,11 @@
       },
       "attempt": {
         "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "Google Chrome",
+          "tags": []
+        },
         "status": {
           "kind": "skipped"
         }

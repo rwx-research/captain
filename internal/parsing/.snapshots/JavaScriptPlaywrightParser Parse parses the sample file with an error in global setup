@@ -1,0 +1,370 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Playwright"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 14,
+    "otherErrors": 1,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 0,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 14,
+    "successful": 0,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "Auth Flow You can signup and login with GitHub",
+      "lineage": [
+        "Auth Flow",
+        "You can signup and login with GitHub"
+      ],
+      "location": {
+        "file": "auth.spec.ts",
+        "line": 9,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Deep links work across domains when choosing an organization",
+      "lineage": [
+        "Deep links",
+        "work across domains when choosing an organization"
+      ],
+      "location": {
+        "file": "deep-link.spec.ts",
+        "line": 11,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Feedback submission functionality Allows the submission of feedback to the support email address",
+      "lineage": [
+        "Feedback submission functionality",
+        "Allows the submission of feedback to the support email address"
+      ],
+      "location": {
+        "file": "feedback.spec.ts",
+        "line": 8,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Forgot Password Flow You can sign up with email, forget your password, ask to reset it, reset it, and sign in with the new password",
+      "lineage": [
+        "Forgot Password Flow",
+        "You can sign up with email, forget your password, ask to reset it, reset it, and sign in with the new password"
+      ],
+      "location": {
+        "file": "forgot-password.spec.ts",
+        "line": 9,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Login Flow When you are logged out and visit an authenticated path, you are redirected to the authenticated path after login",
+      "lineage": [
+        "Login Flow",
+        "When you are logged out and visit an authenticated path, you are redirected to the authenticated path after login"
+      ],
+      "location": {
+        "file": "login.spec.ts",
+        "line": 9,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Login Flow When you are logged out and visit an authenticated path, you are redirected to the authenticated path after signup",
+      "lineage": [
+        "Login Flow",
+        "When you are logged out and visit an authenticated path, you are redirected to the authenticated path after signup"
+      ],
+      "location": {
+        "file": "login.spec.ts",
+        "line": 32,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Onboarding Flow You can sign up to captain with email, create an organization, invite someone to that organization, and then they can signup with the invite code and automatically be added to the organization.",
+      "lineage": [
+        "Onboarding Flow",
+        "You can sign up to captain with email, create an organization, invite someone to that organization, and then they can signup with the invite code and automatically be added to the organization."
+      ],
+      "location": {
+        "file": "onboarding.spec.ts",
+        "line": 60,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Onboarding Flow You can sign up to captain with email, create an organization, invite someone who already has an account to that organization, and then they can be deeplink logged in and added to the organization.",
+      "lineage": [
+        "Onboarding Flow",
+        "You can sign up to captain with email, create an organization, invite someone who already has an account to that organization, and then they can be deeplink logged in and added to the organization."
+      ],
+      "location": {
+        "file": "onboarding.spec.ts",
+        "line": 76,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Onboarding Flow You can sign up for abq with email and create an organization.",
+      "lineage": [
+        "Onboarding Flow",
+        "You can sign up for abq with email and create an organization."
+      ],
+      "location": {
+        "file": "onboarding.spec.ts",
+        "line": 95,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "One Click Onboarding Flow You can sign up with Github through the one click flow",
+      "lineage": [
+        "One Click Onboarding Flow",
+        "You can sign up with Github through the one click flow"
+      ],
+      "location": {
+        "file": "one-click-onboarding.spec.ts",
+        "line": 6,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "One Click Onboarding Flow You can see the unsupported message and form for non-Github selections in the one click flow",
+      "lineage": [
+        "One Click Onboarding Flow",
+        "You can see the unsupported message and form for non-Github selections in the one click flow"
+      ],
+      "location": {
+        "file": "one-click-onboarding.spec.ts",
+        "line": 17,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "One Click Onboarding Flow You can see the unsupported message and form for not-listed selections in the one click flow",
+      "lineage": [
+        "One Click Onboarding Flow",
+        "You can see the unsupported message and form for not-listed selections in the one click flow"
+      ],
+      "location": {
+        "file": "one-click-onboarding.spec.ts",
+        "line": 40,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Telemetry functionality Telemetry is enabled by default but can be opted out of",
+      "lineage": [
+        "Telemetry functionality",
+        "Telemetry is enabled by default but can be opted out of"
+      ],
+      "location": {
+        "file": "telemetry.spec.ts",
+        "line": 7,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Automatic time zone detection Initially sets user's time zones to the browser's and lets them change it",
+      "lineage": [
+        "Automatic time zone detection",
+        "Initially sets user's time zones to the browser's and lets them change it"
+      ],
+      "location": {
+        "file": "time-zone.spec.ts",
+        "line": 8,
+        "column": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "meta": {
+          "annotations": [],
+          "project": "chromium",
+          "tags": []
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    }
+  ],
+  "otherErrors": [
+    {
+      "backtrace": [
+        "at JSON.parse (\u003canonymous\u003e)",
+        "at APIResponse.json (/__w/captain/captain/node_modules/playwright-core/lib/client/fetch.js:238:17)",
+        "at runNextTicks (node:internal/process/task_queues:61:5)",
+        "at processImmediate (node:internal/timers:437:9)",
+        "at _test.expect.poll.timeout (/__w/captain/captain/playwright/global-setup.ts:17:26)",
+        "at /__w/captain/captain/node_modules/@playwright/test/lib/expect.js:179:19",
+        "at TimeoutRunner.run (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:46:14)",
+        "at raceAgainstTimeout (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:90:15)",
+        "at pollAgainstTimeout (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:110:38)",
+        "at pollMatcher (/__w/captain/captain/node_modules/@playwright/test/lib/expect.js:178:18)",
+        "at globalSetup (/__w/captain/captain/playwright/global-setup.ts:5:3)",
+        "at /__w/captain/captain/node_modules/@playwright/test/lib/runner.js:484:11",
+        "at Runner._runAndReportError (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:501:7)",
+        "at Runner._performGlobalSetup (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:470:5)",
+        "at Runner._run (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:380:28)\"\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate",
+        "at globalSetup (/__w/captain/captain/playwright/global-setup.ts:5:3)"
+      ],
+      "message": "expect(received).toHaveProperty(path)\n\nExpected path: \"pollingVal\"\nReceived path: []\n\nReceived value: \"Error while fetching Rails Config:\nSyntaxError: Unexpected token H in JSON at position 0\n    at JSON.parse (\u003canonymous\u003e)\n    at APIResponse.json (/__w/captain/captain/node_modules/playwright-core/lib/client/fetch.js:238:17)\n    at runNextTicks (node:internal/process/task_queues:61:5)\n    at processImmediate (node:internal/timers:437:9)\n    at _test.expect.poll.timeout (/__w/captain/captain/playwright/global-setup.ts:17:26)\n    at /__w/captain/captain/node_modules/@playwright/test/lib/expect.js:179:19\n    at TimeoutRunner.run (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:46:14)\n    at raceAgainstTimeout (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:90:15)\n    at pollAgainstTimeout (/__w/captain/captain/node_modules/playwright-core/lib/utils/timeoutRunner.js:110:38)\n    at pollMatcher (/__w/captain/captain/node_modules/@playwright/test/lib/expect.js:178:18)\n    at globalSetup (/__w/captain/captain/playwright/global-setup.ts:5:3)\n    at /__w/captain/captain/node_modules/@playwright/test/lib/runner.js:484:11\n    at Runner._runAndReportError (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:501:7)\n    at Runner._performGlobalSetup (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:470:5)\n    at Runner._run (/__w/captain/captain/node_modules/@playwright/test/lib/runner.js:380:28)\"\n\nCall Log:\n- Timeout 60000ms exceeded while waiting on the predicate"
+    }
+  ]
+}
