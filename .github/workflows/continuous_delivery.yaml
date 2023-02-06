@@ -38,7 +38,7 @@ jobs:
       - run: |
           version=$(nix develop --command go run ./cmd/captain --version)
           old_artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
-          aws s3 mv ./captain "s3://terraform-20221109133415397600000001/$old_artifact_name"
+          aws s3 cp ./captain "s3://terraform-20221109133415397600000001/$old_artifact_name"
 
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             new_arch="x86_64"
@@ -49,14 +49,14 @@ jobs:
             exit 1
           fi
           new_artifact_name=$(echo "$version/${{ matrix.os }}/$new_arch/captain" | tr '[:upper:]' '[:lower:]')
-          aws s3 mv ./captain "s3://terraform-20221109133415397600000001/$new_artifact_name"
+          aws s3 cp ./captain "s3://terraform-20221109133415397600000001/$new_artifact_name"
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
         if: ${{ matrix.os != 'windows' }}
       - run: |
           version=$(nix develop --command go run ./cmd/captain --version)
           old_artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
-          aws s3 mv ./captain.exe "s3://terraform-20221109133415397600000001/$old_artifact_name"
+          aws s3 cp ./captain.exe "s3://terraform-20221109133415397600000001/$old_artifact_name"
 
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             new_arch="x86_64"
@@ -67,7 +67,7 @@ jobs:
             exit 1
           fi
           new_artifact_name=$(echo "$version/${{ matrix.os }}/$new_arch/captain.exe" | tr '[:upper:]' '[:lower:]')
-          aws s3 mv ./captain.exe "s3://terraform-20221109133415397600000001/$new_artifact_name"
+          aws s3 cp ./captain.exe "s3://terraform-20221109133415397600000001/$new_artifact_name"
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
         if: ${{ matrix.os == 'windows' }}
