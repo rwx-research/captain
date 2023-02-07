@@ -115,12 +115,15 @@ func parseWith(file fs.File, parsers []Parser, log *zap.SugaredLogger) (*v1.Test
 		return nil, err
 	}
 
-	finalResults.DerivedFrom = []v1.OriginalTestResults{
-		{
-			OriginalFilePath: file.Name(),
-			Contents:         base64.StdEncoding.EncodeToString(buf),
-			GroupNumber:      1,
-		},
+	// only set DerivedFrom for non-RWX parsers
+	if _, ok := firstParser.(RWXParser); !ok {
+		finalResults.DerivedFrom = []v1.OriginalTestResults{
+			{
+				OriginalFilePath: file.Name(),
+				Contents:         base64.StdEncoding.EncodeToString(buf),
+				GroupNumber:      1,
+			},
+		}
 	}
 
 	return &finalResults, nil

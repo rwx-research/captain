@@ -3,6 +3,7 @@ package parsing_test
 import (
 	"encoding/base64"
 	"io"
+	"os"
 	"strings"
 
 	"go.uber.org/zap"
@@ -201,6 +202,29 @@ var _ = Describe("Parse", func() {
 		buf, err := io.ReadAll(file)
 		Expect(string(buf)).To(Equal("the fake contents to base64 encode"))
 		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("does not set DerivedFrom when parsing with the RWX parser", func() {
+		fixture, err := os.Open("../../test/fixtures/rwx/v1_not_derived.json")
+		Expect(err).ToNot(HaveOccurred())
+		buf, err := io.ReadAll(fixture)
+		Expect(err).ToNot(HaveOccurred())
+
+		file = new(mocks.File)
+		file.Reader = strings.NewReader(string(buf))
+		file.MockName = func() string { return "some/path/to/file" }
+
+		results, err := parsing.Parse(
+			file,
+			parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{parsing.RWXParser{}},
+				Logger:                   log,
+			},
+		)
+
+		Expect(results).NotTo(BeNil())
+		Expect(results.DerivedFrom).To(BeNil())
+		Expect(err).To(BeNil())
 	})
 
 	Describe("when no language and kind are provided", func() {
