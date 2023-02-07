@@ -18,12 +18,7 @@ type BuildkiteEnv struct {
 	BuildkiteRetryCount        string
 }
 type BuildkiteProvider struct {
-	Env           BuildkiteEnv
-	GitRepository struct {
-		Branch        string
-		CommitSha     string
-		CommitMessage string
-	}
+	Env BuildkiteEnv
 }
 
 func (b BuildkiteProvider) GetAttemptedBy() string {
@@ -31,26 +26,14 @@ func (b BuildkiteProvider) GetAttemptedBy() string {
 }
 
 func (b BuildkiteProvider) GetBranchName() string {
-	if b.GitRepository.Branch != "" {
-		return b.GitRepository.Branch
-	}
-
 	return b.Env.BuildkiteBranch
 }
 
 func (b BuildkiteProvider) GetCommitSha() string {
-	if b.GitRepository.CommitSha != "" {
-		return b.GitRepository.CommitSha
-	}
-
 	return b.Env.BuildkiteCommit
 }
 
 func (b BuildkiteProvider) GetCommitMessage() string {
-	if b.GitRepository.CommitMessage != "" {
-		return b.GitRepository.CommitMessage
-	}
-
 	return b.Env.BuildkiteMessage
 }
 

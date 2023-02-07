@@ -114,24 +114,14 @@ func MakeProviderAdapter(cfg config) (providers.Provider, error) {
 
 func MakeBuildkiteProvider(cfg config) (providers.BuildkiteProvider, error) {
 	return providers.BuildkiteProvider{
-		Env:           cfg.CI.Buildkite.Env,
-		GitRepository: cfg.VCS.GitRepository,
+		Env: cfg.CI.Buildkite.Env,
 	}, nil
 }
 
 func MakeGithubProvider(cfg config) (providers.GithubProvider, error) {
-	branch := cfg.VCS.GitRepository.Branch
-	if branch == "" {
-		if cfg.CI.Github.Run.EventName == "pull_request" {
-			branch = cfg.VCS.Github.HeadRef
-		} else {
-			branch = cfg.VCS.Github.RefName
-		}
-	}
-
-	commitSha := cfg.VCS.GitRepository.CommitSha
-	if commitSha == "" {
-		commitSha = cfg.VCS.Github.CommitSha
+	branchName := cfg.VCS.Github.RefName
+	if cfg.CI.Github.Run.EventName == "pull_request" {
+		branchName = cfg.VCS.Github.HeadRef
 	}
 
 	eventPayloadData := struct {
@@ -149,11 +139,6 @@ func MakeGithubProvider(cfg config) (providers.GithubProvider, error) {
 		}
 	}
 
-	commitMessage := cfg.VCS.GitRepository.CommitMessage
-	if commitMessage == "" {
-		commitMessage = eventPayloadData.HeadCommit.Message
-	}
-
 	attemptedBy := cfg.CI.Github.Run.TriggeringActor
 	if attemptedBy == "" {
 		attemptedBy = cfg.CI.Github.Run.ExecutingActor
@@ -164,9 +149,9 @@ func MakeGithubProvider(cfg config) (providers.GithubProvider, error) {
 	return providers.GithubProvider{
 		AccountName:    strings.TrimSuffix(owner, "/"),
 		AttemptedBy:    attemptedBy,
-		BranchName:     branch,
-		CommitMessage:  commitMessage,
-		CommitSha:      commitSha,
+		BranchName:     branchName,
+		CommitMessage:  eventPayloadData.HeadCommit.Message,
+		CommitSha:      cfg.VCS.Github.CommitSha,
 		JobName:        cfg.CI.Github.Job.Name,
 		JobMatrix:      cfg.CI.Github.Job.Matrix,
 		RunAttempt:     cfg.CI.Github.Run.Attempt,
