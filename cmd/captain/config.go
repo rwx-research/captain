@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+
+	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -43,6 +46,11 @@ type config struct {
 			RefName    string
 			HeadRef    string
 			CommitSha  string
+		}
+		GitRepository struct {
+			Branch        string
+			CommitSha     string
+			CommitMessage string
 		}
 	}
 }
@@ -198,5 +206,33 @@ func init() {
 			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
+
+		bindGitRepoConfig()
 	})
+}
+
+func bindGitRepoConfig() {
+	path, err := os.Getwd()
+	if err != nil {
+		return
+	}
+
+	repo, err := git.PlainOpenWithOptions(path, &git.PlainOpenOptions{DetectDotGit: true})
+	if err != nil {
+		return
+	}
+
+	head, err := repo.Head()
+	if err != nil {
+		return
+	}
+
+	commit, err := repo.CommitObject(head.Hash())
+	if err != nil {
+		return
+	}
+
+	viper.Set("vcs.gitRepository.branch", head.Name().Short())
+	viper.Set("vcs.gitRepository.commitSha", commit.Hash.String())
+	viper.Set("vcs.gitRepository.commitMessage", commit.Message)
 }
