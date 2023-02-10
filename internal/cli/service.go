@@ -223,13 +223,10 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		otherErrorCount += testResult.Summary.OtherErrors
 
 		for i, test := range testResult.Tests {
-			if s.isQuarantined(test, quarantinedTestCases) {
+			if s.isQuarantined(test, quarantinedTestCases) && test.Attempt.Status.PotentiallyFlaky() {
 				testResult.Tests[i] = test.Quarantine()
-
-				if test.Attempt.Status.ImpliesFailure() {
-					s.Log.Debugf("quarantined %v test: %v", test.Attempt.Status, test)
-					quarantinedFailedTests = append(quarantinedFailedTests, test)
-				}
+				s.Log.Debugf("quarantined %v test: %v", test.Attempt.Status, test)
+				quarantinedFailedTests = append(quarantinedFailedTests, test)
 			} else if test.Attempt.Status.ImpliesFailure() {
 				s.Log.Debugf("did not quarantine %v test: %v", test.Attempt.Status, test)
 				unquarantinedFailedTests = append(unquarantinedFailedTests, test)

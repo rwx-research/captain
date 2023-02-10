@@ -140,6 +140,24 @@ var _ = Describe("Test", func() {
 		})
 	})
 
+	Describe("PotentiallyFlaky", func() {
+		It("is potentially flaky for failed statuses", func() {
+			Expect(v1.NewFailedTestStatus(nil, nil, nil).PotentiallyFlaky()).To(Equal(true))
+		})
+
+		It("is not potentially flaky for canceled statuses", func() {
+			Expect(v1.NewCanceledTestStatus().PotentiallyFlaky()).To(Equal(false))
+		})
+
+		It("is potentially flaky for timed out statuses", func() {
+			Expect(v1.NewTimedOutTestStatus().PotentiallyFlaky()).To(Equal(true))
+		})
+
+		It("is not potentially flaky for other statuses", func() {
+			Expect(v1.NewSuccessfulTestStatus().PotentiallyFlaky()).To(Equal(false))
+		})
+	})
+
 	Describe("Quarantine", func() {
 		It("quarantines a test that is not quarantined", func() {
 			originalStatus := v1.NewFailedTestStatus(nil, nil, nil)

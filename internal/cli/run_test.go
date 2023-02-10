@@ -896,7 +896,7 @@ var _ = Describe("Run", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 
-			It("reports quarantined status with an original status of success", func() {
+			It("reports the original status of success", func() {
 				logMessages := make([]string, 0)
 
 				for _, log := range recordedLogs.All() {
@@ -912,8 +912,7 @@ var _ = Describe("Run", func() {
 				err := json.Unmarshal(uploadedTestResults, testResults)
 				Expect(err).To(BeNil())
 
-				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[0].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
 
 				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
 				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))

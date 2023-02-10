@@ -70,6 +70,10 @@ func (s TestStatus) ImpliesFailure() bool {
 	return s.Kind == TestStatusFailed || s.Kind == TestStatusCanceled || s.Kind == TestStatusTimedOut
 }
 
+func (s TestStatus) PotentiallyFlaky() bool {
+	return s.Kind == TestStatusFailed || s.Kind == TestStatusTimedOut
+}
+
 type TestAttempt struct {
 	Duration   *time.Duration `json:"durationInNanoseconds"`
 	Meta       map[string]any `json:"meta,omitempty"`
