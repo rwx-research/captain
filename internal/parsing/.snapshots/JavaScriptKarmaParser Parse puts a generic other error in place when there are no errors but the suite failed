@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Karma"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 1,
+    "otherErrors": 1,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 0,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 0,
+    "successful": 1,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "id": "spec3",
+      "name": "Some test context is a contextual passing test",
+      "lineage": [
+        "Some test",
+        "context",
+        "is a contextual passing test"
+      ],
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "meta": {
+          "browserFullName": "Mozilla/5.0",
+          "browserId": "87843490",
+          "browserName": "Mozilla/5.0 "
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ],
+  "otherErrors": [
+    {
+      "message": "An unknown error occurred"
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "browsers": {
+    "87843490": {
+      "id": "87843490",
+      "fullName": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+      "name": "Chrome 109.0.0.0 (Mac OS 10.15.7)",
+      "state": "DISCONNECTED",
+      "lastResult": {
+        "startTime": 1677015045628,
+        "total": 4,
+        "success": 2,
+        "failed": 1,
+        "skipped": 1,
+        "totalTime": 6,
+        "netTime": 2,
+        "error": true,
+        "disconnected": false
+      },
+      "disconnectsCount": 0,
+      "noActivityTimeout": 30000,
+      "disconnectDelay": 2000
+    }
+  },
+  "result": {
+    "87843490": [
+      {
+        "fullName": "Some test context is a contextual passing test",
+        "description": "is a contextual passing test",
+        "id": "spec3",
+        "log": [],
+        "skipped": false,
+        "disabled": false,
+        "pending": false,
+        "success": true,
+        "suite": ["Some test", "context"],
+        "time": 1,
+        "executedExpectationsCount": 1,
+        "passedExpectations": [
+          {
+            "matcherName": "toBe",
+            "message": "Passed.",
+            "stack": "",
+            "passed": true
+          }
+        ],
+        "properties": null
+      },
+      {
+        "fullName": "Some test is a passing test",
+        "description": "is a passing test",
+        "id": "spec0",
+        "log": [],
+        "skipped": false,
+        "disabled": false,
+        "pending": false,
+        "success": true,
+        "suite": ["Some test"],
+        "time": 1,
+        "executedExpectationsCount": 2,
+        "passedExpectations": [
+          {
+            "matcherName": "toBe",
+            "message": "Passed.",
+            "stack": "",
+            "passed": true
+          },
+          {
+            "matcherName": "toBe",
+            "message": "Passed.",
+            "stack": "",
+            "passed": true
+          }
+        ],
+        "properties": null
+      },
+      {
+        "fullName": "Some test is a skipped test",
+        "description": "is a skipped test",
+        "id": "spec1",
+        "log": [],
+        "skipped": true,
+        "disabled": false,
+        "pending": true,
+        "success": true,
+        "suite": ["Some test"],
+        "time": 0,
+        "executedExpectationsCount": 0,
+        "passedExpectations": [],
+        "properties": null
+      },
+      {
+        "fullName": "Some test is a failing test",
+        "description": "is a failing test",
+        "id": "spec2",
+        "log": [
+          "Expected true to be false.\n    at <Jasmine>\n    at UserContext.<anonymous> (http://localhost:9876/base/tests/some-test.js?0928787523d1ecf8fe8e5c6b04ef9abb48348e11:19:18)\n    at <Jasmine>"
+        ],
+        "skipped": false,
+        "disabled": false,
+        "pending": false,
+        "success": false,
+        "suite": ["Some test"],
+        "time": 0,
+        "executedExpectationsCount": 1,
+        "passedExpectations": [],
+        "properties": null,
+        "debug_url": "http://localhost:9876/debug.html?spec=Some%20test%20is%20a%20failing%20test"
+      }
+    ]
+  },
+  "summary": {
+    "success": 2,
+    "failed": 1,
+    "skipped": 1,
+    "error": true,
+    "disconnected": false,
+    "exitCode": 1
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Karma"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 4,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 1,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 1,
+    "successful": 2,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "id": "spec3",
+      "name": "Some test context is a contextual passing test",
+      "lineage": [
+        "Some test",
+        "context",
+        "is a contextual passing test"
+      ],
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "meta": {
+          "browserFullName": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+          "browserId": "87843490",
+          "browserName": "Chrome macOS"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "spec0",
+      "name": "Some test is a passing test",
+      "lineage": [
+        "Some test",
+        "is a passing test"
+      ],
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "meta": {
+          "browserFullName": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+          "browserId": "87843490",
+          "browserName": "Chrome macOS"
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "id": "spec1",
+      "name": "Some test is a skipped test",
+      "lineage": [
+        "Some test",
+        "is a skipped test"
+      ],
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "browserFullName": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+          "browserId": "87843490",
+          "browserName": "Chrome macOS"
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "id": "spec2",
+      "name": "Some test is a failing test",
+      "lineage": [
+        "Some test",
+        "is a failing test"
+      ],
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "browserFullName": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+          "browserId": "87843490",
+          "browserName": "Chrome macOS"
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected true to be false.",
+          "backtrace": [
+            "    at \u003cJasmine\u003e",
+            "    at UserContext.\u003canonymous\u003e (http://localhost:9876/base/tests/some-test.js?0928787523d1ecf8fe8e5c6b04ef9abb48348e11:19:18)",
+            "    at \u003cJasmine\u003e"
+          ]
+        }
+      }
+    }
+  ]
+}

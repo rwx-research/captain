@@ -12,6 +12,7 @@ const (
 	FrameworkKindGinkgo     FrameworkKind = "Ginkgo"
 	FrameworkKindGoTest     FrameworkKind = "go test"
 	FrameworkKindJest       FrameworkKind = "Jest"
+	FrameworkKindKarma      FrameworkKind = "Karma"
 	FrameworkKindMinitest   FrameworkKind = "minitest"
 	FrameworkKindMocha      FrameworkKind = "Mocha"
 	FrameworkKindPHPUnit    FrameworkKind = "PHPUnit"
@@ -60,6 +61,9 @@ var (
 	)
 	JavaScriptJestFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindJest},
+	)
+	JavaScriptKarmaFramework = registerFramework(
+		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindKarma},
 	)
 	JavaScriptMochaFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindMocha},
