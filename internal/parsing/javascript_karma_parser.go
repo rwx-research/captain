@@ -3,7 +3,7 @@ package parsing
 import (
 	"encoding/json"
 	"io"
-	"strings"
+	"regexp"
 	"time"
 
 	"github.com/mileusna/useragent"
@@ -59,6 +59,8 @@ type JavaScriptKarmaSummary struct {
 	Success      int  `json:"success"`
 }
 
+var javaScriptKarmaBacktraceSeparatorRegexp = regexp.MustCompile(`\r?\n *`)
+
 func (p JavaScriptKarmaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	var testResults JavaScriptKarmaTestResults
 
@@ -100,9 +102,10 @@ func (p JavaScriptKarmaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			default:
 				var errorMessage string
 				var backtrace []string
+
 				if len(testCase.Log) > 0 {
 					firstLog := testCase.Log[0]
-					firstLogLines := strings.Split(firstLog, "\n")
+					firstLogLines := javaScriptKarmaBacktraceSeparatorRegexp.Split(firstLog, -1)
 					if len(firstLogLines) > 0 {
 						errorMessage = firstLogLines[0]
 						backtrace = firstLogLines[1:]

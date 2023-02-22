@@ -97,9 +97,9 @@
           "kind": "failed",
           "message": "Expected true to be false.",
           "backtrace": [
-            "    at \u003cJasmine\u003e",
-            "    at UserContext.\u003canonymous\u003e (http://localhost:9876/base/tests/some-test.js?0928787523d1ecf8fe8e5c6b04ef9abb48348e11:19:18)",
-            "    at \u003cJasmine\u003e"
+            "at \u003cJasmine\u003e",
+            "at UserContext.\u003canonymous\u003e (http://localhost:9876/base/tests/some-test.js?0928787523d1ecf8fe8e5c6b04ef9abb48348e11:19:18)",
+            "at \u003cJasmine\u003e"
           ]
         }
       }
