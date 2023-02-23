@@ -103,7 +103,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
 	// not affect the exit code.
 	if testResults != nil {
-		uploadResults, uploadError = s.reportTestResults(ctx, cfg, []v1.TestResults{*testResults})
+		uploadResults, uploadError = s.reportTestResults(ctx, cfg, *testResults)
 	} else {
 		s.Log.Debugf("No test results were parsed. Globbed files: %v", testResultsFiles)
 	}
@@ -405,7 +405,7 @@ func (s Service) isQuarantined(failedTest v1.Test, quarantinedTestCases []api.Qu
 func (s Service) reportTestResults(
 	ctx context.Context,
 	cfg RunConfig,
-	testResults []v1.TestResults,
+	testResults v1.TestResults,
 ) ([]api.TestResultsUploadResult, error) {
 	for outputPath, writeReport := range cfg.Reporters {
 		file, err := s.FileSystem.Create(outputPath)
@@ -423,7 +423,7 @@ func (s Service) reportTestResults(
 		}
 	}
 
-	return s.performTestResultsUpload(ctx, cfg.SuiteID, testResults)
+	return s.performTestResultsUpload(ctx, cfg.SuiteID, []v1.TestResults{testResults})
 }
 
 func (s Service) printHeader() {

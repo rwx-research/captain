@@ -14,14 +14,14 @@ import (
 var _ = Describe("Text Report", func() {
 	var (
 		mockFile    *mocks.File
-		testResults []v1.TestResults
+		testResults v1.TestResults
 	)
 
 	BeforeEach(func() {
 		mockFile = new(mocks.File)
 		mockFile.Builder = new(strings.Builder)
 
-		testResults = []v1.TestResults{{
+		testResults = v1.TestResults{
 			Summary: v1.Summary{
 				Status:     v1.SummaryStatusFailed,
 				Tests:      4,
@@ -60,7 +60,7 @@ var _ = Describe("Text Report", func() {
 					},
 				},
 			},
-		}}
+		}
 	})
 
 	It("produces a readable summary", func() {

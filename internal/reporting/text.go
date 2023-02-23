@@ -9,26 +9,22 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-func WriteTextSummary(file fs.File, testResults []v1.TestResults) error {
+func WriteTextSummary(file fs.File, testResults v1.TestResults) error {
 	statuses := make(map[v1.TestStatusKind][]string)
-	totalTests := 0
+	totalTests := testResults.Summary.Tests
 
-	for _, testResult := range testResults {
-		totalTests += testResult.Summary.Tests
-
-		for _, test := range testResult.Tests {
-			if test.Attempt.Status.Kind == v1.TestStatusSuccessful {
-				continue
-			}
-
-			tests, ok := statuses[test.Attempt.Status.Kind]
-			if !ok {
-				tests = make([]string, 0)
-			}
-
-			tests = append(tests, test.Name)
-			statuses[test.Attempt.Status.Kind] = tests
+	for _, test := range testResults.Tests {
+		if test.Attempt.Status.Kind == v1.TestStatusSuccessful {
+			continue
 		}
+
+		tests, ok := statuses[test.Attempt.Status.Kind]
+		if !ok {
+			tests = make([]string, 0)
+		}
+
+		tests = append(tests, test.Name)
+		statuses[test.Attempt.Status.Kind] = tests
 	}
 
 	_, err := file.Write([]byte(fmt.Sprintf("\nCaptain detected a total of %d tests.\n", totalTests)))

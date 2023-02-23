@@ -16,14 +16,14 @@ import (
 var _ = Describe("JUnit Report", func() {
 	var (
 		mockFile    *mocks.File
-		testResults []v1.TestResults
+		testResults v1.TestResults
 	)
 
 	BeforeEach(func() {
 		mockFile = new(mocks.File)
 		mockFile.Builder = new(strings.Builder)
 
-		testResults = []v1.TestResults{{
+		testResults = v1.TestResults{
 			Framework: v1.Framework{
 				Language: "Ruby",
 				Kind:     "RSpec",
@@ -51,7 +51,7 @@ var _ = Describe("JUnit Report", func() {
 					},
 				},
 			},
-		}}
+		}
 	})
 
 	It("produces a parsable JUnit file", func() {
@@ -59,7 +59,7 @@ var _ = Describe("JUnit Report", func() {
 
 		Expect(reporting.WriteJUnitSummary(mockFile, testResults)).To(Succeed())
 		Expect(xml.Unmarshal([]byte(mockFile.Builder.String()), &result)).To(Succeed())
-		Expect(result.TestSuites).To(HaveLen(len(testResults)))
+		Expect(result.TestSuites).To(HaveLen(1))
 
 		Expect(result.TestSuites[0].Errors).To(Equal(12))
 		Expect(result.TestSuites[0].Failures).To(Equal(9))

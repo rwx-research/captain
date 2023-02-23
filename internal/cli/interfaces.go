@@ -32,7 +32,7 @@ type FileSystem interface {
 }
 
 // Reporter is a function that writes test results to a file. Different reporters implement different encodings.
-type Reporter func(fs.File, []v1.TestResults) error
+type Reporter func(fs.File, v1.TestResults) error
 
 // TaskRunner is an abstraction over various task-runners / execution environments.
 // They are expected to implement the `taskRunner.Command` interface in turn, which is mapped to the Command type from
