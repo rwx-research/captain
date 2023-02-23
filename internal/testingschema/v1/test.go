@@ -11,14 +11,21 @@ import (
 type TestStatusKind string
 
 const (
-	TestStatusCanceled    TestStatusKind = "canceled"
-	TestStatusFailed      TestStatusKind = "failed"
-	TestStatusPended      TestStatusKind = "pended"
-	TestStatusSkipped     TestStatusKind = "skipped"
-	TestStatusSuccessful  TestStatusKind = "successful"
-	TestStatusTimedOut    TestStatusKind = "timedOut"
-	TestStatusTodo        TestStatusKind = "todo"
+	// successful
+	TestStatusSuccessful TestStatusKind = "successful"
+
+	// failed, but ignored
 	TestStatusQuarantined TestStatusKind = "quarantined"
+
+	// failures
+	TestStatusCanceled TestStatusKind = "canceled"
+	TestStatusFailed   TestStatusKind = "failed"
+	TestStatusTimedOut TestStatusKind = "timedOut"
+
+	// skipped
+	TestStatusPended  TestStatusKind = "pended"
+	TestStatusSkipped TestStatusKind = "skipped"
+	TestStatusTodo    TestStatusKind = "todo"
 )
 
 type TestStatus struct {
@@ -66,6 +73,10 @@ func NewQuarantinedTestStatus(originalStatus TestStatus) TestStatus {
 	return TestStatus{Kind: TestStatusQuarantined, OriginalStatus: &originalStatus}
 }
 
+func (s TestStatus) ImpliesSkipped() bool {
+	return s.Kind == TestStatusPended || s.Kind == TestStatusSkipped || s.Kind == TestStatusTodo
+}
+
 func (s TestStatus) ImpliesFailure() bool {
 	return s.Kind == TestStatusFailed || s.Kind == TestStatusCanceled || s.Kind == TestStatusTimedOut
 }
@@ -85,6 +96,12 @@ type TestAttempt struct {
 }
 
 type Test struct {
+	// Used to disambiguate tests during the merge process, this should align
+	// with any fields that are used for test identity, but are not top-level
+	// fields (i.e. any identity components that come from the attempt meta).
+	// Not included in the JSON output nor the schema.
+	Scope *string `json:"-"`
+
 	ID           *string       `json:"id,omitempty"`
 	Name         string        `json:"name"`
 	Lineage      []string      `json:"lineage,omitempty"`
@@ -99,6 +116,23 @@ func (t Test) Quarantine() Test {
 	}
 
 	t.Attempt.Status = NewQuarantinedTestStatus(t.Attempt.Status)
+	return t
+}
+
+func (t Test) Tag(key string, value any) Test {
+	if t.Attempt.Meta == nil {
+		t.Attempt.Meta = map[string]any{}
+	}
+
+	if t.Attempt.Meta["__rwx"] == nil {
+		t.Attempt.Meta["__rwx"] = map[string]any{key: value}
+	} else {
+		if rwxMeta, ok := t.Attempt.Meta["__rwx"].(map[string]any); ok {
+			rwxMeta[key] = value
+			t.Attempt.Meta["__rwx"] = rwxMeta
+		}
+	}
+
 	return t
 }
 

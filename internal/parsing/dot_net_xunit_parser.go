@@ -203,6 +203,7 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 				tests = append(
 					tests,
 					v1.Test{
+						Scope:    &assemblyName,
 						ID:       testCase.ID,
 						Name:     testCase.Name,
 						Location: location,

@@ -49,6 +49,7 @@ else
   echo "expected result to start with 'abc\ndef\nghi\n' but it was: $result"
   exit 1;
 fi
+set -e
 
 echo Testing command stderr goes to stderr...
 
@@ -68,6 +69,7 @@ else
   echo "expected result to start with 'def' but it was: $result"
   exit 1;
 fi
+set -e
 
 echo Testing Failures not Quarantined...
 
@@ -84,6 +86,48 @@ else
   echo FAILED;
   exit 1;
 fi
+set -e
+
+echo Testing Retried Failures Quarantined...
+
+result=$(./captain run \
+  --suite-id "captain-cli-quarantine-test" \
+  --test-results .github/workflows/fixtures/rspec-quarantine.json \
+  --github-job-name "Build & Test" \
+  --fail-on-upload-error \
+  --retries 1 \
+  --retry-command 'echo "{{ tests }}"' \
+  -- bash -c "exit 123")
+if [[ "$result" == *"'./x.rb[1:1]'"* ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  exit 1;
+fi
+
+echo Testing Retried Failures not Quarantined...
+
+set +e
+result=$(./captain run \
+  --suite-id "captain-cli-functional-tests" \
+  --test-results .github/workflows/fixtures/rspec-failed-not-quarantined.json \
+  --github-job-name "Build & Test" \
+  --fail-on-upload-error \
+  --retries 1 \
+  --retry-command 'echo "{{ tests }}"' \
+  -- bash -c "exit 123")
+if [[ $? -eq 123 ]]; then
+  if [[ "$result" == *"'./x.rb[1:1]'"* ]]; then
+    echo PASSED;
+  else
+    echo FAILED;
+    exit 1;
+  fi
+else
+  echo FAILED;
+  exit 1;
+fi
+set -e
 
 echo Testing Failures without Results File...
 
@@ -99,7 +143,6 @@ else
   echo FAILED;
   exit 1;
 fi
-
 set -e
 
 echo Testing Partitioning w/out timings...

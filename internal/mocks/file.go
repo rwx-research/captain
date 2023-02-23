@@ -9,6 +9,7 @@ import (
 
 // File is a mocked implementation of `os.File`, based on a common `bytes.Reader`
 type File struct {
+	*strings.Builder
 	*strings.Reader
 
 	MockModTime func() time.Time

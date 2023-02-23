@@ -27,6 +27,17 @@ var _ = Describe("JavaScriptPlaywrightParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("sets the scope to the project", func() {
+			fixture, err := os.Open("../../test/fixtures/playwright.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			test := testResults.Tests[0]
+			Expect(*test.Scope).To(SatisfyAny(Equal("chromium"), Equal("firefox")))
+		})
+
 		It("parses the sample file with other errors", func() {
 			fixture, err := os.Open("../../test/fixtures/playwright_with_other_errors.json")
 			Expect(err).ToNot(HaveOccurred())

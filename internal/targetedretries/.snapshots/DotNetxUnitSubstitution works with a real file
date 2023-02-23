@@ -1,0 +1,5 @@
+([]map[string]string) (len=1) {
+  (map[string]string) (len=1) {
+    (string) (len=6) "filter": (string) (len=74) "FullyQualifiedName=CommandLineTests+MethodArgument.MethodArgumentNotPassed"
+  }
+}

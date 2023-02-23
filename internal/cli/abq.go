@@ -27,6 +27,20 @@ func (s Service) generateAbqStateFilePath() string {
 	return path.Join(s.FileSystem.TempDir(), fileName)
 }
 
+func (s Service) didAbqRun(ctx context.Context) (bool, error) {
+	stateFilePath := abq.StateFilePath(ctx)
+	if len(stateFilePath) == 0 {
+		return false, nil
+	}
+
+	_, err := s.FileSystem.Stat(stateFilePath)
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+
+	return err == nil, errors.Wrapf(err, "Error opening ABQ state file at %q", stateFilePath)
+}
+
 func (s Service) setAbqExitCode(ctx context.Context, captainErr error) error {
 	stateFilePath := abq.StateFilePath(ctx)
 	if len(stateFilePath) == 0 {

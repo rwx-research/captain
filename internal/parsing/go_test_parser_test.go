@@ -28,6 +28,20 @@ var _ = Describe("GoTestParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("sets the package as the scope", func() {
+			fixture, err := os.Open("../../test/fixtures/go_test.jsonl")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.GoTestParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			test := testResults.Tests[0]
+			Expect(*test.Scope).To(SatisfyAny(
+				Equal("github.com/captain-examples/go-testing/internal/pkg1"),
+				Equal("github.com/captain-examples/go-testing/internal/pkg2"),
+			))
+		})
+
 		It("errors on malformed JSON with no remnants of Go Test JSON", func() {
 			testResults, err := parsing.GoTestParser{}.Parse(strings.NewReader(`asdfasdfsdf`))
 			Expect(err).To(HaveOccurred())

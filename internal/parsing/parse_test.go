@@ -76,6 +76,7 @@ var _ = Describe("Parse", func() {
 	It("is an error when no logger is provided", func() {
 		results, err := parsing.Parse(
 			file,
+			1,
 			parsing.Config{},
 		)
 
@@ -87,6 +88,7 @@ var _ = Describe("Parse", func() {
 	It("is an error when only language is provided", func() {
 		results, err := parsing.Parse(
 			file,
+			1,
 			parsing.Config{Logger: log, ProvidedFrameworkLanguage: "foo"},
 		)
 
@@ -98,6 +100,7 @@ var _ = Describe("Parse", func() {
 	It("is an error when only kind is provided", func() {
 		results, err := parsing.Parse(
 			file,
+			1,
 			parsing.Config{Logger: log, ProvidedFrameworkKind: "foo"},
 		)
 
@@ -109,6 +112,7 @@ var _ = Describe("Parse", func() {
 	It("is an error when a parser returns neither a result nor an error", func() {
 		results, err := parsing.Parse(
 			file,
+			1,
 			parsing.Config{
 				MutuallyExclusiveParsers: []parsing.Parser{NeitherErrorNorResultsParser{}},
 				Logger:                   log,
@@ -125,6 +129,7 @@ var _ = Describe("Parse", func() {
 	It("is an error when no parsers can parse", func() {
 		results, err := parsing.Parse(
 			file,
+			1,
 			parsing.Config{
 				MutuallyExclusiveParsers: []parsing.Parser{
 					ErrorParser{},
@@ -157,6 +162,7 @@ var _ = Describe("Parse", func() {
 	It("returns the first test results with the base64 encoded content", func() {
 		results, err := parsing.Parse(
 			file,
+			2,
 			parsing.Config{
 				MutuallyExclusiveParsers: []parsing.Parser{
 					SuccessfulParserTwo{},
@@ -174,7 +180,7 @@ var _ = Describe("Parse", func() {
 				{
 					OriginalFilePath: "some/path/to/file",
 					Contents:         base64.StdEncoding.EncodeToString([]byte("the fake contents to base64 encode")),
-					GroupNumber:      1,
+					GroupNumber:      2,
 				},
 			},
 		))
@@ -216,6 +222,7 @@ var _ = Describe("Parse", func() {
 
 		results, err := parsing.Parse(
 			file,
+			1,
 			parsing.Config{
 				MutuallyExclusiveParsers: []parsing.Parser{parsing.RWXParser{}},
 				Logger:                   log,
@@ -231,6 +238,7 @@ var _ = Describe("Parse", func() {
 		It("uses the mutually exclusive and generic parsers to auto-detect framework", func() {
 			results, err := parsing.Parse(
 				file,
+				1,
 				parsing.Config{
 					ProvidedFrameworkLanguage: "",
 					ProvidedFrameworkKind:     "",
@@ -249,6 +257,7 @@ var _ = Describe("Parse", func() {
 
 			results, err = parsing.Parse(
 				file,
+				1,
 				parsing.Config{
 					ProvidedFrameworkLanguage: "",
 					ProvidedFrameworkKind:     "",
@@ -268,6 +277,7 @@ var _ = Describe("Parse", func() {
 		It("is an error when no parsers are provided", func() {
 			results, err := parsing.Parse(
 				file,
+				1,
 				parsing.Config{
 					ProvidedFrameworkLanguage: "",
 					ProvidedFrameworkKind:     "",
@@ -285,6 +295,7 @@ var _ = Describe("Parse", func() {
 		It("uses the generic parsers and sets the provided language and kind", func() {
 			results, err := parsing.Parse(
 				file,
+				1,
 				parsing.Config{
 					ProvidedFrameworkLanguage: "bar",
 					ProvidedFrameworkKind:     "foo",
@@ -307,6 +318,7 @@ var _ = Describe("Parse", func() {
 		It("is an error when no parsers are provided", func() {
 			results, err := parsing.Parse(
 				file,
+				1,
 				parsing.Config{
 					ProvidedFrameworkLanguage: "bar",
 					ProvidedFrameworkKind:     "foo",
@@ -324,6 +336,7 @@ var _ = Describe("Parse", func() {
 		It("uses the framework parsers", func() {
 			results, err := parsing.Parse(
 				file,
+				1,
 				parsing.Config{
 					ProvidedFrameworkLanguage: "RuBy",
 					ProvidedFrameworkKind:     "RspEc",
@@ -342,6 +355,7 @@ var _ = Describe("Parse", func() {
 
 			results, err = parsing.Parse(
 				file,
+				1,
 				parsing.Config{
 					ProvidedFrameworkLanguage: "javascript",
 					ProvidedFrameworkKind:     "cypress",
@@ -362,6 +376,7 @@ var _ = Describe("Parse", func() {
 		It("is an error when no parsers are provided", func() {
 			results, err := parsing.Parse(
 				file,
+				1,
 				parsing.Config{
 					ProvidedFrameworkLanguage: "RspEc",
 					ProvidedFrameworkKind:     "RuBy",

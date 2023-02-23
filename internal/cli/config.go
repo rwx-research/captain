@@ -1,13 +1,34 @@
 package cli
 
-import "github.com/rwx-research/captain-cli/internal/errors"
+import (
+	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+)
 
 // RunConfig holds the configuration for running a test suite (used by `RunSuite`)
 type RunConfig struct {
-	Args                []string
-	TestResultsFileGlob string
-	FailOnUploadError   bool
-	SuiteID             string
+	Args                     []string
+	TestResultsFileGlob      string
+	FailOnUploadError        bool
+	Reporters                map[string]Reporter
+	Retries                  int
+	RetryCommandTemplate     string
+	SuiteID                  string
+	SubstitutionsByFramework map[v1.Framework]targetedretries.Substitution
+	PrintSummary             bool
+}
+
+func (rc RunConfig) Validate() error {
+	if rc.Retries < 0 {
+		return errors.NewConfigurationError("retries must be >= 0")
+	}
+
+	if rc.RetryCommandTemplate == "" && rc.Retries > 0 {
+		return errors.NewConfigurationError("retry-command must be provided if retries are > 0")
+	}
+
+	return nil
 }
 
 type PartitionConfig struct {

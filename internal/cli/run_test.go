@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	iofs "io/fs"
 	"os"
 	"strings"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/parsing"
+	"github.com/rwx-research/captain-cli/internal/targetedretries"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -41,6 +43,7 @@ var _ = Describe("Run", func() {
 		mockAbqCommandArgs  []string
 		abqStateJSON        string
 		abqExecutable       string
+		runConfig           cli.RunConfig
 
 		testResultsFileUploaded, commandStarted, commandFinished, fetchedQuarantinedTests bool
 		abqStateFileExists, abqCommandStarted, abqCommandFinished                         bool
@@ -98,6 +101,12 @@ var _ = Describe("Run", func() {
 				mockAbqCommandArgs = args
 				Expect(environ).To(HaveLen(0))
 				return mockAbqCommand, nil
+			case "bundle":
+				mockBundle := new(mocks.Command)
+				mockBundle.MockStart = func() error {
+					return nil
+				}
+				return mockBundle, nil
 			default:
 				Expect(args).To(HaveLen(0))
 				Expect(name).To(Equal(arg))
@@ -150,16 +159,32 @@ var _ = Describe("Run", func() {
 		service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 
 		arg = fmt.Sprintf("fake-command-%d", GinkgoRandomSeed())
-	})
-
-	JustBeforeEach(func() {
-		runConfig := cli.RunConfig{
+		runConfig = cli.RunConfig{
 			Args:                []string{arg},
 			TestResultsFileGlob: testResultsFilePath,
 			SuiteID:             "test",
 		}
+	})
 
+	JustBeforeEach(func() {
 		err = service.RunSuite(ctx, runConfig)
+	})
+
+	Context("with an invalid run config", func() {
+		BeforeEach(func() {
+			runConfig = cli.RunConfig{
+				Args:                 []string{arg},
+				TestResultsFileGlob:  testResultsFilePath,
+				SuiteID:              "test",
+				Retries:              1,
+				RetryCommandTemplate: "",
+			}
+		})
+
+		It("errs", func() {
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries are > 0"))
+		})
 	})
 
 	Context("under expected conditions", func() {
@@ -388,6 +413,7 @@ var _ = Describe("Run", func() {
 		)
 
 		BeforeEach(func() {
+			uploadedTestResults = nil
 			exitCode = int(GinkgoRandomSeed() + 1)
 			firstFailedTestDescription = fmt.Sprintf("first-failed-description-%d", GinkgoRandomSeed()+2)
 			secondFailedTestDescription = fmt.Sprintf("second-failed-description-%d", GinkgoRandomSeed()+3)
@@ -945,6 +971,417 @@ var _ = Describe("Run", func() {
 					})
 				})
 			})
+		})
+	})
+
+	Describe("retries", func() {
+		var (
+			parseCount            int
+			exitCode              int
+			uploadedTestResults   []byte
+			firstTestDescription  string
+			secondTestDescription string
+			thirdTestDescription  string
+			firstInitialStatus    v1.TestStatus
+			secondInitialStatus   v1.TestStatus
+			thirdInitialStatus    v1.TestStatus
+		)
+
+		BeforeEach(func() {
+			parseCount = 0
+			exitCode = int(GinkgoRandomSeed() + 1)
+			firstTestDescription = fmt.Sprintf("first-description-%d", GinkgoRandomSeed()+2)
+			secondTestDescription = fmt.Sprintf("second-description-%d", GinkgoRandomSeed()+3)
+			thirdTestDescription = fmt.Sprintf("third-description-%d", GinkgoRandomSeed()+4)
+			firstInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
+			secondInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
+			thirdInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
+
+			mockStat := func(string) (iofs.FileInfo, error) {
+				// abq state file
+				return nil, iofs.ErrNotExist
+			}
+			service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
+
+			mockRemove := func(string) error {
+				return nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockRemove = mockRemove
+
+			mockGetExitStatusFromError := func(error) (int, error) {
+				return exitCode, nil
+			}
+			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
+
+			mockUploadTestResults := func(
+				ctx context.Context,
+				testSuite string,
+				testResultsFiles []api.TestResultsFile,
+			) ([]api.TestResultsUploadResult, error) {
+				testResultsFileUploaded = true
+				Expect(testResultsFiles).To(HaveLen(1))
+
+				buf, err := io.ReadAll(testResultsFiles[0].FD)
+				Expect(err).NotTo(HaveOccurred())
+				uploadedTestResults = buf
+
+				return []api.TestResultsUploadResult{
+					{OriginalPaths: []string{testResultsFilePath}, Uploaded: true},
+					{OriginalPaths: []string{"./fake/path/1.json", "./fake/path/2.json"}, Uploaded: false},
+				}, nil
+			}
+			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
+
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+				*v1.TestResults,
+				error,
+			) {
+				parseCount++
+				firstStatus := firstInitialStatus
+				secondStatus := secondInitialStatus
+				thirdStatus := thirdInitialStatus
+
+				switch parseCount {
+				case 2:
+					secondStatus = v1.NewSuccessfulTestStatus()
+					thirdStatus = v1.NewSuccessfulTestStatus()
+				case 3:
+					firstStatus = v1.NewSuccessfulTestStatus()
+					secondStatus = v1.NewSuccessfulTestStatus()
+					thirdStatus = v1.NewSuccessfulTestStatus()
+				}
+
+				return &v1.TestResults{
+					Framework: v1.RubyRSpecFramework,
+					Tests: []v1.Test{
+						{
+							ID:       &firstTestDescription,
+							Name:     firstTestDescription,
+							Location: &v1.Location{File: "/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: firstStatus,
+							},
+						},
+						{
+							ID:       &secondTestDescription,
+							Name:     secondTestDescription,
+							Location: &v1.Location{File: "/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: secondStatus,
+							},
+						},
+						{
+							ID:       &thirdTestDescription,
+							Name:     thirdTestDescription,
+							Location: &v1.Location{File: "/other/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: thirdStatus,
+							},
+						},
+					},
+				}, nil
+			}
+
+			runConfig = cli.RunConfig{
+				Args:                 []string{arg},
+				TestResultsFileGlob:  testResultsFilePath,
+				SuiteID:              "test",
+				Retries:              1,
+				RetryCommandTemplate: "bundle exec rspec {{ tests }}",
+				SubstitutionsByFramework: map[v1.Framework]targetedretries.Substitution{
+					v1.RubyRSpecFramework: new(targetedretries.RubyRSpecSubstitution),
+				},
+			}
+		})
+
+		Context("when there are no remaining failures after some retries", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 5
+			})
+
+			It("stops retrying", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(0))
+				Expect(testResults.Summary.Retries).To(Equal(3))
+
+				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(testResults.Tests[0].PastAttempts).To(HaveLen(2))
+				Expect(testResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(testResults.Tests[0].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(testResults.Tests[1].PastAttempts).To(HaveLen(2))
+				Expect(testResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(testResults.Tests[1].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusSuccessful))
+
+				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(testResults.Tests[2].PastAttempts).To(HaveLen(2))
+				Expect(testResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(testResults.Tests[2].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusSuccessful))
+			})
+		})
+
+		Context("when there are failures left after all retries", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 1
+			})
+
+			It("stops retrying", func() {
+				Expect(err).To(HaveOccurred())
+				executionError, ok := errors.AsExecutionError(err)
+				Expect(ok).To(BeTrue(), "Error is an execution error")
+				Expect(executionError.Code).To(Equal(exitCode))
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(2))
+				Expect(testResults.Summary.Failed).To(Equal(1))
+				Expect(testResults.Summary.Retries).To(Equal(3))
+
+				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(testResults.Tests[0].PastAttempts).To(HaveLen(1))
+				Expect(testResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(testResults.Tests[1].PastAttempts).To(HaveLen(1))
+				Expect(testResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(testResults.Tests[2].PastAttempts).To(HaveLen(1))
+				Expect(testResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+			})
+		})
+
+		Context("when quarantining is set up", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 1
+
+				mockGetQuarantinedTestCases := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) ([]api.QuarantinedTestCase, error) {
+					return []api.QuarantinedTestCase{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+
+				service.API.(*mocks.API).MockGetQuarantinedTestCases = mockGetQuarantinedTestCases
+			})
+
+			It("quarantines any remaining failures that are marked as such", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(2))
+				Expect(testResults.Summary.Quarantined).To(Equal(1))
+				Expect(testResults.Summary.Failed).To(Equal(0))
+				Expect(testResults.Summary.Retries).To(Equal(3))
+
+				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(testResults.Tests[0].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(testResults.Tests[0].PastAttempts).To(HaveLen(1))
+				Expect(testResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(testResults.Tests[1].PastAttempts).To(HaveLen(1))
+				Expect(testResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(testResults.Tests[2].PastAttempts).To(HaveLen(1))
+				Expect(testResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+			})
+		})
+
+		Context("when there are no failures", func() {
+			BeforeEach(func() {
+				firstInitialStatus = v1.NewSuccessfulTestStatus()
+				secondInitialStatus = v1.NewSuccessfulTestStatus()
+				thirdInitialStatus = v1.NewSuccessfulTestStatus()
+			})
+
+			It("does not retry", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(0))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when abq has run", func() {
+			BeforeEach(func() {
+				mockStat := func(name string) (iofs.FileInfo, error) {
+					const abqStateSubstring string = "tmp/captain-abq-"
+
+					Expect(name).To(ContainSubstring(abqStateSubstring))
+					mockedFile := new(mocks.File)
+					return mockedFile, nil
+				}
+
+				service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
+			})
+
+			It("does not retry", func() {
+				Expect(err).To(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(0))
+				Expect(testResults.Summary.Failed).To(Equal(3))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when the template cannot compile", func() {
+			BeforeEach(func() {
+				runConfig.RetryCommandTemplate = "bundle exec rspec {{ tests }} {{ tests }}"
+			})
+
+			It("does not retry", func() {
+				Expect(err).To(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(0))
+				Expect(testResults.Summary.Failed).To(Equal(3))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when the framework does not have substitutions yet", func() {
+			BeforeEach(func() {
+				runConfig.SubstitutionsByFramework = map[v1.Framework]targetedretries.Substitution{}
+			})
+
+			It("does not retry", func() {
+				Expect(err).To(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(0))
+				Expect(testResults.Summary.Failed).To(Equal(3))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when the template is not valid for the framework", func() {
+			BeforeEach(func() {
+				runConfig.RetryCommandTemplate = "bundle exec rspec {{ wat }}"
+			})
+
+			It("does not retry", func() {
+				Expect(err).To(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(0))
+				Expect(testResults.Summary.Failed).To(Equal(3))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when there are no results", func() {
+			BeforeEach(func() {
+				mockGlob := func(pattern string) ([]string, error) {
+					return []string{}, nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+			})
+
+			It("does not retry", func() {
+				Expect(err).To(HaveOccurred())
+				executionError, ok := errors.AsExecutionError(err)
+				Expect(ok).To(BeTrue(), "Error is an execution error")
+				Expect(executionError.Code).To(Equal(exitCode))
+			})
+		})
+	})
+
+	Context("when there are multiple frameworks parsed", func() {
+		var parseCount int
+
+		BeforeEach(func() {
+			parseCount = 0
+
+			mockGetExitStatusFromError := func(error) (int, error) {
+				return 0, nil
+			}
+			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
+
+			mockGlob := func(pattern string) ([]string, error) {
+				return []string{testResultsFilePath, testResultsFilePath}, nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+				*v1.TestResults,
+				error,
+			) {
+				parseCount++
+
+				framework := v1.RubyRSpecFramework
+				if parseCount == 2 {
+					framework = v1.JavaScriptJestFramework
+				}
+
+				return &v1.TestResults{
+					Framework: framework,
+					Tests:     []v1.Test{},
+				}, nil
+			}
+		})
+
+		It("exits non-zero and logs an error", func() {
+			Expect(err).To(HaveOccurred())
+
+			logMessages := make([]string, 0)
+
+			for _, log := range recordedLogs.All() {
+				logMessages = append(logMessages, log.Message)
+			}
+
+			Expect(logMessages).To(
+				ContainElement(
+					ContainSubstring(
+						"Multiple frameworks detected. The captain CLI only works with one framework at a time",
+					),
+				),
+			)
 		})
 	})
 })

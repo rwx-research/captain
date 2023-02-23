@@ -122,6 +122,24 @@ var _ = Describe("Test", func() {
 		})
 	})
 
+	Describe("ImpliesSkipped", func() {
+		It("implies skipped for failed statuses", func() {
+			Expect(v1.NewPendedTestStatus(nil).ImpliesSkipped()).To(Equal(true))
+		})
+
+		It("implies skipped for canceled statuses", func() {
+			Expect(v1.NewTodoTestStatus(nil).ImpliesSkipped()).To(Equal(true))
+		})
+
+		It("implies skipped for timed out statuses", func() {
+			Expect(v1.NewSkippedTestStatus(nil).ImpliesSkipped()).To(Equal(true))
+		})
+
+		It("does not imply skipped for other statuses", func() {
+			Expect(v1.NewSuccessfulTestStatus().ImpliesSkipped()).To(Equal(false))
+		})
+	})
+
 	Describe("ImpliesFailure", func() {
 		It("implies failure for failed statuses", func() {
 			Expect(v1.NewFailedTestStatus(nil, nil, nil).ImpliesFailure()).To(Equal(true))
@@ -177,6 +195,80 @@ var _ = Describe("Test", func() {
 			quarantinedTest := test.Quarantine()
 			Expect(test.Attempt.Status).To(Equal(v1.NewQuarantinedTestStatus(originalStatus)))
 			Expect(quarantinedTest).To(Equal(test))
+		})
+	})
+
+	Describe("Tag", func() {
+		It("adds RWX metadata to the test when there is no existing meta", func() {
+			Expect(v1.Test{Attempt: v1.TestAttempt{}}.Tag("some-key", true)).To(Equal(
+				v1.Test{
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{
+							"__rwx": map[string]any{"some-key": true},
+						},
+					},
+				},
+			))
+		})
+
+		It("adds RWX metadata to the test when there is existing meta, but not RWX meta", func() {
+			Expect(
+				v1.Test{
+					Attempt: v1.TestAttempt{Meta: map[string]any{"foo": "bar"}},
+				}.Tag("some-key", true),
+			).To(Equal(
+				v1.Test{
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{
+							"foo":   "bar",
+							"__rwx": map[string]any{"some-key": true},
+						},
+					},
+				},
+			))
+		})
+
+		It("adds RWX metadata to the test when there is existing RWX meta", func() {
+			Expect(
+				v1.Test{
+					Attempt: v1.TestAttempt{Meta: map[string]any{
+						"foo":   "bar",
+						"__rwx": map[string]any{"something": "else"},
+					}},
+				}.Tag("some-key", true),
+			).To(Equal(
+				v1.Test{
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{
+							"foo": "bar",
+							"__rwx": map[string]any{
+								"something": "else",
+								"some-key":  true,
+							},
+						},
+					},
+				},
+			))
+		})
+
+		It("does not add RWX metadata to the test when there is existing RWX meta in an unexpected shape", func() {
+			Expect(
+				v1.Test{
+					Attempt: v1.TestAttempt{Meta: map[string]any{
+						"foo":   "bar",
+						"__rwx": true,
+					}},
+				}.Tag("some-key", true),
+			).To(Equal(
+				v1.Test{
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{
+							"foo":   "bar",
+							"__rwx": true,
+						},
+					},
+				},
+			))
 		})
 	})
 

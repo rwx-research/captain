@@ -1,6 +1,9 @@
 package v1
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type FrameworkLanguage string
 
@@ -122,4 +125,16 @@ func (f Framework) IsOther() bool {
 
 func (f Framework) IsProvided() bool {
 	return f.ProvidedLanguage != nil && f.ProvidedKind != nil
+}
+
+func (f Framework) String() string {
+	if f.IsOther() {
+		if f.IsProvided() {
+			return fmt.Sprintf("Other: %v (%v)", *f.ProvidedKind, *f.ProvidedLanguage)
+		}
+
+		return "Other"
+	}
+
+	return fmt.Sprintf("%v (%v)", f.Kind, f.Language)
 }

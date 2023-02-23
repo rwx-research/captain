@@ -1,0 +1,14 @@
+([]map[string]string) (len=3) {
+  (map[string]string) (len=2) {
+    (string) (len=15) "testNamePattern": (string) (len=74) "^even more nesting is failing|even more nesting is asynchronously failing$",
+    (string) (len=15) "testPathPattern": (string) (len=87) "/home/runner/work/captain/captain/app/javascript/controllers/nested/more/nested.test.js"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=15) "testNamePattern": (string) (len=80) "^one level of nesting is failing|one level of nesting is asynchronously failing$",
+    (string) (len=15) "testPathPattern": (string) (len=82) "/home/runner/work/captain/captain/app/javascript/controllers/nested/nested.test.js"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=15) "testNamePattern": (string) (len=58) "^is top-level failing|is asynchronously top-level failing$",
+    (string) (len=15) "testPathPattern": (string) (len=78) "/home/runner/work/captain/captain/app/javascript/controllers/top_level.test.js"
+  }
+}

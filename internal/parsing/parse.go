@@ -23,7 +23,7 @@ type Config struct {
 	Logger                    *zap.SugaredLogger
 }
 
-func Parse(file fs.File, cfg Config) (*v1.TestResults, error) {
+func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
 	if cfg.Logger == nil {
 		return nil, errors.NewInternalError("No logger was provided")
 	}
@@ -50,7 +50,7 @@ func Parse(file fs.File, cfg Config) (*v1.TestResults, error) {
 		coercedFramework = &framework
 	}
 
-	results, err := parseWith(file, parsers, cfg.Logger)
+	results, err := parseWith(file, parsers, groupNumber, cfg.Logger)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func Parse(file fs.File, cfg Config) (*v1.TestResults, error) {
 	return results, nil
 }
 
-func parseWith(file fs.File, parsers []Parser, log *zap.SugaredLogger) (*v1.TestResults, error) {
+func parseWith(file fs.File, parsers []Parser, groupNumber int, log *zap.SugaredLogger) (*v1.TestResults, error) {
 	if len(parsers) == 0 {
 		return nil, errors.NewInternalError("No parsers were provided")
 	}
@@ -121,7 +121,7 @@ func parseWith(file fs.File, parsers []Parser, log *zap.SugaredLogger) (*v1.Test
 			{
 				OriginalFilePath: file.Name(),
 				Contents:         base64.StdEncoding.EncodeToString(buf),
-				GroupNumber:      1,
+				GroupNumber:      groupNumber,
 			},
 		}
 	}

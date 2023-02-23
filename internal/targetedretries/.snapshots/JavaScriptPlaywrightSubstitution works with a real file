@@ -1,0 +1,22 @@
+([]map[string]string) (len=4) {
+  (map[string]string) (len=3) {
+    (string) (len=4) "file": (string) (len=15) "example.spec.ts",
+    (string) (len=4) "grep": (string) (len=79) "failing test|throw error test|throw string|passing w/ fail annotation|times out",
+    (string) (len=7) "project": (string) (len=8) "chromium"
+  },
+  (map[string]string) (len=3) {
+    (string) (len=4) "file": (string) (len=15) "example.spec.ts",
+    (string) (len=4) "grep": (string) (len=79) "failing test|throw error test|throw string|passing w/ fail annotation|times out",
+    (string) (len=7) "project": (string) (len=7) "firefox"
+  },
+  (map[string]string) (len=3) {
+    (string) (len=4) "file": (string) (len=22) "nested/example.spec.ts",
+    (string) (len=4) "grep": (string) (len=49) "failing test|passing w/ fail annotation|times out",
+    (string) (len=7) "project": (string) (len=8) "chromium"
+  },
+  (map[string]string) (len=3) {
+    (string) (len=4) "file": (string) (len=22) "nested/example.spec.ts",
+    (string) (len=4) "grep": (string) (len=49) "failing test|passing w/ fail annotation|times out",
+    (string) (len=7) "project": (string) (len=7) "firefox"
+  }
+}

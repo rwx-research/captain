@@ -115,18 +115,20 @@ func (p JavaScriptKarmaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			}
 
 			ua := useragent.Parse(currentBrowser.FullName)
+			browserName := ua.Name + " " + ua.OS
 
 			tests = append(
 				tests,
 				v1.Test{
 					ID:      &id,
 					Name:    testCase.FullName,
+					Scope:   &browserName,
 					Lineage: append(testCase.Suite, testCase.Description),
 					Attempt: v1.TestAttempt{
 						Duration: &duration,
 						Status:   status,
 						Meta: map[string]any{
-							"browserName":     ua.Name + " " + ua.OS,
+							"browserName":     browserName,
 							"browserFullName": currentBrowser.FullName,
 							"browserId":       currentBrowser.ID,
 						},

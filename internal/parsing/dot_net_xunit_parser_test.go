@@ -97,15 +97,17 @@ line 3]]></output>
 			testType := "NullAssertsTests+Null"
 			testMethod := "Success"
 			stdout := "line 1\nline 2\nline 3"
+			assembly := "AssemblyName.dll"
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
+					Scope:    &assembly,
 					ID:       &id,
 					Name:     "NullAssertsTests+Null.Success",
 					Location: &v1.Location{File: "some/path/to/source.cs", Line: &line},
 					Attempt: v1.TestAttempt{
 						Duration: &duration,
 						Meta: map[string]any{
-							"assembly":          "AssemblyName.dll",
+							"assembly":          assembly,
 							"type":              &testType,
 							"method":            &testMethod,
 							"trait-some-trait":  "some-value",
@@ -146,14 +148,16 @@ line 3]]></output>
 			duration := time.Duration(6370900)
 			message := "Some message here"
 			exception := "AssertionException"
+			assembly := "AssemblyName.dll"
 			var zeroString *string
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
-					Name: "NullAssertsTests+Null.Success",
+					Scope: &assembly,
+					Name:  "NullAssertsTests+Null.Success",
 					Attempt: v1.TestAttempt{
 						Duration: &duration,
 						Meta: map[string]any{
-							"assembly": "AssemblyName.dll",
+							"assembly": assembly,
 							"type":     zeroString,
 							"method":   zeroString,
 						},
@@ -184,14 +188,16 @@ line 3]]></output>
 			Expect(testResults).NotTo(BeNil())
 
 			duration := time.Duration(6370900)
+			assembly := "AssemblyName.dll"
 			var zeroString *string
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
-					Name: "NullAssertsTests+Null.Success",
+					Scope: &assembly,
+					Name:  "NullAssertsTests+Null.Success",
 					Attempt: v1.TestAttempt{
 						Duration: &duration,
 						Meta: map[string]any{
-							"assembly": "AssemblyName.dll",
+							"assembly": assembly,
 							"type":     zeroString,
 							"method":   zeroString,
 						},
@@ -224,14 +230,16 @@ line 3]]></output>
 
 			duration := time.Duration(6370900)
 			message := "Some reason here"
+			assembly := "AssemblyName.dll"
 			var zeroString *string
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
-					Name: "NullAssertsTests+Null.Success",
+					Scope: &assembly,
+					Name:  "NullAssertsTests+Null.Success",
 					Attempt: v1.TestAttempt{
 						Duration: &duration,
 						Meta: map[string]any{
-							"assembly": "AssemblyName.dll",
+							"assembly": assembly,
 							"type":     zeroString,
 							"method":   zeroString,
 						},
@@ -262,14 +270,16 @@ line 3]]></output>
 			Expect(testResults).NotTo(BeNil())
 
 			duration := time.Duration(6370900)
+			assembly := "AssemblyName.dll"
 			var zeroString *string
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
-					Name: "NullAssertsTests+Null.Success",
+					Scope: &assembly,
+					Name:  "NullAssertsTests+Null.Success",
 					Attempt: v1.TestAttempt{
 						Duration: &duration,
 						Meta: map[string]any{
-							"assembly": "AssemblyName.dll",
+							"assembly": assembly,
 							"type":     zeroString,
 							"method":   zeroString,
 						},

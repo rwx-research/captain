@@ -14,6 +14,15 @@ import (
 // Local is a local file-system. It wraps the default `os` package
 type Local struct{}
 
+func (l Local) Create(filePath string) (File, error) {
+	f, err := os.Create(filePath)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return f, nil
+}
+
 // Open opens a file for further processing
 func (l Local) Open(name string) (File, error) {
 	f, err := os.Open(name)
@@ -55,6 +64,25 @@ func (l Local) GlobMany(patterns []string) ([]string, error) {
 	})
 
 	return expandedPaths, nil
+}
+
+func (l Local) Remove(name string) error {
+	err := os.Remove(name)
+	return errors.WithStack(err)
+}
+
+func (l Local) Rename(oldname string, newname string) error {
+	err := os.Rename(oldname, newname)
+	return errors.WithStack(err)
+}
+
+func (l Local) Stat(name string) (os.FileInfo, error) {
+	info, err := os.Stat(name)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return info, nil
 }
 
 func (l Local) TempDir() string {

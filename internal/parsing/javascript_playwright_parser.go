@@ -217,11 +217,12 @@ func (p JavaScriptPlaywrightParser) testsWithinSuite(
 			Column: &column,
 		}
 
+		project := test.ProjectName
 		attempt := v1.TestAttempt{
 			Status: v1.NewSkippedTestStatus(nil),
 			Meta: map[string]any{
 				"annotations": test.Annotations,
-				"project":     test.ProjectName,
+				"project":     project,
 				"tags":        spec.Tags,
 			},
 		}
@@ -313,6 +314,7 @@ func (p JavaScriptPlaywrightParser) testsWithinSuite(
 		}
 
 		tests = append(tests, v1.Test{
+			Scope:        &project,
 			Name:         strings.Join(lineage, " "),
 			Lineage:      lineage,
 			Location:     &location,

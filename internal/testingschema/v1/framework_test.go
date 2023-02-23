@@ -73,4 +73,26 @@ var _ = Describe("Framework", func() {
 			Expect(framework).To(Equal(v1.NewOtherFramework(&providedLanguage, &providedKind)))
 		})
 	})
+
+	Describe("String", func() {
+		It("has a good string representation for provided other frameworks", func() {
+			providedLanguage := "provided language"
+			providedKind := "provided kind"
+			Expect(v1.NewOtherFramework(&providedLanguage, &providedKind).String()).To(
+				Equal("Other: provided kind (provided language)"),
+			)
+		})
+
+		It("has a good string representation for unprovided other frameworks", func() {
+			Expect(v1.NewOtherFramework(nil, nil).String()).To(
+				Equal("Other"),
+			)
+		})
+
+		It("has a good string representation for known frameworks", func() {
+			Expect(v1.RubyRSpecFramework.String()).To(
+				Equal("RSpec (Ruby)"),
+			)
+		})
+	})
 })

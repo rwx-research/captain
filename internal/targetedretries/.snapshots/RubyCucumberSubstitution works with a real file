@@ -1,0 +1,5 @@
+([]map[string]string) (len=1) {
+  (map[string]string) (len=1) {
+    (string) (len=8) "examples": (string) (len=26) "'features/rule.feature:13'"
+  }
+}

@@ -9,6 +9,7 @@ import (
 // 'os.File' from the standard library.
 type File interface {
 	io.ReadSeekCloser
+	io.Writer
 	Stat() (os.FileInfo, error)
 	Name() string
 }

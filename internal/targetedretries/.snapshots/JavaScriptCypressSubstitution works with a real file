@@ -1,0 +1,6 @@
+([]map[string]string) (len=1) {
+  (map[string]string) (len=2) {
+    (string) (len=4) "grep": (string) (len=185) "grep='example to-do app one displays two todo items by default; example to-do app one can add new todo items; example to-do app one with a checked task can filter for uncompleted tasks'",
+    (string) (len=4) "spec": (string) (len=26) "cypress/e2e/todo-one.cy.js"
+  }
+}

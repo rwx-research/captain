@@ -27,7 +27,7 @@ type JUnitSkipped struct {
 }
 
 type JUnitTestCase struct {
-	ClassName string        `xml:"classname,attr"`
+	ClassName string        `xml:"classname,attr,omitempty"`
 	Error     *JUnitFailure `xml:"error"`
 	Failure   *JUnitFailure `xml:"failure"`
 	Name      string        `xml:"name,attr"`
@@ -57,8 +57,8 @@ type JUnitTestSuite struct {
 	TestCases  []JUnitTestCase `xml:"testcase"`
 	Properties []JUnitProperty `xml:"properties>property"`
 	Tests      *int            `xml:"tests,attr"`
-	Time       float64         `xml:"time,attr"`
-	Timestamp  string          `xml:"timestamp,attr"`
+	Time       float64         `xml:"time,attr,omitempty"`
+	Timestamp  string          `xml:"timestamp,attr,omitempty"`
 
 	// out of spec, but maybe interesting
 	File *string `xml:"file,attr"`

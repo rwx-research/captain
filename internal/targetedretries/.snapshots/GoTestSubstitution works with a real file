@@ -1,0 +1,10 @@
+([]map[string]string) (len=2) {
+  (map[string]string) (len=2) {
+    (string) (len=7) "package": (string) (len=52) "github.com/captain-examples/go-testing/internal/pkg1",
+    (string) (len=3) "run": (string) (len=48) "^TestBarFailing|TestFooFailing|TestTableFailing$"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=7) "package": (string) (len=52) "github.com/captain-examples/go-testing/internal/pkg2",
+    (string) (len=3) "run": (string) (len=21) "^TestWhateverFailing$"
+  }
+}

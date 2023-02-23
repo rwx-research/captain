@@ -1,0 +1,22 @@
+([]map[string]string) (len=5) {
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=40) "/var/www/html/tests/Unit/ExampleTest.php",
+    (string) (len=6) "filter": (string) (len=31) "test_that_is_a_custom_exception"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=40) "/var/www/html/tests/Unit/ExampleTest.php",
+    (string) (len=6) "filter": (string) (len=25) "test_that_is_an_exception"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=40) "/var/www/html/tests/Unit/ExampleTest.php",
+    (string) (len=6) "filter": (string) (len=23) "test_that_true_is_false"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=47) "/var/www/html/tests/Unit/Nested/ExampleTest.php",
+    (string) (len=6) "filter": (string) (len=17) "test_that_is_slow"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=47) "/var/www/html/tests/Unit/Nested/ExampleTest.php",
+    (string) (len=6) "filter": (string) (len=23) "test_that_true_is_false"
+  }
+}

@@ -1,0 +1,10 @@
+([]map[string]string) (len=2) {
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=63) "/Users/kylekthompson/src/captain-examples/mocha/test/retries.js",
+    (string) (len=4) "grep": (string) (len=27) "^is a failing retried test$"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=70) "/Users/kylekthompson/src/captain-examples/mocha/test/top-level-sync.js",
+    (string) (len=4) "grep": (string) (len=71) "^is a top-level sync failing test|is a top-level sync exceptional test$"
+  }
+}

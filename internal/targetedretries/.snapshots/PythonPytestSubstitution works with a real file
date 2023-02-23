@@ -1,0 +1,5 @@
+([]map[string]string) (len=1) {
+  (map[string]string) (len=1) {
+    (string) (len=5) "tests": (string) (len=437) "'nested/test_nested.py::TestSomeClass::test_some_method' 'nested/test_nested.py::TestSomeClassFailingSetup::test_some_method' 'nested/test_nested.py::TestSomeClassFailingTeardown::test_some_method' 'nested/test_nested.py::test_exception' 'nested/test_nested.py::test_nested_failing' 'nested/test_nested.py::test_parameterized[6*9-42]' 'nested/test_nested.py::test_strict_expected_fail_passing' 'test_top_level.py::test_top_level_failing'"
+  }
+}

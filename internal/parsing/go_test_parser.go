@@ -52,12 +52,14 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			testsByPackage[*testOutput.Package] = map[string]v1.Test{}
 		}
 
-		existingTest, ok := testsByPackage[*testOutput.Package][*testOutput.Test]
+		testPackage := *testOutput.Package
+		existingTest, ok := testsByPackage[testPackage][*testOutput.Test]
 		if !ok {
 			existingTest = v1.Test{
-				Name: *testOutput.Test,
+				Scope: &testPackage,
+				Name:  *testOutput.Test,
 				Attempt: v1.TestAttempt{
-					Meta:   map[string]any{"package": *testOutput.Package},
+					Meta:   map[string]any{"package": testPackage},
 					Status: v1.NewSuccessfulTestStatus(),
 				},
 			}
