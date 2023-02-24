@@ -30,6 +30,7 @@ var (
 		v1.JavaScriptPlaywrightFramework: new(targetedretries.JavaScriptPlaywrightSubstitution),
 		v1.PHPUnitFramework:              new(targetedretries.PHPUnitSubstitution),
 		v1.PythonPytestFramework:         new(targetedretries.PythonPytestSubstitution),
+		v1.PythonUnitTestFramework:       new(targetedretries.PythonUnitTestSubstitution),
 		v1.RubyCucumberFramework:         new(targetedretries.RubyCucumberSubstitution),
 		v1.RubyMinitestFramework:         new(targetedretries.RubyMinitestSubstitution),
 		v1.RubyRSpecFramework:            new(targetedretries.RubyRSpecSubstitution),

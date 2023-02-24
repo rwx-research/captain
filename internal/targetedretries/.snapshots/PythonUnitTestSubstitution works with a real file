@@ -1,0 +1,5 @@
+([]map[string]string) (len=1) {
+  (map[string]string) (len=1) {
+    (string) (len=5) "tests": (string) (len=41) "'test.TestSequenceFunctions.test_failure'"
+  }
+}
