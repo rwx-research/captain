@@ -11,12 +11,13 @@ type RunConfig struct {
 	Args                     []string
 	TestResultsFileGlob      string
 	FailOnUploadError        bool
+	PrintSummary             bool
+	Quiet                    bool
 	Reporters                map[string]Reporter
 	Retries                  int
 	RetryCommandTemplate     string
 	SuiteID                  string
 	SubstitutionsByFramework map[v1.Framework]targetedretries.Substitution
-	PrintSummary             bool
 }
 
 func (rc RunConfig) Validate() error {

@@ -95,11 +95,11 @@ var _ = Describe("Run", func() {
 			return nil
 		}
 
-		newCommand := func(ctx context.Context, name string, args []string, environ []string) (exec.Command, error) {
-			switch name {
+		newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+			switch cfg.Name {
 			case abqExecutable:
-				mockAbqCommandArgs = args
-				Expect(environ).To(HaveLen(0))
+				mockAbqCommandArgs = cfg.Args
+				Expect(cfg.Env).To(HaveLen(0))
 				return mockAbqCommand, nil
 			case "bundle":
 				mockBundle := new(mocks.Command)
@@ -108,11 +108,11 @@ var _ = Describe("Run", func() {
 				}
 				return mockBundle, nil
 			default:
-				Expect(args).To(HaveLen(0))
-				Expect(name).To(Equal(arg))
-				Expect(environ).To(HaveLen(2))
-				Expect(environ).To(ContainElement("ABQ_SET_EXIT_CODE=false"))
-				Expect(environ).To(ContainElement(ContainSubstring("ABQ_STATE_FILE=tmp/captain-abq-")))
+				Expect(cfg.Args).To(HaveLen(0))
+				Expect(cfg.Name).To(Equal(arg))
+				Expect(cfg.Env).To(HaveLen(2))
+				Expect(cfg.Env).To(ContainElement("ABQ_SET_EXIT_CODE=false"))
+				Expect(cfg.Env).To(ContainElement(ContainSubstring("ABQ_STATE_FILE=tmp/captain-abq-")))
 				return mockCommand, nil
 			}
 		}

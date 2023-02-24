@@ -5,7 +5,6 @@ package exec
 
 import (
 	"context"
-	"os"
 	"os/exec"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -15,17 +14,14 @@ import (
 type Local struct{}
 
 // NewCommand returns a new command that can then be executed.
-func (l Local) NewCommand(
-	ctx context.Context,
-	name string,
-	args []string,
-	environ []string,
-) (Command, error) {
-	cmd := exec.CommandContext(ctx, name, args...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
+func (l Local) NewCommand(ctx context.Context, cfg CommandConfig) (Command, error) {
+	//nolint:gosec // Spawning a user-configurable sub-process is expected here.
+	cmd := exec.CommandContext(ctx, cfg.Name, cfg.Args...)
 
-	for _, override := range environ {
+	cmd.Stderr = cfg.Stderr
+	cmd.Stdout = cfg.Stdout
+
+	for _, override := range cfg.Env {
 		cmd.Env = append(cmd.Environ(), override)
 	}
 

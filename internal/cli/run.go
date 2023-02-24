@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -19,7 +20,8 @@ import (
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
 func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
-	if err := cfg.Validate(); err != nil {
+	err := cfg.Validate()
+	if err != nil {
 		return errors.WithStack(err)
 	}
 
@@ -45,8 +47,20 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		return nil
 	})
 
+	stdout := os.Stdout
+	if cfg.Quiet {
+		// According to the documentation, passing in a nil pointer to `os.Exec`
+		// should also work - however, that seems to open /dev/null with the
+		// wrong flags, leading to errors like
+		// `cat: standard output: Bad file descriptor`
+		stdout, err = os.OpenFile(os.DevNull, os.O_APPEND|os.O_WRONLY, 0o666)
+		if err != nil {
+			s.Log.Warnf("Could not open %s for writing", os.DevNull)
+		}
+	}
+
 	// Run sub-command
-	ctx, cmdErr := s.runCommand(ctx, cfg.Args, true)
+	ctx, cmdErr := s.runCommand(ctx, cfg.Args, stdout, true)
 	defer func() {
 		if abqErr := s.setAbqExitCode(ctx, finalErr); abqErr != nil {
 			finalErr = errors.Wrap(finalErr, abqErr.Error())
@@ -113,11 +127,12 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	hasQuarantinedFailedTests := len(quarantinedFailedTests) > 0
 	hasDetails := hasUploadResults || hasQuarantinedFailedTests
 
-	if hasDetails && !headerPrinted {
+	if hasDetails && !headerPrinted && !cfg.Quiet {
 		s.printHeader()
+		headerPrinted = true
 	}
 
-	if hasUploadResults {
+	if hasUploadResults && headerPrinted {
 		uploadedPaths := make([]string, 0)
 		erroredPaths := make([]string, 0)
 		for _, uploadResult := range uploadResults {
@@ -145,6 +160,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 	}
 
+	// This section is always printed, even when `--quiet` is specified
 	if hasQuarantinedFailedTests {
 		s.Log.Infoln(
 			fmt.Sprintf(
@@ -276,7 +292,15 @@ func (s Service) attemptRetries(
 			s.Log.Infoln(strings.Repeat("-", 80))
 			s.Log.Infoln()
 
-			_, cmdErr := s.runCommand(ctx, args, false)
+			stdout := os.Stdout
+			if cfg.Quiet {
+				stdout, err = os.OpenFile(os.DevNull, os.O_APPEND|os.O_WRONLY, 0o666)
+				if err != nil {
+					s.Log.Warnf("Could not open %s for writing", os.DevNull)
+				}
+			}
+
+			_, cmdErr := s.runCommand(ctx, args, stdout, false)
 			// +1 because it's 1-indexed, +1 because the original attempt was #1
 			newTestResults, newTestResultsFiles, _, err := s.handleCommandOutcome(cfg, cmdErr, retries+2)
 			if err != nil {
@@ -338,15 +362,24 @@ func (s Service) handleCommandOutcome(
 	return testResults, testResultsFiles, errors.WithStack(runErr), nil
 }
 
-func (s Service) runCommand(ctx context.Context, args []string, setAbqEnviron bool) (context.Context, error) {
-	var cmd exec.Command
-	var err error
+func (s Service) runCommand(
+	ctx context.Context,
+	args []string,
+	stdout io.Writer,
+	setAbqEnviron bool,
+) (context.Context, error) {
 	var environ []string
-
 	if setAbqEnviron {
 		ctx, environ = s.applyAbqEnvironment(ctx)
 	}
-	cmd, err = s.TaskRunner.NewCommand(ctx, args[0], args[1:], environ)
+
+	cmd, err := s.TaskRunner.NewCommand(ctx, exec.CommandConfig{
+		Name:   args[0],
+		Args:   args[1:],
+		Env:    environ,
+		Stdout: stdout,
+		Stderr: os.Stderr,
+	})
 	if err != nil {
 		return ctx, s.logError(errors.NewSystemError("unable to spawn sub-process: %s", err))
 	}

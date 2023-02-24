@@ -17,6 +17,8 @@ import (
 var (
 	testResults              string
 	failOnUploadError        bool
+	printSummary             bool
+	quiet                    bool
 	reporters                []string
 	retries                  int
 	retryCommandTemplate     string
@@ -36,7 +38,6 @@ var (
 		v1.RubyMinitestFramework:         new(targetedretries.RubyMinitestSubstitution),
 		v1.RubyRSpecFramework:            new(targetedretries.RubyRSpecSubstitution),
 	}
-	printSummary bool
 
 	runCmd = &cobra.Command{
 		Use:     "run",
@@ -69,12 +70,13 @@ var (
 				Args:                     args,
 				TestResultsFileGlob:      testResults,
 				FailOnUploadError:        failOnUploadError,
+				PrintSummary:             printSummary,
+				Quiet:                    quiet,
 				Reporters:                reporterFuncs,
 				Retries:                  retries,
 				RetryCommandTemplate:     retryCommandTemplate,
 				SuiteID:                  suiteID,
 				SubstitutionsByFramework: substitutionsByFramework,
-				PrintSummary:             printSummary,
 			}
 
 			return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))
@@ -95,6 +97,21 @@ func init() {
 		"fail-on-upload-error",
 		false,
 		"return a non-zero exit code in case the test results upload fails",
+	)
+
+	runCmd.Flags().BoolVarP(
+		&quiet,
+		"quiet",
+		"q",
+		false,
+		"disables most default output",
+	)
+
+	runCmd.Flags().BoolVar(
+		&printSummary,
+		"print-summary",
+		false,
+		"prints a summary of all tests to the console",
 	)
 
 	runCmd.Flags().StringArrayVar(
@@ -133,13 +150,6 @@ func init() {
 				"Examples:\n%v",
 			strings.Join(formattedSubstitutionExamples, "\n"),
 		),
-	)
-
-	runCmd.Flags().BoolVar(
-		&printSummary,
-		"print-summary",
-		false,
-		"prints a summary of all tests to the console",
 	)
 
 	runCmd.MarkFlagsRequiredTogether("retries", "retry-command")

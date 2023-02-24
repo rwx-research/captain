@@ -85,7 +85,7 @@ func (s Service) setAbqExitCode(ctx context.Context, captainErr error) error {
 		"set-exit-code",
 		"--run-id", state.RunID,
 		"--exit-code", fmt.Sprint(exitCode),
-	}, false)
+	}, os.Stdout, false)
 	if err != nil {
 		err = errors.Wrap(err, "Error setting ABQ exit code")
 	}

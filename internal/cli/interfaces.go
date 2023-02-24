@@ -38,6 +38,6 @@ type Reporter func(fs.File, v1.TestResults) error
 // They are expected to implement the `taskRunner.Command` interface in turn, which is mapped to the Command type from
 // `os/exec`
 type TaskRunner interface {
-	NewCommand(ctx context.Context, name string, args []string, environ []string) (exec.Command, error)
+	NewCommand(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error)
 	GetExitStatusFromError(error) (int, error)
 }
