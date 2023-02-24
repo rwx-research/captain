@@ -1,0 +1,130 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Python",
+    "kind": "unittest"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 5,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 1,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 1,
+    "successful": 3,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "test.TestSequenceFunctions.test_choice",
+      "lineage": [
+        "test.TestSequenceFunctions",
+        "test_choice"
+      ],
+      "location": {
+        "file": "test.py",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 2406000000,
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "2023-02-22T16:52:15Z",
+        "finishedAt": "2023-02-22T16:52:17.406Z"
+      }
+    },
+    {
+      "name": "test.TestSequenceFunctions.test_sample",
+      "lineage": [
+        "test.TestSequenceFunctions",
+        "test_sample"
+      ],
+      "location": {
+        "file": "test.py",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 2402000000,
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "2023-02-22T16:52:20Z",
+        "finishedAt": "2023-02-22T16:52:22.402Z"
+      }
+    },
+    {
+      "name": "test.TestSequenceFunctions.test_shuffle",
+      "lineage": [
+        "test.TestSequenceFunctions",
+        "test_shuffle"
+      ],
+      "location": {
+        "file": "test.py",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "2023-02-22T16:52:20Z",
+        "finishedAt": "2023-02-22T16:52:20Z"
+      }
+    },
+    {
+      "name": "test.TestSequenceFunctions.test_failure",
+      "lineage": [
+        "test.TestSequenceFunctions",
+        "test_failure"
+      ],
+      "location": {
+        "file": "test.py",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 2405000000,
+        "status": {
+          "kind": "failed",
+          "message": "False is not true",
+          "exception": "AssertionError",
+          "backtrace": [
+            "Traceback (most recent call last):",
+            "File \"/Users/tommygraves/code/unittest/test.py\", line 30, in test_failure",
+            "self.assertTrue(False)",
+            "AssertionError: False is not true",
+            ""
+          ]
+        },
+        "startedAt": "2023-02-22T16:52:18Z",
+        "finishedAt": "2023-02-22T16:52:20.405Z"
+      }
+    },
+    {
+      "name": "test.TestSequenceFunctions.test_skipped",
+      "lineage": [
+        "test.TestSequenceFunctions",
+        "test_skipped"
+      ],
+      "location": {
+        "file": "test.py",
+        "line": 10
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "skipped",
+          "message": "demonstrating skipping"
+        },
+        "startedAt": "2023-02-22T16:52:20Z",
+        "finishedAt": "2023-02-22T16:52:20Z"
+      }
+    }
+  ]
+}

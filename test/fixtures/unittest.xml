@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="test.TestSequenceFunctions-20230222165213" tests="5" file="test.py" time="7.214" timestamp="2023-02-22T16:52:20" failures="1" errors="0" skipped="1">
+	<testcase classname="test.TestSequenceFunctions" name="test_choice" time="2.406" timestamp="2023-02-22T16:52:15" file="test.py" line="23"/>
+	<testcase classname="test.TestSequenceFunctions" name="test_sample" time="2.402" timestamp="2023-02-22T16:52:20" file="test.py" line="32"/>
+	<testcase classname="test.TestSequenceFunctions" name="test_shuffle" time="0.000" timestamp="2023-02-22T16:52:20" file="test.py" line="14"/>
+	<testcase classname="test.TestSequenceFunctions" name="test_failure" time="2.405" timestamp="2023-02-22T16:52:18" file="test.py" line="28">
+		<failure type="AssertionError" message="False is not true"><![CDATA[Traceback (most recent call last):
+  File "/Users/tommygraves/code/unittest/test.py", line 30, in test_failure
+    self.assertTrue(False)
+AssertionError: False is not true
+]]></failure>
+	</testcase>
+	<testcase classname="test.TestSequenceFunctions" name="test_skipped" time="0.000" timestamp="2023-02-22T16:52:20" file="test.py" line="10">
+		<skipped type="skip" message="demonstrating skipping"/>
+	</testcase>
+</testsuite>

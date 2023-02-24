@@ -21,6 +21,7 @@ const (
 	FrameworkKindPHPUnit    FrameworkKind = "PHPUnit"
 	FrameworkKindPlaywright FrameworkKind = "Playwright"
 	FrameworkKindPytest     FrameworkKind = "pytest"
+	FrameworkKindUnitTest   FrameworkKind = "unittest"
 	FrameworkKindRSpec      FrameworkKind = "RSpec"
 	FrameworkKindxUnit      FrameworkKind = "xUnit"
 
@@ -79,6 +80,9 @@ var (
 	)
 	PythonPytestFramework = registerFramework(
 		Framework{Language: FrameworkLanguagePython, Kind: FrameworkKindPytest},
+	)
+	PythonUnitTestFramework = registerFramework(
+		Framework{Language: FrameworkLanguagePython, Kind: FrameworkKindUnitTest},
 	)
 	RubyCucumberFramework = registerFramework(
 		Framework{Language: FrameworkLanguageRuby, Kind: FrameworkKindCucumber},

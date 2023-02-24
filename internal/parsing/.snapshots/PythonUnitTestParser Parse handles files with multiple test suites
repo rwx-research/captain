@@ -1,0 +1,63 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Python",
+    "kind": "unittest"
+  },
+  "summary": {
+    "status": {
+      "kind": "successful"
+    },
+    "tests": 2,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 0,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 0,
+    "successful": 2,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "test.TSF.test_choice",
+      "lineage": [
+        "test.TSF",
+        "test_choice"
+      ],
+      "location": {
+        "file": "",
+        "line": 0
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "0001-01-01T00:00:00Z",
+        "finishedAt": "0001-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "test.TS2F.test_choice",
+      "lineage": [
+        "test.TS2F",
+        "test_choice"
+      ],
+      "location": {
+        "file": "",
+        "line": 0
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "0001-01-01T00:00:00Z",
+        "finishedAt": "0001-01-01T00:00:00Z"
+      }
+    }
+  ]
+}

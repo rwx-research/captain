@@ -45,6 +45,7 @@ var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]pars
 	v1.JavaScriptPlaywrightFramework: {new(parsing.JavaScriptPlaywrightParser)},
 	v1.PHPUnitFramework:              {new(parsing.PHPUnitParser)},
 	v1.PythonPytestFramework:         {new(parsing.PythonPytestParser)},
+	v1.PythonUnitTestFramework:       {new(parsing.PythonUnitTestParser)},
 	v1.RubyCucumberFramework:         {new(parsing.RubyCucumberParser)},
 	v1.RubyMinitestFramework:         {new(parsing.RubyMinitestParser)},
 	v1.RubyRSpecFramework:            {new(parsing.RubyRSpecParser)},
