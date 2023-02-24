@@ -1,0 +1,8 @@
+([]map[string]string) (len=2) {
+  (map[string]string) (len=1) {
+    (string) (len=5) "tests": (string) (len=51) "'test/exunitexample_web/views/exception_test.exs:7'"
+  },
+  (map[string]string) (len=1) {
+    (string) (len=5) "tests": (string) (len=49) "'test/exunitexample_web/views/failing_test.exs:7'"
+  }
+}

@@ -12,6 +12,7 @@ type FrameworkKind string
 const (
 	FrameworkKindCucumber   FrameworkKind = "Cucumber"
 	FrameworkKindCypress    FrameworkKind = "Cypress"
+	FrameworkKindExUnit     FrameworkKind = "ExUnit"
 	FrameworkKindGinkgo     FrameworkKind = "Ginkgo"
 	FrameworkKindGoTest     FrameworkKind = "go test"
 	FrameworkKindJest       FrameworkKind = "Jest"
@@ -26,6 +27,7 @@ const (
 	FrameworkKindxUnit      FrameworkKind = "xUnit"
 
 	FrameworkLanguageDotNet     FrameworkLanguage = ".NET"
+	FrameworkLanguageElixir     FrameworkLanguage = "Elixir"
 	FrameworkLanguageGo         FrameworkLanguage = "Go"
 	FrameworkLanguageJavaScript FrameworkLanguage = "JavaScript"
 	FrameworkLanguagePHP        FrameworkLanguage = "PHP"
@@ -53,6 +55,9 @@ func registerFramework(framework Framework) Framework {
 var (
 	DotNetxUnitFramework = registerFramework(
 		Framework{Language: FrameworkLanguageDotNet, Kind: FrameworkKindxUnit},
+	)
+	ElixirExUnitFramework = registerFramework(
+		Framework{Language: FrameworkLanguageElixir, Kind: FrameworkKindExUnit},
 	)
 	GoGinkgoFramework = registerFramework(
 		Framework{Language: FrameworkLanguageGo, Kind: FrameworkKindGinkgo},

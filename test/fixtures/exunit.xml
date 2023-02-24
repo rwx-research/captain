@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<testsuites>
+  <testsuite errors="0" failures="0" name="Elixir.ExunitexampleWeb.ErrorViewTest" tests="2" time="0.0217">
+    <properties>
+      <property name="date" value="2023-02-23T21:56:07.427355Z"/>
+      <property name="seed" value="397835"/>
+    </properties>
+    <testcase file="test/exunitexample_web/views/error_view_test.exs:7" classname="Elixir.ExunitexampleWeb.ErrorViewTest" name="test renders 404.html" time="0.0002"/>
+    <testcase file="test/exunitexample_web/views/error_view_test.exs:11" classname="Elixir.ExunitexampleWeb.ErrorViewTest" name="test renders 500.html" time="0.0216"/>
+  </testsuite>
+  <testsuite errors="0" failures="1" name="Elixir.ExunitexampleWeb.ExceptionTest" tests="1" time="0.0081">
+    <properties>
+      <property name="date" value="2023-02-23T21:56:07.427355Z"/>
+      <property name="seed" value="397835"/>
+    </properties>
+    <testcase file="test/exunitexample_web/views/exception_test.exs:7" classname="Elixir.ExunitexampleWeb.ExceptionTest" name="test throws an exception" time="0.0081">
+      <failure message="throw: &quot;some exception&quot;">  1) test throws an exception (ExunitexampleWeb.ExceptionTest)
+     test/exunitexample_web/views/exception_test.exs:7
+     ** (throw) "some exception"
+     code: throw "some exception"
+     stacktrace:
+       test/exunitexample_web/views/exception_test.exs:8: (test)
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite errors="0" failures="1" name="Elixir.ExunitexampleWeb.FailingTest" tests="1" time="0.0081">
+    <properties>
+      <property name="date" value="2023-02-23T21:56:07.427355Z"/>
+      <property name="seed" value="397835"/>
+    </properties>
+    <testcase file="test/exunitexample_web/views/failing_test.exs:7" classname="Elixir.ExunitexampleWeb.FailingTest" name="test is failing" time="0.0081">
+      <failure message="Expected truthy, got false">  1) test is failing (ExunitexampleWeb.FailingTest)
+     test/exunitexample_web/views/failing_test.exs:7
+     Expected truthy, got false
+     code: assert false
+     stacktrace:
+       test/exunitexample_web/views/failing_test.exs:8: (test)
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite errors="0" failures="0" name="Elixir.ExunitexampleWeb.PageControllerTest" tests="1" time="0.0456">
+    <properties>
+      <property name="date" value="2023-02-23T21:56:07.427355Z"/>
+      <property name="seed" value="397835"/>
+    </properties>
+    <testcase file="test/exunitexample_web/controllers/page_controller_test.exs:4" classname="Elixir.ExunitexampleWeb.PageControllerTest" name="test GET /" time="0.0456"/>
+  </testsuite>
+  <testsuite errors="0" failures="0" name="Elixir.ExunitexampleWeb.SkippedTest" tests="1" time="0.0000">
+    <properties>
+      <property name="date" value="2023-02-23T21:56:07.427355Z"/>
+      <property name="seed" value="397835"/>
+    </properties>
+    <testcase file="test/exunitexample_web/views/skipped_test.exs:8" classname="Elixir.ExunitexampleWeb.SkippedTest" name="test is pending" time="0.0000">
+      <skipped message="due to pending filter"/>
+    </testcase>
+  </testsuite>
+  <testsuite errors="0" failures="0" name="Elixir.ExunitexampleWeb.SlowTest" tests="1" time="1.5084">
+    <properties>
+      <property name="date" value="2023-02-23T21:56:07.427355Z"/>
+      <property name="seed" value="397835"/>
+    </properties>
+    <testcase file="test/exunitexample_web/views/slow_test.exs:7" classname="Elixir.ExunitexampleWeb.SlowTest" name="test is slow" time="1.5084"/>
+  </testsuite>
+</testsuites>

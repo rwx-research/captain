@@ -22,6 +22,7 @@ var (
 	retryCommandTemplate     string
 	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
 		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
+		v1.ElixirExUnitFramework:         new(targetedretries.ElixirExUnitSubstitution),
 		v1.GoGinkgoFramework:             new(targetedretries.GoGinkgoSubstitution),
 		v1.GoTestFramework:               new(targetedretries.GoTestSubstitution),
 		v1.JavaScriptCypressFramework:    new(targetedretries.JavaScriptCypressSubstitution),

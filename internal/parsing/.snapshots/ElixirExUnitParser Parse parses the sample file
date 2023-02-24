@@ -1,0 +1,125 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Elixir",
+    "kind": "ExUnit"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 7,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 2,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 1,
+    "successful": 4,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "Elixir.ExunitexampleWeb.ErrorViewTest test renders 404.html",
+      "location": {
+        "file": "test/exunitexample_web/views/error_view_test.exs",
+        "line": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": 200000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Elixir.ExunitexampleWeb.ErrorViewTest test renders 500.html",
+      "location": {
+        "file": "test/exunitexample_web/views/error_view_test.exs",
+        "line": 11
+      },
+      "attempt": {
+        "durationInNanoseconds": 21600000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Elixir.ExunitexampleWeb.ExceptionTest test throws an exception",
+      "location": {
+        "file": "test/exunitexample_web/views/exception_test.exs",
+        "line": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": 8100000,
+        "status": {
+          "kind": "failed",
+          "message": "throw: \"some exception\"",
+          "backtrace": [
+            "test/exunitexample_web/views/exception_test.exs:8: (test)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Elixir.ExunitexampleWeb.FailingTest test is failing",
+      "location": {
+        "file": "test/exunitexample_web/views/failing_test.exs",
+        "line": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": 8100000,
+        "status": {
+          "kind": "failed",
+          "message": "Expected truthy, got false",
+          "backtrace": [
+            "test/exunitexample_web/views/failing_test.exs:8: (test)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Elixir.ExunitexampleWeb.PageControllerTest test GET /",
+      "location": {
+        "file": "test/exunitexample_web/controllers/page_controller_test.exs",
+        "line": 4
+      },
+      "attempt": {
+        "durationInNanoseconds": 45600000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Elixir.ExunitexampleWeb.SkippedTest test is pending",
+      "location": {
+        "file": "test/exunitexample_web/views/skipped_test.exs",
+        "line": 8
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "skipped",
+          "message": "due to pending filter"
+        }
+      }
+    },
+    {
+      "name": "Elixir.ExunitexampleWeb.SlowTest test is slow",
+      "location": {
+        "file": "test/exunitexample_web/views/slow_test.exs",
+        "line": 7
+      },
+      "attempt": {
+        "durationInNanoseconds": 1508400000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ]
+}
