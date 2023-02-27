@@ -111,6 +111,8 @@ func MakeProviderAdapter(cfg config) (providers.Provider, error) {
 		return MakeGithubProvider(cfg)
 	case cfg.CI.Buildkite.Detected:
 		return MakeBuildkiteProvider(cfg)
+	case cfg.CI.Circleci.Detected:
+		return MakeCircleciProvider(cfg)
 	default:
 		return providers.NullProvider{}, errors.NewConfigurationError("Failed to detect supported CI context")
 	}
@@ -119,6 +121,22 @@ func MakeProviderAdapter(cfg config) (providers.Provider, error) {
 func MakeBuildkiteProvider(cfg config) (providers.BuildkiteProvider, error) {
 	return providers.BuildkiteProvider{
 		Env: cfg.CI.Buildkite.Env,
+	}, nil
+}
+
+func MakeCircleciProvider(cfg config) (providers.CircleciProvider, error) {
+	return providers.CircleciProvider{
+		BuildNum:         cfg.CI.Circleci.Env.CircleBuildNum,
+		BuildURL:         cfg.CI.Circleci.Env.CircleBuildURL,
+		JobName:          cfg.CI.Circleci.Env.CircleJob,
+		ParallelJobIndex: cfg.CI.Circleci.Env.CircleNodeIndex,
+		ParallelJobTotal: cfg.CI.Circleci.Env.CircleNodeTotal,
+		RepoAccountName:  cfg.CI.Circleci.Env.CircleProjectUsername,
+		RepoName:         cfg.CI.Circleci.Env.CircleProjectReponame,
+		RepoURL:          cfg.CI.Circleci.Env.CircleRepositoryURL,
+		BranchName:       cfg.CI.Circleci.Env.CircleBranch,
+		CommitSha:        cfg.CI.Circleci.Env.CircleSha1,
+		AttemptedBy:      cfg.CI.Circleci.Env.CircleUsername,
 	}, nil
 }
 

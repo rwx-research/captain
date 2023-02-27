@@ -80,10 +80,12 @@ of available targets, run `go run ./tools/mage -l`:
 
 ```
 Targets:
-  build*    builds the Captain CLI
-  clean     removes any generated artifacts from the repository.
-  lint      runs the linter & performs static-analysis checks.
-  test      executes the test-suite for the Captain-CLI.
+  all        cleans output, builds, tests, and lints.
+  build*     builds the Captain CLI
+  clean      removes any generated artifacts from the repository.
+  lint       runs the linter & performs static-analysis checks.
+  lintFix    Applies lint checks and fixes any issues.
+  test       executes the test-suite for the Captain-CLI.
 
 * default target
 ```

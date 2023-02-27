@@ -23,6 +23,7 @@ func All(ctx context.Context) error {
 		Build,
 		Test,
 		Lint,
+		LintFix,
 	}
 
 	for _, t := range targets {
@@ -57,6 +58,11 @@ func Clean(ctx context.Context) error {
 // Lint runs the linter & performs static-analysis checks.
 func Lint(ctx context.Context) error {
 	return sh.RunV("golangci-lint", "run", "./...")
+}
+
+// Applies lint checks and fixes any issues.
+func LintFix(ctx context.Context) error {
+	return sh.RunV("golangci-lint", "run", "--fix", "./...")
 }
 
 // Test executes the test-suite for the Captain-CLI.

@@ -34,6 +34,10 @@ type config struct {
 			Env      providers.BuildkiteEnv
 			Detected bool
 		}
+		Circleci struct {
+			Detected bool
+			Env      providers.CircleciEnv
+		}
 	}
 	Debug    bool
 	Insecure bool // Disables TLS for the Captain API
@@ -195,6 +199,69 @@ func init() {
 		}
 
 		if err := viper.BindEnv("ci.buildkite.env.buildkiteOrganizationSlug", "BUILDKITE_ORGANIZATION_SLUG"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		// CircleCI
+		//
+
+		if err := viper.BindEnv("ci.circleci.detected", "CIRCLECI"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleBuildNum", "CIRCLE_BUILD_NUM"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleBuildURL", "CIRCLE_BUILD_URL"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleJob", "CIRCLE_JOB"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleNodeIndex", "CIRCLE_NODE_INDEX"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleNodeTotal", "CIRCLE_NODE_TOTAL"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleProjectReponame", "CIRCLE_PROJECT_REPONAME"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleProjectUsername", "CIRCLE_PROJECT_USERNAME"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleRepositoryURL", "CIRCLE_REPOSITORY_URL"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleBranch", "CIRCLE_BRANCH"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleSha1", "CIRCLE_SHA1"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.circleci.env.circleUsername", "CIRCLE_USERNAME"); err != nil {
 			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
