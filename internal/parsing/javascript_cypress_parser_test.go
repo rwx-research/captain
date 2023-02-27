@@ -51,11 +51,29 @@ var _ = Describe("JavaScriptCypressParser", func() {
 			Expect(testResults).To(BeNil())
 
 			testResults, err = parsing.JavaScriptCypressParser{}.Parse(
+				strings.NewReader(`<testsuites tests="1"></testsuites>`),
+			)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(
+				ContainSubstring("The test suites in the XML do not appear to match Cypress XML"),
+			)
+			Expect(testResults).To(BeNil())
+
+			testResults, err = parsing.JavaScriptCypressParser{}.Parse(
 				strings.NewReader(`<testsuites tests="1"><testsuite></testsuite></testsuites>`),
 			)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(
 				ContainSubstring("The test suites in the XML do not appear to match Cypress XML"),
+			)
+			Expect(testResults).To(BeNil())
+
+			testResults, err = parsing.JavaScriptCypressParser{}.Parse(
+				strings.NewReader(`<testsuites tests="1"><testsuite file="not/right.js"></testsuite></testsuites>`),
+			)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(
+				ContainSubstring("The file does not look like a Cypress file: \"not/right.js\""),
 			)
 			Expect(testResults).To(BeNil())
 		})

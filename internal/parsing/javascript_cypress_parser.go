@@ -75,8 +75,15 @@ func (p JavaScriptCypressParser) Parse(data io.Reader) (*v1.TestResults, error) 
 	if testResults.Tests == nil {
 		return nil, errors.NewInputError("No tests count was found in the XML")
 	}
-	if len(testResults.TestSuites) > 0 && testResults.TestSuites[0].File == nil {
+	if len(testResults.TestSuites) == 0 {
 		return nil, errors.NewInputError("The test suites in the XML do not appear to match Cypress XML")
+	}
+	if testResults.TestSuites[0].File == nil {
+		return nil, errors.NewInputError("The test suites in the XML do not appear to match Cypress XML")
+	}
+	firstFile := testResults.TestSuites[0].File
+	if !(strings.Contains(*firstFile, ".cy.") || strings.Contains(*firstFile, "cypress/")) {
+		return nil, errors.NewInputError("The file does not look like a Cypress file: %q", *firstFile)
 	}
 
 	tests := make([]v1.Test, 0)
