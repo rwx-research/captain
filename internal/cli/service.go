@@ -5,16 +5,16 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"io"
-	"os"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
@@ -131,23 +131,16 @@ func (s Service) performTestResultsUpload(
 		if err != nil {
 			return nil, s.logError(errors.NewInternalError("Unable to generate new UUID: %s", err))
 		}
-		f, err := os.CreateTemp("", "rwx-test-results")
-		if err != nil {
-			return nil, s.logError(errors.NewInternalError("Unable to write test results to file: %s", err))
-		}
-		defer os.Remove(f.Name())
 
 		buf, err := json.Marshal(testResult)
 		if err != nil {
 			return nil, s.logError(errors.NewInternalError("Unable to output test results as JSON: %s", err))
 		}
-		if _, err := f.Write(buf); err != nil {
-			return nil, s.logError(errors.NewInternalError("Unable to write test results to file: %s", err))
+
+		f := fs.VirtualReadOnlyFile{
+			Reader:   bytes.NewReader(buf),
+			FileName: "rwx-test-results",
 		}
-		if _, err := f.Seek(0, io.SeekStart); err != nil {
-			return nil, s.logError(errors.NewInternalError("Unable to rewind test results file: %s", err))
-		}
-		defer f.Close()
 
 		originalPaths := make([]string, len(testResult.DerivedFrom))
 		for i, originalTestResult := range testResult.DerivedFrom {

@@ -13,3 +13,10 @@ type File interface {
 	Stat() (os.FileInfo, error)
 	Name() string
 }
+
+// TODO: replace with io/fs.File
+type ReadOnlyFile interface {
+	io.ReadSeekCloser
+	Stat() (os.FileInfo, error)
+	Name() string
+}

@@ -10,10 +10,10 @@ import (
 
 // TestResultsFile is a build- or test-artifact as defined by the Captain API.
 type TestResultsFile struct {
-	ExternalID     uuid.UUID  `json:"external_identifier"`
-	FD             fs.File    `json:"-"`
-	OriginalPaths  []string   `json:"-"`
-	Parser         ParserType `json:"format"`
+	ExternalID     uuid.UUID       `json:"external_identifier"`
+	FD             fs.ReadOnlyFile `json:"-"`
+	OriginalPaths  []string        `json:"-"`
+	Parser         ParserType      `json:"format"`
 	uploadURL      *url.URL
 	captainID      string
 	s3uploadStatus int
