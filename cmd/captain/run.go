@@ -17,6 +17,8 @@ import (
 var (
 	testResults              string
 	failOnUploadError        bool
+	postRetryCommands        []string
+	preRetryCommands         []string
 	printSummary             bool
 	quiet                    bool
 	reporters                []string
@@ -70,6 +72,8 @@ var (
 				Args:                     args,
 				TestResultsFileGlob:      testResults,
 				FailOnUploadError:        failOnUploadError,
+				PostRetryCommands:        postRetryCommands,
+				PreRetryCommands:         preRetryCommands,
 				PrintSummary:             printSummary,
 				Quiet:                    quiet,
 				Reporters:                reporterFuncs,
@@ -105,6 +109,20 @@ func init() {
 		"q",
 		false,
 		"disables most default output",
+	)
+
+	runCmd.Flags().StringArrayVar(
+		&postRetryCommands,
+		"post-retry",
+		[]string{},
+		"commands to run immediately after captain retries a test",
+	)
+
+	runCmd.Flags().StringArrayVar(
+		&preRetryCommands,
+		"pre-retry",
+		[]string{},
+		"commands to run immediately before captain retries a test",
 	)
 
 	runCmd.Flags().BoolVar(

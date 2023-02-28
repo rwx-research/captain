@@ -11,6 +11,8 @@ type RunConfig struct {
 	Args                     []string
 	TestResultsFileGlob      string
 	FailOnUploadError        bool
+	PostRetryCommands        []string
+	PreRetryCommands         []string
 	PrintSummary             bool
 	Quiet                    bool
 	Reporters                map[string]Reporter

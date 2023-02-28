@@ -300,7 +300,30 @@ func (s Service) attemptRetries(
 				}
 			}
 
+			for _, preRetryCommand := range cfg.PreRetryCommands {
+				preRetryArgs, err := shellwords.Parse(preRetryCommand)
+				if err != nil {
+					return flattenedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", preRetryCommand)
+				}
+
+				if _, err := s.runCommand(ctx, preRetryArgs, stdout, false); err != nil {
+					return flattenedTestResults, true, errors.Wrapf(err, "Error while executing %q", preRetryCommand)
+				}
+			}
+
 			_, cmdErr := s.runCommand(ctx, args, stdout, false)
+
+			for _, postRetryCommand := range cfg.PostRetryCommands {
+				postRetryArgs, err := shellwords.Parse(postRetryCommand)
+				if err != nil {
+					return flattenedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", postRetryCommand)
+				}
+
+				if _, err := s.runCommand(ctx, postRetryArgs, stdout, false); err != nil {
+					return flattenedTestResults, true, errors.Wrapf(err, "Error while executing %q", postRetryCommand)
+				}
+			}
+
 			// +1 because it's 1-indexed, +1 because the original attempt was #1
 			newTestResults, newTestResultsFiles, _, err := s.handleCommandOutcome(cfg, cmdErr, retries+2)
 			if err != nil {

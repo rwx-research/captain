@@ -1128,6 +1128,78 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("when there are pre- or post- retry commands", func() {
+			var (
+				preRetryCommandFinished, postRetryCommandFinished bool
+				preRetryCommandStarted, postRetryCommandStarted   bool
+			)
+
+			BeforeEach(func() {
+				runConfig.Retries = 1
+				preRetryCommandStarted, preRetryCommandFinished = false, false
+				postRetryCommandStarted, postRetryCommandFinished = false, false
+
+				mockPreRetryCommand := new(mocks.Command)
+				mockPreRetryCommand.MockStart = func() error {
+					Expect(commandFinished).To(BeTrue(), "the original command should run before the first retry")
+
+					commandStarted = false
+					commandFinished = false
+					preRetryCommandStarted = true
+
+					return nil
+				}
+				mockPreRetryCommand.MockWait = func() error {
+					Expect(preRetryCommandStarted).To(BeTrue())
+					preRetryCommandFinished = true
+					return nil
+				}
+
+				mockCommand.MockWait = func() error {
+					commandFinished = true
+					return nil
+				}
+
+				mockPostRetryCommand := new(mocks.Command)
+				mockPostRetryCommand.MockStart = func() error {
+					Expect(commandFinished).To(BeTrue())
+					Expect(preRetryCommandFinished).To(BeTrue())
+					postRetryCommandStarted = true
+					return nil
+				}
+				mockPostRetryCommand.MockWait = func() error {
+					Expect(postRetryCommandStarted).To(BeTrue())
+					postRetryCommandFinished = true
+					return nil
+				}
+
+				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+					switch cfg.Name {
+					case "pre":
+						return mockPreRetryCommand, nil
+					case "post":
+						return mockPostRetryCommand, nil
+					default:
+						return mockCommand, nil
+					}
+				}
+				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
+
+				runConfig.PreRetryCommands = []string{"pre"}
+				runConfig.PostRetryCommands = []string{"post"}
+			})
+
+			It("executes the pre-retry command before the command and the post-retry command afterwards", func() {
+				Expect(err).ToNot(HaveOccurred())
+				Expect(preRetryCommandStarted).To(BeTrue())
+				Expect(preRetryCommandFinished).To(BeTrue())
+				Expect(commandStarted).To(BeTrue())
+				Expect(commandFinished).To(BeTrue())
+				Expect(postRetryCommandStarted).To(BeTrue())
+				Expect(postRetryCommandFinished).To(BeTrue())
+			})
+		})
+
 		Context("when there are failures left after all retries", func() {
 			BeforeEach(func() {
 				runConfig.Retries = 1
