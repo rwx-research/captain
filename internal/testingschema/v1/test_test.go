@@ -272,6 +272,80 @@ var _ = Describe("Test", func() {
 		})
 	})
 
+	Describe("Matches", func() {
+		It("matches when the top-level fields are the same", func() {
+			scope1_1 := "scope1"
+			id1_1 := "id1"
+			name1_1 := "name1"
+			lineage1_1 := []string{"name", "1"}
+			file1_1 := "file1"
+			location1_1 := v1.Location{File: file1_1}
+
+			scope1_2 := "scope1"
+			id1_2 := "id1"
+			name1_2 := "name1"
+			lineage1_2 := []string{"name", "1"}
+			file1_2 := "file1"
+			location1_2 := v1.Location{File: file1_2}
+
+			test := v1.Test{
+				Scope:    &scope1_1,
+				ID:       &id1_1,
+				Name:     name1_1,
+				Lineage:  lineage1_1,
+				Location: &location1_1,
+			}
+
+			Expect(test.Matches(v1.Test{
+				Scope:    &scope1_2,
+				ID:       &id1_2,
+				Name:     name1_2,
+				Lineage:  lineage1_2,
+				Location: &location1_2,
+			})).To(BeTrue())
+
+			Expect(test.Matches(v1.Test{
+				Scope:    nil,
+				ID:       &id1_2,
+				Name:     name1_2,
+				Lineage:  lineage1_2,
+				Location: &location1_2,
+			})).To(BeFalse())
+
+			Expect(test.Matches(v1.Test{
+				Scope:    &scope1_2,
+				ID:       nil,
+				Name:     name1_2,
+				Lineage:  lineage1_2,
+				Location: &location1_2,
+			})).To(BeFalse())
+
+			Expect(test.Matches(v1.Test{
+				Scope:    &scope1_2,
+				ID:       &id1_2,
+				Name:     name1_2,
+				Lineage:  lineage1_2,
+				Location: nil,
+			})).To(BeFalse())
+
+			Expect(test.Matches(v1.Test{
+				Scope:    &scope1_2,
+				ID:       &id1_2,
+				Name:     "other name",
+				Lineage:  lineage1_2,
+				Location: &location1_2,
+			})).To(BeFalse())
+
+			Expect(test.Matches(v1.Test{
+				Scope:    &scope1_2,
+				ID:       &id1_2,
+				Name:     name1_2,
+				Lineage:  []string{"other"},
+				Location: &location1_2,
+			})).To(BeFalse())
+		})
+	})
+
 	Describe("Identify", func() {
 		Context("with strict identification", func() {
 			It("returns an error when fetching from meta of a test without meta", func() {

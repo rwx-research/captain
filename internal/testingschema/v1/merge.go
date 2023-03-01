@@ -38,29 +38,7 @@ func flatten(unionedTestResults []TestResults) TestResults {
 			matchedWithBaseTest := false
 
 			for i, baseTest := range flattened.Tests {
-				if !stringPointerEquals(baseTest.Scope, incomingTest.Scope) {
-					continue
-				}
-				if !stringPointerEquals(baseTest.ID, incomingTest.ID) {
-					continue
-				}
-				if baseTest.Name != incomingTest.Name {
-					continue
-				}
-				if !locationPointerEquals(baseTest.Location, incomingTest.Location) {
-					continue
-				}
-				if len(baseTest.Lineage) != len(incomingTest.Lineage) {
-					continue
-				}
-				lineageMatches := true
-				for i, component := range baseTest.Lineage {
-					if incomingTest.Lineage[i] != component {
-						lineageMatches = false
-						break
-					}
-				}
-				if !lineageMatches {
+				if !baseTest.Matches(incomingTest) {
 					continue
 				}
 				matchedWithBaseTest = true
@@ -99,42 +77,4 @@ func flatten(unionedTestResults []TestResults) TestResults {
 
 	flattened.Summary = NewSummary(flattened.Tests, flattened.OtherErrors)
 	return flattened
-}
-
-func stringPointerEquals(left *string, right *string) bool {
-	if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	}
-
-	if left == nil && right == nil {
-		return true
-	}
-
-	return *left == *right
-}
-
-func intPointerEquals(left *int, right *int) bool {
-	if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	}
-
-	if left == nil && right == nil {
-		return true
-	}
-
-	return *left == *right
-}
-
-func locationPointerEquals(left *Location, right *Location) bool {
-	if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	}
-
-	if left == nil && right == nil {
-		return true
-	}
-
-	return left.File == right.File &&
-		intPointerEquals(left.Line, right.Line) &&
-		intPointerEquals(left.Column, right.Column)
 }

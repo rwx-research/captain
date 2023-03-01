@@ -23,6 +23,7 @@ var (
 	quiet                    bool
 	reporters                []string
 	retries                  int
+	flakyRetries             int
 	retryCommandTemplate     string
 	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
 		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
@@ -70,8 +71,8 @@ var (
 
 			runConfig := cli.RunConfig{
 				Args:                     args,
-				TestResultsFileGlob:      testResults,
 				FailOnUploadError:        failOnUploadError,
+				FlakyRetries:             flakyRetries,
 				PostRetryCommands:        postRetryCommands,
 				PreRetryCommands:         preRetryCommands,
 				PrintSummary:             printSummary,
@@ -79,8 +80,9 @@ var (
 				Reporters:                reporterFuncs,
 				Retries:                  retries,
 				RetryCommandTemplate:     retryCommandTemplate,
-				SuiteID:                  suiteID,
 				SubstitutionsByFramework: substitutionsByFramework,
+				SuiteID:                  suiteID,
+				TestResultsFileGlob:      testResults,
 			}
 
 			return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))
@@ -143,9 +145,17 @@ func init() {
 	runCmd.Flags().IntVar(
 		&retries,
 		"retries",
-		0,
+		-1,
 		"the number of times failed tests should be retried "+
-			"(e.g. --retries 2 would mean a maximum of 3 attempts of any given test) (required if --retry-command is passed)",
+			"(e.g. --retries 2 would mean a maximum of 3 attempts of any given test)",
+	)
+
+	runCmd.Flags().IntVar(
+		&flakyRetries,
+		"flaky-retries",
+		-1,
+		"the number of times failing flaky tests should be retried (takes precedence over --retries if the test is known "+
+			"to be flaky) (e.g. --flaky-retries 2 would mean a maximum of 3 attempts of any flaky test)",
 	)
 
 	formattedSubstitutionExamples := make([]string, len(substitutionsByFramework))
@@ -164,13 +174,11 @@ func init() {
 		"",
 		fmt.Sprintf(
 			"the command that will be run to execute a subset of your tests while retrying "+
-				"(required if --retries is passed)\n"+
+				"(required if --retries or --flaky-retries is passed)\n"+
 				"Examples:\n%v",
 			strings.Join(formattedSubstitutionExamples, "\n"),
 		),
 	)
-
-	runCmd.MarkFlagsRequiredTogether("retries", "retry-command")
 
 	addFrameworkFlags(runCmd)
 

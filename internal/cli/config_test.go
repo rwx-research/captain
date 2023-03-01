@@ -8,16 +8,16 @@ import (
 )
 
 var _ = Describe("RunConfig", func() {
-	It("errs when retries are negative", func() {
-		err := cli.RunConfig{Retries: -1}.Validate()
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("retries must be >= 0"))
-	})
-
 	It("errs when retries are positive and the retry command is missing", func() {
 		err := cli.RunConfig{Retries: 1, RetryCommandTemplate: ""}.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries are > 0"))
+		Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries or flaky-retries are > 0"))
+	})
+
+	It("errs when flaky-retries are positive and the retry command is missing", func() {
+		err := cli.RunConfig{FlakyRetries: 1, RetryCommandTemplate: ""}.Validate()
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries or flaky-retries are > 0"))
 	})
 
 	It("is valid when retries are positive and the retry command is present", func() {
@@ -25,8 +25,48 @@ var _ = Describe("RunConfig", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	It("is valid when flaky-retries are positive and the retry command is present", func() {
+		err := cli.RunConfig{FlakyRetries: 1, RetryCommandTemplate: "some-command"}.Validate()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
 	It("is valid when retries are 0 and the retry command is missing", func() {
 		err := cli.RunConfig{Retries: 0, RetryCommandTemplate: ""}.Validate()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is valid when flaky-retries are 0 and the retry command is missing", func() {
+		err := cli.RunConfig{FlakyRetries: 0, RetryCommandTemplate: ""}.Validate()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is valid when retries are 0 and the retry command is present", func() {
+		err := cli.RunConfig{Retries: 0, RetryCommandTemplate: "some-command"}.Validate()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is valid when flaky-retries are 0 and the retry command is present", func() {
+		err := cli.RunConfig{FlakyRetries: 0, RetryCommandTemplate: "some-command"}.Validate()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is valid when retries are negative and the retry command is missing", func() {
+		err := cli.RunConfig{Retries: -1, RetryCommandTemplate: ""}.Validate()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is valid when flaky-retries are negative and the retry command is missing", func() {
+		err := cli.RunConfig{FlakyRetries: -1, RetryCommandTemplate: ""}.Validate()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is valid when retries are negative and the retry command is present", func() {
+		err := cli.RunConfig{Retries: -1, RetryCommandTemplate: "some-command"}.Validate()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("is valid when flaky-retries are negative and the retry command is present", func() {
+		err := cli.RunConfig{FlakyRetries: -1, RetryCommandTemplate: "some-command"}.Validate()
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

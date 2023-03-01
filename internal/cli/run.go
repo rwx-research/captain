@@ -30,21 +30,19 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		return nil
 	}
 
-	// Fetch list of quarantined test IDs in the background
-	var quarantinedTestCases []api.QuarantinedTest
+	// Fetch run configuration in the background
+	var apiConfiguration api.RunConfiguration
 	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		runConfiguration, err := s.API.GetRunConfiguration(egCtx, cfg.SuiteID)
+		apiConfiguration, err = s.API.GetRunConfiguration(egCtx, cfg.SuiteID)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
-		testCases := runConfiguration.QuarantinedTests
-		if len(testCases) == 0 {
+		if len(apiConfiguration.QuarantinedTests) == 0 {
 			s.Log.Debug("No quarantined tests defined in Captain")
 		}
 
-		quarantinedTestCases = testCases
 		return nil
 	})
 
@@ -76,14 +74,14 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		return err
 	}
 
-	testResults, didRetry, err := s.attemptRetries(ctx, testResults, testResultsFiles, cfg)
-	if err != nil {
-		s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
+	// Wait until run configuration was fetched. Ignore any errors.
+	if err := eg.Wait(); err != nil {
+		s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
 	}
 
-	// Wait until list of quarantined tests was fetched. Ignore any errors.
-	if err := eg.Wait(); err != nil {
-		s.Log.Warnf("Unable to fetch list of quarantined tests from Captain: %s", err)
+	testResults, didRetry, err := s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration)
+	if err != nil {
+		s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
 	}
 
 	quarantinedFailedTests := make([]v1.Test, 0)
@@ -93,8 +91,13 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	if testResults != nil {
 		otherErrorCount = testResults.Summary.OtherErrors
 
+		quarantinedTests := make([]api.Test, len(apiConfiguration.QuarantinedTests))
+		for i, quarantinedTest := range apiConfiguration.QuarantinedTests {
+			quarantinedTests[i] = quarantinedTest.Test
+		}
+
 		for i, test := range testResults.Tests {
-			if s.isQuarantined(test, quarantinedTestCases) && test.Attempt.Status.PotentiallyFlaky() {
+			if s.isIdentifiedIn(test, quarantinedTests) && test.Attempt.Status.PotentiallyFlaky() {
 				testResults.Tests[i] = test.Quarantine()
 				s.Log.Debugf("quarantined %v test: %v", test.Attempt.Status, test)
 				quarantinedFailedTests = append(quarantinedFailedTests, test)
@@ -219,9 +222,21 @@ func (s Service) attemptRetries(
 	originalTestResults *v1.TestResults,
 	originalTestResultsFiles []string,
 	cfg RunConfig,
+	apiConfiguration api.RunConfiguration,
 ) (*v1.TestResults, bool, error) {
-	if cfg.Retries == 0 {
+	nonFlakyRetries := cfg.Retries
+	flakyRetries := cfg.FlakyRetries
+
+	if nonFlakyRetries <= 0 && flakyRetries <= 0 {
 		return originalTestResults, false, nil
+	}
+
+	// if retries is set and flaky-retries is not, set flaky-retries to retries
+	// this way, we can isolate the logic for flaky and non-flaky instead of special casing everywhere
+	// note: it's important we don't do this the other way around; retries implies flaky-retries, flaky-retries
+	// does not imply retries
+	if nonFlakyRetries > 0 && flakyRetries < 0 {
+		flakyRetries = nonFlakyRetries
 	}
 
 	if didRun, err := s.didAbqRun(ctx); didRun || err != nil {
@@ -258,19 +273,78 @@ func (s Service) attemptRetries(
 		}
 	}
 
-	for retries := 0; retries < cfg.Retries; retries++ {
-		summary := flattenedTestResults.Summary
-		if summary.Failed+summary.Canceled+summary.TimedOut == 0 {
-			// nothing left to retry
+	maxRetries := nonFlakyRetries
+	if flakyRetries > maxRetries {
+		maxRetries = flakyRetries
+	}
+	formattedRetryTotal := fmt.Sprintf(" of %v", maxRetries)
+	if flakyRetries > 0 && nonFlakyRetries > 0 && nonFlakyRetries != flakyRetries {
+		formattedRetryTotal = ""
+	}
+
+	for retries := 0; retries < maxRetries; retries++ {
+		remainingFlakyFailures := make([]v1.Test, 0)
+		remainingNonFlakyFailures := make([]v1.Test, 0)
+
+		for _, test := range flattenedTestResults.Tests {
+			if !test.Attempt.Status.ImpliesFailure() {
+				continue
+			}
+
+			if s.isIdentifiedIn(test, apiConfiguration.FlakyTests) {
+				remainingFlakyFailures = append(remainingFlakyFailures, test)
+			} else {
+				remainingNonFlakyFailures = append(remainingNonFlakyFailures, test)
+			}
+		}
+
+		// nothing left to retry
+		if len(remainingFlakyFailures)+len(remainingNonFlakyFailures) == 0 {
 			break
 		}
 
+		nonFlakyAttemptsExhausted := retries >= nonFlakyRetries
+		flakyAttemptsExhausted := retries >= flakyRetries
+
+		// all attempts exhausted
+		if nonFlakyAttemptsExhausted && flakyAttemptsExhausted {
+			break
+		}
+
+		// done with flaky tests, out of non-flaky attempts
+		if nonFlakyAttemptsExhausted && len(remainingNonFlakyFailures) > 0 && len(remainingFlakyFailures) == 0 {
+			break
+		}
+
+		// done with non-flaky tests, out of non-flaky attempts
+		if flakyAttemptsExhausted && len(remainingFlakyFailures) > 0 && len(remainingNonFlakyFailures) == 0 {
+			break
+		}
+
+		filter := func(test v1.Test) bool {
+			testIsFlaky := false
+			for _, remainingFlakyFailure := range remainingFlakyFailures {
+				if test.Matches(remainingFlakyFailure) {
+					testIsFlaky = true
+					break
+				}
+			}
+
+			if retries >= flakyRetries && testIsFlaky {
+				s.Log.Debugf("Skipping %v; flaky attempts exhausted\n", test)
+				return false
+			}
+
+			if retries >= nonFlakyRetries && !testIsFlaky {
+				s.Log.Debugf("Skipping %v; non-flaky attempts exhausted\n", test)
+				return false
+			}
+
+			return true
+		}
+
 		allNewTestResults := make([]v1.TestResults, 0)
-		allSubstitutions := substitution.SubstitutionsFor(
-			compiledTemplate,
-			*flattenedTestResults,
-			func(test v1.Test) bool { return true },
-		)
+		allSubstitutions := substitution.SubstitutionsFor(compiledTemplate, *flattenedTestResults, filter)
 		for i, substitutions := range allSubstitutions {
 			command := compiledTemplate.Substitute(substitutions)
 			args, err := shellwords.Parse(command)
@@ -281,12 +355,12 @@ func (s Service) attemptRetries(
 			s.Log.Infoln()
 			s.Log.Infoln(strings.Repeat("-", 80))
 			if len(allSubstitutions) == 1 {
-				s.Log.Infoln(fmt.Sprintf("- Retry %v of %v", retries+1, cfg.Retries))
+				s.Log.Infoln(fmt.Sprintf("- Retry %v%v", retries+1, formattedRetryTotal))
 			} else {
 				s.Log.Infoln(fmt.Sprintf(
-					"- Retry %v of %v, command %v of %v",
+					"- Retry %v%v, command %v of %v",
 					retries+1,
-					cfg.Retries,
+					formattedRetryTotal,
 					i+1,
 					len(allSubstitutions),
 				))
@@ -429,32 +503,32 @@ func (s Service) runCommand(
 	return ctx, nil
 }
 
-func (s Service) isQuarantined(failedTest v1.Test, quarantinedTestCases []api.QuarantinedTest) bool {
-	for _, quarantinedTestCase := range quarantinedTestCases {
-		compositeIdentifier, err := failedTest.Identify(
-			quarantinedTestCase.IdentityComponents,
-			quarantinedTestCase.StrictIdentity,
+func (s Service) isIdentifiedIn(test v1.Test, identifiedTests []api.Test) bool {
+	for _, identifiedTest := range identifiedTests {
+		compositeIdentifier, err := test.Identify(
+			identifiedTest.IdentityComponents,
+			identifiedTest.StrictIdentity,
 		)
 		if err != nil {
-			s.Log.Debugf("%v does not identify %v because %v", quarantinedTestCase, failedTest, err.Error())
+			s.Log.Debugf("%v does not identify %v because %v", identifiedTest, test, err.Error())
 			continue
 		}
 
-		if compositeIdentifier != quarantinedTestCase.CompositeIdentifier {
+		if compositeIdentifier != identifiedTest.CompositeIdentifier {
 			s.Log.Debugf(
-				"%v does not quarantine %v because they have different composite identifiers (%v != %v)",
-				quarantinedTestCase,
-				failedTest,
-				quarantinedTestCase.CompositeIdentifier,
+				"%v does not identify %v because they have different composite identifiers (%v != %v)",
+				identifiedTest,
+				test,
+				identifiedTest.CompositeIdentifier,
 				compositeIdentifier,
 			)
 			continue
 		}
 
 		s.Log.Debugf(
-			"%v quarantines %v because they share the same composite identifier (%v)",
-			quarantinedTestCase,
-			failedTest,
+			"%v identifies %v because they share the same composite identifier (%v)",
+			identifiedTest,
+			test,
 			compositeIdentifier,
 		)
 		return true

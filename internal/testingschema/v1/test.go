@@ -136,6 +136,32 @@ func (t Test) Tag(key string, value any) Test {
 	return t
 }
 
+func (t Test) Matches(other Test) bool {
+	if !stringPointerEquals(t.Scope, other.Scope) {
+		return false
+	}
+	if !stringPointerEquals(t.ID, other.ID) {
+		return false
+	}
+	if t.Name != other.Name {
+		return false
+	}
+	if !locationPointerEquals(t.Location, other.Location) {
+		return false
+	}
+	if len(t.Lineage) != len(other.Lineage) {
+		return false
+	}
+	lineageMatches := true
+	for i, component := range t.Lineage {
+		if other.Lineage[i] != component {
+			lineageMatches = false
+			break
+		}
+	}
+	return lineageMatches
+}
+
 // Calculates the composite identifier of a Test given the components which determine it
 func (t Test) Identify(withComponents []string, strictly bool) (string, error) {
 	foundComponents := make([]string, 0)
@@ -233,4 +259,42 @@ func (t Test) metaGetter(component string) func() (*string, error) {
 		formatted := fmt.Sprintf("%v", value)
 		return &formatted, nil
 	}
+}
+
+func stringPointerEquals(left *string, right *string) bool {
+	if (left == nil && right != nil) || (left != nil && right == nil) {
+		return false
+	}
+
+	if left == nil && right == nil {
+		return true
+	}
+
+	return *left == *right
+}
+
+func intPointerEquals(left *int, right *int) bool {
+	if (left == nil && right != nil) || (left != nil && right == nil) {
+		return false
+	}
+
+	if left == nil && right == nil {
+		return true
+	}
+
+	return *left == *right
+}
+
+func locationPointerEquals(left *Location, right *Location) bool {
+	if (left == nil && right != nil) || (left != nil && right == nil) {
+		return false
+	}
+
+	if left == nil && right == nil {
+		return true
+	}
+
+	return left.File == right.File &&
+		intPointerEquals(left.Line, right.Line) &&
+		intPointerEquals(left.Column, right.Column)
 }

@@ -101,7 +101,7 @@ var _ = Describe("Run", func() {
 				mockAbqCommandArgs = cfg.Args
 				Expect(cfg.Env).To(HaveLen(0))
 				return mockAbqCommand, nil
-			case "bundle":
+			case "retry":
 				mockBundle := new(mocks.Command)
 				mockBundle.MockStart = func() error {
 					return nil
@@ -183,7 +183,7 @@ var _ = Describe("Run", func() {
 
 		It("errs", func() {
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries are > 0"))
+			Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries or flaky-retries are > 0"))
 		})
 	})
 
@@ -1119,7 +1119,7 @@ var _ = Describe("Run", func() {
 				TestResultsFileGlob:  testResultsFilePath,
 				SuiteID:              "test",
 				Retries:              1,
-				RetryCommandTemplate: "bundle exec rspec {{ tests }}",
+				RetryCommandTemplate: "retry {{ tests }}",
 				SubstitutionsByFramework: map[v1.Framework]targetedretries.Substitution{
 					v1.RubyRSpecFramework: new(targetedretries.RubyRSpecSubstitution),
 				},
@@ -1315,6 +1315,339 @@ var _ = Describe("Run", func() {
 				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
 				Expect(testResults.Tests[2].PastAttempts).To(HaveLen(1))
 				Expect(testResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+			})
+		})
+
+		Context("when retrying only flaky tests and there are no flaky tests", func() {
+			BeforeEach(func() {
+				runConfig.Retries = -1
+				runConfig.FlakyRetries = 1
+
+				mockGetRunConfiguration := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) (api.RunConfiguration, error) {
+					return api.RunConfiguration{FlakyTests: []api.Test{}}, nil
+				}
+
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+			})
+
+			It("does not retry", func() {
+				Expect(err).To(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(3))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when retrying only flaky tests and only a subset of the failing tests are flaky", func() {
+			BeforeEach(func() {
+				runConfig.Retries = -1
+				runConfig.FlakyRetries = 1
+
+				mockGetRunConfiguration := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) (api.RunConfiguration, error) {
+					return api.RunConfiguration{
+						FlakyTests: []api.Test{
+							{
+								CompositeIdentifier: firstTestDescription,
+								IdentityComponents:  []string{"description"},
+								StrictIdentity:      true,
+							},
+						},
+					}, nil
+				}
+
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+
+				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+					if cfg.Name == "retry" {
+						Expect(cfg.Args).To(ContainElement(ContainSubstring(firstTestDescription)))
+						Expect(cfg.Args).NotTo(ContainElement(ContainSubstring(secondTestDescription)))
+						Expect(cfg.Args).NotTo(ContainElement(ContainSubstring(thirdTestDescription)))
+					}
+
+					return mockCommand, nil
+				}
+				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
+			})
+
+			It("only retries the flaky ones", func() {
+				// see assertions in newCommand
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		Context("when retrying flaky more than the non-flaky tests", func() {
+			var retryCount int
+
+			BeforeEach(func() {
+				runConfig.Retries = 1
+				runConfig.FlakyRetries = 2
+				retryCount = 0
+
+				mockGetRunConfiguration := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) (api.RunConfiguration, error) {
+					return api.RunConfiguration{
+						FlakyTests: []api.Test{
+							{
+								CompositeIdentifier: firstTestDescription,
+								IdentityComponents:  []string{"description"},
+								StrictIdentity:      true,
+							},
+						},
+					}, nil
+				}
+
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+
+				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+					if cfg.Name == "retry" {
+						retryCount++
+
+						if retryCount == 1 {
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(firstTestDescription)))
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(secondTestDescription)))
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(thirdTestDescription)))
+						} else {
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(firstTestDescription)))
+							Expect(cfg.Args).NotTo(ContainElement(ContainSubstring(secondTestDescription)))
+							Expect(cfg.Args).NotTo(ContainElement(ContainSubstring(thirdTestDescription)))
+						}
+					}
+
+					return mockCommand, nil
+				}
+				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+
+					firstStatus := firstInitialStatus
+					secondStatus := secondInitialStatus
+					thirdStatus := thirdInitialStatus
+
+					return &v1.TestResults{
+						Framework: v1.RubyRSpecFramework,
+						Tests: []v1.Test{
+							{
+								ID:       &firstTestDescription,
+								Name:     firstTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: firstStatus,
+								},
+							},
+							{
+								ID:       &secondTestDescription,
+								Name:     secondTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: secondStatus,
+								},
+							},
+							{
+								ID:       &thirdTestDescription,
+								Name:     thirdTestDescription,
+								Location: &v1.Location{File: "/other/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: thirdStatus,
+								},
+							},
+						},
+					}, nil
+				}
+			})
+
+			It("stops retrying the non-flaky ones after it exhausts the attempts", func() {
+				// see assertions in newCommand
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		Context("when retrying non-flaky more than the flaky tests", func() {
+			var retryCount int
+
+			BeforeEach(func() {
+				runConfig.Retries = 2
+				runConfig.FlakyRetries = 1
+				retryCount = 0
+
+				mockGetRunConfiguration := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) (api.RunConfiguration, error) {
+					return api.RunConfiguration{
+						FlakyTests: []api.Test{
+							{
+								CompositeIdentifier: firstTestDescription,
+								IdentityComponents:  []string{"description"},
+								StrictIdentity:      true,
+							},
+						},
+					}, nil
+				}
+
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+
+				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+					if cfg.Name == "retry" {
+						retryCount++
+
+						if retryCount == 1 {
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(firstTestDescription)))
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(secondTestDescription)))
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(thirdTestDescription)))
+						} else {
+							Expect(cfg.Args).NotTo(ContainElement(ContainSubstring(firstTestDescription)))
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(secondTestDescription)))
+							Expect(cfg.Args).To(ContainElement(ContainSubstring(thirdTestDescription)))
+						}
+					}
+
+					return mockCommand, nil
+				}
+				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+
+					firstStatus := firstInitialStatus
+					secondStatus := secondInitialStatus
+					thirdStatus := thirdInitialStatus
+
+					return &v1.TestResults{
+						Framework: v1.RubyRSpecFramework,
+						Tests: []v1.Test{
+							{
+								ID:       &firstTestDescription,
+								Name:     firstTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: firstStatus,
+								},
+							},
+							{
+								ID:       &secondTestDescription,
+								Name:     secondTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: secondStatus,
+								},
+							},
+							{
+								ID:       &thirdTestDescription,
+								Name:     thirdTestDescription,
+								Location: &v1.Location{File: "/other/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: thirdStatus,
+								},
+							},
+						},
+					}, nil
+				}
+			})
+
+			It("stops retrying the flaky ones after it exhausts the attempts", func() {
+				// see assertions in newCommand
+				Expect(err).To(HaveOccurred())
+			})
+		})
+
+		Context("when retrying everything and there are flaky tests", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 2
+				runConfig.FlakyRetries = -1
+
+				mockGetRunConfiguration := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) (api.RunConfiguration, error) {
+					return api.RunConfiguration{
+						FlakyTests: []api.Test{
+							{
+								CompositeIdentifier: firstTestDescription,
+								IdentityComponents:  []string{"description"},
+								StrictIdentity:      true,
+							},
+						},
+					}, nil
+				}
+
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+
+				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+					if cfg.Name == "retry" {
+						Expect(cfg.Args).To(ContainElement(ContainSubstring(firstTestDescription)))
+						Expect(cfg.Args).To(ContainElement(ContainSubstring(secondTestDescription)))
+						Expect(cfg.Args).To(ContainElement(ContainSubstring(thirdTestDescription)))
+					}
+
+					return mockCommand, nil
+				}
+				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+
+					firstStatus := firstInitialStatus
+					secondStatus := secondInitialStatus
+					thirdStatus := thirdInitialStatus
+
+					return &v1.TestResults{
+						Framework: v1.RubyRSpecFramework,
+						Tests: []v1.Test{
+							{
+								ID:       &firstTestDescription,
+								Name:     firstTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: firstStatus,
+								},
+							},
+							{
+								ID:       &secondTestDescription,
+								Name:     secondTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: secondStatus,
+								},
+							},
+							{
+								ID:       &thirdTestDescription,
+								Name:     thirdTestDescription,
+								Location: &v1.Location{File: "/other/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: thirdStatus,
+								},
+							},
+						},
+					}, nil
+				}
+			})
+
+			It("retries all tests until the attempts are exhausted, flaky or not", func() {
+				// see assertions in newCommand
+				Expect(err).To(HaveOccurred())
 			})
 		})
 

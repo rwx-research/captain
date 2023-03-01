@@ -11,6 +11,7 @@ type RunConfig struct {
 	Args                     []string
 	TestResultsFileGlob      string
 	FailOnUploadError        bool
+	FlakyRetries             int
 	PostRetryCommands        []string
 	PreRetryCommands         []string
 	PrintSummary             bool
@@ -23,12 +24,8 @@ type RunConfig struct {
 }
 
 func (rc RunConfig) Validate() error {
-	if rc.Retries < 0 {
-		return errors.NewConfigurationError("retries must be >= 0")
-	}
-
-	if rc.RetryCommandTemplate == "" && rc.Retries > 0 {
-		return errors.NewConfigurationError("retry-command must be provided if retries are > 0")
+	if rc.RetryCommandTemplate == "" && (rc.Retries > 0 || rc.FlakyRetries > 0) {
+		return errors.NewConfigurationError("retry-command must be provided if retries or flaky-retries are > 0")
 	}
 
 	return nil
