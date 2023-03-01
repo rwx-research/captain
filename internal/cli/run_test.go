@@ -1728,7 +1728,7 @@ var _ = Describe("Run", func() {
 
 		Context("when there are too many failures by percent", func() {
 			BeforeEach(func() {
-				runConfig.RetryFailureLimit = "50%"
+				runConfig.MaxTestsToRetry = "50%"
 				runConfig.Retries = 2
 			})
 
@@ -1747,7 +1747,7 @@ var _ = Describe("Run", func() {
 
 		Context("when there are not too many failures by percent", func() {
 			BeforeEach(func() {
-				runConfig.RetryFailureLimit = "200%"
+				runConfig.MaxTestsToRetry = "200%"
 				runConfig.Retries = 2
 			})
 
@@ -1767,7 +1767,7 @@ var _ = Describe("Run", func() {
 
 		Context("when there are too many failures by count", func() {
 			BeforeEach(func() {
-				runConfig.RetryFailureLimit = "1"
+				runConfig.MaxTestsToRetry = "1"
 				runConfig.Retries = 2
 			})
 
@@ -1786,7 +1786,7 @@ var _ = Describe("Run", func() {
 
 		Context("when there are not too many failures by count", func() {
 			BeforeEach(func() {
-				runConfig.RetryFailureLimit = "5"
+				runConfig.MaxTestsToRetry = "5"
 				runConfig.Retries = 2
 			})
 

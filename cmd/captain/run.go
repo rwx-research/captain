@@ -26,7 +26,7 @@ var (
 	retries                  int
 	flakyRetries             int
 	retryCommandTemplate     string
-	retryFailureLimit        string
+	maxTestsToRetry          string
 	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
 		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
 		v1.ElixirExUnitFramework:         new(targetedretries.ElixirExUnitSubstitution),
@@ -83,7 +83,7 @@ var (
 				Reporters:                reporterFuncs,
 				Retries:                  retries,
 				RetryCommandTemplate:     retryCommandTemplate,
-				RetryFailureLimit:        retryFailureLimit,
+				MaxTestsToRetry:          maxTestsToRetry,
 				SubstitutionsByFramework: substitutionsByFramework,
 				SuiteID:                  suiteID,
 				TestResultsFileGlob:      testResults,
@@ -163,11 +163,11 @@ func init() {
 	)
 
 	runCmd.Flags().StringVar(
-		&retryFailureLimit,
-		"retry-failure-limit",
+		&maxTestsToRetry,
+		"max-tests-to-retry",
 		"",
-		"if set, retries will not be run when the suite has more than N failing tests or if more than N%% of all tests "+
-			"are failing (e.g. --retry-failure-limit 15 or --retry-failure-limit 1.5%)",
+		"if set, retries will not be run when there are more than N tests to retry or if more than N%% of all tests "+
+			"need retried (e.g. --max-tests-to-retry 15 or --max-tests-to-retry 1.5%)",
 	)
 
 	runCmd.Flags().BoolVar(

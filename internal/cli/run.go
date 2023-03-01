@@ -273,12 +273,12 @@ func (s Service) attemptRetries(
 		}
 	}
 
-	retryFailureLimitCount, err := cfg.RetryFailureLimitCount()
+	maxTestsToRetryCount, err := cfg.MaxTestsToRetryCount()
 	if err != nil {
 		return flattenedTestResults, false, errors.WithStack(err)
 	}
 
-	retryFailureLimitPercentage, err := cfg.RetryFailureLimitPercentage()
+	maxTestsToRetryPercentage, err := cfg.MaxTestsToRetryPercentage()
 	if err != nil {
 		return flattenedTestResults, false, errors.WithStack(err)
 	}
@@ -320,14 +320,14 @@ func (s Service) attemptRetries(
 		}
 
 		// bail early if there are too many failed tests
-		if retryFailureLimitCount != nil && testsRemaining > *retryFailureLimitCount {
+		if maxTestsToRetryCount != nil && testsRemaining > *maxTestsToRetryCount {
 			break
 		}
 
 		// bail early if there are too many failed tests
 		testCount := float64(flattenedTestResults.Summary.Tests)
-		if retryFailureLimitPercentage != nil &&
-			float64(testsRemaining) > testCount**retryFailureLimitPercentage/100 {
+		if maxTestsToRetryPercentage != nil &&
+			float64(testsRemaining) > testCount**maxTestsToRetryPercentage/100 {
 			break
 		}
 

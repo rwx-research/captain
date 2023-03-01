@@ -23,12 +23,12 @@ type RunConfig struct {
 	Reporters                map[string]Reporter
 	Retries                  int
 	RetryCommandTemplate     string
-	RetryFailureLimit        string
+	MaxTestsToRetry          string
 	SuiteID                  string
 	SubstitutionsByFramework map[v1.Framework]targetedretries.Substitution
 }
 
-var retryFailureLimitRegexp = regexp.MustCompile(
+var maxTestsToRetryRegexp = regexp.MustCompile(
 	`^\s*(?P<failureCount>\d+)\s*$|^\s*(?:(?P<failurePercentage>\d+(?:\.\d+)?)%)\s*$`,
 )
 
@@ -37,21 +37,21 @@ func (rc RunConfig) Validate() error {
 		return errors.NewConfigurationError("retry-command must be provided if retries or flaky-retries are > 0")
 	}
 
-	if rc.RetryFailureLimit != "" && !retryFailureLimitRegexp.MatchString(rc.RetryFailureLimit) {
-		return errors.NewConfigurationError("retry-failure-limit must be either an integer or percentage")
+	if rc.MaxTestsToRetry != "" && !maxTestsToRetryRegexp.MatchString(rc.MaxTestsToRetry) {
+		return errors.NewConfigurationError("max-tests-to-retry must be either an integer or percentage")
 	}
 
 	return nil
 }
 
-func (rc RunConfig) RetryFailureLimitCount() (*int, error) {
-	if rc.RetryFailureLimit == "" {
+func (rc RunConfig) MaxTestsToRetryCount() (*int, error) {
+	if rc.MaxTestsToRetry == "" {
 		return nil, nil
 	}
 
-	match := retryFailureLimitRegexp.FindStringSubmatch(rc.RetryFailureLimit)
+	match := maxTestsToRetryRegexp.FindStringSubmatch(rc.MaxTestsToRetry)
 	result := map[string]string{}
-	for i, name := range retryFailureLimitRegexp.SubexpNames() {
+	for i, name := range maxTestsToRetryRegexp.SubexpNames() {
 		if i != 0 && name != "" {
 			result[name] = match[i]
 		}
@@ -70,14 +70,14 @@ func (rc RunConfig) RetryFailureLimitCount() (*int, error) {
 	return &count, nil
 }
 
-func (rc RunConfig) RetryFailureLimitPercentage() (*float64, error) {
-	if rc.RetryFailureLimit == "" {
+func (rc RunConfig) MaxTestsToRetryPercentage() (*float64, error) {
+	if rc.MaxTestsToRetry == "" {
 		return nil, nil
 	}
 
-	match := retryFailureLimitRegexp.FindStringSubmatch(rc.RetryFailureLimit)
+	match := maxTestsToRetryRegexp.FindStringSubmatch(rc.MaxTestsToRetry)
 	result := map[string]string{}
-	for i, name := range retryFailureLimitRegexp.SubexpNames() {
+	for i, name := range maxTestsToRetryRegexp.SubexpNames() {
 		if i != 0 && name != "" {
 			result[name] = match[i]
 		}
