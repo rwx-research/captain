@@ -14,6 +14,7 @@ type RunConfig struct {
 	Args                     []string
 	TestResultsFileGlob      string
 	FailOnUploadError        bool
+	FailRetriesFast          bool
 	FlakyRetries             int
 	PostRetryCommands        []string
 	PreRetryCommands         []string

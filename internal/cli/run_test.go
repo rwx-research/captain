@@ -1651,6 +1651,81 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("when failing fast and there are non-flaky failures that can't pass", func() {
+			BeforeEach(func() {
+				runConfig.Retries = -1
+				runConfig.FlakyRetries = 1
+				runConfig.FailRetriesFast = true
+
+				mockGetRunConfiguration := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) (api.RunConfiguration, error) {
+					return api.RunConfiguration{
+						FlakyTests: []api.Test{
+							{
+								CompositeIdentifier: firstTestDescription,
+								IdentityComponents:  []string{"description"},
+								StrictIdentity:      true,
+							},
+						},
+					}, nil
+				}
+
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+			})
+
+			It("fails quickly", func() {
+				Expect(err).To(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(3))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when failing fast and there are non-flaky failures that pass fast enough", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 1
+				runConfig.FlakyRetries = 2
+				runConfig.FailRetriesFast = true
+
+				mockGetRunConfiguration := func(
+					ctx context.Context,
+					testSuiteIdentifier string,
+				) (api.RunConfiguration, error) {
+					return api.RunConfiguration{
+						FlakyTests: []api.Test{
+							{
+								CompositeIdentifier: firstTestDescription,
+								IdentityComponents:  []string{"description"},
+								StrictIdentity:      true,
+							},
+						},
+					}, nil
+				}
+
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+			})
+
+			It("finishes retrying", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(0))
+				Expect(testResults.Summary.Retries).To(Equal(3))
+			})
+		})
+
 		Context("when there are too many failures by percent", func() {
 			BeforeEach(func() {
 				runConfig.RetryFailureLimit = "50%"

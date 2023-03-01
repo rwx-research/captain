@@ -341,6 +341,12 @@ func (s Service) attemptRetries(
 			break
 		}
 
+		// fail fast if we know we can't pass the build
+		if cfg.FailRetriesFast && ((nonFlakyAttemptsExhausted && len(remainingNonFlakyFailures) > 0) ||
+			(flakyAttemptsExhausted && len(remainingFlakyFailures) > 0)) {
+			break
+		}
+
 		filter := func(test v1.Test) bool {
 			testIsFlaky := false
 			for _, remainingFlakyFailure := range remainingFlakyFailures {
