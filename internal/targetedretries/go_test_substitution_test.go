@@ -34,7 +34,11 @@ var _ = Describe("GoTestSubstitution", func() {
 		testResults, err := parsing.GoTestParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(compiledTemplate, *testResults)
+		substitutions := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*testResults,
+			func(test v1.Test) bool { return true },
+		)
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			if substitutions[i]["package"] != substitutions[j]["package"] {
 				return substitutions[i]["package"] < substitutions[j]["package"]
@@ -163,7 +167,11 @@ var _ = Describe("GoTestSubstitution", func() {
 			}
 
 			substitution := targetedretries.GoTestSubstitution{}
-			substitutions := substitution.SubstitutionsFor(compiledTemplate, testResults)
+			substitutions := substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return true },
+			)
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				return substitutions[i]["package"] < substitutions[j]["package"]
 			})
@@ -175,6 +183,83 @@ var _ = Describe("GoTestSubstitution", func() {
 					},
 					{
 						"package": "package2",
+						"run":     "^name1$",
+					},
+				},
+			))
+		})
+
+		It("filters the tests with the provided function", func() {
+			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			package1 := "package1"
+			package2 := "package2"
+
+			name1 := "name1"
+			name2 := "name2"
+			name3 := "name3"
+
+			testResults := v1.TestResults{
+				Tests: []v1.Test{
+					{
+						Name: name1,
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"package": package1},
+							Status: v1.NewFailedTestStatus(nil, nil, nil),
+						},
+					},
+					{
+						Name: name1,
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"package": package2},
+							Status: v1.NewCanceledTestStatus(),
+						},
+					},
+					{
+						Name: name2,
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"package": package1},
+							Status: v1.NewTimedOutTestStatus(),
+						},
+					},
+					{
+						Name: name2,
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"package": package2},
+							Status: v1.NewPendedTestStatus(nil),
+						},
+					},
+					{
+						Name: name3,
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"package": package1},
+							Status: v1.NewSuccessfulTestStatus(),
+						},
+					},
+					{
+						Name: name3,
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"package": package2},
+							Status: v1.NewSkippedTestStatus(nil),
+						},
+					},
+				},
+			}
+
+			substitution := targetedretries.GoTestSubstitution{}
+			substitutions := substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+			)
+			sort.SliceStable(substitutions, func(i int, j int) bool {
+				return substitutions[i]["package"] < substitutions[j]["package"]
+			})
+			Expect(substitutions).To(Equal(
+				[]map[string]string{
+					{
+						"package": "package1",
 						"run":     "^name1$",
 					},
 				},
@@ -201,7 +286,11 @@ var _ = Describe("GoTestSubstitution", func() {
 			}
 
 			substitution := targetedretries.GoTestSubstitution{}
-			Expect(substitution.SubstitutionsFor(compiledTemplate, testResults)).To(Equal(
+			Expect(substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return true },
+			)).To(Equal(
 				[]map[string]string{
 					{
 						"package": `package1 with '"'"' embedded`,
@@ -247,7 +336,11 @@ var _ = Describe("GoTestSubstitution", func() {
 			}
 
 			substitution := targetedretries.GoTestSubstitution{}
-			Expect(substitution.SubstitutionsFor(compiledTemplate, testResults)).To(Equal(
+			Expect(substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return true },
+			)).To(Equal(
 				[]map[string]string{
 					{
 						"package": "package1",

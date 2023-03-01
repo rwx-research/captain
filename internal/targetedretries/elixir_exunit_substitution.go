@@ -42,11 +42,15 @@ func (s ElixirExUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemp
 func (s ElixirExUnitSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	testLinesByFile := map[string][]string{}
 
 	for _, test := range testResults.Tests {
 		if !test.Attempt.Status.ImpliesFailure() {
+			continue
+		}
+		if !filter(test) {
 			continue
 		}
 

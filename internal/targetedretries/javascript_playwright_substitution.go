@@ -49,12 +49,16 @@ func (s JavaScriptPlaywrightSubstitution) ValidateTemplate(compiledTemplate Comp
 func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	testsByFileByProject := map[string]map[string][]string{}
 	testsSeenByFileByProject := map[string]map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
 		if !test.Attempt.Status.ImpliesFailure() {
+			continue
+		}
+		if !filter(test) {
 			continue
 		}
 

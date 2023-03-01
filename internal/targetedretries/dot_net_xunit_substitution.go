@@ -41,12 +41,16 @@ func (s DotNetxUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTempl
 func (s DotNetxUnitSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	testsSeen := map[string]struct{}{}
 	tests := make([]string, 0)
 
 	for _, test := range testResults.Tests {
 		if !test.Attempt.Status.ImpliesFailure() {
+			continue
+		}
+		if !filter(test) {
 			continue
 		}
 

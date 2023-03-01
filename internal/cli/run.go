@@ -266,7 +266,11 @@ func (s Service) attemptRetries(
 		}
 
 		allNewTestResults := make([]v1.TestResults, 0)
-		allSubstitutions := substitution.SubstitutionsFor(compiledTemplate, *flattenedTestResults)
+		allSubstitutions := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*flattenedTestResults,
+			func(test v1.Test) bool { return true },
+		)
 		for i, substitutions := range allSubstitutions {
 			command := compiledTemplate.Substitute(substitutions)
 			args, err := shellwords.Parse(command)

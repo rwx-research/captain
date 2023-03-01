@@ -34,7 +34,11 @@ var _ = Describe("PHPUnitSubstitution", func() {
 		testResults, err := parsing.PHPUnitParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(compiledTemplate, *testResults)
+		substitutions := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*testResults,
+			func(test v1.Test) bool { return true },
+		)
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			if substitutions[i]["file"] != substitutions[j]["file"] {
 				return substitutions[i]["file"] < substitutions[j]["file"]
@@ -158,7 +162,11 @@ var _ = Describe("PHPUnitSubstitution", func() {
 			}
 
 			substitution := targetedretries.PHPUnitSubstitution{}
-			substitutions := substitution.SubstitutionsFor(compiledTemplate, testResults)
+			substitutions := substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return true },
+			)
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				if substitutions[i]["file"] != substitutions[j]["file"] {
 					return substitutions[i]["file"] < substitutions[j]["file"]
@@ -176,6 +184,74 @@ var _ = Describe("PHPUnitSubstitution", func() {
 						"file":   "path/to/file1.php",
 						"filter": "other_test_name",
 					},
+					{
+						"file":   "path/to/file1.php",
+						"filter": "some_test_name",
+					},
+				},
+			))
+		})
+
+		It("filters the tests with the provided function", func() {
+			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+				"vendor/bin/phpunit '{{ file }}' --grep '{{ grep }}'",
+			)
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			file1 := "path/to/file1.php"
+			file2 := "path/to/file with '.php"
+
+			name1 := "some_test_name"
+			name2 := "other_test_name"
+
+			testResults := v1.TestResults{
+				Tests: []v1.Test{
+					{
+						Location: &v1.Location{File: file1},
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"name": name1},
+							Status: v1.NewFailedTestStatus(nil, nil, nil),
+						},
+					},
+					{
+						Location: &v1.Location{File: file2},
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"name": name1},
+							Status: v1.NewCanceledTestStatus(),
+						},
+					},
+					{
+						Location: &v1.Location{File: file1},
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"name": name2},
+							Status: v1.NewTimedOutTestStatus(),
+						},
+					},
+					{
+						Location: &v1.Location{File: file2},
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"name": name2},
+							Status: v1.NewPendedTestStatus(nil),
+						},
+					},
+				},
+			}
+
+			substitution := targetedretries.PHPUnitSubstitution{}
+			substitutions := substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+			)
+			sort.SliceStable(substitutions, func(i int, j int) bool {
+				if substitutions[i]["file"] != substitutions[j]["file"] {
+					return substitutions[i]["file"] < substitutions[j]["file"]
+				}
+
+				return substitutions[i]["filter"] < substitutions[j]["filter"]
+			})
+			Expect(substitutions).To(Equal(
+				[]map[string]string{
 					{
 						"file":   "path/to/file1.php",
 						"filter": "some_test_name",

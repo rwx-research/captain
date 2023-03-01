@@ -34,7 +34,11 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 		testResults, err := parsing.RubyCucumberParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(compiledTemplate, *testResults)
+		substitutions := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*testResults,
+			func(test v1.Test) bool { return true },
+		)
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			return substitutions[i]["examples"] < substitutions[j]["examples"]
 		})
@@ -143,12 +147,81 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 			}
 
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			Expect(substitution.SubstitutionsFor(compiledTemplate, testResults)).To(Equal(
+			Expect(substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return true },
+			)).To(Equal(
 				[]map[string]string{
 					{
 						"examples": `'elementStart1 with '"'"' single quotes' ` +
 							`'elementStart2' ` +
 							`'elementStart3'`,
+					},
+				},
+			))
+		})
+
+		It("filters the tests with the provided function", func() {
+			compiledTemplate, compileErr := targetedretries.CompileTemplate("bundle exec cucumber {{ examples }}")
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			elementStart1 := "elementStart1 with ' single quotes"
+			elementStart2 := "elementStart2"
+			elementStart3 := "elementStart3"
+			elementStart4 := "elementStart4"
+			elementStart5 := "elementStart5"
+			elementStart6 := "elementStart6"
+			testResults := v1.TestResults{
+				Tests: []v1.Test{
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"elementStart": elementStart1},
+							Status: v1.NewFailedTestStatus(nil, nil, nil),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"elementStart": elementStart2},
+							Status: v1.NewCanceledTestStatus(),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"elementStart": elementStart3},
+							Status: v1.NewTimedOutTestStatus(),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"elementStart": elementStart4},
+							Status: v1.NewPendedTestStatus(nil),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"elementStart": elementStart5},
+							Status: v1.NewSuccessfulTestStatus(),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"elementStart": elementStart6},
+							Status: v1.NewSkippedTestStatus(nil),
+						},
+					},
+				},
+			}
+
+			substitution := targetedretries.RubyCucumberSubstitution{}
+			Expect(substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+			)).To(Equal(
+				[]map[string]string{
+					{
+						"examples": `'elementStart1 with '"'"' single quotes'`,
 					},
 				},
 			))

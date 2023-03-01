@@ -41,11 +41,12 @@ func (s RubyRSpecSubstitution) ValidateTemplate(compiledTemplate CompiledTemplat
 func (s RubyRSpecSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(test v1.Test) bool,
 ) []map[string]string {
 	testIdentifiers := make([]string, 0)
 
 	for _, test := range testResults.Tests {
-		if test.Attempt.Status.ImpliesFailure() {
+		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			testIdentifiers = append(
 				testIdentifiers,
 				fmt.Sprintf("'%v'", ShellEscape(*test.ID)),

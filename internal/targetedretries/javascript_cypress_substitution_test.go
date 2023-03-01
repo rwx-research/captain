@@ -34,7 +34,11 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 		testResults, err := parsing.JavaScriptCypressParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(compiledTemplate, *testResults)
+		substitutions := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*testResults,
+			func(test v1.Test) bool { return true },
+		)
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			if substitutions[i]["spec"] != substitutions[j]["spec"] {
 				return substitutions[i]["spec"] < substitutions[j]["spec"]
@@ -172,7 +176,11 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 			}
 
 			substitution := targetedretries.JavaScriptCypressSubstitution{}
-			substitutions := substitution.SubstitutionsFor(compiledTemplate, testResults)
+			substitutions := substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return true },
+			)
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				return substitutions[i]["spec"] < substitutions[j]["spec"]
 			})
@@ -185,6 +193,73 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 					{
 						"spec": "spec1.js",
 						"grep": "grep='name1; name3'",
+					},
+				},
+			))
+		})
+
+		It("filters the tests with the provided function", func() {
+			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+				"npx cypress run --spec '{{ spec }}' --env {{ grep }}",
+			)
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			spec1 := "spec1.js"
+			spec2 := "path/to/spec with ' in it.js"
+
+			name1 := "name1"
+			name2 := "name2 with ' in it"
+			name3 := "name3"
+
+			testResults := v1.TestResults{
+				Tests: []v1.Test{
+					{
+						Name:     name1,
+						Location: &v1.Location{File: spec1},
+						Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)},
+					},
+					{
+						Name:     name2,
+						Location: &v1.Location{File: spec2},
+						Attempt:  v1.TestAttempt{Status: v1.NewCanceledTestStatus()},
+					},
+					{
+						Name:     name3,
+						Location: &v1.Location{File: spec1},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+					},
+					{
+						Name:     name1,
+						Location: &v1.Location{File: spec2},
+						Attempt:  v1.TestAttempt{Status: v1.NewPendedTestStatus(nil)},
+					},
+					{
+						Name:     name2,
+						Location: &v1.Location{File: spec1},
+						Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+					},
+					{
+						Name:     name3,
+						Location: &v1.Location{File: spec2},
+						Attempt:  v1.TestAttempt{Status: v1.NewSkippedTestStatus(nil)},
+					},
+				},
+			}
+
+			substitution := targetedretries.JavaScriptCypressSubstitution{}
+			substitutions := substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+			)
+			sort.SliceStable(substitutions, func(i int, j int) bool {
+				return substitutions[i]["spec"] < substitutions[j]["spec"]
+			})
+			Expect(substitutions).To(Equal(
+				[]map[string]string{
+					{
+						"spec": "spec1.js",
+						"grep": "grep='name1'",
 					},
 				},
 			))

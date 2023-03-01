@@ -11,7 +11,11 @@ import (
 type Substitution interface {
 	Example() string
 	ValidateTemplate(compiledTemplate CompiledTemplate) error
-	SubstitutionsFor(compiledTemplate CompiledTemplate, testResults v1.TestResults) []map[string]string
+	SubstitutionsFor(
+		compiledTemplate CompiledTemplate,
+		testResults v1.TestResults,
+		filter func(v1.Test) bool,
+	) []map[string]string
 }
 
 var (

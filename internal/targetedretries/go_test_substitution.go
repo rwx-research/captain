@@ -44,12 +44,16 @@ func (s GoTestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) 
 func (s GoTestSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	testsByPackage := map[string][]string{}
 	testsSeenByPackage := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
 		if !test.Attempt.Status.ImpliesFailure() {
+			continue
+		}
+		if !filter(test) {
 			continue
 		}
 

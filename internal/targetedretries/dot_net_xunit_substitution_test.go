@@ -34,7 +34,11 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 		testResults, err := parsing.DotNetxUnitParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(compiledTemplate, *testResults)
+		substitutions := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*testResults,
+			func(test v1.Test) bool { return true },
+		)
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			return substitutions[i]["filter"] < substitutions[j]["filter"]
 		})
@@ -155,11 +159,92 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 			}
 
 			substitution := targetedretries.DotNetxUnitSubstitution{}
-			Expect(substitution.SubstitutionsFor(compiledTemplate, testResults)).To(Equal(
+			Expect(substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return true },
+			)).To(Equal(
 				[]map[string]string{
 					{
 						"filter": "FullyQualifiedName=type1.method1 | " +
 							"FullyQualifiedName=type2.method2 | FullyQualifiedName=type3.method3",
+					},
+				},
+			))
+		})
+
+		It("filters the tests with the provided function", func() {
+			compiledTemplate, compileErr := targetedretries.CompileTemplate("dotnet test --filter '{{ filter }}'")
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			type1 := "type1"
+			method1 := "method1"
+			type2 := "type2"
+			method2 := "method2"
+			type3 := "type3"
+			method3 := "method3"
+			type4 := "type4"
+			method4 := "method4"
+			type5 := "type5"
+			method5 := "method5"
+			type6 := "type6"
+			method6 := "method6"
+			testResults := v1.TestResults{
+				Tests: []v1.Test{
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type1, "method": &method1},
+							Status: v1.NewFailedTestStatus(nil, nil, nil),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type2, "method": &method2},
+							Status: v1.NewCanceledTestStatus(),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type3, "method": &method3},
+							Status: v1.NewTimedOutTestStatus(),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type3, "method": &method3},
+							Status: v1.NewFailedTestStatus(nil, nil, nil),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type4, "method": &method4},
+							Status: v1.NewPendedTestStatus(nil),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type5, "method": &method5},
+							Status: v1.NewSuccessfulTestStatus(),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type6, "method": &method6},
+							Status: v1.NewSkippedTestStatus(nil),
+						},
+					},
+				},
+			}
+
+			substitution := targetedretries.DotNetxUnitSubstitution{}
+			Expect(substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+			)).To(Equal(
+				[]map[string]string{
+					{
+						"filter": "FullyQualifiedName=type1.method1 | FullyQualifiedName=type3.method3",
 					},
 				},
 			))

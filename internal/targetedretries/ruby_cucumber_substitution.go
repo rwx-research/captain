@@ -43,12 +43,13 @@ func (s RubyCucumberSubstitution) ValidateTemplate(compiledTemplate CompiledTemp
 func (s RubyCucumberSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	examples := make([]string, 0)
 	examplesSeen := map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
-		if test.Attempt.Status.ImpliesFailure() {
+		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			example := ShellEscape(test.Attempt.Meta["elementStart"].(string))
 			if _, ok := examplesSeen[example]; ok {
 				continue

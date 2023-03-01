@@ -58,12 +58,16 @@ func (s JavaScriptCypressSubstitution) ValidateTemplate(compiledTemplate Compile
 func (s JavaScriptCypressSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	testsBySpec := map[string][]string{}
 	testsSeenBySpec := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
 		if !test.Attempt.Status.ImpliesFailure() {
+			continue
+		}
+		if !filter(test) {
 			continue
 		}
 

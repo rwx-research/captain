@@ -45,12 +45,16 @@ func (s JavaScriptMochaSubstitution) ValidateTemplate(compiledTemplate CompiledT
 func (s JavaScriptMochaSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	testsByFile := map[string][]string{}
 	testsSeenByFile := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
 		if !test.Attempt.Status.ImpliesFailure() {
+			continue
+		}
+		if !filter(test) {
 			continue
 		}
 

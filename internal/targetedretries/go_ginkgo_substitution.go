@@ -41,11 +41,12 @@ func (s GoGinkgoSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate
 func (s GoGinkgoSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	formattedTests := make([]string, 0)
 
 	for _, test := range testResults.Tests {
-		if test.Attempt.Status.ImpliesFailure() {
+		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			formattedTests = append(
 				formattedTests,
 				fmt.Sprintf("--focus-file '%v:%v'", ShellEscape(test.Location.File), *test.Location.Line),

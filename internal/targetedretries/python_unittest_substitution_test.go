@@ -34,7 +34,11 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 		testResults, err := parsing.PythonUnitTestParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(compiledTemplate, *testResults)
+		substitutions := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*testResults,
+			func(test v1.Test) bool { return true },
+		)
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			return substitutions[i]["tests"] < substitutions[j]["tests"]
 		})
@@ -113,12 +117,51 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 			}
 
 			substitution := targetedretries.PythonUnitTestSubstitution{}
-			Expect(substitution.SubstitutionsFor(compiledTemplate, testResults)).To(Equal(
+			Expect(substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return true },
+			)).To(Equal(
 				[]map[string]string{
 					{
 						"tests": `'SomeClass.some_method' ` +
 							`'Some '"'"' Class.with_single_quotes' ` +
 							`'some_method'`,
+					},
+				},
+			))
+		})
+
+		It("filters the tests with the provided function", func() {
+			compiledTemplate, compileErr := targetedretries.CompileTemplate("unittest {{ tests }}")
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			name1 := "SomeClass.some_method"
+			name2 := "Some ' Class.with_single_quotes"
+			name3 := "some_method"
+			name4 := "name4"
+			name5 := "name5"
+			name6 := "name6"
+			testResults := v1.TestResults{
+				Tests: []v1.Test{
+					{Name: name1, Attempt: v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)}},
+					{Name: name2, Attempt: v1.TestAttempt{Status: v1.NewCanceledTestStatus()}},
+					{Name: name3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()}},
+					{Name: name4, Attempt: v1.TestAttempt{Status: v1.NewPendedTestStatus(nil)}},
+					{Name: name5, Attempt: v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()}},
+					{Name: name6, Attempt: v1.TestAttempt{Status: v1.NewSkippedTestStatus(nil)}},
+				},
+			}
+
+			substitution := targetedretries.PythonUnitTestSubstitution{}
+			Expect(substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+			)).To(Equal(
+				[]map[string]string{
+					{
+						"tests": "'SomeClass.some_method'",
 					},
 				},
 			))

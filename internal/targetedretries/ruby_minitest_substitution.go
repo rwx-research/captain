@@ -66,21 +66,25 @@ func (s RubyMinitestSubstitution) ValidateTemplate(compiledTemplate CompiledTemp
 func (s RubyMinitestSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
+	filter func(v1.Test) bool,
 ) []map[string]string {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 1 {
-		return s.allTestsSubstitutions(testResults)
+		return s.allTestsSubstitutions(testResults, filter)
 	}
 
-	return s.singleTestSubstitutions(testResults)
+	return s.singleTestSubstitutions(testResults, filter)
 }
 
-func (s RubyMinitestSubstitution) allTestsSubstitutions(testResults v1.TestResults) []map[string]string {
+func (s RubyMinitestSubstitution) allTestsSubstitutions(
+	testResults v1.TestResults,
+	filter func(v1.Test) bool,
+) []map[string]string {
 	tests := make([]string, 0)
 
 	for _, test := range testResults.Tests {
-		if test.Attempt.Status.ImpliesFailure() {
+		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			tests = append(
 				tests,
 				fmt.Sprintf("'%v:%v'", ShellEscape(test.Location.File), *test.Location.Line),
@@ -91,11 +95,17 @@ func (s RubyMinitestSubstitution) allTestsSubstitutions(testResults v1.TestResul
 	return []map[string]string{{"tests": strings.Join(tests, " ")}}
 }
 
-func (s RubyMinitestSubstitution) singleTestSubstitutions(testResults v1.TestResults) []map[string]string {
+func (s RubyMinitestSubstitution) singleTestSubstitutions(
+	testResults v1.TestResults,
+	filter func(v1.Test) bool,
+) []map[string]string {
 	testsSeenByFile := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
 		if !test.Attempt.Status.ImpliesFailure() {
+			continue
+		}
+		if !filter(test) {
 			continue
 		}
 
