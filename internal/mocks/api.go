@@ -10,24 +10,24 @@ import (
 
 // API is a mocked implementation of 'api.Client'.
 type API struct {
-	MockGetQuarantinedTestCases func(context.Context, string) ([]api.QuarantinedTestCase, error)
-	MockGetTestTimingManifest   func(context.Context, string) ([]testing.TestFileTiming, error)
-	MockUploadTestResults       func(context.Context, string, []api.TestResultsFile) ([]api.TestResultsUploadResult, error)
+	MockGetRunConfiguration   func(context.Context, string) (api.RunConfiguration, error)
+	MockGetTestTimingManifest func(context.Context, string) ([]testing.TestFileTiming, error)
+	MockUploadTestResults     func(context.Context, string, []api.TestResultsFile) ([]api.TestResultsUploadResult, error)
 }
 
-// GetQuarantinedTestCases either calls the configured mock of itself or returns an error if that doesn't exist.
-func (a *API) GetQuarantinedTestCases(
+// GetRunConfiguration either calls the configured mock of itself or returns an error if that doesn't exist.
+func (a *API) GetRunConfiguration(
 	ctx context.Context,
 	testSuiteIdentifier string,
-) ([]api.QuarantinedTestCase, error) {
-	if a.MockGetQuarantinedTestCases != nil {
-		return a.MockGetQuarantinedTestCases(ctx, testSuiteIdentifier)
+) (api.RunConfiguration, error) {
+	if a.MockGetRunConfiguration != nil {
+		return a.MockGetRunConfiguration(ctx, testSuiteIdentifier)
 	}
 
-	return nil, errors.NewConfigurationError("MockGetQuarantinedTestCases was not configured")
+	return api.RunConfiguration{}, errors.NewConfigurationError("MockGetRunConfiguration was not configured")
 }
 
-// GetQuarantinedTestCases either calls the configured mock of itself or returns an error if that doesn't exist.
+// GetTestTimingManifest either calls the configured mock of itself or returns an error if that doesn't exist.
 func (a *API) GetTestTimingManifest(
 	ctx context.Context,
 	testSuiteIdentifier string,

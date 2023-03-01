@@ -81,52 +81,6 @@ func NewClient(cfg ClientConfig) (Client, error) {
 	return Client{cfg, roundTrip}, nil
 }
 
-// GetQuarantinedTestCases returns a list of test cases that are marked as quarantined on Captain.
-func (c Client) GetQuarantinedTestCases(
-	ctx context.Context,
-	testSuiteIdentifier string,
-) ([]QuarantinedTestCase, error) {
-	endpoint := "/api/test_suites/quarantined_tests"
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return nil, errors.NewInternalError("unable to construct HTTP request: %s", err)
-	}
-
-	queryValues := req.URL.Query()
-	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
-	req.URL.RawQuery = queryValues.Encode()
-
-	resp, err := c.RoundTrip(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, errors.NewInternalError(
-			"API backend encountered an error. Endpoint was %q, Status Code %d",
-			endpoint,
-			resp.StatusCode,
-		)
-	}
-
-	respBody := struct {
-		QuarantinedTestCases []QuarantinedTestCase `json:"quarantined_tests"`
-	}{}
-
-	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
-		return nil, errors.NewInternalError(
-			"unable to parse the response body. Endpoint was %q, Content-Type %q. Original Error: %s",
-			endpoint,
-			resp.Header.Get(headerContentType),
-			err,
-		)
-	}
-
-	return respBody.QuarantinedTestCases, nil
-}
-
 func (c Client) GetTestTimingManifest(
 	ctx context.Context,
 	testSuiteIdentifier string,

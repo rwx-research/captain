@@ -13,7 +13,7 @@ import (
 
 // APIClient is the interface of our API layer.
 type APIClient interface {
-	GetQuarantinedTestCases(context.Context, string) ([]api.QuarantinedTestCase, error)
+	GetRunConfiguration(ctx context.Context, testSuiteIdentifier string) (api.RunConfiguration, error)
 	GetTestTimingManifest(context.Context, string) ([]testing.TestFileTiming, error)
 	UploadTestResults(context.Context, string, []api.TestResultsFile) ([]api.TestResultsUploadResult, error)
 }

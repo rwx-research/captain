@@ -31,14 +31,15 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	}
 
 	// Fetch list of quarantined test IDs in the background
-	var quarantinedTestCases []api.QuarantinedTestCase
+	var quarantinedTestCases []api.QuarantinedTest
 	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		testCases, err := s.API.GetQuarantinedTestCases(egCtx, cfg.SuiteID)
+		runConfiguration, err := s.API.GetRunConfiguration(egCtx, cfg.SuiteID)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
+		testCases := runConfiguration.QuarantinedTests
 		if len(testCases) == 0 {
 			s.Log.Debug("No quarantined tests defined in Captain")
 		}
@@ -424,7 +425,7 @@ func (s Service) runCommand(
 	return ctx, nil
 }
 
-func (s Service) isQuarantined(failedTest v1.Test, quarantinedTestCases []api.QuarantinedTestCase) bool {
+func (s Service) isQuarantined(failedTest v1.Test, quarantinedTestCases []api.QuarantinedTest) bool {
 	for _, quarantinedTestCase := range quarantinedTestCases {
 		compositeIdentifier, err := failedTest.Identify(
 			quarantinedTestCase.IdentityComponents,
