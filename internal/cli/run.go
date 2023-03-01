@@ -273,6 +273,16 @@ func (s Service) attemptRetries(
 		}
 	}
 
+	retryFailureLimitCount, err := cfg.RetryFailureLimitCount()
+	if err != nil {
+		return flattenedTestResults, false, errors.WithStack(err)
+	}
+
+	retryFailureLimitPercentage, err := cfg.RetryFailureLimitPercentage()
+	if err != nil {
+		return flattenedTestResults, false, errors.WithStack(err)
+	}
+
 	maxRetries := nonFlakyRetries
 	if flakyRetries > maxRetries {
 		maxRetries = flakyRetries
@@ -298,26 +308,36 @@ func (s Service) attemptRetries(
 			}
 		}
 
-		// nothing left to retry
-		if len(remainingFlakyFailures)+len(remainingNonFlakyFailures) == 0 {
-			break
-		}
-
 		nonFlakyAttemptsExhausted := retries >= nonFlakyRetries
 		flakyAttemptsExhausted := retries >= flakyRetries
 
+		testsRemaining := 0
+		if !nonFlakyAttemptsExhausted {
+			testsRemaining += len(remainingNonFlakyFailures)
+		}
+		if !flakyAttemptsExhausted {
+			testsRemaining += len(remainingFlakyFailures)
+		}
+
+		// bail early if there are too many failed tests
+		if retryFailureLimitCount != nil && testsRemaining > *retryFailureLimitCount {
+			break
+		}
+
+		// bail early if there are too many failed tests
+		testCount := float64(flattenedTestResults.Summary.Tests)
+		if retryFailureLimitPercentage != nil &&
+			float64(testsRemaining) > testCount**retryFailureLimitPercentage/100 {
+			break
+		}
+
+		// nothing left to retry
+		if testsRemaining == 0 {
+			break
+		}
+
 		// all attempts exhausted
 		if nonFlakyAttemptsExhausted && flakyAttemptsExhausted {
-			break
-		}
-
-		// done with flaky tests, out of non-flaky attempts
-		if nonFlakyAttemptsExhausted && len(remainingNonFlakyFailures) > 0 && len(remainingFlakyFailures) == 0 {
-			break
-		}
-
-		// done with non-flaky tests, out of non-flaky attempts
-		if flakyAttemptsExhausted && len(remainingFlakyFailures) > 0 && len(remainingNonFlakyFailures) == 0 {
 			break
 		}
 

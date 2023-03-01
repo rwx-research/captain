@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"regexp"
+	"strconv"
+
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
@@ -19,16 +22,77 @@ type RunConfig struct {
 	Reporters                map[string]Reporter
 	Retries                  int
 	RetryCommandTemplate     string
+	RetryFailureLimit        string
 	SuiteID                  string
 	SubstitutionsByFramework map[v1.Framework]targetedretries.Substitution
 }
+
+var retryFailureLimitRegexp = regexp.MustCompile(
+	`^\s*(?P<failureCount>\d+)\s*$|^\s*(?:(?P<failurePercentage>\d+(?:\.\d+)?)%)\s*$`,
+)
 
 func (rc RunConfig) Validate() error {
 	if rc.RetryCommandTemplate == "" && (rc.Retries > 0 || rc.FlakyRetries > 0) {
 		return errors.NewConfigurationError("retry-command must be provided if retries or flaky-retries are > 0")
 	}
 
+	if rc.RetryFailureLimit != "" && !retryFailureLimitRegexp.MatchString(rc.RetryFailureLimit) {
+		return errors.NewConfigurationError("retry-failure-limit must be either an integer or percentage")
+	}
+
 	return nil
+}
+
+func (rc RunConfig) RetryFailureLimitCount() (*int, error) {
+	if rc.RetryFailureLimit == "" {
+		return nil, nil
+	}
+
+	match := retryFailureLimitRegexp.FindStringSubmatch(rc.RetryFailureLimit)
+	result := map[string]string{}
+	for i, name := range retryFailureLimitRegexp.SubexpNames() {
+		if i != 0 && name != "" {
+			result[name] = match[i]
+		}
+	}
+
+	value := result["failureCount"]
+	if value == "" {
+		return nil, nil
+	}
+
+	count, err := strconv.Atoi(value)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &count, nil
+}
+
+func (rc RunConfig) RetryFailureLimitPercentage() (*float64, error) {
+	if rc.RetryFailureLimit == "" {
+		return nil, nil
+	}
+
+	match := retryFailureLimitRegexp.FindStringSubmatch(rc.RetryFailureLimit)
+	result := map[string]string{}
+	for i, name := range retryFailureLimitRegexp.SubexpNames() {
+		if i != 0 && name != "" {
+			result[name] = match[i]
+		}
+	}
+
+	value := result["failurePercentage"]
+	if value == "" {
+		return nil, nil
+	}
+
+	percentage, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &percentage, nil
 }
 
 type PartitionConfig struct {

@@ -1651,6 +1651,84 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("when there are too many failures by percent", func() {
+			BeforeEach(func() {
+				runConfig.RetryFailureLimit = "50%"
+				runConfig.Retries = 2
+			})
+
+			It("does not retry", func() {
+				Expect(err).To(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(3))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when there are not too many failures by percent", func() {
+			BeforeEach(func() {
+				runConfig.RetryFailureLimit = "200%"
+				runConfig.Retries = 2
+			})
+
+			It("retries", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(0))
+				Expect(testResults.Summary.Retries).To(Equal(3))
+			})
+		})
+
+		Context("when there are too many failures by count", func() {
+			BeforeEach(func() {
+				runConfig.RetryFailureLimit = "1"
+				runConfig.Retries = 2
+			})
+
+			It("does not retry", func() {
+				Expect(err).To(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(3))
+				Expect(testResults.Summary.Retries).To(Equal(0))
+			})
+		})
+
+		Context("when there are not too many failures by count", func() {
+			BeforeEach(func() {
+				runConfig.RetryFailureLimit = "5"
+				runConfig.Retries = 2
+			})
+
+			It("retries", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				testResults := &v1.TestResults{}
+				err := json.Unmarshal(uploadedTestResults, testResults)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(testResults.Summary.Tests).To(Equal(3))
+				Expect(testResults.Summary.Successful).To(Equal(3))
+				Expect(testResults.Summary.Failed).To(Equal(0))
+				Expect(testResults.Summary.Retries).To(Equal(3))
+			})
+		})
+
 		Context("when there are no failures", func() {
 			BeforeEach(func() {
 				firstInitialStatus = v1.NewSuccessfulTestStatus()
