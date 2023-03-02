@@ -1804,6 +1804,43 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("when using a custom command w/ JSON even though the framework is supported", func() {
+			var removedFiles []string
+
+			BeforeEach(func() {
+				service.FileSystem.(*mocks.FileSystem).MockRemove = func(name string) error {
+					removedFiles = append(removedFiles, name)
+					return nil
+				}
+
+				service.FileSystem.(*mocks.FileSystem).MockCreateTemp = func(dir string, pattern string) (fs.File, error) {
+					mockFile := new(mocks.File)
+					mockFile.Builder = new(strings.Builder)
+					mockFile.MockName = func() string {
+						return "json-temp-file"
+					}
+					return mockFile, nil
+				}
+				runConfig.Retries = 2
+				runConfig.RetryCommandTemplate = "retry {{ jsonFilePath }}"
+
+				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+					if cfg.Name == "retry" {
+						Expect(cfg.Args).To(ContainElement(ContainSubstring("json-temp-file")))
+					}
+
+					return mockCommand, nil
+				}
+				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
+			})
+
+			It("passes the JSON file to the retry command and cleans up", func() {
+				// see assertions in newCommand
+				Expect(err).NotTo(HaveOccurred())
+				Expect(removedFiles).To(ContainElement("json-temp-file"))
+			})
+		})
+
 		Context("when there are no failures", func() {
 			BeforeEach(func() {
 				firstInitialStatus = v1.NewSuccessfulTestStatus()

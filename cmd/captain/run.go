@@ -198,7 +198,8 @@ func init() {
 		fmt.Sprintf(
 			"the command that will be run to execute a subset of your tests while retrying "+
 				"(required if --retries or --flaky-retries is passed)\n"+
-				"Examples:\n%v",
+				"Examples:\n  Custom: --retry-command \"%v\"\n%v",
+			targetedretries.JSONSubstitution{}.Example(),
 			strings.Join(formattedSubstitutionExamples, "\n"),
 		),
 	)

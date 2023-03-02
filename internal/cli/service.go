@@ -23,7 +23,7 @@ import (
 type Service struct {
 	API         APIClient
 	Log         *zap.SugaredLogger
-	FileSystem  FileSystem
+	FileSystem  fs.FileSystem
 	TaskRunner  TaskRunner
 	ParseConfig parsing.Config
 }

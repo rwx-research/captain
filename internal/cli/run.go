@@ -257,12 +257,18 @@ func (s Service) attemptRetries(
 	}
 
 	framework := originalTestResults.Framework
-	substitution, ok := cfg.SubstitutionsByFramework[framework]
-	if !ok {
-		return originalTestResults, false, errors.NewInternalError("Unable to retry %q", framework)
-	}
+	var substitution targetedretries.Substitution = targetedretries.JSONSubstitution{FileSystem: s.FileSystem}
 	if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
-		return originalTestResults, false, errors.WithStack(err)
+		frameworkSubstitution, ok := cfg.SubstitutionsByFramework[framework]
+		if !ok {
+			return originalTestResults, false, errors.NewInternalError("Unable to retry %q", framework)
+		}
+
+		if err := frameworkSubstitution.ValidateTemplate(compiledTemplate); err != nil {
+			return originalTestResults, false, errors.WithStack(err)
+		}
+
+		substitution = frameworkSubstitution
 	}
 
 	flattenedTestResults := originalTestResults
@@ -446,6 +452,11 @@ func (s Service) attemptRetries(
 				if err != nil {
 					return flattenedTestResults, true, errors.WithStack(err)
 				}
+			}
+		}
+		if jsonSubstitution, ok := substitution.(targetedretries.JSONSubstitution); ok {
+			if err := jsonSubstitution.CleanUp(allSubstitutions); err != nil {
+				s.Log.Warn(err)
 			}
 		}
 		mergedTestResults := v1.Merge([]v1.TestResults{*flattenedTestResults}, allNewTestResults)

@@ -9,14 +9,15 @@ import (
 
 // FileSystem is a mocked implementation of 'cli.FileSystem'.
 type FileSystem struct {
-	MockCreate   func(filePath string) (fs.File, error)
-	MockOpen     func(name string) (fs.File, error)
-	MockGlob     func(pattern string) ([]string, error)
-	MockGlobMany func(patterns []string) ([]string, error)
-	MockRemove   func(name string) error
-	MockRename   func(oldname string, newname string) error
-	MockStat     func(name string) (os.FileInfo, error)
-	MockTempDir  func() string
+	MockCreate     func(filePath string) (fs.File, error)
+	MockCreateTemp func(dir string, pattern string) (fs.File, error)
+	MockOpen       func(name string) (fs.File, error)
+	MockGlob       func(pattern string) ([]string, error)
+	MockGlobMany   func(patterns []string) ([]string, error)
+	MockRemove     func(name string) error
+	MockRename     func(oldname string, newname string) error
+	MockStat       func(name string) (os.FileInfo, error)
+	MockTempDir    func() string
 }
 
 // Create either calls the configured mock of itself or returns an error if that doesn't exist.
@@ -26,6 +27,15 @@ func (f *FileSystem) Create(filePath string) (fs.File, error) {
 	}
 
 	return nil, errors.NewConfigurationError("MockCreate was not configured")
+}
+
+// CreateTemp either calls the configured mock of itself or returns an error if that doesn't exist.
+func (f *FileSystem) CreateTemp(dir string, pattern string) (fs.File, error) {
+	if f.MockCreateTemp != nil {
+		return f.MockCreateTemp(dir, pattern)
+	}
+
+	return nil, errors.NewConfigurationError("MockCreateTemp was not configured")
 }
 
 func (f *FileSystem) Open(name string) (fs.File, error) {

@@ -23,6 +23,15 @@ func (l Local) Create(filePath string) (File, error) {
 	return f, nil
 }
 
+func (l Local) CreateTemp(dir string, pattern string) (File, error) {
+	f, err := os.CreateTemp(dir, pattern)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return f, nil
+}
+
 // Open opens a file for further processing
 func (l Local) Open(name string) (File, error) {
 	f, err := os.Open(name)

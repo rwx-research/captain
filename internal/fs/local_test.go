@@ -106,3 +106,14 @@ var _ = Describe("fs.Stat", func() {
 		Expect(info).To(BeNil())
 	})
 })
+
+var _ = Describe("fs.CreateTemp", func() {
+	It("creates a temporary file", func() {
+		fs := fs.Local{}
+		file, err := fs.CreateTemp("", "create-temp-file")
+		defer os.Remove(file.Name())
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(file.Name()).To(ContainSubstring("create-temp-file"))
+	})
+})
