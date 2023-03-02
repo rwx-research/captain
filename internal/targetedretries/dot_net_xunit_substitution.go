@@ -42,7 +42,7 @@ func (s DotNetxUnitSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testsSeen := map[string]struct{}{}
 	tests := make([]string, 0)
 
@@ -65,5 +65,5 @@ func (s DotNetxUnitSubstitution) SubstitutionsFor(
 		testsSeen[formattedTest] = struct{}{}
 	}
 
-	return []map[string]string{{"filter": strings.Join(tests, " | ")}}
+	return []map[string]string{{"filter": strings.Join(tests, " | ")}}, nil
 }

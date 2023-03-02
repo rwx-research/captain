@@ -45,7 +45,7 @@ func (s PHPUnitSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testsSeenByFile := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
@@ -79,5 +79,5 @@ func (s PHPUnitSubstitution) SubstitutionsFor(
 		}
 	}
 
-	return substitutions
+	return substitutions, nil
 }

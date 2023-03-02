@@ -67,7 +67,7 @@ func (s RubyMinitestSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 1 {
@@ -80,7 +80,7 @@ func (s RubyMinitestSubstitution) SubstitutionsFor(
 func (s RubyMinitestSubstitution) allTestsSubstitutions(
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	tests := make([]string, 0)
 
 	for _, test := range testResults.Tests {
@@ -92,13 +92,13 @@ func (s RubyMinitestSubstitution) allTestsSubstitutions(
 		}
 	}
 
-	return []map[string]string{{"tests": strings.Join(tests, " ")}}
+	return []map[string]string{{"tests": strings.Join(tests, " ")}}, nil
 }
 
 func (s RubyMinitestSubstitution) singleTestSubstitutions(
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testsSeenByFile := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
@@ -132,5 +132,5 @@ func (s RubyMinitestSubstitution) singleTestSubstitutions(
 		}
 	}
 
-	return substitutions
+	return substitutions, nil
 }

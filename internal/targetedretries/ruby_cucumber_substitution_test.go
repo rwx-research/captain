@@ -34,11 +34,12 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 		testResults, err := parsing.RubyCucumberParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(
+		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
 			func(test v1.Test) bool { return true },
 		)
+		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			return substitutions[i]["examples"] < substitutions[j]["examples"]
 		})
@@ -214,11 +215,13 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 			}
 
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			Expect(substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
-			)).To(Equal(
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(substitutions).To(Equal(
 				[]map[string]string{
 					{
 						"examples": `'elementStart1 with '"'"' single quotes'`,

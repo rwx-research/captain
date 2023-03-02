@@ -44,7 +44,7 @@ func (s RubyCucumberSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	examples := make([]string, 0)
 	examplesSeen := map[string]struct{}{}
 
@@ -60,5 +60,5 @@ func (s RubyCucumberSubstitution) SubstitutionsFor(
 		}
 	}
 
-	return []map[string]string{{"examples": strings.Join(examples, " ")}}
+	return []map[string]string{{"examples": strings.Join(examples, " ")}}, nil
 }

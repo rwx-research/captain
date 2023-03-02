@@ -43,7 +43,7 @@ func (s ElixirExUnitSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testLinesByFile := map[string][]string{}
 
 	for _, test := range testResults.Tests {
@@ -71,5 +71,5 @@ func (s ElixirExUnitSubstitution) SubstitutionsFor(
 		i++
 	}
 
-	return substitutions
+	return substitutions, nil
 }

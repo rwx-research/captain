@@ -34,11 +34,12 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 		testResults, err := parsing.GoGinkgoParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(
+		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
 			func(test v1.Test) bool { return true },
 		)
+		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			return substitutions[i]["tests"] < substitutions[j]["tests"]
 		})
@@ -190,11 +191,13 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 			}
 
 			substitution := targetedretries.GoGinkgoSubstitution{}
-			Expect(substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
-			)).To(Equal(
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(substitutions).To(Equal(
 				[]map[string]string{
 					{
 						"tests": "--focus-file '/path/to/file with spaces.go:1'",

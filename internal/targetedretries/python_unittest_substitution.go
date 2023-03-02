@@ -42,7 +42,7 @@ func (s PythonUnitTestSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testIdentifiers := make([]string, 0)
 
 	for _, test := range testResults.Tests {
@@ -54,5 +54,5 @@ func (s PythonUnitTestSubstitution) SubstitutionsFor(
 		}
 	}
 
-	return []map[string]string{{"tests": strings.Join(testIdentifiers, " ")}}
+	return []map[string]string{{"tests": strings.Join(testIdentifiers, " ")}}, nil
 }

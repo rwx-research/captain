@@ -45,7 +45,7 @@ func (s GoTestSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testsByPackage := map[string][]string{}
 	testsSeenByPackage := map[string]map[string]struct{}{}
 
@@ -90,5 +90,5 @@ func (s GoTestSubstitution) SubstitutionsFor(
 		i++
 	}
 
-	return substitutions
+	return substitutions, nil
 }

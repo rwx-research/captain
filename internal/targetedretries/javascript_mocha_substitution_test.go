@@ -34,11 +34,12 @@ var _ = Describe("JavaScriptMochaSubstitution", func() {
 		testResults, err := parsing.JavaScriptMochaParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(
+		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
 			func(test v1.Test) bool { return true },
 		)
+		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			if substitutions[i]["file"] != substitutions[j]["file"] {
 				return substitutions[i]["file"] < substitutions[j]["file"]
@@ -165,11 +166,12 @@ var _ = Describe("JavaScriptMochaSubstitution", func() {
 			}
 
 			substitution := targetedretries.JavaScriptMochaSubstitution{}
-			substitutions := substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return true },
 			)
+			Expect(err).NotTo(HaveOccurred())
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				return substitutions[i]["file"] < substitutions[j]["file"]
 			})
@@ -236,11 +238,12 @@ var _ = Describe("JavaScriptMochaSubstitution", func() {
 			}
 
 			substitution := targetedretries.JavaScriptMochaSubstitution{}
-			substitutions := substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
 			)
+			Expect(err).NotTo(HaveOccurred())
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				return substitutions[i]["file"] < substitutions[j]["file"]
 			})

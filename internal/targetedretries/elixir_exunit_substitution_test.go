@@ -34,11 +34,12 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 		testResults, err := parsing.ElixirExUnitParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(
+		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
 			func(test v1.Test) bool { return true },
 		)
+		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			return substitutions[i]["tests"] < substitutions[j]["tests"]
 		})
@@ -136,11 +137,12 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 			}
 
 			substitution := targetedretries.ElixirExUnitSubstitution{}
-			substitutions := substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return true },
 			)
+			Expect(err).NotTo(HaveOccurred())
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				return substitutions[i]["tests"] < substitutions[j]["tests"]
 			})
@@ -197,11 +199,12 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 			}
 
 			substitution := targetedretries.ElixirExUnitSubstitution{}
-			substitutions := substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
 			)
+			Expect(err).NotTo(HaveOccurred())
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				return substitutions[i]["tests"] < substitutions[j]["tests"]
 			})

@@ -15,7 +15,7 @@ type Substitution interface {
 		compiledTemplate CompiledTemplate,
 		testResults v1.TestResults,
 		filter func(v1.Test) bool,
-	) []map[string]string
+	) ([]map[string]string, error)
 }
 
 var (

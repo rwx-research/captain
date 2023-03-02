@@ -34,11 +34,12 @@ var _ = Describe("PHPUnitSubstitution", func() {
 		testResults, err := parsing.PHPUnitParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(
+		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
 			func(test v1.Test) bool { return true },
 		)
+		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			if substitutions[i]["file"] != substitutions[j]["file"] {
 				return substitutions[i]["file"] < substitutions[j]["file"]
@@ -162,11 +163,12 @@ var _ = Describe("PHPUnitSubstitution", func() {
 			}
 
 			substitution := targetedretries.PHPUnitSubstitution{}
-			substitutions := substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return true },
 			)
+			Expect(err).NotTo(HaveOccurred())
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				if substitutions[i]["file"] != substitutions[j]["file"] {
 					return substitutions[i]["file"] < substitutions[j]["file"]
@@ -238,11 +240,12 @@ var _ = Describe("PHPUnitSubstitution", func() {
 			}
 
 			substitution := targetedretries.PHPUnitSubstitution{}
-			substitutions := substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
 			)
+			Expect(err).NotTo(HaveOccurred())
 			sort.SliceStable(substitutions, func(i int, j int) bool {
 				if substitutions[i]["file"] != substitutions[j]["file"] {
 					return substitutions[i]["file"] < substitutions[j]["file"]

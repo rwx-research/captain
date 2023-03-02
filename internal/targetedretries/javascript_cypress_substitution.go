@@ -59,7 +59,7 @@ func (s JavaScriptCypressSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testsBySpec := map[string][]string{}
 	testsSeenBySpec := map[string]map[string]struct{}{}
 
@@ -98,5 +98,5 @@ func (s JavaScriptCypressSubstitution) SubstitutionsFor(
 		i++
 	}
 
-	return substitutions
+	return substitutions, nil
 }

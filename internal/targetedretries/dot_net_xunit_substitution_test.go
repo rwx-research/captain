@@ -34,11 +34,12 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 		testResults, err := parsing.DotNetxUnitParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(
+		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
 			func(test v1.Test) bool { return true },
 		)
+		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			return substitutions[i]["filter"] < substitutions[j]["filter"]
 		})
@@ -237,11 +238,13 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 			}
 
 			substitution := targetedretries.DotNetxUnitSubstitution{}
-			Expect(substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
-			)).To(Equal(
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(substitutions).To(Equal(
 				[]map[string]string{
 					{
 						"filter": "FullyQualifiedName=type1.method1 | FullyQualifiedName=type3.method3",

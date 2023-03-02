@@ -49,7 +49,7 @@ func (s JavaScriptJestSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testsByFile := map[string][]string{}
 	testsSeenByFile := map[string]map[string]struct{}{}
 
@@ -88,5 +88,5 @@ func (s JavaScriptJestSubstitution) SubstitutionsFor(
 		i++
 	}
 
-	return substitutions
+	return substitutions, nil
 }

@@ -50,7 +50,7 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 	compiledTemplate CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
-) []map[string]string {
+) ([]map[string]string, error) {
 	testsByFileByProject := map[string]map[string][]string{}
 	testsSeenByFileByProject := map[string]map[string]map[string]struct{}{}
 
@@ -97,5 +97,5 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 		}
 	}
 
-	return substitutions
+	return substitutions, nil
 }

@@ -34,11 +34,12 @@ var _ = Describe("RubyRSpecSubstitution", func() {
 		testResults, err := parsing.RubyRSpecParser{}.Parse(fixture)
 		Expect(err).ToNot(HaveOccurred())
 
-		substitutions := substitution.SubstitutionsFor(
+		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
 			func(test v1.Test) bool { return true },
 		)
+		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
 			return substitutions[i]["tests"] < substitutions[j]["tests"]
 		})
@@ -153,11 +154,13 @@ var _ = Describe("RubyRSpecSubstitution", func() {
 			}
 
 			substitution := targetedretries.RubyRSpecSubstitution{}
-			Expect(substitution.SubstitutionsFor(
+			substitutions, err := substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
 				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
-			)).To(Equal(
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(substitutions).To(Equal(
 				[]map[string]string{
 					{
 						"tests": "'/path/to/file with spaces.rb:10'",

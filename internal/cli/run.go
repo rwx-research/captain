@@ -370,7 +370,10 @@ func (s Service) attemptRetries(
 		}
 
 		allNewTestResults := make([]v1.TestResults, 0)
-		allSubstitutions := substitution.SubstitutionsFor(compiledTemplate, *flattenedTestResults, filter)
+		allSubstitutions, err := substitution.SubstitutionsFor(compiledTemplate, *flattenedTestResults, filter)
+		if err != nil {
+			return flattenedTestResults, true, errors.Wrap(err, "Unable construct retry substitutions")
+		}
 		for i, substitutions := range allSubstitutions {
 			command := compiledTemplate.Substitute(substitutions)
 			args, err := shellwords.Parse(command)
