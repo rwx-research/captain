@@ -11,21 +11,22 @@ import (
 
 // RunConfig holds the configuration for running a test suite (used by `RunSuite`)
 type RunConfig struct {
-	Args                     []string
-	TestResultsFileGlob      string
-	FailOnUploadError        bool
-	FailRetriesFast          bool
-	FlakyRetries             int
-	PostRetryCommands        []string
-	PreRetryCommands         []string
-	PrintSummary             bool
-	Quiet                    bool
-	Reporters                map[string]Reporter
-	Retries                  int
-	RetryCommandTemplate     string
-	MaxTestsToRetry          string
-	SuiteID                  string
-	SubstitutionsByFramework map[v1.Framework]targetedretries.Substitution
+	Args                      []string
+	TestResultsFileGlob       string
+	FailOnUploadError         bool
+	FailRetriesFast           bool
+	FlakyRetries              int
+	IntermediateArtifactsPath string
+	MaxTestsToRetry           string
+	PostRetryCommands         []string
+	PreRetryCommands          []string
+	PrintSummary              bool
+	Quiet                     bool
+	Reporters                 map[string]Reporter
+	Retries                   int
+	RetryCommandTemplate      string
+	SuiteID                   string
+	SubstitutionsByFramework  map[v1.Framework]targetedretries.Substitution
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(

@@ -11,10 +11,14 @@ import (
 type FileSystem struct {
 	MockCreate     func(filePath string) (fs.File, error)
 	MockCreateTemp func(dir string, pattern string) (fs.File, error)
-	MockOpen       func(name string) (fs.File, error)
+	MockGetwd      func() (string, error)
 	MockGlob       func(pattern string) ([]string, error)
 	MockGlobMany   func(patterns []string) ([]string, error)
+	MockMkdirAll   func(string, os.FileMode) error
+	MockMkdirTemp  func(string, string) (string, error)
+	MockOpen       func(name string) (fs.File, error)
 	MockRemove     func(name string) error
+	MockRemoveAll  func(path string) error
 	MockRename     func(oldname string, newname string) error
 	MockStat       func(name string) (os.FileInfo, error)
 	MockTempDir    func() string
@@ -29,6 +33,14 @@ func (f *FileSystem) Create(filePath string) (fs.File, error) {
 	return nil, errors.NewConfigurationError("MockCreate was not configured")
 }
 
+func (f *FileSystem) Getwd() (string, error) {
+	if f.MockGetwd != nil {
+		return f.MockGetwd()
+	}
+
+	return "", errors.NewConfigurationError("MockGetwd was not configured")
+}
+
 // CreateTemp either calls the configured mock of itself or returns an error if that doesn't exist.
 func (f *FileSystem) CreateTemp(dir string, pattern string) (fs.File, error) {
 	if f.MockCreateTemp != nil {
@@ -36,14 +48,6 @@ func (f *FileSystem) CreateTemp(dir string, pattern string) (fs.File, error) {
 	}
 
 	return nil, errors.NewConfigurationError("MockCreateTemp was not configured")
-}
-
-func (f *FileSystem) Open(name string) (fs.File, error) {
-	if f.MockOpen != nil {
-		return f.MockOpen(name)
-	}
-
-	return nil, errors.NewConfigurationError("MockOpen was not configured")
 }
 
 func (f *FileSystem) Glob(pattern string) ([]string, error) {
@@ -62,12 +66,44 @@ func (f *FileSystem) GlobMany(patterns []string) ([]string, error) {
 	return nil, errors.NewConfigurationError("MockGlob was not configured")
 }
 
+func (f *FileSystem) Open(name string) (fs.File, error) {
+	if f.MockOpen != nil {
+		return f.MockOpen(name)
+	}
+
+	return nil, errors.NewConfigurationError("MockOpen was not configured")
+}
+
+func (f *FileSystem) MkdirAll(path string, perm os.FileMode) error {
+	if f.MockMkdirAll != nil {
+		return f.MockMkdirAll(path, perm)
+	}
+
+	return errors.NewConfigurationError("MockMkdirAll was not configured")
+}
+
+func (f *FileSystem) MkdirTemp(dir, pattern string) (string, error) {
+	if f.MockMkdirTemp != nil {
+		return f.MockMkdirTemp(dir, pattern)
+	}
+
+	return "", errors.NewConfigurationError("MockMkdirTemp was not configured")
+}
+
 func (f *FileSystem) Remove(name string) error {
 	if f.MockRemove != nil {
 		return f.MockRemove(name)
 	}
 
 	return errors.NewConfigurationError("MockRemove was not configured")
+}
+
+func (f *FileSystem) RemoveAll(path string) error {
+	if f.MockRemoveAll != nil {
+		return f.MockRemoveAll(path)
+	}
+
+	return errors.NewConfigurationError("MockRemoveAll was not configured")
 }
 
 func (f *FileSystem) Rename(oldname string, newname string) error {

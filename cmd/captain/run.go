@@ -15,18 +15,20 @@ import (
 )
 
 var (
-	testResults              string
-	failOnUploadError        bool
-	failRetriesFast          bool
-	postRetryCommands        []string
-	preRetryCommands         []string
-	printSummary             bool
-	quiet                    bool
-	reporters                []string
-	retries                  int
-	flakyRetries             int
-	retryCommandTemplate     string
-	maxTestsToRetry          string
+	testResults               string
+	failOnUploadError         bool
+	failRetriesFast           bool
+	flakyRetries              int
+	intermediateArtifactsPath string
+	maxTestsToRetry           string
+	postRetryCommands         []string
+	preRetryCommands          []string
+	printSummary              bool
+	quiet                     bool
+	reporters                 []string
+	retries                   int
+	retryCommandTemplate      string
+
 	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
 		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
 		v1.ElixirExUnitFramework:         new(targetedretries.ElixirExUnitSubstitution),
@@ -72,21 +74,22 @@ var (
 			}
 
 			runConfig := cli.RunConfig{
-				Args:                     args,
-				FailOnUploadError:        failOnUploadError,
-				FailRetriesFast:          failRetriesFast,
-				FlakyRetries:             flakyRetries,
-				PostRetryCommands:        postRetryCommands,
-				PreRetryCommands:         preRetryCommands,
-				PrintSummary:             printSummary,
-				Quiet:                    quiet,
-				Reporters:                reporterFuncs,
-				Retries:                  retries,
-				RetryCommandTemplate:     retryCommandTemplate,
-				MaxTestsToRetry:          maxTestsToRetry,
-				SubstitutionsByFramework: substitutionsByFramework,
-				SuiteID:                  suiteID,
-				TestResultsFileGlob:      testResults,
+				Args:                      args,
+				FailOnUploadError:         failOnUploadError,
+				FailRetriesFast:           failRetriesFast,
+				FlakyRetries:              flakyRetries,
+				IntermediateArtifactsPath: intermediateArtifactsPath,
+				MaxTestsToRetry:           maxTestsToRetry,
+				PostRetryCommands:         postRetryCommands,
+				PreRetryCommands:          preRetryCommands,
+				PrintSummary:              printSummary,
+				Quiet:                     quiet,
+				Reporters:                 reporterFuncs,
+				Retries:                   retries,
+				RetryCommandTemplate:      retryCommandTemplate,
+				SubstitutionsByFramework:  substitutionsByFramework,
+				SuiteID:                   suiteID,
+				TestResultsFileGlob:       testResults,
 			}
 
 			return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))
@@ -107,6 +110,13 @@ func init() {
 		"fail-on-upload-error",
 		false,
 		"return a non-zero exit code in case the test results upload fails",
+	)
+
+	runCmd.Flags().StringVar(
+		&intermediateArtifactsPath,
+		"intermediate-artifacts-path",
+		"",
+		"the path to store intermediate artifacts under. Intermediate artifacts will be removed if not set.",
 	)
 
 	runCmd.Flags().BoolVarP(

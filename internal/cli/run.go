@@ -231,6 +231,19 @@ func (s Service) attemptRetries(
 		return originalTestResults, false, nil
 	}
 
+	ias, err := s.newIntermediateArtifactStorage(cfg.IntermediateArtifactsPath)
+	if err != nil {
+		return originalTestResults, false, errors.WithStack(err)
+	}
+
+	if cfg.IntermediateArtifactsPath == "" {
+		defer func() {
+			if err := ias.delete(); err != nil {
+				s.Log.Warnf("Unable to clean up temporary files: %s", err.Error())
+			}
+		}()
+	}
+
 	// if retries is set and flaky-retries is not, set flaky-retries to retries
 	// this way, we can isolate the logic for flaky and non-flaky instead of special casing everywhere
 	// note: it's important we don't do this the other way around; retries implies flaky-retries, flaky-retries
@@ -241,7 +254,7 @@ func (s Service) attemptRetries(
 
 	if didRun, err := s.didAbqRun(ctx); didRun || err != nil {
 		if err != nil {
-			return originalTestResults, false, err
+			return originalTestResults, false, errors.WithStack(err)
 		}
 
 		return originalTestResults, false, errors.NewInputError("Captain retries cannot be used with ABQ")
@@ -272,11 +285,9 @@ func (s Service) attemptRetries(
 	}
 
 	flattenedTestResults := originalTestResults
-	for _, file := range originalTestResultsFiles {
-		err := s.FileSystem.Remove(file)
-		if err != nil {
-			return flattenedTestResults, false, errors.WithStack(err)
-		}
+
+	if err := ias.moveTestResults(originalTestResultsFiles); err != nil {
+		return flattenedTestResults, false, errors.WithStack(err)
 	}
 
 	maxTestsToRetryCount, err := cfg.MaxTestsToRetryCount()
@@ -301,6 +312,8 @@ func (s Service) attemptRetries(
 	for retries := 0; retries < maxRetries; retries++ {
 		remainingFlakyFailures := make([]v1.Test, 0)
 		remainingNonFlakyFailures := make([]v1.Test, 0)
+
+		ias.setRetryID(retries + 1)
 
 		for _, test := range flattenedTestResults.Tests {
 			if !test.Attempt.Status.ImpliesFailure() {
@@ -387,6 +400,8 @@ func (s Service) attemptRetries(
 				return flattenedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)
 			}
 
+			ias.setCommandID(i + 1)
+
 			s.Log.Infoln()
 			s.Log.Infoln(strings.Repeat("-", 80))
 			if len(allSubstitutions) == 1 {
@@ -447,11 +462,8 @@ func (s Service) attemptRetries(
 			if newTestResults != nil {
 				allNewTestResults = append(allNewTestResults, *newTestResults)
 			}
-			for _, file := range newTestResultsFiles {
-				err := s.FileSystem.Remove(file)
-				if err != nil {
-					return flattenedTestResults, true, errors.WithStack(err)
-				}
+			if err := ias.moveTestResults(newTestResultsFiles); err != nil {
+				return flattenedTestResults, true, errors.WithStack(err)
 			}
 		}
 		if jsonSubstitution, ok := substitution.(targetedretries.JSONSubstitution); ok {

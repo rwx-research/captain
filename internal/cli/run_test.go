@@ -127,7 +127,7 @@ var _ = Describe("Run", func() {
 
 		// Caution: This needs to be an existing file. We don't actually read from it, however the glob expansion
 		// functionality is not mocked, i.e. it still uses the file-system.
-		testResultsFilePath = "../../go.mod"
+		testResultsFilePath = "run.go"
 
 		mockGlob := func(pattern string) ([]string, error) {
 			return []string{testResultsFilePath}, nil
@@ -1029,6 +1029,26 @@ var _ = Describe("Run", func() {
 			secondInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
 			thirdInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
 
+			mockGetwd := func() (string, error) {
+				return "/go/github.com/rwx-research/captain-cli", nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockGetwd = mockGetwd
+
+			mockMkdirAll := func(_ string, _ os.FileMode) error {
+				return nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
+
+			mockRename := func(_, _ string) error {
+				return nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockRename = mockRename
+
+			mockMkdirTemp := func(_, _ string) (string, error) {
+				return "/tmp/captain-test", nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockMkdirTemp = mockMkdirTemp
+
 			mockStat := func(string) (iofs.FileInfo, error) {
 				// abq state file
 				return nil, iofs.ErrNotExist
@@ -1229,6 +1249,61 @@ var _ = Describe("Run", func() {
 				Expect(commandFinished).To(BeTrue())
 				Expect(postRetryCommandStarted).To(BeTrue())
 				Expect(postRetryCommandFinished).To(BeTrue())
+			})
+		})
+
+		Context("when a intermediate artifacts path is defined", func() {
+			var (
+				intermediateTestResults []string
+				mkdirCalled             bool
+			)
+
+			BeforeEach(func() {
+				runConfig.IntermediateArtifactsPath = fmt.Sprintf("intermediate-results-%d", GinkgoRandomSeed())
+				runConfig.Retries = 2
+
+				mkdirCalled = false
+
+				mockMkdirAll := func(dir string, _ os.FileMode) error {
+					Expect(dir).To(ContainSubstring(runConfig.IntermediateArtifactsPath))
+					mkdirCalled = true
+					return nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
+
+				mockRename := func(old, new string) error {
+					Expect(old).To(Equal(testResultsFilePath))
+					Expect(new).To(ContainSubstring(runConfig.IntermediateArtifactsPath))
+					intermediateTestResults = append(intermediateTestResults, new)
+					return nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockRename = mockRename
+
+				mockStat := func(name string) (iofs.FileInfo, error) {
+					switch name {
+					case runConfig.IntermediateArtifactsPath:
+						return mocks.FileInfo{Dir: true}, nil
+					default:
+						return nil, iofs.ErrNotExist
+					}
+				}
+				service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
+
+				intermediateTestResults = make([]string, 0)
+			})
+
+			It("moves artifacts to the configured directory", func() {
+				Expect(err).ToNot(HaveOccurred())
+				Expect(mkdirCalled).To(BeTrue())
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/retry-1/command-1/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/retry-2/command-1/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
 			})
 		})
 

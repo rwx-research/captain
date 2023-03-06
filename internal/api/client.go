@@ -335,7 +335,7 @@ func (c Client) UploadTestResults(
 		if err != nil {
 			c.Log.Warnf("unable to upload test results file to S3: %s", err)
 			uploadResults = append(uploadResults, TestResultsUploadResult{
-				OriginalPaths: testResultsFile.OriginalPaths,
+				OriginalPaths: uniqueStrings(testResultsFile.OriginalPaths),
 				Uploaded:      false,
 			})
 			continue
@@ -344,7 +344,7 @@ func (c Client) UploadTestResults(
 
 		testResultsFiles[i].s3uploadStatus = resp.StatusCode
 		uploadResults = append(uploadResults, TestResultsUploadResult{
-			OriginalPaths: testResultsFile.OriginalPaths,
+			OriginalPaths: uniqueStrings(testResultsFile.OriginalPaths),
 			Uploaded:      resp.StatusCode < 300,
 		})
 	}
