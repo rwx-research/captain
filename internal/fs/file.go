@@ -10,8 +10,9 @@ import (
 type File interface {
 	io.ReadSeekCloser
 	io.Writer
-	Stat() (os.FileInfo, error)
 	Name() string
+	Stat() (os.FileInfo, error)
+	Sync() error
 }
 
 // TODO: replace with io/fs.File

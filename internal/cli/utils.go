@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -83,10 +84,50 @@ func (ias *intermediateArtifactStorage) moveTestResults(artifacts []string) erro
 			return errors.WithStack(err)
 		}
 
-		newPath := filepath.Join(targetPath, filename)
-		if err := ias.fs.Rename(artifact, newPath); err != nil {
+		if err := ias.moveFile(artifact, filepath.Join(targetPath, filename)); err != nil {
 			return errors.WithStack(err)
 		}
+	}
+
+	return nil
+}
+
+func (ias *intermediateArtifactStorage) moveFile(srcPath, dstPath string) error {
+	// Renaming only works if both paths are on the same file-system. We'll fall back to
+	// copy & delete instead if this is not the case.
+	if err := ias.fs.Rename(srcPath, dstPath); err == nil {
+		return nil
+	}
+
+	srcFile, err := ias.fs.Open(srcPath)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	dstFile, err := ias.fs.Create(dstPath)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer func() {
+		_ = dstFile.Close()
+	}()
+
+	if _, err = io.Copy(dstFile, srcFile); err != nil {
+		_ = srcFile.Close()
+		return errors.WithStack(err)
+	}
+
+	if err = dstFile.Sync(); err != nil {
+		_ = srcFile.Close()
+		return errors.WithStack(err)
+	}
+
+	if err = srcFile.Close(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	if err = ias.fs.Remove(srcPath); err != nil {
+		return errors.WithStack(err)
 	}
 
 	return nil

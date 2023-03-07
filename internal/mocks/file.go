@@ -59,6 +59,11 @@ func (f *File) Stat() (os.FileInfo, error) {
 	return f, nil
 }
 
+// Sync always returns nil.
+func (f *File) Sync() error {
+	return nil
+}
+
 // Sys always returns nil.
 func (f *File) Sys() any {
 	return nil
