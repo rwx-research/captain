@@ -1,344 +1,241 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+
+	"github.com/caarlos0/env/v7"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
-	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
-// config is the internal representation of the configuration file.
-type config struct {
-	Captain struct {
-		Host  string
-		Token string
+// Config is the internal representation of the configuration.
+type Config struct {
+	ConfigFile
+
+	GitHub struct {
+		Detected        bool   `env:"GITHUB_ACTIONS"`
+		Name            string `env:"GITHUB_JOB"`
+		Matrix          string
+		Attempt         string `env:"GITHUB_RUN_ATTEMPT"`
+		ID              string `env:"GITHUB_RUN_ID"`
+		EventName       string `env:"GITHUB_EVENT_NAME"`
+		EventPath       string `env:"GITHUB_EVENT_PATH"`
+		ExecutingActor  string `env:"GITHUB_ACTOR"`
+		TriggeringActor string `env:"GITHUB_TRIGGERING_ACTOR"`
+		Repository      string `env:"GITHUB_REPOSITORY"`
+		RefName         string `env:"GITHUB_REF_NAME"`
+		HeadRef         string `env:"GITHUB_HEAD_REF"`
+		CommitSha       string `env:"GITHUB_SHA"`
 	}
-	CI struct {
-		Github struct {
-			Detected bool
-			Job      struct {
-				Name   string
-				Matrix string
-			}
-			Run struct {
-				Attempt         string
-				ID              string
-				EventName       string
-				EventPath       string
-				ExecutingActor  string
-				TriggeringActor string
-			}
-		}
-		Buildkite struct {
-			Env      providers.BuildkiteEnv
-			Detected bool
-		}
-		Circleci struct {
-			Detected bool
-			Env      providers.CircleciEnv
-		}
-		GitLabCI struct {
-			Detected bool
-			Env      providers.GitLabCIEnv
-		}
+	Buildkite struct {
+		Detected          bool   `env:"BUILDKITE"`
+		Branch            string `env:"BUILDKITE_BRANCH"`
+		BuildCreatorEmail string `env:"BUILDKITE_BUILD_CREATOR_EMAIL"`
+		BuildID           string `env:"BUILDKITE_BUILD_ID"`
+		BuildURL          string `env:"BUILDKITE_BUILD_URL"`
+		Commit            string `env:"BUILDKITE_COMMIT"`
+		JobID             string `env:"BUILDKITE_JOB_ID"`
+		Label             string `env:"BUILDKITE_LABEL"`
+		Message           string `env:"BUILDKITE_MESSAGE"`
+		OrganizationSlug  string `env:"BUILDKITE_ORGANIZATION_SLUG"`
+		ParallelJob       string `env:"BUILDKITE_PARALLEL_JOB"`
+		ParallelJobCount  string `env:"BUILDKITE_PARALLEL_JOB_COUNT"`
+		Repo              string `env:"BUILDKITE_REPO"`
+		RetryCount        string `env:"BUILDKITE_RETRY_COUNT"`
 	}
-	Debug    bool
-	Insecure bool // Disables TLS for the Captain API
-	VCS      struct {
-		Github struct {
-			Repository string
-			RefName    string
-			HeadRef    string
-			CommitSha  string
-		}
+	CircleCI struct {
+		Detected        bool   `env:"CIRCLECI"`
+		BuildNum        string `env:"CIRCLE_BUILD_NUM"`
+		BuildURL        string `env:"CIRCLE_BUILD_URL"`
+		Job             string `env:"CIRCLE_JOB"`
+		NodeIndex       string `env:"CIRCLE_NODE_INDEX"`
+		NodeTotal       string `env:"CIRCLE_NODE_TOTAL"`
+		ProjectReponame string `env:"CIRCLE_PROJECT_REPONAME"`
+		ProjectUsername string `env:"CIRCLE_PROJECT_USERNAME"`
+		RepositoryURL   string `env:"CIRCLE_REPOSITORY_URL"`
+		Branch          string `env:"CIRCLE_BRANCH"`
+		Sha1            string `env:"CIRCLE_SHA1"`
+		Username        string `env:"CIRCLE_USERNAME"`
+	}
+	GitLab struct {
+		// see https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+		// gitlab/runner version all/all
+		Detected bool `env:"GITLAB_CI"`
+
+		// Build Info
+		// gitlab/runner version 9.0/0.5
+		CIJobName string `env:"CI_JOB_NAME"`
+		// gitlab/runner version 9.0/0.5
+		CIJobStage string `env:"CI_JOB_STAGE"`
+		// gitlab/runner version 9.0/all
+		CIJobID string `env:"CI_JOB_ID"`
+		// gitlab/runner version 8.10/all
+		CIPipelineID string `env:"CI_PIPELINE_ID"`
+		// gitlab/runner version 11.1/0.5
+		CIJobURL string `env:"CI_JOB_URL"`
+		// gitlab/runner version 11.1/0.5
+		CIPipelineURL string `env:"CI_PIPELINE_URL"`
+		// gitlab/runner version 10.0/all
+		GitlabUserLogin string `env:"GITLAB_USER_LOGIN"`
+		// gitlab/runner version 11.5/all
+		CINodeTotal string `env:"CI_NODE_TOTAL"`
+		// gitlab/runner version 11.5/all
+		CINodeIndex string `env:"CI_NODE_INDEX"`
+
+		// Repo Info
+		// gitlab/runner version 8.10/0.5
+		CIProjectPath string `env:"CI_PROJECT_PATH"`
+		// gitlab/runner version 8.10/0.5
+		CIProjectURL string `env:"CI_PROJECT_URL"`
+
+		// Commit Info
+		// gitlab/runner version 9.0/all
+		CICommitSHA string `env:"CI_COMMIT_SHA"`
+		// gitlab/runner version 13.11/all
+		CICommitAuthor string `env:"CI_COMMIT_AUTHOR"`
+		// gitlab/runner version 12.6/0.5
+		CICommitBranch string `env:"CI_COMMIT_BRANCH"`
+		// gitlab/runner version 10.8/all
+		CICommitMessage string `env:"CI_COMMIT_MESSAGE"`
+
+		// Consider in the future checking CI_SERVER_VERSION >= 13.2 (the newest version with all of these fields)
+		// gitlab/runner version 11.7/all
+		CIAPIV4URL string `env:"CI_API_V4_URL"`
+	}
+	Secrets struct {
+		APIToken string `env:"RWX_ACCESS_TOKEN"`
 	}
 }
 
-func init() {
-	cobra.OnInitialize(func() {
-		// TODO: Check if these viper errors are ok to present to end-users
-		if err := viper.BindEnv("captain.host", "CAPTAIN_HOST"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
+// configFile holds all options that can be set over the config file
+type ConfigFile struct {
+	Cloud struct {
+		APIHost  string `yaml:"api-host" env:"CAPTAIN_HOST"`
+		Insecure bool
+	}
+	Flags  map[string]any
+	Output struct {
+		Debug bool
+		Quiet bool
+	}
+	TestSuites map[string]SuiteConfig `yaml:"test-suites"`
+}
+
+// SuiteConfig holds options that can be customized per suite
+type SuiteConfig struct {
+	Command string
+	Output  struct {
+		PrintSummary bool `yaml:"print-summary"`
+		Reporters    map[string]string
+	}
+	Results struct {
+		Framework string
+		Language  string
+		Path      string
+	}
+	Retries struct {
+		Attempts          int
+		Command           string
+		FailFast          bool `yaml:"fail-fast"`
+		FlakyAttempts     int  `yaml:"flaky-attempts"`
+		MaxTests          string
+		PostRetryCommands []string `yaml:"post-retry-commands"`
+		PreRetryCommands  []string `yaml:"pre-retry-commands"`
+	}
+}
+
+// findConfigFilePath starts at the current working directory and walk up to the root, trying
+// to find `.captain/config.yaml`
+func findConfigFilePath() (string, error) {
+	var match string
+	var walk func(string, string) error
+
+	walk = func(base, root string) error {
+		if base == root {
+			return errors.WithStack(os.ErrNotExist)
 		}
 
-		if err := viper.BindEnv("captain.token", "RWX_ACCESS_TOKEN"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
+		match = path.Join(base, ".captain/config.yaml")
+
+		info, err := os.Stat(match)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return errors.WithStack(err)
 		}
 
-		if err := viper.BindEnv("debug", "DEBUG"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
+		if info != nil {
+			return nil
 		}
 
-		// Github Actions
-		//
-		if err := viper.BindEnv("ci.github.detected", "GITHUB_ACTIONS"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
+		return walk(filepath.Dir(base), root)
+	}
+
+	pwd, err := os.Getwd()
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	volumeName := filepath.VolumeName(pwd)
+	if volumeName == "" {
+		volumeName = string(os.PathSeparator)
+	}
+
+	if err := walk(pwd, volumeName); err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	return match, nil
+}
+
+// InitConfig reads our configuration from the system.
+// Environment variables take precedence over a config file.
+// Flags take precedence over all other options.
+func InitConfig(cmd *cobra.Command) (cfg Config, err error) {
+	if configFilePath == "" {
+		configFilePath, err = findConfigFilePath()
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return cfg, errors.NewConfigurationError("unable to determine config file path: %s", err.Error())
+		}
+	}
+
+	if configFilePath != "" {
+		fd, err := os.Open(configFilePath)
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return cfg, errors.Wrap(err, fmt.Sprintf("unable to open config file %q", configFilePath))
+			}
+		} else {
+			if err = yaml.NewDecoder(fd).Decode(&cfg.ConfigFile); err != nil {
+				return cfg, errors.Wrap(err, "unable to parse config file")
+			}
+		}
+	}
+
+	for name, value := range cfg.Flags {
+		if err := cmd.Flags().Set(name, fmt.Sprintf("%v", value)); err != nil {
+			return cfg, errors.Wrap(err, fmt.Sprintf("unable to set flag %q", name))
+		}
+	}
+
+	if err = env.Parse(&cfg); err != nil {
+		return cfg, errors.Wrap(err, "unable to parse environment variables")
+	}
+
+	if _, ok := cfg.TestSuites[suiteID]; !ok {
+		if cfg.TestSuites == nil {
+			cfg.TestSuites = make(map[string]SuiteConfig)
 		}
 
-		if err := viper.BindEnv("ci.github.job.name", "GITHUB_JOB"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
+		cfg.TestSuites[suiteID] = SuiteConfig{}
+	}
 
-		if err := viper.BindEnv("ci.github.run.attempt", "GITHUB_RUN_ATTEMPT"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
+	cfg = bindRootCmdFlags(cfg)
+	cfg = bindFrameworkFlags(cfg)
+	cfg = bindRunCmdFlags(cfg)
 
-		if err := viper.BindEnv("ci.github.run.id", "GITHUB_RUN_ID"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.github.run.eventName", "GITHUB_EVENT_NAME"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.github.run.eventPath", "GITHUB_EVENT_PATH"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.github.run.executingActor", "GITHUB_ACTOR"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.github.run.triggeringActor", "GITHUB_TRIGGERING_ACTOR"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("vcs.github.repository", "GITHUB_REPOSITORY"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("vcs.github.refName", "GITHUB_REF_NAME"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("vcs.github.headRef", "GITHUB_HEAD_REF"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("vcs.github.commitSha", "GITHUB_SHA"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		// Buildkite
-		//
-		if err := viper.BindEnv("ci.buildkite.detected", "BUILDKITE"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteJobId", "BUILDKITE_JOB_ID"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteLabel", "BUILDKITE_LABEL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteParallelJob", "BUILDKITE_PARALLEL_JOB"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteParallelJobCount", "BUILDKITE_PARALLEL_JOB_COUNT"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteRetryCount", "BUILDKITE_RETRY_COUNT"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteBuildCreatorEmail", "BUILDKITE_BUILD_CREATOR_EMAIL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteBuildId", "BUILDKITE_BUILD_ID"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteBuildUrl", "BUILDKITE_BUILD_URL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteBranch", "BUILDKITE_BRANCH"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteMessage", "BUILDKITE_MESSAGE"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteCommit", "BUILDKITE_COMMIT"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteRepo", "BUILDKITE_REPO"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.buildkite.env.buildkiteOrganizationSlug", "BUILDKITE_ORGANIZATION_SLUG"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		// CircleCI
-		//
-
-		if err := viper.BindEnv("ci.circleci.detected", "CIRCLECI"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleBuildNum", "CIRCLE_BUILD_NUM"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleBuildURL", "CIRCLE_BUILD_URL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleJob", "CIRCLE_JOB"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleNodeIndex", "CIRCLE_NODE_INDEX"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleNodeTotal", "CIRCLE_NODE_TOTAL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleProjectReponame", "CIRCLE_PROJECT_REPONAME"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleProjectUsername", "CIRCLE_PROJECT_USERNAME"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleRepositoryURL", "CIRCLE_REPOSITORY_URL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleBranch", "CIRCLE_BRANCH"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleSha1", "CIRCLE_SHA1"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.circleci.env.circleUsername", "CIRCLE_USERNAME"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		// gitlab ci
-		if err := viper.BindEnv("ci.gitlab.detected", "GITLAB_CI"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciJobName", "CI_JOB_NAME"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciJobStage", "CI_JOB_STAGE"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciJobID", "CI_JOB_ID"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciPipelineID", "CI_PIPELINE_ID"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciJobURL", "CI_JOB_URL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciPipelineURL", "CI_PIPELINE_URL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.gitlabUserEmail", "GITLAB_USER_EMAIL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciNodeTotal", "CI_NODE_TOTAL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciNodeIndex", "CI_NODE_INDEX"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciProjectPath", "CI_PROJECT_PATH"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciRepositoryURL", "CI_REPOSITORY_URL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciCommitSHA", "CI_COMMIT_SHA"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciCommitAuthor", "CI_COMMIT_AUTHOR"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciCommitBranch", "CI_COMMIT_BRANCH"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-		if err := viper.BindEnv("ci.gitlab.env.ciCommitMessage", "CI_COMMIT_MESSAGE"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-
-		if err := viper.BindEnv("ci.gitlab.env.ciAPIV4URL", "CI_API_V4_URL"); err != nil {
-			err = errors.NewConfigurationError("unable to read from environment: %s", err)
-			initializationErrors = append(initializationErrors, err)
-		}
-	})
+	return cfg, nil
 }

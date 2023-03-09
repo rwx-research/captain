@@ -28,33 +28,6 @@ type GitLabCIProvider struct {
 	APIURL string
 }
 
-// a struct that mirrors env vars, see test/.env.GitLab
-type GitLabCIEnv struct {
-	// build info
-	CiJobName       string
-	CiJobStage      string
-	CiJobID         string
-	CiPipelineID    string
-	CiJobURL        string
-	CiPipelineURL   string
-	GitlabUserLogin string
-	CiNodeTotal     string
-	CiNodeIndex     string
-
-	// Repo Info
-	CiProjectPath string
-	CiProjectURL  string
-
-	// Commit Info
-	CiCommitSHA     string
-	CiCommitAuthor  string
-	CiCommitBranch  string
-	CiCommitMessage string
-
-	// other info
-	CiAPIV4URL string
-}
-
 func (b GitLabCIProvider) GetAttemptedBy() string {
 	if b.AttemptedBy != "" {
 		return b.AttemptedBy

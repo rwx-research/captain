@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -52,44 +53,57 @@ var (
 		Long:    descriptionRun,
 		PreRunE: initCLIService,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var postRetryCommands, preRetryCommands []string
+			var failFast, printSummary bool
+			var flakyRetries, retries int
+			var retryCommand, testResultsPath, maxTests string
+
 			if len(args) == 0 {
 				return errors.WithStack(cmd.Usage())
 			}
 
 			reporterFuncs := make(map[string]cli.Reporter)
-			for _, reporter := range reporters {
-				name, path, found := strings.Cut(reporter, "=")
-				if !found {
-					return errors.NewConfigurationError("Invalid reporter syntax %q. Expected `type=output_path`", reporter)
+
+			if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+				for name, path := range suiteConfig.Output.Reporters {
+					switch name {
+					case "rwx-v1-json":
+						reporterFuncs[path] = reporting.WriteJSONSummary
+					case "junit-xml":
+						reporterFuncs[path] = reporting.WriteJUnitSummary
+					default:
+						return errors.NewConfigurationError("Unknown reporter %q.", name)
+					}
 				}
 
-				switch name {
-				case "rwx-v1-json":
-					reporterFuncs[path] = reporting.WriteJSONSummary
-				case "junit-xml":
-					reporterFuncs[path] = reporting.WriteJUnitSummary
-				default:
-					return errors.NewConfigurationError("Unknown reporter %q.", name)
-				}
+				failFast = suiteConfig.Retries.FailFast
+				flakyRetries = suiteConfig.Retries.FlakyAttempts
+				maxTests = suiteConfig.Retries.MaxTests
+				postRetryCommands = suiteConfig.Retries.PostRetryCommands
+				preRetryCommands = suiteConfig.Retries.PreRetryCommands
+				printSummary = suiteConfig.Output.PrintSummary
+				retries = suiteConfig.Retries.Attempts
+				retryCommand = suiteConfig.Retries.Command
+				testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
 			}
 
 			runConfig := cli.RunConfig{
 				Args:                      args,
 				FailOnUploadError:         failOnUploadError,
-				FailRetriesFast:           failRetriesFast,
+				FailRetriesFast:           failFast,
 				FlakyRetries:              flakyRetries,
 				IntermediateArtifactsPath: intermediateArtifactsPath,
-				MaxTestsToRetry:           maxTestsToRetry,
+				MaxTestsToRetry:           maxTests,
 				PostRetryCommands:         postRetryCommands,
 				PreRetryCommands:          preRetryCommands,
 				PrintSummary:              printSummary,
-				Quiet:                     quiet,
+				Quiet:                     cfg.Output.Quiet,
 				Reporters:                 reporterFuncs,
 				Retries:                   retries,
-				RetryCommandTemplate:      retryCommandTemplate,
+				RetryCommandTemplate:      retryCommand,
 				SubstitutionsByFramework:  substitutionsByFramework,
 				SuiteID:                   suiteID,
-				TestResultsFileGlob:       testResults,
+				TestResultsFileGlob:       testResultsPath,
 			}
 
 			return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))
@@ -217,4 +231,64 @@ func init() {
 	addFrameworkFlags(runCmd)
 
 	rootCmd.AddCommand(runCmd)
+}
+
+func bindRunCmdFlags(cfg Config) Config {
+	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+		if testResults != "" {
+			suiteConfig.Results.Path = testResults
+		}
+
+		if len(postRetryCommands) != 0 {
+			suiteConfig.Retries.PostRetryCommands = postRetryCommands
+		}
+
+		if len(preRetryCommands) != 0 {
+			suiteConfig.Retries.PreRetryCommands = preRetryCommands
+		}
+
+		if failRetriesFast {
+			suiteConfig.Retries.FailFast = true
+		}
+
+		// We want to use the default as set by `cobra`
+		if suiteConfig.Retries.FlakyAttempts == 0 || flakyRetries != -1 {
+			suiteConfig.Retries.FlakyAttempts = flakyRetries
+		}
+
+		if maxTestsToRetry != "" {
+			suiteConfig.Retries.MaxTests = maxTestsToRetry
+		}
+
+		if printSummary {
+			suiteConfig.Output.PrintSummary = true
+		}
+
+		if reporters != nil {
+			reporterConfig := make(map[string]string)
+
+			for _, r := range reporters {
+				name, path, _ := strings.Cut(r, "=")
+				reporterConfig[name] = path
+			}
+
+			suiteConfig.Output.Reporters = reporterConfig
+		}
+
+		if suiteConfig.Retries.Attempts == 0 || retries != -1 {
+			suiteConfig.Retries.Attempts = retries
+		}
+
+		if retryCommandTemplate != "" {
+			suiteConfig.Retries.Command = retryCommandTemplate
+		}
+
+		cfg.TestSuites[suiteID] = suiteConfig
+	}
+
+	if quiet {
+		cfg.Output.Quiet = true
+	}
+
+	return cfg
 }

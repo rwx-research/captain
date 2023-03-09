@@ -93,6 +93,10 @@ func (s Service) UploadTestResults(
 	testSuiteID string,
 	filepaths []string,
 ) ([]api.TestResultsUploadResult, error) {
+	if testSuiteID == "" {
+		return nil, errors.NewConfigurationError("suite-id is required")
+	}
+
 	if len(filepaths) == 0 {
 		s.Log.Debug("No paths to test results provided")
 		return nil, nil

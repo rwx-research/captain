@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	captainCLI "github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/cli"
@@ -11,7 +10,9 @@ import (
 )
 
 var (
+	cfg             Config
 	captain         cli.Service
+	configFilePath  string
 	debug           bool
 	githubJobName   string
 	githubJobMatrix string
@@ -37,33 +38,20 @@ var (
 )
 
 func init() {
+	rootCmd.PersistentFlags().StringVar(&configFilePath, "config-file", "", "The config file for captain")
 	rootCmd.PersistentFlags().StringVar(&suiteID, "suite-id", "", "the id of the test suite")
-
+	rootCmd.PersistentFlags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	rootCmd.PersistentFlags().StringVar(
 		&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github",
 	)
-	if err := viper.BindPFlag("ci.github.job.matrix", rootCmd.PersistentFlags().Lookup("github-job-matrix")); err != nil {
-		initializationErrors = append(initializationErrors, err)
-	}
-
-	rootCmd.PersistentFlags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
-	if err := viper.BindPFlag("ci.github.job.name", rootCmd.PersistentFlags().Lookup("github-job-name")); err != nil {
-		initializationErrors = append(initializationErrors, err)
-	}
 
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug output")
 	if err := rootCmd.PersistentFlags().MarkHidden("debug"); err != nil {
 		initializationErrors = append(initializationErrors, err)
 	}
-	if err := viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug")); err != nil {
-		initializationErrors = append(initializationErrors, err)
-	}
 
 	rootCmd.PersistentFlags().BoolVar(&insecure, "insecure", false, "disable TLS for the API")
 	if err := rootCmd.PersistentFlags().MarkHidden("insecure"); err != nil {
-		initializationErrors = append(initializationErrors, err)
-	}
-	if err := viper.BindPFlag("insecure", rootCmd.PersistentFlags().Lookup("insecure")); err != nil {
 		initializationErrors = append(initializationErrors, err)
 	}
 
@@ -73,4 +61,24 @@ func init() {
 	}
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
+}
+
+func bindRootCmdFlags(cfg Config) Config {
+	if debug {
+		cfg.Output.Debug = true
+	}
+
+	if githubJobName != "" {
+		cfg.GitHub.Name = githubJobName
+	}
+
+	if githubJobMatrix != "" {
+		cfg.GitHub.Matrix = githubJobMatrix
+	}
+
+	if insecure {
+		cfg.Cloud.Insecure = true
+	}
+
+	return cfg
 }

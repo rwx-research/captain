@@ -23,9 +23,25 @@ type Config struct {
 	Logger                    *zap.SugaredLogger
 }
 
+func (c Config) Validate() error {
+	if c.ProvidedFrameworkKind != "" && c.ProvidedFrameworkLanguage == "" {
+		return errors.NewConfigurationError("when specifying a framework, the language also needs to be provided")
+	}
+
+	if c.ProvidedFrameworkLanguage != "" && c.ProvidedFrameworkKind == "" {
+		return errors.NewConfigurationError("when specifying a language, the framework also needs to be provided")
+	}
+
+	if c.Logger == nil {
+		return errors.NewInternalError("No logger was provided")
+	}
+
+	return nil
+}
+
 func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
-	if cfg.Logger == nil {
-		return nil, errors.NewInternalError("No logger was provided")
+	if err := cfg.Validate(); err != nil {
+		return nil, errors.WithStack(err)
 	}
 
 	if (cfg.ProvidedFrameworkKind != "" && cfg.ProvidedFrameworkLanguage == "") ||

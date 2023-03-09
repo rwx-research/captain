@@ -12,21 +12,19 @@ var _ = Describe("BuildkiteProvider.Validate", func() {
 
 	BeforeEach(func() {
 		provider = providers.BuildkiteProvider{
-			Env: providers.BuildkiteEnv{
-				BuildkiteBranch:            "main",
-				BuildkiteBuildCreatorEmail: "foo@bar.com",
-				BuildkiteBuildID:           "1234",
-				BuildkiteRetryCount:        "0",
-				BuildkiteBuildURL:          "https://buildkit.com/builds/42",
-				BuildkiteMessage:           "fixed it",
-				BuildkiteCommit:            "abc123",
-				BuildkiteJobID:             "build123",
-				BuildkiteLabel:             "lint",
-				BuildkiteParallelJob:       "0",
-				BuildkiteParallelJobCount:  "2",
-				BuildkiteOrganizationSlug:  "rwx",
-				BuildkiteRepo:              "git@github.com/rwx-research/captain-cli",
-			},
+			Branch:            "main",
+			BuildCreatorEmail: "foo@bar.com",
+			BuildID:           "1234",
+			RetryCount:        "0",
+			BuildURL:          "https://buildkit.com/builds/42",
+			Message:           "fixed it",
+			Commit:            "abc123",
+			JobID:             "build123",
+			Label:             "lint",
+			ParallelJob:       "0",
+			ParallelJobCount:  "2",
+			OrganizationSlug:  "rwx",
+			Repo:              "git@github.com/rwx-research/captain-cli",
 		}
 	})
 
@@ -40,94 +38,92 @@ var _ = Describe("BuildkiteProvider.Validate", func() {
 	})
 
 	It("requires branch name", func() {
-		provider.Env.BuildkiteBranch = ""
+		provider.Branch = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteBranch"))
+		Expect(err.Error()).To(ContainSubstring("missing Branch"))
 	})
 
 	It("requires build creator email", func() {
-		provider.Env.BuildkiteBuildCreatorEmail = ""
+		provider.BuildCreatorEmail = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteBuildCreatorEmail"))
+		Expect(err.Error()).To(ContainSubstring("missing BuildCreatorEmail"))
 	})
 
 	It("requires build id", func() {
-		provider.Env.BuildkiteBuildID = ""
+		provider.BuildID = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteBuildID"))
+		Expect(err.Error()).To(ContainSubstring("missing BuildID"))
 	})
 
 	It("requires build retry count", func() {
-		provider.Env.BuildkiteRetryCount = ""
+		provider.RetryCount = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteRetryCount"))
+		Expect(err.Error()).To(ContainSubstring("missing RetryCount"))
 	})
 
 	It("requires build url", func() {
-		provider.Env.BuildkiteBuildURL = ""
+		provider.BuildURL = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteBuildURL"))
+		Expect(err.Error()).To(ContainSubstring("missing BuildURL"))
 	})
 
 	It("requires commit sha", func() {
-		provider.Env.BuildkiteCommit = ""
+		provider.Commit = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteCommit"))
+		Expect(err.Error()).To(ContainSubstring("missing Commit"))
 	})
 
 	It("requires job id", func() {
-		provider.Env.BuildkiteJobID = ""
+		provider.JobID = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteJobID"))
+		Expect(err.Error()).To(ContainSubstring("missing JobID"))
 	})
 
 	It("requires job name", func() {
-		provider.Env.BuildkiteLabel = ""
+		provider.Label = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteLabel"))
+		Expect(err.Error()).To(ContainSubstring("missing Label"))
 	})
 
 	It("requires buildkite org slug", func() {
-		provider.Env.BuildkiteOrganizationSlug = ""
+		provider.OrganizationSlug = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteOrganizationSlug"))
+		Expect(err.Error()).To(ContainSubstring("missing OrganizationSlug"))
 	})
 
 	It("requires repository url", func() {
-		provider.Env.BuildkiteRepo = ""
+		provider.Repo = ""
 		err := provider.Validate()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildkiteRepo"))
+		Expect(err.Error()).To(ContainSubstring("missing Repo"))
 	})
 })
 
 var _ = Describe("BuildkiteProvider.GetJobTags", func() {
 	It("constructs job tags with parallel attributes", func() {
 		provider := providers.BuildkiteProvider{
-			Env: providers.BuildkiteEnv{
-				BuildkiteBranch:            "main",
-				BuildkiteBuildCreatorEmail: "foo@bar.com",
-				BuildkiteBuildID:           "1234",
-				BuildkiteRetryCount:        "0",
-				BuildkiteBuildURL:          "https://buildkit.com/builds/42",
-				BuildkiteMessage:           "fixed it",
-				BuildkiteCommit:            "abc123",
-				BuildkiteJobID:             "build123",
-				BuildkiteLabel:             "lint",
-				BuildkiteParallelJob:       "0",
-				BuildkiteParallelJobCount:  "2",
-				BuildkiteOrganizationSlug:  "rwx",
-				BuildkiteRepo:              "git@github.com/rwx-research/captain-cli",
-			},
+			Branch:            "main",
+			BuildCreatorEmail: "foo@bar.com",
+			BuildID:           "1234",
+			RetryCount:        "0",
+			BuildURL:          "https://buildkit.com/builds/42",
+			Message:           "fixed it",
+			Commit:            "abc123",
+			JobID:             "build123",
+			Label:             "lint",
+			ParallelJob:       "0",
+			ParallelJobCount:  "2",
+			OrganizationSlug:  "rwx",
+			Repo:              "git@github.com/rwx-research/captain-cli",
 		}
 		Expect(provider.GetJobTags()).To(Equal(map[string]any{
 			"buildkite_retry_count":        "0",
@@ -144,21 +140,19 @@ var _ = Describe("BuildkiteProvider.GetJobTags", func() {
 
 	It("constructs job tags without parallel attributes", func() {
 		provider := providers.BuildkiteProvider{
-			Env: providers.BuildkiteEnv{
-				BuildkiteBranch:            "main",
-				BuildkiteBuildCreatorEmail: "foo@bar.com",
-				BuildkiteBuildID:           "1234",
-				BuildkiteRetryCount:        "0",
-				BuildkiteBuildURL:          "https://buildkit.com/builds/42",
-				BuildkiteMessage:           "fixed it",
-				BuildkiteCommit:            "abc123",
-				BuildkiteJobID:             "build123",
-				BuildkiteLabel:             "lint",
-				BuildkiteParallelJob:       "",
-				BuildkiteParallelJobCount:  "",
-				BuildkiteOrganizationSlug:  "rwx",
-				BuildkiteRepo:              "git@github.com/rwx-research/captain-cli",
-			},
+			Branch:            "main",
+			BuildCreatorEmail: "foo@bar.com",
+			BuildID:           "1234",
+			RetryCount:        "0",
+			BuildURL:          "https://buildkit.com/builds/42",
+			Message:           "fixed it",
+			Commit:            "abc123",
+			JobID:             "build123",
+			Label:             "lint",
+			ParallelJob:       "",
+			ParallelJobCount:  "",
+			OrganizationSlug:  "rwx",
+			Repo:              "git@github.com/rwx-research/captain-cli",
 		}
 		Expect(provider.GetJobTags()).To(Equal(map[string]any{
 			"buildkite_retry_count":       "0",

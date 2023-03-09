@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/rwx-research/captain-cli/internal/api"
 	"github.com/rwx-research/captain-cli/internal/cli"
@@ -57,16 +56,17 @@ var genericParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.JUnitParser),
 }
 
+// TODO: It looks like errors returned from this function are not getting logged correctly
 func initCLIService(cmd *cobra.Command, args []string) error {
-	var cfg config
+	var err error
 
-	if err := viper.Unmarshal(&cfg); err != nil {
-		// TODO: Check if this viper error are ok to present to end-users
-		return errors.NewConfigurationError("unable to parse configuration: %s", err)
+	cfg, err = InitConfig(cmd)
+	if err != nil {
+		return errors.WithStack(err)
 	}
 
 	logger := logging.NewProductionLogger()
-	if cfg.Debug {
+	if cfg.Output.Debug {
 		logger = logging.NewDebugLogger()
 	}
 
@@ -76,97 +76,120 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 	}
 
 	apiClient, err := api.NewClient(api.ClientConfig{
-		Debug:    cfg.Debug,
-		Host:     cfg.Captain.Host,
-		Insecure: cfg.Insecure,
+		Debug:    cfg.Output.Debug,
+		Host:     cfg.Cloud.APIHost,
+		Insecure: cfg.Cloud.Insecure,
 		Log:      logger,
-		Token:    cfg.Captain.Token,
+		Token:    cfg.Secrets.APIToken,
 		Provider: providerAdapter,
 	})
 	if err != nil {
 		return errors.Wrap(err, "unable to create API client")
 	}
 
+	var frameworkKind, frameworkLanguage string
+	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+		frameworkKind = suiteConfig.Results.Framework
+		frameworkLanguage = suiteConfig.Results.Language
+	}
+
+	parseConfig := parsing.Config{
+		ProvidedFrameworkKind:     frameworkKind,
+		ProvidedFrameworkLanguage: frameworkLanguage,
+		MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+		FrameworkParsers:          frameworkParsers,
+		GenericParsers:            genericParsers,
+		Logger:                    logger,
+	}
+	if err := parseConfig.Validate(); err != nil {
+		return errors.Wrap(err, "invalid parser config")
+	}
+
 	captain = cli.Service{
-		API:        apiClient,
-		Log:        logger,
-		FileSystem: fs.Local{},
-		TaskRunner: exec.Local{},
-		ParseConfig: parsing.Config{
-			ProvidedFrameworkKind:     providedFrameworkKind,
-			ProvidedFrameworkLanguage: providedFrameworkLanguage,
-			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-			FrameworkParsers:          frameworkParsers,
-			GenericParsers:            genericParsers,
-			Logger:                    logger,
-		},
+		API:         apiClient,
+		Log:         logger,
+		FileSystem:  fs.Local{},
+		TaskRunner:  exec.Local{},
+		ParseConfig: parseConfig,
 	}
 
 	return nil
 }
 
-func MakeProviderAdapter(cfg config) (providers.Provider, error) {
+func MakeProviderAdapter(cfg Config) (providers.Provider, error) {
 	switch {
-	case cfg.CI.Github.Detected:
+	case cfg.GitHub.Detected:
 		return MakeGithubProvider(cfg)
-	case cfg.CI.Buildkite.Detected:
+	case cfg.Buildkite.Detected:
 		return MakeBuildkiteProvider(cfg)
-	case cfg.CI.Circleci.Detected:
+	case cfg.CircleCI.Detected:
 		return MakeCircleciProvider(cfg)
-	case cfg.CI.GitLabCI.Detected:
+	case cfg.GitLab.Detected:
 		return MakeGitLabProvider(cfg)
 	default:
 		return providers.NullProvider{}, errors.NewConfigurationError("Failed to detect supported CI context")
 	}
 }
 
-func MakeBuildkiteProvider(cfg config) (providers.BuildkiteProvider, error) {
+func MakeBuildkiteProvider(cfg Config) (providers.BuildkiteProvider, error) {
 	return providers.BuildkiteProvider{
-		Env: cfg.CI.Buildkite.Env,
+		Branch:            cfg.Buildkite.Branch,
+		BuildCreatorEmail: cfg.Buildkite.BuildCreatorEmail,
+		BuildID:           cfg.Buildkite.BuildID,
+		BuildURL:          cfg.Buildkite.BuildURL,
+		Commit:            cfg.Buildkite.Commit,
+		JobID:             cfg.Buildkite.JobID,
+		Label:             cfg.Buildkite.Label,
+		Message:           cfg.Buildkite.Message,
+		OrganizationSlug:  cfg.Buildkite.OrganizationSlug,
+		ParallelJob:       cfg.Buildkite.ParallelJob,
+		ParallelJobCount:  cfg.Buildkite.ParallelJobCount,
+		Repo:              cfg.Buildkite.Repo,
+		RetryCount:        cfg.Buildkite.RetryCount,
 	}, nil
 }
 
-func MakeCircleciProvider(cfg config) (providers.CircleciProvider, error) {
+func MakeCircleciProvider(cfg Config) (providers.CircleciProvider, error) {
 	return providers.CircleciProvider{
-		BuildNum:         cfg.CI.Circleci.Env.CircleBuildNum,
-		BuildURL:         cfg.CI.Circleci.Env.CircleBuildURL,
-		JobName:          cfg.CI.Circleci.Env.CircleJob,
-		ParallelJobIndex: cfg.CI.Circleci.Env.CircleNodeIndex,
-		ParallelJobTotal: cfg.CI.Circleci.Env.CircleNodeTotal,
-		RepoAccountName:  cfg.CI.Circleci.Env.CircleProjectUsername,
-		RepoName:         cfg.CI.Circleci.Env.CircleProjectReponame,
-		RepoURL:          cfg.CI.Circleci.Env.CircleRepositoryURL,
-		BranchName:       cfg.CI.Circleci.Env.CircleBranch,
-		CommitSha:        cfg.CI.Circleci.Env.CircleSha1,
-		AttemptedBy:      cfg.CI.Circleci.Env.CircleUsername,
+		BuildNum:         cfg.CircleCI.BuildNum,
+		BuildURL:         cfg.CircleCI.BuildURL,
+		JobName:          cfg.CircleCI.Job,
+		ParallelJobIndex: cfg.CircleCI.NodeIndex,
+		ParallelJobTotal: cfg.CircleCI.NodeTotal,
+		RepoAccountName:  cfg.CircleCI.ProjectUsername,
+		RepoName:         cfg.CircleCI.ProjectReponame,
+		RepoURL:          cfg.CircleCI.RepositoryURL,
+		BranchName:       cfg.CircleCI.Branch,
+		CommitSha:        cfg.CircleCI.Sha1,
+		AttemptedBy:      cfg.CircleCI.Username,
 	}, nil
 }
 
-func MakeGitLabProvider(cfg config) (providers.GitLabCIProvider, error) {
+func MakeGitLabProvider(cfg Config) (providers.GitLabCIProvider, error) {
 	return providers.GitLabCIProvider{
-		JobName:       cfg.CI.GitLabCI.Env.CiJobName,
-		JobStage:      cfg.CI.GitLabCI.Env.CiJobStage,
-		JobID:         cfg.CI.GitLabCI.Env.CiJobID,
-		PipelineID:    cfg.CI.GitLabCI.Env.CiPipelineID,
-		JobURL:        cfg.CI.GitLabCI.Env.CiJobURL,
-		PipelineURL:   cfg.CI.GitLabCI.Env.CiPipelineURL,
-		AttemptedBy:   cfg.CI.GitLabCI.Env.GitlabUserLogin,
-		NodeIndex:     cfg.CI.GitLabCI.Env.CiNodeIndex,
-		NodeTotal:     cfg.CI.GitLabCI.Env.CiNodeTotal,
-		RepoPath:      cfg.CI.GitLabCI.Env.CiProjectPath,
-		ProjectURL:    cfg.CI.GitLabCI.Env.CiProjectURL,
-		CommitSHA:     cfg.CI.GitLabCI.Env.CiCommitSHA,
-		CommitAuthor:  cfg.CI.GitLabCI.Env.CiCommitAuthor,
-		BranchName:    cfg.CI.GitLabCI.Env.CiCommitBranch,
-		CommitMessage: cfg.CI.GitLabCI.Env.CiCommitMessage,
-		APIURL:        cfg.CI.GitLabCI.Env.CiAPIV4URL,
+		JobName:       cfg.GitLab.CIJobName,
+		JobStage:      cfg.GitLab.CIJobStage,
+		JobID:         cfg.GitLab.CIJobID,
+		PipelineID:    cfg.GitLab.CIPipelineID,
+		JobURL:        cfg.GitLab.CIJobURL,
+		PipelineURL:   cfg.GitLab.CIPipelineURL,
+		AttemptedBy:   cfg.GitLab.GitlabUserLogin,
+		NodeIndex:     cfg.GitLab.CINodeIndex,
+		NodeTotal:     cfg.GitLab.CINodeTotal,
+		RepoPath:      cfg.GitLab.CIProjectPath,
+		ProjectURL:    cfg.GitLab.CIProjectURL,
+		CommitSHA:     cfg.GitLab.CICommitSHA,
+		CommitAuthor:  cfg.GitLab.CICommitAuthor,
+		BranchName:    cfg.GitLab.CICommitBranch,
+		CommitMessage: cfg.GitLab.CICommitMessage,
+		APIURL:        cfg.GitLab.CIAPIV4URL,
 	}, nil
 }
 
-func MakeGithubProvider(cfg config) (providers.GithubProvider, error) {
-	branchName := cfg.VCS.Github.RefName
-	if cfg.CI.Github.Run.EventName == "pull_request" {
-		branchName = cfg.VCS.Github.HeadRef
+func MakeGithubProvider(cfg Config) (providers.GithubProvider, error) {
+	branchName := cfg.GitHub.RefName
+	if cfg.GitHub.EventName == "pull_request" {
+		branchName = cfg.GitHub.HeadRef
 	}
 
 	eventPayloadData := struct {
@@ -175,7 +198,7 @@ func MakeGithubProvider(cfg config) (providers.GithubProvider, error) {
 		} `json:"head_commit"`
 	}{}
 
-	file, err := os.Open(cfg.CI.Github.Run.EventPath)
+	file, err := os.Open(cfg.GitHub.EventPath)
 	if err != nil && !os.IsNotExist(err) {
 		return providers.GithubProvider{}, errors.Wrap(err, "unable to open event payload file")
 	} else if err == nil {
@@ -184,23 +207,23 @@ func MakeGithubProvider(cfg config) (providers.GithubProvider, error) {
 		}
 	}
 
-	attemptedBy := cfg.CI.Github.Run.TriggeringActor
+	attemptedBy := cfg.GitHub.TriggeringActor
 	if attemptedBy == "" {
-		attemptedBy = cfg.CI.Github.Run.ExecutingActor
+		attemptedBy = cfg.GitHub.ExecutingActor
 	}
 
-	owner, repository := path.Split(cfg.VCS.Github.Repository)
+	owner, repository := path.Split(cfg.GitHub.Repository)
 
 	return providers.GithubProvider{
 		AccountName:    strings.TrimSuffix(owner, "/"),
 		AttemptedBy:    attemptedBy,
 		BranchName:     branchName,
 		CommitMessage:  eventPayloadData.HeadCommit.Message,
-		CommitSha:      cfg.VCS.Github.CommitSha,
-		JobName:        cfg.CI.Github.Job.Name,
-		JobMatrix:      cfg.CI.Github.Job.Matrix,
-		RunAttempt:     cfg.CI.Github.Run.Attempt,
-		RunID:          cfg.CI.Github.Run.ID,
+		CommitSha:      cfg.GitHub.CommitSha,
+		JobName:        cfg.GitHub.Name,
+		JobMatrix:      cfg.GitHub.Matrix,
+		RunAttempt:     cfg.GitHub.Attempt,
+		RunID:          cfg.GitHub.ID,
 		RepositoryName: repository,
 	}, nil
 }
@@ -209,29 +232,40 @@ func MakeGithubProvider(cfg config) (providers.GithubProvider, error) {
 // `captain parse`, but not for any other operation.
 // It is considered unsafe since the captain CLI service might still expect a configured API at one point.
 func unsafeInitParsingOnly(cmd *cobra.Command, args []string) error {
-	var cfg config
+	var err error
 
-	if err := viper.Unmarshal(&cfg); err != nil {
-		// TODO: Check if this viper error are ok to present to end-users
-		return errors.NewConfigurationError("unable to parse configuration: %s", err)
+	cfg, err = InitConfig(cmd)
+	if err != nil {
+		return errors.WithStack(err)
 	}
 
 	logger := logging.NewProductionLogger()
-	if cfg.Debug {
+	if cfg.Output.Debug {
 		logger = logging.NewDebugLogger()
 	}
 
+	var frameworkKind, frameworkLanguage string
+	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+		frameworkKind = suiteConfig.Results.Framework
+		frameworkLanguage = suiteConfig.Results.Language
+	}
+
+	parseConfig := parsing.Config{
+		ProvidedFrameworkKind:     frameworkKind,
+		ProvidedFrameworkLanguage: frameworkLanguage,
+		MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+		FrameworkParsers:          frameworkParsers,
+		GenericParsers:            genericParsers,
+		Logger:                    logger,
+	}
+	if err := parseConfig.Validate(); err != nil {
+		return errors.Wrap(err, "invalid parser config")
+	}
+
 	captain = cli.Service{
-		Log:        logger,
-		FileSystem: fs.Local{},
-		ParseConfig: parsing.Config{
-			ProvidedFrameworkKind:     providedFrameworkKind,
-			ProvidedFrameworkLanguage: providedFrameworkLanguage,
-			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-			FrameworkParsers:          frameworkParsers,
-			GenericParsers:            genericParsers,
-			Logger:                    logger,
-		},
+		Log:         logger,
+		FileSystem:  fs.Local{},
+		ParseConfig: parseConfig,
 	}
 
 	return nil

@@ -2,57 +2,57 @@ package providers
 
 import "github.com/rwx-research/captain-cli/internal/errors"
 
-type BuildkiteEnv struct {
-	BuildkiteBranch            string
-	BuildkiteBuildCreatorEmail string
-	BuildkiteBuildID           string
-	BuildkiteBuildURL          string
-	BuildkiteCommit            string
-	BuildkiteJobID             string
-	BuildkiteLabel             string
-	BuildkiteMessage           string
-	BuildkiteOrganizationSlug  string
-	BuildkiteParallelJob       string
-	BuildkiteParallelJobCount  string
-	BuildkiteRepo              string
-	BuildkiteRetryCount        string
-}
 type BuildkiteProvider struct {
-	Env BuildkiteEnv
+	Branch            string
+	BuildCreatorEmail string
+	BuildID           string
+	BuildURL          string
+	Commit            string
+	JobID             string
+	Label             string
+	Message           string
+	OrganizationSlug  string
+	ParallelJob       string
+	ParallelJobCount  string
+	Repo              string
+	RetryCount        string
 }
 
 func (b BuildkiteProvider) GetAttemptedBy() string {
-	return b.Env.BuildkiteBuildCreatorEmail
+	return b.BuildCreatorEmail
 }
 
 func (b BuildkiteProvider) GetBranchName() string {
-	return b.Env.BuildkiteBranch
+	return b.Branch
 }
 
 func (b BuildkiteProvider) GetCommitSha() string {
-	return b.Env.BuildkiteCommit
+	return b.Commit
 }
 
 func (b BuildkiteProvider) GetCommitMessage() string {
-	return b.Env.BuildkiteMessage
+	return b.Message
 }
 
 func (b BuildkiteProvider) GetJobTags() map[string]any {
 	tags := map[string]any{
-		"buildkite_build_id":          b.Env.BuildkiteBuildID,
-		"buildkite_build_url":         b.Env.BuildkiteBuildURL,
-		"buildkite_retry_count":       b.Env.BuildkiteRetryCount,
-		"buildkite_job_id":            b.Env.BuildkiteJobID,
-		"buildkite_label":             b.Env.BuildkiteLabel,
-		"buildkite_repo":              b.Env.BuildkiteRepo,
-		"buildkite_organization_slug": b.Env.BuildkiteOrganizationSlug,
+		"buildkite_build_id":          b.BuildID,
+		"buildkite_build_url":         b.BuildURL,
+		"buildkite_retry_count":       b.RetryCount,
+		"buildkite_job_id":            b.JobID,
+		"buildkite_label":             b.Label,
+		"buildkite_repo":              b.Repo,
+		"buildkite_organization_slug": b.OrganizationSlug,
 	}
-	if b.Env.BuildkiteParallelJob != "" {
-		tags["buildkite_parallel_job"] = b.Env.BuildkiteParallelJob
+
+	if b.ParallelJob != "" {
+		tags["buildkite_parallel_job"] = b.ParallelJob
 	}
-	if b.Env.BuildkiteParallelJobCount != "" {
-		tags["buildkite_parallel_job_count"] = b.Env.BuildkiteParallelJobCount
+
+	if b.ParallelJobCount != "" {
+		tags["buildkite_parallel_job_count"] = b.ParallelJobCount
 	}
+
 	return tags
 }
 
@@ -61,44 +61,44 @@ func (b BuildkiteProvider) GetProviderName() string {
 }
 
 func (b BuildkiteProvider) Validate() error {
-	if b.Env.BuildkiteBuildCreatorEmail == "" {
-		return errors.NewConfigurationError("missing BuildkiteBuildCreatorEmail")
+	if b.BuildCreatorEmail == "" {
+		return errors.NewConfigurationError("missing BuildCreatorEmail")
 	}
 
-	if b.Env.BuildkiteOrganizationSlug == "" {
-		return errors.NewConfigurationError("missing BuildkiteOrganizationSlug")
+	if b.OrganizationSlug == "" {
+		return errors.NewConfigurationError("missing OrganizationSlug")
 	}
 
-	if b.Env.BuildkiteRepo == "" {
-		return errors.NewConfigurationError("missing BuildkiteRepo")
+	if b.Repo == "" {
+		return errors.NewConfigurationError("missing Repo")
 	}
 
-	if b.Env.BuildkiteLabel == "" {
-		return errors.NewConfigurationError("missing BuildkiteLabel")
+	if b.Label == "" {
+		return errors.NewConfigurationError("missing Label")
 	}
 
-	if b.Env.BuildkiteJobID == "" {
-		return errors.NewConfigurationError("missing BuildkiteJobID")
+	if b.JobID == "" {
+		return errors.NewConfigurationError("missing JobID")
 	}
 
-	if b.Env.BuildkiteRetryCount == "" {
-		return errors.NewConfigurationError("missing BuildkiteRetryCount")
+	if b.RetryCount == "" {
+		return errors.NewConfigurationError("missing RetryCount")
 	}
 
-	if b.Env.BuildkiteBuildID == "" {
-		return errors.NewConfigurationError("missing BuildkiteBuildID")
+	if b.BuildID == "" {
+		return errors.NewConfigurationError("missing BuildID")
 	}
 
-	if b.Env.BuildkiteBuildURL == "" {
-		return errors.NewConfigurationError("missing BuildkiteBuildURL")
+	if b.BuildURL == "" {
+		return errors.NewConfigurationError("missing BuildURL")
 	}
 
-	if b.Env.BuildkiteBranch == "" {
-		return errors.NewConfigurationError("missing BuildkiteBranch")
+	if b.Branch == "" {
+		return errors.NewConfigurationError("missing Branch")
 	}
 
-	if b.Env.BuildkiteCommit == "" {
-		return errors.NewConfigurationError("missing BuildkiteCommit")
+	if b.Commit == "" {
+		return errors.NewConfigurationError("missing Commit")
 	}
 
 	return nil

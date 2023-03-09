@@ -94,7 +94,7 @@ var _ = Describe("Parse", func() {
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(ContainSubstring("Must provide both language and kind when one is provided"))
+		Expect(err.Error()).To(ContainSubstring("when specifying a language, the framework also needs to be provided"))
 	})
 
 	It("is an error when only kind is provided", func() {
@@ -106,7 +106,7 @@ var _ = Describe("Parse", func() {
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(ContainSubstring("Must provide both language and kind when one is provided"))
+		Expect(err.Error()).To(ContainSubstring("when specifying a framework, the language also needs to be provided"))
 	})
 
 	It("is an error when a parser returns neither a result nor an error", func() {

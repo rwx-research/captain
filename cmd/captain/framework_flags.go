@@ -40,6 +40,20 @@ func addFrameworkFlags(command *cobra.Command) {
 			strings.Join(formattedKnownFrameworks, "\n"),
 		),
 	)
+}
 
-	command.MarkFlagsRequiredTogether("language", "framework")
+func bindFrameworkFlags(cfg Config) Config {
+	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+		if providedFrameworkKind != "" {
+			suiteConfig.Results.Framework = providedFrameworkKind
+		}
+
+		if providedFrameworkLanguage != "" {
+			suiteConfig.Results.Language = providedFrameworkLanguage
+		}
+
+		cfg.TestSuites[suiteID] = suiteConfig
+	}
+
+	return cfg
 }

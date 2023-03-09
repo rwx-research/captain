@@ -106,6 +106,10 @@ type PartitionConfig struct {
 }
 
 func (pc PartitionConfig) Validate() error {
+	if pc.SuiteID == "" {
+		return errors.NewConfigurationError("suite-id is required")
+	}
+
 	if pc.TotalPartitions <= 0 {
 		return errors.NewConfigurationError("total must be > 0")
 	}
