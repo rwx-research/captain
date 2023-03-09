@@ -113,6 +113,8 @@ func MakeProviderAdapter(cfg config) (providers.Provider, error) {
 		return MakeBuildkiteProvider(cfg)
 	case cfg.CI.Circleci.Detected:
 		return MakeCircleciProvider(cfg)
+	case cfg.CI.GitLabCI.Detected:
+		return MakeGitLabProvider(cfg)
 	default:
 		return providers.NullProvider{}, errors.NewConfigurationError("Failed to detect supported CI context")
 	}
@@ -137,6 +139,27 @@ func MakeCircleciProvider(cfg config) (providers.CircleciProvider, error) {
 		BranchName:       cfg.CI.Circleci.Env.CircleBranch,
 		CommitSha:        cfg.CI.Circleci.Env.CircleSha1,
 		AttemptedBy:      cfg.CI.Circleci.Env.CircleUsername,
+	}, nil
+}
+
+func MakeGitLabProvider(cfg config) (providers.GitLabCIProvider, error) {
+	return providers.GitLabCIProvider{
+		JobName:       cfg.CI.GitLabCI.Env.CiJobName,
+		JobStage:      cfg.CI.GitLabCI.Env.CiJobStage,
+		JobID:         cfg.CI.GitLabCI.Env.CiJobID,
+		PipelineID:    cfg.CI.GitLabCI.Env.CiPipelineID,
+		JobURL:        cfg.CI.GitLabCI.Env.CiJobURL,
+		PipelineURL:   cfg.CI.GitLabCI.Env.CiPipelineURL,
+		AttemptedBy:   cfg.CI.GitLabCI.Env.GitlabUserLogin,
+		NodeIndex:     cfg.CI.GitLabCI.Env.CiNodeIndex,
+		NodeTotal:     cfg.CI.GitLabCI.Env.CiNodeTotal,
+		RepoPath:      cfg.CI.GitLabCI.Env.CiProjectPath,
+		ProjectURL:    cfg.CI.GitLabCI.Env.CiProjectURL,
+		CommitSHA:     cfg.CI.GitLabCI.Env.CiCommitSHA,
+		CommitAuthor:  cfg.CI.GitLabCI.Env.CiCommitAuthor,
+		BranchName:    cfg.CI.GitLabCI.Env.CiCommitBranch,
+		CommitMessage: cfg.CI.GitLabCI.Env.CiCommitMessage,
+		APIURL:        cfg.CI.GitLabCI.Env.CiAPIV4URL,
 	}, nil
 }
 

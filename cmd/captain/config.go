@@ -38,6 +38,10 @@ type config struct {
 			Detected bool
 			Env      providers.CircleciEnv
 		}
+		GitLabCI struct {
+			Detected bool
+			Env      providers.GitLabCIEnv
+		}
 	}
 	Debug    bool
 	Insecure bool // Disables TLS for the Captain API
@@ -262,6 +266,77 @@ func init() {
 		}
 
 		if err := viper.BindEnv("ci.circleci.env.circleUsername", "CIRCLE_USERNAME"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		// gitlab ci
+		if err := viper.BindEnv("ci.gitlab.detected", "GITLAB_CI"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciJobName", "CI_JOB_NAME"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciJobStage", "CI_JOB_STAGE"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciJobID", "CI_JOB_ID"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciPipelineID", "CI_PIPELINE_ID"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciJobURL", "CI_JOB_URL"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciPipelineURL", "CI_PIPELINE_URL"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.gitlabUserEmail", "GITLAB_USER_EMAIL"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciNodeTotal", "CI_NODE_TOTAL"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciNodeIndex", "CI_NODE_INDEX"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciProjectPath", "CI_PROJECT_PATH"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciRepositoryURL", "CI_REPOSITORY_URL"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciCommitSHA", "CI_COMMIT_SHA"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciCommitAuthor", "CI_COMMIT_AUTHOR"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciCommitBranch", "CI_COMMIT_BRANCH"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+		if err := viper.BindEnv("ci.gitlab.env.ciCommitMessage", "CI_COMMIT_MESSAGE"); err != nil {
+			err = errors.NewConfigurationError("unable to read from environment: %s", err)
+			initializationErrors = append(initializationErrors, err)
+		}
+
+		if err := viper.BindEnv("ci.gitlab.env.ciAPIV4URL", "CI_API_V4_URL"); err != nil {
 			err = errors.NewConfigurationError("unable to read from environment: %s", err)
 			initializationErrors = append(initializationErrors, err)
 		}
