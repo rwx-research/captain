@@ -13,6 +13,12 @@ import (
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
+const (
+	configFileName      = ".captain/config.yaml"
+	flakyTestsFileName  = ".captain/flaky-tests.json"
+	testTimingsFileName = ".captain/test-timings.json"
+)
+
 // Config is the internal representation of the configuration.
 type Config struct {
 	ConfigFile
@@ -149,9 +155,9 @@ type SuiteConfig struct {
 	}
 }
 
-// findConfigFilePath starts at the current working directory and walk up to the root, trying
-// to find `.captain/config.yaml`
-func findConfigFilePath() (string, error) {
+// findInParentDir starts at the current working directory and walk up to the root, trying
+// to find the specified fileName
+func findInParentDir(fileName string) (string, error) {
 	var match string
 	var walk func(string, string) error
 
@@ -160,7 +166,7 @@ func findConfigFilePath() (string, error) {
 			return errors.WithStack(os.ErrNotExist)
 		}
 
-		match = path.Join(base, ".captain/config.yaml")
+		match = path.Join(base, fileName)
 
 		info, err := os.Stat(match)
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -196,7 +202,7 @@ func findConfigFilePath() (string, error) {
 // Flags take precedence over all other options.
 func InitConfig(cmd *cobra.Command) (cfg Config, err error) {
 	if configFilePath == "" {
-		configFilePath, err = findConfigFilePath()
+		configFilePath, err = findInParentDir(configFileName)
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			return cfg, errors.NewConfigurationError("unable to determine config file path: %s", err.Error())
 		}

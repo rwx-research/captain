@@ -1,7 +1,7 @@
-// Package api holds the main API client for Captain & supporting types. Overall, this should be a fairly transparent
+// Package remote holds the main API client for Captain & supporting types. Overall, this should be a fairly transparent
 // package, mapping HTTP calls to Go methods - however some endpoints are a bit more complex & require multiple calls
 // back-and forth.
-package api
+package remote
 
 import (
 	"bytes"
@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/rwx-research/captain-cli"
+	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/testing"
 )
@@ -172,19 +173,19 @@ func (c Client) putJSON(ctx context.Context, endpoint string, body any) (*http.R
 func (c Client) registerTestResults(
 	ctx context.Context,
 	testSuite string,
-	testResultsFiles []TestResultsFile,
-) ([]TestResultsFile, error) {
+	testResultsFiles []backend.TestResultsFile,
+) ([]backend.TestResultsFile, error) {
 	endpoint := "/api/test_suites/bulk_test_results"
 
 	reqBody := struct {
-		AttemptedBy         string            `json:"attempted_by"`
-		Provider            string            `json:"provider"`
-		BranchName          string            `json:"branch"`
-		CommitMessage       *string           `json:"commit_message"`
-		CommitSha           string            `json:"commit_sha"`
-		TestSuiteIdentifier string            `json:"test_suite_identifier"`
-		TestResultsFiles    []TestResultsFile `json:"test_results_files"`
-		JobTags             map[string]any    `json:"job_tags"`
+		AttemptedBy         string                    `json:"attempted_by"`
+		Provider            string                    `json:"provider"`
+		BranchName          string                    `json:"branch"`
+		CommitMessage       *string                   `json:"commit_message"`
+		CommitSha           string                    `json:"commit_sha"`
+		TestSuiteIdentifier string                    `json:"test_suite_identifier"`
+		TestResultsFiles    []backend.TestResultsFile `json:"test_results_files"`
+		JobTags             map[string]any            `json:"job_tags"`
 	}{
 		AttemptedBy:         c.Provider.GetAttemptedBy(),
 		Provider:            c.Provider.GetProviderName(),
@@ -238,8 +239,8 @@ func (c Client) registerTestResults(
 		}
 		for i, testResultsFile := range testResultsFiles {
 			if testResultsFile.ExternalID == endpoint.ExternalID {
-				testResultsFiles[i].captainID = endpoint.CaptainID
-				testResultsFiles[i].uploadURL = parsedURL
+				testResultsFiles[i].CaptainID = endpoint.CaptainID
+				testResultsFiles[i].UploadURL = parsedURL
 				break
 			}
 		}
@@ -251,7 +252,7 @@ func (c Client) registerTestResults(
 func (c Client) updateTestResultsStatuses(
 	ctx context.Context,
 	testSuite string,
-	testResultsFiles []TestResultsFile,
+	testResultsFiles []backend.TestResultsFile,
 ) error {
 	endpoint := "/api/test_suites/bulk_test_results"
 
@@ -268,10 +269,10 @@ func (c Client) updateTestResultsStatuses(
 
 	for _, testResultsFile := range testResultsFiles {
 		switch {
-		case testResultsFile.s3uploadStatus < 300:
-			reqBody.TestResultsFiles = append(reqBody.TestResultsFiles, uploadStatus{testResultsFile.captainID, "uploaded"})
+		case testResultsFile.S3uploadStatus < 300:
+			reqBody.TestResultsFiles = append(reqBody.TestResultsFiles, uploadStatus{testResultsFile.CaptainID, "uploaded"})
 		default:
-			reqBody.TestResultsFiles = append(reqBody.TestResultsFiles, uploadStatus{testResultsFile.captainID, "upload_failed"})
+			reqBody.TestResultsFiles = append(reqBody.TestResultsFiles, uploadStatus{testResultsFile.CaptainID, "upload_failed"})
 		}
 	}
 
@@ -298,8 +299,8 @@ func (c Client) updateTestResultsStatuses(
 func (c Client) UploadTestResults(
 	ctx context.Context,
 	testSuite string,
-	testResultsFiles []TestResultsFile,
-) ([]TestResultsUploadResult, error) {
+	testResultsFiles []backend.TestResultsFile,
+) ([]backend.TestResultsUploadResult, error) {
 	if testSuite == "" {
 		return nil, errors.NewInputError("test suite name required")
 	}
@@ -319,14 +320,14 @@ func (c Client) UploadTestResults(
 		return nil, err
 	}
 
-	uploadResults := make([]TestResultsUploadResult, 0)
+	uploadResults := make([]backend.TestResultsUploadResult, 0)
 	for i, testResultsFile := range testResultsFiles {
-		if testResultsFile.uploadURL == nil {
+		if testResultsFile.UploadURL == nil {
 			return nil, errors.NewInternalError("endpoint failed to return upload destination url")
 		}
 		req := http.Request{
 			Method:        http.MethodPut,
-			URL:           testResultsFile.uploadURL,
+			URL:           testResultsFile.UploadURL,
 			Body:          testResultsFile.FD,
 			ContentLength: fileSizeLookup[testResultsFile.ExternalID],
 		}
@@ -334,7 +335,7 @@ func (c Client) UploadTestResults(
 		resp, err := c.RoundTrip(&req)
 		if err != nil {
 			c.Log.Warnf("unable to upload test results file to S3: %s", err)
-			uploadResults = append(uploadResults, TestResultsUploadResult{
+			uploadResults = append(uploadResults, backend.TestResultsUploadResult{
 				OriginalPaths: uniqueStrings(testResultsFile.OriginalPaths),
 				Uploaded:      false,
 			})
@@ -342,8 +343,8 @@ func (c Client) UploadTestResults(
 		}
 		defer resp.Body.Close()
 
-		testResultsFiles[i].s3uploadStatus = resp.StatusCode
-		uploadResults = append(uploadResults, TestResultsUploadResult{
+		testResultsFiles[i].S3uploadStatus = resp.StatusCode
+		uploadResults = append(uploadResults, backend.TestResultsUploadResult{
 			OriginalPaths: uniqueStrings(testResultsFile.OriginalPaths),
 			Uploaded:      resp.StatusCode < 300,
 		})
@@ -354,4 +355,47 @@ func (c Client) UploadTestResults(
 	}
 
 	return uploadResults, nil
+}
+
+// GetRunConfiguration returns the runtime configuration for the run command (e.g. quarantined and flaky tests)
+func (c Client) GetRunConfiguration(
+	ctx context.Context,
+	testSuiteIdentifier string,
+) (backend.RunConfiguration, error) {
+	endpoint := "/api/test_suites/run_configuration"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return backend.RunConfiguration{}, errors.NewInternalError("unable to construct HTTP request: %s", err)
+	}
+
+	queryValues := req.URL.Query()
+	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
+	req.URL.RawQuery = queryValues.Encode()
+
+	resp, err := c.RoundTrip(req)
+	if err != nil {
+		return backend.RunConfiguration{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return backend.RunConfiguration{}, errors.NewInternalError(
+			"API backend encountered an error. Endpoint was %q, Status Code %d",
+			endpoint,
+			resp.StatusCode,
+		)
+	}
+
+	runConfiguration := backend.RunConfiguration{}
+	if err := json.NewDecoder(resp.Body).Decode(&runConfiguration); err != nil {
+		return backend.RunConfiguration{}, errors.NewInternalError(
+			"unable to parse the response body. Endpoint was %q, Content-Type %q. Original Error: %s",
+			endpoint,
+			resp.Header.Get(headerContentType),
+			err,
+		)
+	}
+
+	return runConfiguration, nil
 }

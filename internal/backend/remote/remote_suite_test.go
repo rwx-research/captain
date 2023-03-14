@@ -1,4 +1,4 @@
-package api_test
+package remote_test
 
 import (
 	"testing"
@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestApi(t *testing.T) {
+func TestRemoteBackend(t *testing.T) {
 	t.Parallel()
 
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Api Suite")
+	RunSpecs(t, "Remote Backend Suite")
 }

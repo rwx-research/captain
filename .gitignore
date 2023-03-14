@@ -1,4 +1,5 @@
+/.captain/flaky-tests.json
+/.captain/test-timings.json
 /.direnv
 /captain
 /report.xml
-

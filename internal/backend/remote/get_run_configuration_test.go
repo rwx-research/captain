@@ -1,4 +1,4 @@
-package api_test
+package remote_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/rwx-research/captain-cli/internal/api"
+	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/providers"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -17,13 +17,13 @@ import (
 
 var _ = Describe("GetRunConfiguration", func() {
 	var (
-		apiClient        api.Client
+		apiClient        remote.Client
 		mockRoundTripper func(*http.Request) (*http.Response, error)
 	)
 
 	JustBeforeEach(func() {
-		apiClientConfig := api.ClientConfig{Log: zap.NewNop().Sugar(), Provider: providers.GithubProvider{}}
-		apiClient = api.Client{ClientConfig: apiClientConfig, RoundTrip: mockRoundTripper}
+		apiClientConfig := remote.ClientConfig{Log: zap.NewNop().Sugar(), Provider: providers.GithubProvider{}}
+		apiClient = remote.Client{ClientConfig: apiClientConfig, RoundTrip: mockRoundTripper}
 	})
 
 	Context("when the response is successful", func() {

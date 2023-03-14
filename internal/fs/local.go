@@ -4,6 +4,7 @@ package fs
 
 import (
 	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/yargevad/filepathx"
@@ -14,8 +15,12 @@ import (
 // Local is a local file-system. It wraps the default `os` package
 type Local struct{}
 
-func (l Local) Create(filePath string) (File, error) {
-	f, err := os.Create(filePath)
+func (l Local) Create(path string) (File, error) {
+	if err := l.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	f, err := os.Create(path)
 	return f, errors.WithStack(err)
 }
 

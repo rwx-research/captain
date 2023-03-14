@@ -1,4 +1,4 @@
-package api
+package remote
 
 func uniqueStrings(in []string) []string {
 	set := make(map[string]struct{})

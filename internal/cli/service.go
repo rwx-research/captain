@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/rwx-research/captain-cli/internal/api"
+	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/parsing"
@@ -21,7 +21,7 @@ import (
 
 // Service is the main CLI service.
 type Service struct {
-	API         APIClient
+	API         backend.Client
 	Log         *zap.SugaredLogger
 	FileSystem  fs.FileSystem
 	TaskRunner  TaskRunner
@@ -92,7 +92,7 @@ func (s Service) UploadTestResults(
 	ctx context.Context,
 	testSuiteID string,
 	filepaths []string,
-) ([]api.TestResultsUploadResult, error) {
+) ([]backend.TestResultsUploadResult, error) {
 	if testSuiteID == "" {
 		return nil, errors.NewConfigurationError("suite-id is required")
 	}
@@ -127,8 +127,8 @@ func (s Service) performTestResultsUpload(
 	ctx context.Context,
 	testSuiteID string,
 	testResults []v1.TestResults,
-) ([]api.TestResultsUploadResult, error) {
-	testResultsFiles := make([]api.TestResultsFile, len(testResults))
+) ([]backend.TestResultsUploadResult, error) {
+	testResultsFiles := make([]backend.TestResultsFile, len(testResults))
 
 	for i, testResult := range testResults {
 		id, err := uuid.NewRandom()
@@ -151,11 +151,11 @@ func (s Service) performTestResultsUpload(
 			originalPaths[i] = originalTestResult.OriginalFilePath
 		}
 
-		testResultsFiles[i] = api.TestResultsFile{
+		testResultsFiles[i] = backend.TestResultsFile{
 			ExternalID:    id,
 			FD:            f,
 			OriginalPaths: originalPaths,
-			Parser:        api.ParserTypeRWX,
+			Parser:        backend.ParserTypeRWX,
 		}
 	}
 

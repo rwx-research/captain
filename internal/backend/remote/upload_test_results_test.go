@@ -1,4 +1,4 @@
-package api_test
+package remote_test
 
 import (
 	"context"
@@ -10,7 +10,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/rwx-research/captain-cli/internal/api"
+	"github.com/rwx-research/captain-cli/internal/backend"
+	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/providers"
@@ -21,8 +22,8 @@ import (
 
 var _ = Describe("Uploading Test Results", func() {
 	var (
-		apiClient          api.Client
-		testResultsFiles   []api.TestResultsFile
+		apiClient          remote.Client
+		testResultsFiles   []backend.TestResultsFile
 		mockFile           *mocks.File
 		mockRoundTripper   func(*http.Request) (*http.Response, error)
 		mockRoundTripCalls int
@@ -34,15 +35,15 @@ var _ = Describe("Uploading Test Results", func() {
 		mockFile = new(mocks.File)
 		mockFile.Reader = strings.NewReader("")
 
-		testResultsFiles = []api.TestResultsFile{{
+		testResultsFiles = []backend.TestResultsFile{{
 			ExternalID: uuid.New(),
 			FD:         mockFile,
 		}}
 	})
 
 	JustBeforeEach(func() {
-		apiClientConfig := api.ClientConfig{Log: zap.NewNop().Sugar(), Provider: providers.GithubProvider{}}
-		apiClient = api.Client{ClientConfig: apiClientConfig, RoundTrip: mockRoundTripper}
+		apiClientConfig := remote.ClientConfig{Log: zap.NewNop().Sugar(), Provider: providers.GithubProvider{}}
+		apiClient = remote.Client{ClientConfig: apiClientConfig, RoundTrip: mockRoundTripper}
 	})
 
 	Context("under expected conditions", func() {

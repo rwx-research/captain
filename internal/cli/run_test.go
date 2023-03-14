@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap/zaptest"
 	"go.uber.org/zap/zaptest/observer"
 
-	"github.com/rwx-research/captain-cli/internal/api"
+	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
@@ -192,20 +192,20 @@ var _ = Describe("Run", func() {
 			mockUploadTestResults := func(
 				ctx context.Context,
 				testSuite string,
-				testResultsFiles []api.TestResultsFile,
-			) ([]api.TestResultsUploadResult, error) {
+				testResultsFiles []backend.TestResultsFile,
+			) ([]backend.TestResultsUploadResult, error) {
 				Expect(testResultsFiles).To(HaveLen(1))
 				testResultsFileUploaded = true
-				return []api.TestResultsUploadResult{{OriginalPaths: []string{testResultsFilePath}, Uploaded: true}}, nil
+				return []backend.TestResultsUploadResult{{OriginalPaths: []string{testResultsFilePath}, Uploaded: true}}, nil
 			}
 			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
 
 			mockGetRunConfiguration := func(
 				ctx context.Context,
 				testSuiteIdentifier string,
-			) (api.RunConfiguration, error) {
+			) (backend.RunConfiguration, error) {
 				fetchedRunConfiguration = true
-				return api.RunConfiguration{}, nil
+				return backend.RunConfiguration{}, nil
 			}
 			service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
 
@@ -458,8 +458,8 @@ var _ = Describe("Run", func() {
 			mockUploadTestResults := func(
 				ctx context.Context,
 				testSuite string,
-				testResultsFiles []api.TestResultsFile,
-			) ([]api.TestResultsUploadResult, error) {
+				testResultsFiles []backend.TestResultsFile,
+			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
 				Expect(testResultsFiles).To(HaveLen(1))
 
@@ -467,7 +467,7 @@ var _ = Describe("Run", func() {
 				Expect(err).NotTo(HaveOccurred())
 				uploadedTestResults = buf
 
-				return []api.TestResultsUploadResult{
+				return []backend.TestResultsUploadResult{
 					{OriginalPaths: []string{testResultsFilePath}, Uploaded: true},
 					{OriginalPaths: []string{"./fake/path/1.json", "./fake/path/2.json"}, Uploaded: false},
 				}, nil
@@ -527,11 +527,11 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						QuarantinedTests: []api.QuarantinedTest{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "not/the/right/path.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
@@ -581,11 +581,11 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						QuarantinedTests: []api.QuarantinedTest{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: "some-description -captain- huh",
 									IdentityComponents:  []string{"description", "huh"},
 									StrictIdentity:      true,
@@ -648,11 +648,11 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						QuarantinedTests: []api.QuarantinedTest{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
@@ -715,18 +715,18 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						QuarantinedTests: []api.QuarantinedTest{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
 								},
 							},
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
@@ -799,18 +799,18 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						QuarantinedTests: []api.QuarantinedTest{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
 								},
 							},
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
@@ -920,25 +920,25 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						QuarantinedTests: []api.QuarantinedTest{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
 								},
 							},
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
 								},
 							},
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstSuccessfulTestDescription, "/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
@@ -1068,8 +1068,8 @@ var _ = Describe("Run", func() {
 			mockUploadTestResults := func(
 				ctx context.Context,
 				testSuite string,
-				testResultsFiles []api.TestResultsFile,
-			) ([]api.TestResultsUploadResult, error) {
+				testResultsFiles []backend.TestResultsFile,
+			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
 				Expect(testResultsFiles).To(HaveLen(1))
 
@@ -1077,7 +1077,7 @@ var _ = Describe("Run", func() {
 				Expect(err).NotTo(HaveOccurred())
 				uploadedTestResults = buf
 
-				return []api.TestResultsUploadResult{
+				return []backend.TestResultsUploadResult{
 					{OriginalPaths: []string{testResultsFilePath}, Uploaded: true},
 					{OriginalPaths: []string{"./fake/path/1.json", "./fake/path/2.json"}, Uploaded: false},
 				}, nil
@@ -1348,11 +1348,11 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						QuarantinedTests: []api.QuarantinedTest{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
 							{
-								Test: api.Test{
+								Test: backend.Test{
 									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstTestDescription, "/path/to/file.test"),
 									IdentityComponents:  []string{"description", "file"},
 									StrictIdentity:      true,
@@ -1401,8 +1401,8 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{FlakyTests: []api.Test{}}, nil
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{FlakyTests: []backend.Test{}}, nil
 				}
 
 				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
@@ -1429,9 +1429,9 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						FlakyTests: []api.Test{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						FlakyTests: []backend.Test{
 							{
 								CompositeIdentifier: firstTestDescription,
 								IdentityComponents:  []string{"description"},
@@ -1472,9 +1472,9 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						FlakyTests: []api.Test{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						FlakyTests: []backend.Test{
 							{
 								CompositeIdentifier: firstTestDescription,
 								IdentityComponents:  []string{"description"},
@@ -1564,9 +1564,9 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						FlakyTests: []api.Test{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						FlakyTests: []backend.Test{
 							{
 								CompositeIdentifier: firstTestDescription,
 								IdentityComponents:  []string{"description"},
@@ -1653,9 +1653,9 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						FlakyTests: []api.Test{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						FlakyTests: []backend.Test{
 							{
 								CompositeIdentifier: firstTestDescription,
 								IdentityComponents:  []string{"description"},
@@ -1735,9 +1735,9 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						FlakyTests: []api.Test{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						FlakyTests: []backend.Test{
 							{
 								CompositeIdentifier: firstTestDescription,
 								IdentityComponents:  []string{"description"},
@@ -1772,9 +1772,9 @@ var _ = Describe("Run", func() {
 				mockGetRunConfiguration := func(
 					ctx context.Context,
 					testSuiteIdentifier string,
-				) (api.RunConfiguration, error) {
-					return api.RunConfiguration{
-						FlakyTests: []api.Test{
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						FlakyTests: []backend.Test{
 							{
 								CompositeIdentifier: firstTestDescription,
 								IdentityComponents:  []string{"description"},

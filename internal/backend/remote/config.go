@@ -1,4 +1,4 @@
-package api
+package remote
 
 import (
 	"go.uber.org/zap"
@@ -18,16 +18,16 @@ type ClientConfig struct {
 }
 
 // Validate checks the configuration for errors
-func (cc ClientConfig) Validate() error {
-	if cc.Log == nil {
+func (cfg ClientConfig) Validate() error {
+	if cfg.Log == nil {
 		return errors.NewInternalError("missing logger")
 	}
 
-	if cc.Token == "" {
+	if cfg.Token == "" {
 		return errors.NewConfigurationError("missing API token")
 	}
 
-	providerErr := cc.Provider.Validate()
+	providerErr := cfg.Provider.Validate()
 	if providerErr != nil {
 		return errors.Wrap(providerErr, "invalid provider")
 	}
@@ -36,10 +36,10 @@ func (cc ClientConfig) Validate() error {
 }
 
 // WithDefaults returns a copy of the configuration with defaults applied where necessary.
-func (cc ClientConfig) WithDefaults() ClientConfig {
-	if cc.Host == "" {
-		cc.Host = defaultHost
+func (cfg ClientConfig) WithDefaults() ClientConfig {
+	if cfg.Host == "" {
+		cfg.Host = defaultHost
 	}
 
-	return cc
+	return cfg
 }

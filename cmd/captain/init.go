@@ -8,7 +8,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/rwx-research/captain-cli/internal/api"
+	"github.com/rwx-research/captain-cli/internal/backend"
+	"github.com/rwx-research/captain-cli/internal/backend/local"
+	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
@@ -58,6 +60,7 @@ var genericParsers []parsing.Parser = []parsing.Parser{
 
 // TODO: It looks like errors returned from this function are not getting logged correctly
 func initCLIService(cmd *cobra.Command, args []string) error {
+	var apiClient backend.Client
 	var err error
 
 	cfg, err = InitConfig(cmd)
@@ -75,14 +78,37 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to construct provider adapter")
 	}
 
-	apiClient, err := api.NewClient(api.ClientConfig{
-		Debug:    cfg.Output.Debug,
-		Host:     cfg.Cloud.APIHost,
-		Insecure: cfg.Cloud.Insecure,
-		Log:      logger,
-		Token:    cfg.Secrets.APIToken,
-		Provider: providerAdapter,
-	})
+	if cfg.Secrets.APIToken != "" {
+		apiClient, err = remote.NewClient(remote.ClientConfig{
+			Debug:    cfg.Output.Debug,
+			Host:     cfg.Cloud.APIHost,
+			Insecure: cfg.Cloud.Insecure,
+			Log:      logger,
+			Token:    cfg.Secrets.APIToken,
+			Provider: providerAdapter,
+		})
+	} else {
+		var flakyTestsFilePath, testTimingsFilePath string
+		flakyTestsFilePath, err = findInParentDir(flakyTestsFileName)
+		if err != nil {
+			flakyTestsFilePath = flakyTestsFileName
+			logger.Warnf(
+				"Unable to find existing flaky-tests.json file. Captain will create a new one at %q",
+				flakyTestsFilePath,
+			)
+		}
+
+		testTimingsFilePath, err = findInParentDir(testTimingsFileName)
+		if err != nil {
+			testTimingsFilePath = testTimingsFileName
+			logger.Warnf(
+				"Unable to find existing test-timings.json file. Captain will create a new one at %q",
+				testTimingsFilePath,
+			)
+		}
+
+		apiClient, err = local.NewClient(fs.Local{}, flakyTestsFilePath, testTimingsFilePath)
+	}
 	if err != nil {
 		return errors.Wrap(err, "unable to create API client")
 	}

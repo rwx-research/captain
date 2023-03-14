@@ -10,7 +10,8 @@ import (
 	"github.com/mattn/go-shellwords"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/rwx-research/captain-cli/internal/api"
+	"github.com/rwx-research/captain-cli/internal/backend"
+	"github.com/rwx-research/captain-cli/internal/backend/local"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/reporting"
@@ -31,7 +32,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	}
 
 	// Fetch run configuration in the background
-	var apiConfiguration api.RunConfiguration
+	var apiConfiguration backend.RunConfiguration
 	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		apiConfiguration, err = s.API.GetRunConfiguration(egCtx, cfg.SuiteID)
@@ -91,7 +92,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	if testResults != nil {
 		otherErrorCount = testResults.Summary.OtherErrors
 
-		quarantinedTests := make([]api.Test, len(apiConfiguration.QuarantinedTests))
+		quarantinedTests := make([]backend.Test, len(apiConfiguration.QuarantinedTests))
 		for i, quarantinedTest := range apiConfiguration.QuarantinedTests {
 			quarantinedTests[i] = quarantinedTest.Test
 		}
@@ -109,7 +110,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		testResults.Summary = v1.NewSummary(testResults.Tests, testResults.OtherErrors)
 	}
 
-	var uploadResults []api.TestResultsUploadResult
+	var uploadResults []backend.TestResultsUploadResult
 	var uploadError error
 	var headerPrinted bool
 
@@ -222,7 +223,7 @@ func (s Service) attemptRetries(
 	originalTestResults *v1.TestResults,
 	originalTestResultsFiles []string,
 	cfg RunConfig,
-	apiConfiguration api.RunConfiguration,
+	apiConfiguration backend.RunConfiguration,
 ) (*v1.TestResults, bool, error) {
 	nonFlakyRetries := cfg.Retries
 	flakyRetries := cfg.FlakyRetries
@@ -555,7 +556,7 @@ func (s Service) runCommand(
 	return ctx, nil
 }
 
-func (s Service) isIdentifiedIn(test v1.Test, identifiedTests []api.Test) bool {
+func (s Service) isIdentifiedIn(test v1.Test, identifiedTests []backend.Test) bool {
 	for _, identifiedTest := range identifiedTests {
 		compositeIdentifier, err := test.Identify(
 			identifiedTest.IdentityComponents,
@@ -593,7 +594,7 @@ func (s Service) reportTestResults(
 	ctx context.Context,
 	cfg RunConfig,
 	testResults v1.TestResults,
-) ([]api.TestResultsUploadResult, error) {
+) ([]backend.TestResultsUploadResult, error) {
 	for outputPath, writeReport := range cfg.Reporters {
 		file, err := s.FileSystem.Create(outputPath)
 		if err == nil {
@@ -610,7 +611,12 @@ func (s Service) reportTestResults(
 		}
 	}
 
-	return s.performTestResultsUpload(ctx, cfg.SuiteID, []v1.TestResults{testResults})
+	// only attempt the upload if the CLI is set up to interact with Captain Cloud.
+	if _, ok := s.API.(local.Client); !ok {
+		return s.performTestResultsUpload(ctx, cfg.SuiteID, []v1.TestResults{testResults})
+	}
+
+	return nil, nil
 }
 
 func (s Service) printHeader() {
