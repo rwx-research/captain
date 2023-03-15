@@ -2,99 +2,129 @@ package providers
 
 import (
 	"encoding/json"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
-type GithubProvider struct {
-	AccountName    string
-	AttemptedBy    string
-	BranchName     string
-	CommitMessage  string
-	CommitSha      string
-	JobName        string
-	JobMatrix      string
-	RunAttempt     string
-	RunID          string
-	RepositoryName string
+type GitHubEnv struct {
+	Detected bool `env:"GITHUB_ACTIONS"`
+
+	// attempted by
+	ExecutingActor  string `env:"GITHUB_ACTOR"`
+	TriggeringActor string `env:"GITHUB_TRIGGERING_ACTOR"`
+
+	// branch
+	EventName string `env:"GITHUB_EVENT_NAME"`
+	RefName   string `env:"GITHUB_REF_NAME"`
+	HeadRef   string `env:"GITHUB_HEAD_REF"`
+
+	// commit message is parsed from the event payload
+	EventPath string `env:"GITHUB_EVENT_PATH"`
+
+	// commit sha
+	CommitSha string `env:"GITHUB_SHA"`
+
+	// tags
+	Attempt    string `env:"GITHUB_RUN_ATTEMPT"`
+	ID         string `env:"GITHUB_RUN_ID"`
+	Name       string `env:"GITHUB_JOB"`
+	Repository string `env:"GITHUB_REPOSITORY"`
+	Matrix     string // passed in via CLI args
 }
 
-func (g GithubProvider) GetAttemptedBy() string {
-	return g.AttemptedBy
-}
+func MakeGithubProvider(cfg GitHubEnv) (Provider, error) {
+	eventPayloadData := struct {
+		HeadCommit struct {
+			Message string `json:"message"`
+		} `json:"head_commit"`
+	}{}
 
-func (g GithubProvider) GetBranchName() string {
-	return g.BranchName
-}
-
-func (g GithubProvider) GetCommitSha() string {
-	return g.CommitSha
-}
-
-func (g GithubProvider) GetCommitMessage() string {
-	return g.CommitMessage
-}
-
-func (g GithubProvider) GetJobTags() map[string]any {
-	tags := map[string]any{
-		"github_run_id":          g.RunID,
-		"github_run_attempt":     g.RunAttempt,
-		"github_repository_name": g.RepositoryName,
-		"github_account_owner":   g.AccountName,
-		"github_job_name":        g.JobName,
-	}
-	if g.JobMatrix != "" {
-		rawJobMatrix := json.RawMessage(g.JobMatrix)
-		tags["github_job_matrix"] = &rawJobMatrix
-	}
-	return tags
-}
-
-func (g GithubProvider) GetProviderName() string {
-	return "github"
-}
-
-func (g GithubProvider) Validate() error {
-	if g.AttemptedBy == "" {
-		return errors.NewConfigurationError("missing attempted by")
-	}
-
-	if g.AccountName == "" {
-		return errors.NewConfigurationError("missing account name")
-	}
-
-	if g.JobName == "" {
-		return errors.NewConfigurationError("missing job name")
-	}
-
-	if g.RunAttempt == "" {
-		return errors.NewConfigurationError("missing run attempt")
-	}
-
-	if g.RunID == "" {
-		return errors.NewConfigurationError("missing run ID")
-	}
-
-	if g.RepositoryName == "" {
-		return errors.NewConfigurationError("missing repository name")
-	}
-
-	if g.BranchName == "" {
-		return errors.NewConfigurationError("missing branch name")
-	}
-
-	if g.CommitSha == "" {
-		return errors.NewConfigurationError("missing commit sha")
-	}
-
-	if g.JobMatrix != "" && g.JobMatrix != "null" {
-		if !json.Valid([]byte(g.JobMatrix)) || g.JobMatrix[0] != byte('{') {
-			return errors.NewConfigurationError(
-				`invalid github-job-matrix value supplied.
-Please provide '${{ toJSON(matrix) }}' with single quotes.
-This information is required due to a limitation with GitHub.`)
+	file, err := os.Open(cfg.EventPath)
+	if err != nil && !os.IsNotExist(err) {
+		return Provider{}, errors.Wrap(err, "unable to open event payload file")
+	} else if err == nil {
+		if err := json.NewDecoder(file).Decode(&eventPayloadData); err != nil {
+			return Provider{}, errors.Wrap(err, "failed to decode event payload data")
 		}
 	}
 
-	return nil
+	return MakeGithubProviderWithoutCommitMessageParsing(cfg, eventPayloadData.HeadCommit.Message)
+}
+
+// this function is only here to make the provider easier to test without writing the event file to disk
+func MakeGithubProviderWithoutCommitMessageParsing(cfg GitHubEnv, message string) (Provider, error) {
+	branchName := cfg.RefName
+	if cfg.EventName == "pull_request" {
+		branchName = cfg.HeadRef
+	}
+
+	attemptedBy := cfg.TriggeringActor
+	if attemptedBy == "" {
+		attemptedBy = cfg.ExecutingActor
+	}
+
+	tags, validationError := githubTags(cfg)
+	if validationError != nil {
+		return Provider{}, validationError
+	}
+
+	provider := Provider{
+		AttemptedBy:   attemptedBy,
+		BranchName:    branchName,
+		CommitMessage: message,
+		CommitSha:     cfg.CommitSha,
+		JobTags:       tags,
+		ProviderName:  "github",
+	}
+
+	return provider, nil
+}
+
+func githubTags(cfg GitHubEnv) (map[string]any, error) {
+	err := func() error {
+		if cfg.ID == "" {
+			return errors.NewConfigurationError("missing run ID")
+		}
+
+		if cfg.Attempt == "" {
+			return errors.NewConfigurationError("missing run attempt")
+		}
+
+		if cfg.Name == "" {
+			return errors.NewConfigurationError("missing job name")
+		}
+
+		if cfg.Repository == "" {
+			return errors.NewConfigurationError("missing repository")
+		}
+
+		if cfg.Matrix != "" && cfg.Matrix != "null" {
+			if !json.Valid([]byte(cfg.Matrix)) || cfg.Matrix[0] != byte('{') {
+				return errors.NewConfigurationError(
+					`invalid github-job-matrix value supplied.
+Please provide '${{ toJSON(matrix) }}' with single quotes.
+This information is required due to a limitation with GitHub.`)
+			}
+		}
+		return nil
+	}()
+	owner, repo := path.Split(cfg.Repository)
+
+	tags := map[string]any{
+		"github_run_id":          cfg.ID,
+		"github_run_attempt":     cfg.Attempt,
+		"github_repository_name": repo,
+		"github_account_owner":   strings.TrimSuffix(owner, "/"),
+		"github_job_name":        cfg.Name,
+	}
+
+	if cfg.Matrix != "" {
+		rawJobMatrix := json.RawMessage(cfg.Matrix)
+		tags["github_job_matrix"] = &rawJobMatrix
+	}
+
+	return tags, err
 }
