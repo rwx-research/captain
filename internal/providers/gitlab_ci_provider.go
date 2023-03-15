@@ -2,128 +2,141 @@ package providers
 
 import "github.com/rwx-research/captain-cli/internal/errors"
 
-type GitLabEnv struct {
-	// see https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
-	// gitlab/runner version all/all
-	Detected bool `env:"GITLAB_CI"`
+type GitLabCIProvider struct {
+	// build info
+	JobName     string
+	JobStage    string
+	JobID       string
+	PipelineID  string
+	JobURL      string
+	PipelineURL string
+	AttemptedBy string
+	NodeIndex   string // only present if parallelization enabled
+	NodeTotal   string // always present
 
-	// Build Info
-	JobName     string `env:"CI_JOB_NAME"`       // gitlab/runner version 9.0/0.5
-	JobStage    string `env:"CI_JOB_STAGE"`      // gitlab/runner version 9.0/0.5
-	JobID       string `env:"CI_JOB_ID"`         // gitlab/runner version 9.0/all
-	PipelineID  string `env:"CI_PIPELINE_ID"`    // gitlab/runner version 8.10/all
-	JobURL      string `env:"CI_JOB_URL"`        // gitlab/runner version 11.1/0.5
-	PipelineURL string `env:"CI_PIPELINE_URL"`   // gitlab/runner version 11.1/0.5
-	UserLogin   string `env:"GITLAB_USER_LOGIN"` // gitlab/runner version 10.0/all
-	NodeTotal   string `env:"CI_NODE_TOTAL"`     // gitlab/runner version 11.5/all
-	NodeIndex   string `env:"CI_NODE_INDEX"`     // gitlab/runner version 11.5/all
+	// repository info
+	RepoPath   string
+	ProjectURL string
 
-	// Repo Info
-	ProjectPath string `env:"CI_PROJECT_PATH"` // gitlab/runner version 8.10/0.5
-	ProjectURL  string `env:"CI_PROJECT_URL"`  // gitlab/runner version 8.10/0.5
+	// commit info
+	CommitSHA     string
+	CommitAuthor  string
+	BranchName    string
+	CommitMessage string
 
-	// Commit Info
-	CommitSHA     string `env:"CI_COMMIT_SHA"`     // gitlab/runner version 9.0/all
-	CommitAuthor  string `env:"CI_COMMIT_AUTHOR"`  // gitlab/runner version 13.11/all
-	CommitBranch  string `env:"CI_COMMIT_BRANCH"`  // gitlab/runner version 12.6/0.5
-	CommitMessage string `env:"CI_COMMIT_MESSAGE"` // gitlab/runner version 10.8/all
-
-	// Consider in the future checking CI_SERVER_VERSION >= 13.2 (the newest version with all of these fields)
-	// gitlab/runner version 11.7/all
-	APIV4URL string `env:"CI_API_V4_URL"`
+	// other info
+	APIURL string
 }
 
-func MakeGitLabProvider(cfg GitLabEnv) (Provider, error) {
-	attemptedBy := cfg.UserLogin
-	if attemptedBy == "" {
-		// presumably if there's no attempted by, the build was triggered by pushing the commit / the commit author
-		attemptedBy = cfg.CommitAuthor
+func (b GitLabCIProvider) GetAttemptedBy() string {
+	if b.AttemptedBy != "" {
+		return b.AttemptedBy
 	}
-
-	tags, validationError := gitlabciTags(cfg)
-	if validationError != nil {
-		return Provider{}, validationError
-	}
-
-	provider := Provider{
-		AttemptedBy:   attemptedBy,
-		BranchName:    cfg.CommitBranch,
-		CommitMessage: cfg.CommitMessage,
-		CommitSha:     cfg.CommitSHA,
-		JobTags:       tags,
-		ProviderName:  "gitlabci",
-	}
-
-	return provider, nil
+	// presumably if there's no attempted by, the build was triggered by pushing the commit / the commit author
+	return b.CommitAuthor
 }
 
-func gitlabciTags(cfg GitLabEnv) (map[string]any, error) {
-	err := func() error {
-		if cfg.JobName == "" {
-			return errors.NewConfigurationError("missing JobName")
-		}
+func (b GitLabCIProvider) GetBranchName() string {
+	return b.BranchName // TODO: should this be RefName? What about tags?
+}
 
-		if cfg.JobStage == "" {
-			return errors.NewConfigurationError("missing JobStage")
-		}
+func (b GitLabCIProvider) GetCommitSha() string {
+	return b.CommitSHA
+}
 
-		if cfg.JobID == "" {
-			return errors.NewConfigurationError("missing JobID")
-		}
+// not provided by GitLab ci. We'll reconstruct it on captain's side
+func (b GitLabCIProvider) GetCommitMessage() string {
+	return b.CommitMessage
+}
 
-		if cfg.PipelineID == "" {
-			return errors.NewConfigurationError("missing PipelineID")
-		}
-
-		if cfg.JobURL == "" {
-			return errors.NewConfigurationError("missing JobURL")
-		}
-
-		if cfg.PipelineURL == "" {
-			return errors.NewConfigurationError("missing PipelineURL")
-		}
-
-		if cfg.NodeTotal == "" {
-			return errors.NewConfigurationError("missing NodeTotal")
-		}
-
-		if cfg.ProjectPath == "" {
-			return errors.NewConfigurationError("missing project path")
-		}
-
-		if cfg.ProjectURL == "" {
-			return errors.NewConfigurationError("missing ProjectURL")
-		}
-
-		if cfg.APIV4URL == "" {
-			return errors.NewConfigurationError("missing API URL")
-		}
-
-		return nil
-	}()
-	if err != nil {
-		return nil, err
-	}
+func (b GitLabCIProvider) GetJobTags() map[string]any {
 	// these get sent to captain as-is
 	// name them to match the ENV vars from GitLab ci
 	// so the names in captain have parallel meaning in the GitLab docs
 	// (that's also the convention in other providers)
 	tags := map[string]any{
-		"gitlab_job_name":        cfg.JobName,
-		"gitlab_job_stage":       cfg.JobStage,
-		"gitlab_job_id":          cfg.JobID,
-		"gitlab_pipeline_id":     cfg.PipelineID,
-		"gitlab_job_url":         cfg.JobURL,
-		"gitlab_pipeline_url":    cfg.PipelineURL,
-		"gitlab_repository_path": cfg.ProjectPath,
-		"gitlab_project_url":     cfg.ProjectURL,
-		"gitlab_api_v4_url":      cfg.APIV4URL,
+		"gitlab_job_name":        b.JobName,
+		"gitlab_job_stage":       b.JobStage,
+		"gitlab_job_id":          b.JobID,
+		"gitlab_pipeline_id":     b.PipelineID,
+		"gitlab_job_url":         b.JobURL,
+		"gitlab_pipeline_url":    b.PipelineURL,
+		"gitlab_repository_path": b.RepoPath,
+		"gitlab_project_url":     b.ProjectURL,
+		"gitlab_api_v4_url":      b.APIURL,
 	}
 
-	if cfg.NodeIndex != "" && cfg.NodeTotal != "" {
-		tags["gitlab_node_index"] = cfg.NodeIndex
-		tags["gitlab_node_total"] = cfg.NodeTotal
+	if b.NodeIndex != "" && b.NodeTotal != "" {
+		tags["gitlab_node_index"] = b.NodeIndex
+		tags["gitlab_node_total"] = b.NodeTotal
+	}
+	return tags
+}
+
+func (b GitLabCIProvider) GetProviderName() string {
+	return "gitlabci"
+}
+
+func (b GitLabCIProvider) Validate() error {
+	// don't validate node index (it may be missing)
+	// don't validate gitlab user login / attemptedBy (presumably it's missing if the build was triggered by pushing the commit from a non-gitlab account?)
+	// TODO: check what is present when CI provider isn't gitlab
+
+	if b.JobName == "" {
+		return errors.NewConfigurationError("missing JobName")
 	}
 
-	return tags, nil
+	if b.JobStage == "" {
+		return errors.NewConfigurationError("missing JobStage")
+	}
+
+	if b.JobID == "" {
+		return errors.NewConfigurationError("missing JobID")
+	}
+
+	if b.PipelineID == "" {
+		return errors.NewConfigurationError("missing PipelineID")
+	}
+
+	if b.JobURL == "" {
+		return errors.NewConfigurationError("missing JobURL")
+	}
+
+	if b.PipelineURL == "" {
+		return errors.NewConfigurationError("missing PipelineURL")
+	}
+
+	if b.NodeTotal == "" {
+		return errors.NewConfigurationError("missing NodeTotal")
+	}
+
+	if b.RepoPath == "" {
+		return errors.NewConfigurationError("missing RepoPath")
+	}
+
+	if b.ProjectURL == "" {
+		return errors.NewConfigurationError("missing ProjectURL")
+	}
+
+	if b.CommitSHA == "" {
+		return errors.NewConfigurationError("missing CommitSHA")
+	}
+
+	if b.CommitAuthor == "" {
+		return errors.NewConfigurationError("missing CommitAuthor")
+	}
+
+	if b.BranchName == "" {
+		return errors.NewConfigurationError("missing BranchName")
+	}
+
+	if b.CommitMessage == "" {
+		return errors.NewConfigurationError("missing CommitMessage")
+	}
+
+	if b.APIURL == "" {
+		return errors.NewConfigurationError("missing APIURL")
+	}
+
+	return nil
 }

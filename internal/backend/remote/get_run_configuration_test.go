@@ -9,6 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/rwx-research/captain-cli/internal/backend/remote"
+	"github.com/rwx-research/captain-cli/internal/providers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -21,7 +22,7 @@ var _ = Describe("GetRunConfiguration", func() {
 	)
 
 	JustBeforeEach(func() {
-		apiClientConfig := remote.ClientConfig{Log: zap.NewNop().Sugar()}
+		apiClientConfig := remote.ClientConfig{Log: zap.NewNop().Sugar(), Provider: providers.GithubProvider{}}
 		apiClient = remote.Client{ClientConfig: apiClientConfig, RoundTrip: mockRoundTripper}
 	})
 

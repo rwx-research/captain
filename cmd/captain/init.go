@@ -1,6 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"os"
+	"path"
+	"strings"
+
 	"github.com/spf13/cobra"
 
 	"github.com/rwx-research/captain-cli/internal/backend"
@@ -122,7 +127,6 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 		GenericParsers:            genericParsers,
 		Logger:                    logger,
 	}
-
 	if err := parseConfig.Validate(); err != nil {
 		return errors.Wrap(err, "invalid parser config")
 	}
@@ -139,49 +143,115 @@ func initCLIService(cmd *cobra.Command, args []string) error {
 }
 
 func MakeProviderAdapter(cfg Config) (providers.Provider, error) {
-	// detect provider from environment if we can
-	wrapError := func(p providers.Provider, err error) (providers.Provider, error) {
-		return p, errors.Wrap(err, "error building detected provider")
+	switch {
+	case cfg.GitHub.Detected:
+		return MakeGithubProvider(cfg)
+	case cfg.Buildkite.Detected:
+		return MakeBuildkiteProvider(cfg)
+	case cfg.CircleCI.Detected:
+		return MakeCircleciProvider(cfg)
+	case cfg.GitLab.Detected:
+		return MakeGitLabProvider(cfg)
+	default:
+		return providers.NullProvider{}, errors.NewConfigurationError("Failed to detect supported CI context")
 	}
-	detectedProvider, err := func() (providers.Provider, error) {
-		switch {
-		case cfg.GitHub.Detected:
-			return wrapError(providers.MakeGithubProvider(cfg.GitHub))
-		case cfg.Buildkite.Detected:
-			return wrapError(providers.MakeBuildkiteProvider(cfg.Buildkite))
-		case cfg.CircleCI.Detected:
-			return wrapError(providers.MakeCircleciProvider(cfg.CircleCI))
-		case cfg.GitLab.Detected:
-			return wrapError(providers.MakeGitLabProvider(cfg.GitLab))
+}
+
+func MakeBuildkiteProvider(cfg Config) (providers.BuildkiteProvider, error) {
+	return providers.BuildkiteProvider{
+		Branch:            cfg.Buildkite.Branch,
+		BuildCreatorEmail: cfg.Buildkite.BuildCreatorEmail,
+		BuildID:           cfg.Buildkite.BuildID,
+		BuildURL:          cfg.Buildkite.BuildURL,
+		Commit:            cfg.Buildkite.Commit,
+		JobID:             cfg.Buildkite.JobID,
+		Label:             cfg.Buildkite.Label,
+		Message:           cfg.Buildkite.Message,
+		OrganizationSlug:  cfg.Buildkite.OrganizationSlug,
+		ParallelJob:       cfg.Buildkite.ParallelJob,
+		ParallelJobCount:  cfg.Buildkite.ParallelJobCount,
+		Repo:              cfg.Buildkite.Repo,
+		RetryCount:        cfg.Buildkite.RetryCount,
+	}, nil
+}
+
+func MakeCircleciProvider(cfg Config) (providers.CircleciProvider, error) {
+	return providers.CircleciProvider{
+		BuildNum:         cfg.CircleCI.BuildNum,
+		BuildURL:         cfg.CircleCI.BuildURL,
+		JobName:          cfg.CircleCI.Job,
+		ParallelJobIndex: cfg.CircleCI.NodeIndex,
+		ParallelJobTotal: cfg.CircleCI.NodeTotal,
+		RepoAccountName:  cfg.CircleCI.ProjectUsername,
+		RepoName:         cfg.CircleCI.ProjectReponame,
+		RepoURL:          cfg.CircleCI.RepositoryURL,
+		BranchName:       cfg.CircleCI.Branch,
+		CommitSha:        cfg.CircleCI.Sha1,
+		AttemptedBy:      cfg.CircleCI.Username,
+	}, nil
+}
+
+func MakeGitLabProvider(cfg Config) (providers.GitLabCIProvider, error) {
+	return providers.GitLabCIProvider{
+		JobName:       cfg.GitLab.CIJobName,
+		JobStage:      cfg.GitLab.CIJobStage,
+		JobID:         cfg.GitLab.CIJobID,
+		PipelineID:    cfg.GitLab.CIPipelineID,
+		JobURL:        cfg.GitLab.CIJobURL,
+		PipelineURL:   cfg.GitLab.CIPipelineURL,
+		AttemptedBy:   cfg.GitLab.GitlabUserLogin,
+		NodeIndex:     cfg.GitLab.CINodeIndex,
+		NodeTotal:     cfg.GitLab.CINodeTotal,
+		RepoPath:      cfg.GitLab.CIProjectPath,
+		ProjectURL:    cfg.GitLab.CIProjectURL,
+		CommitSHA:     cfg.GitLab.CICommitSHA,
+		CommitAuthor:  cfg.GitLab.CICommitAuthor,
+		BranchName:    cfg.GitLab.CICommitBranch,
+		CommitMessage: cfg.GitLab.CICommitMessage,
+		APIURL:        cfg.GitLab.CIAPIV4URL,
+	}, nil
+}
+
+func MakeGithubProvider(cfg Config) (providers.GithubProvider, error) {
+	branchName := cfg.GitHub.RefName
+	if cfg.GitHub.EventName == "pull_request" {
+		branchName = cfg.GitHub.HeadRef
+	}
+
+	eventPayloadData := struct {
+		HeadCommit struct {
+			Message string `json:"message"`
+		} `json:"head_commit"`
+	}{}
+
+	file, err := os.Open(cfg.GitHub.EventPath)
+	if err != nil && !os.IsNotExist(err) {
+		return providers.GithubProvider{}, errors.Wrap(err, "unable to open event payload file")
+	} else if err == nil {
+		if err := json.NewDecoder(file).Decode(&eventPayloadData); err != nil {
+			return providers.GithubProvider{}, errors.Wrap(err, "failed to decode event payload data")
 		}
-		return providers.Provider{}, nil
-	}()
-	if err != nil {
-		return providers.Provider{}, err
 	}
 
-	// then build provider based on captain-specific flags & env vars
-	genericProvider := providers.Provider{
-		AttemptedBy:  cfg.Generic.Who,
-		BranchName:   cfg.Generic.Branch,
-		CommitSha:    cfg.Generic.Sha,
-		ProviderName: "generic",
-		JobTags:      map[string]any{},
+	attemptedBy := cfg.GitHub.TriggeringActor
+	if attemptedBy == "" {
+		attemptedBy = cfg.GitHub.ExecutingActor
 	}
 
-	// merge the generic provider into the detected provider. The captain-specific flags & env vars take precedence.
-	mergedProvider := providers.Merge(detectedProvider, genericProvider)
+	owner, repository := path.Split(cfg.GitHub.Repository)
 
-	err = mergedProvider.Validate()
-	if err != nil {
-		if mergedProvider.ProviderName == "generic" {
-			return providers.Provider{}, errors.NewConfigurationError("Could not detect a supported CI provider. Without a " +
-				"supported CI provider, we require --who, --branch, and --sha to be set.")
-		}
-		return providers.Provider{}, errors.WithStack(err)
-	}
-
-	return mergedProvider, nil
+	return providers.GithubProvider{
+		AccountName:    strings.TrimSuffix(owner, "/"),
+		AttemptedBy:    attemptedBy,
+		BranchName:     branchName,
+		CommitMessage:  eventPayloadData.HeadCommit.Message,
+		CommitSha:      cfg.GitHub.CommitSha,
+		JobName:        cfg.GitHub.Name,
+		JobMatrix:      cfg.GitHub.Matrix,
+		RunAttempt:     cfg.GitHub.Attempt,
+		RunID:          cfg.GitHub.ID,
+		RepositoryName: repository,
+	}, nil
 }
 
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running

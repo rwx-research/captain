@@ -95,7 +95,7 @@ func (c Client) GetTestTimingManifest(
 
 	queryValues := req.URL.Query()
 	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
-	queryValues.Add("commit_sha", c.Provider.CommitSha)
+	queryValues.Add("commit_sha", c.Provider.GetCommitSha())
 	req.URL.RawQuery = queryValues.Encode()
 
 	resp, err := c.RoundTrip(req)
@@ -187,16 +187,16 @@ func (c Client) registerTestResults(
 		TestResultsFiles    []backend.TestResultsFile `json:"test_results_files"`
 		JobTags             map[string]any            `json:"job_tags"`
 	}{
-		AttemptedBy:         c.Provider.AttemptedBy,
-		Provider:            c.Provider.ProviderName,
-		BranchName:          c.Provider.BranchName,
-		CommitSha:           c.Provider.CommitSha,
+		AttemptedBy:         c.Provider.GetAttemptedBy(),
+		Provider:            c.Provider.GetProviderName(),
+		BranchName:          c.Provider.GetBranchName(),
+		CommitSha:           c.Provider.GetCommitSha(),
 		TestSuiteIdentifier: testSuite,
 		TestResultsFiles:    testResultsFiles,
-		JobTags:             c.Provider.JobTags,
+		JobTags:             c.Provider.GetJobTags(),
 	}
 
-	commitMessage := c.Provider.CommitMessage
+	commitMessage := c.Provider.GetCommitMessage()
 	if commitMessage != "" {
 		reqBody.CommitMessage = &commitMessage
 	}

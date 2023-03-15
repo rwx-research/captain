@@ -29,11 +29,6 @@ var (
 	reporters                 []string
 	retries                   int
 	retryCommandTemplate      string
-	genericProvider           struct {
-		who    string
-		sha    string
-		branch string
-	}
 
 	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
 		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
@@ -233,39 +228,11 @@ func init() {
 		),
 	)
 
-	runCmd.Flags().StringVar(
-		&genericProvider.branch,
-		"branch",
-		"",
-		"the branch name of the build\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_BRANCH\n",
-	)
-
-	runCmd.Flags().StringVar(
-		&genericProvider.who,
-		"who",
-		"",
-		"the person who triggered the build\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_WHO\n",
-	)
-	runCmd.Flags().StringVar(
-		&genericProvider.sha,
-		"sha",
-		"",
-		"the git commit sha hash of the build\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_SHA\n",
-	)
-
 	addFrameworkFlags(runCmd)
 
 	rootCmd.AddCommand(runCmd)
 }
 
-// this should be run _last_ as it has the highest precedence, and the assignments we make here overwrite settings
-// from other parts of the app (e.g. config files, env vars)
 func bindRunCmdFlags(cfg Config) Config {
 	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
 		if testResults != "" {
@@ -317,18 +284,6 @@ func bindRunCmdFlags(cfg Config) Config {
 		}
 
 		cfg.TestSuites[suiteID] = suiteConfig
-
-		if genericProvider.who != "" {
-			cfg.Generic.Who = genericProvider.who
-		}
-
-		if genericProvider.branch != "" {
-			cfg.Generic.Branch = genericProvider.branch
-		}
-
-		if genericProvider.sha != "" {
-			cfg.Generic.Sha = genericProvider.sha
-		}
 	}
 
 	if quiet {
