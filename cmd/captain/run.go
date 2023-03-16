@@ -10,6 +10,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
@@ -29,6 +30,7 @@ var (
 	reporters                 []string
 	retries                   int
 	retryCommandTemplate      string
+	genericProvider           providers.GenericEnv
 
 	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
 		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
@@ -228,11 +230,39 @@ func init() {
 		),
 	)
 
+	runCmd.Flags().StringVar(
+		&genericProvider.Branch,
+		"branch",
+		"",
+		"the branch name of the build\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_BRANCH\n",
+	)
+
+	runCmd.Flags().StringVar(
+		&genericProvider.Who,
+		"who",
+		"",
+		"the person who triggered the build\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_WHO\n",
+	)
+	runCmd.Flags().StringVar(
+		&genericProvider.Sha,
+		"sha",
+		"",
+		"the git commit sha hash of the build\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_SHA\n",
+	)
+
 	addFrameworkFlags(runCmd)
 
 	rootCmd.AddCommand(runCmd)
 }
 
+// this should be run _last_ as it has the highest precedence, and the assignments we make here overwrite settings
+// from other parts of the app (e.g. config files, env vars)
 func bindRunCmdFlags(cfg Config) Config {
 	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
 		if testResults != "" {
@@ -284,6 +314,8 @@ func bindRunCmdFlags(cfg Config) Config {
 		}
 
 		cfg.TestSuites[suiteID] = suiteConfig
+
+		cfg.Generic = providers.MergeGeneric(cfg.Generic, genericProvider)
 	}
 
 	if quiet {

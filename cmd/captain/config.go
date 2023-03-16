@@ -11,6 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
 const (
@@ -23,96 +24,12 @@ const (
 type Config struct {
 	ConfigFile
 
-	GitHub struct {
-		Detected        bool   `env:"GITHUB_ACTIONS"`
-		Name            string `env:"GITHUB_JOB"`
-		Matrix          string
-		Attempt         string `env:"GITHUB_RUN_ATTEMPT"`
-		ID              string `env:"GITHUB_RUN_ID"`
-		EventName       string `env:"GITHUB_EVENT_NAME"`
-		EventPath       string `env:"GITHUB_EVENT_PATH"`
-		ExecutingActor  string `env:"GITHUB_ACTOR"`
-		TriggeringActor string `env:"GITHUB_TRIGGERING_ACTOR"`
-		Repository      string `env:"GITHUB_REPOSITORY"`
-		RefName         string `env:"GITHUB_REF_NAME"`
-		HeadRef         string `env:"GITHUB_HEAD_REF"`
-		CommitSha       string `env:"GITHUB_SHA"`
-	}
-	Buildkite struct {
-		Detected          bool   `env:"BUILDKITE"`
-		Branch            string `env:"BUILDKITE_BRANCH"`
-		BuildCreatorEmail string `env:"BUILDKITE_BUILD_CREATOR_EMAIL"`
-		BuildID           string `env:"BUILDKITE_BUILD_ID"`
-		BuildURL          string `env:"BUILDKITE_BUILD_URL"`
-		Commit            string `env:"BUILDKITE_COMMIT"`
-		JobID             string `env:"BUILDKITE_JOB_ID"`
-		Label             string `env:"BUILDKITE_LABEL"`
-		Message           string `env:"BUILDKITE_MESSAGE"`
-		OrganizationSlug  string `env:"BUILDKITE_ORGANIZATION_SLUG"`
-		ParallelJob       string `env:"BUILDKITE_PARALLEL_JOB"`
-		ParallelJobCount  string `env:"BUILDKITE_PARALLEL_JOB_COUNT"`
-		Repo              string `env:"BUILDKITE_REPO"`
-		RetryCount        string `env:"BUILDKITE_RETRY_COUNT"`
-	}
-	CircleCI struct {
-		Detected        bool   `env:"CIRCLECI"`
-		BuildNum        string `env:"CIRCLE_BUILD_NUM"`
-		BuildURL        string `env:"CIRCLE_BUILD_URL"`
-		Job             string `env:"CIRCLE_JOB"`
-		NodeIndex       string `env:"CIRCLE_NODE_INDEX"`
-		NodeTotal       string `env:"CIRCLE_NODE_TOTAL"`
-		ProjectReponame string `env:"CIRCLE_PROJECT_REPONAME"`
-		ProjectUsername string `env:"CIRCLE_PROJECT_USERNAME"`
-		RepositoryURL   string `env:"CIRCLE_REPOSITORY_URL"`
-		Branch          string `env:"CIRCLE_BRANCH"`
-		Sha1            string `env:"CIRCLE_SHA1"`
-		Username        string `env:"CIRCLE_USERNAME"`
-	}
-	GitLab struct {
-		// see https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
-		// gitlab/runner version all/all
-		Detected bool `env:"GITLAB_CI"`
+	Generic   providers.GenericEnv
+	GitHub    providers.GitHubEnv
+	Buildkite providers.BuildkiteEnv
+	CircleCI  providers.CircleCIEnv
+	GitLab    providers.GitLabEnv
 
-		// Build Info
-		// gitlab/runner version 9.0/0.5
-		CIJobName string `env:"CI_JOB_NAME"`
-		// gitlab/runner version 9.0/0.5
-		CIJobStage string `env:"CI_JOB_STAGE"`
-		// gitlab/runner version 9.0/all
-		CIJobID string `env:"CI_JOB_ID"`
-		// gitlab/runner version 8.10/all
-		CIPipelineID string `env:"CI_PIPELINE_ID"`
-		// gitlab/runner version 11.1/0.5
-		CIJobURL string `env:"CI_JOB_URL"`
-		// gitlab/runner version 11.1/0.5
-		CIPipelineURL string `env:"CI_PIPELINE_URL"`
-		// gitlab/runner version 10.0/all
-		GitlabUserLogin string `env:"GITLAB_USER_LOGIN"`
-		// gitlab/runner version 11.5/all
-		CINodeTotal string `env:"CI_NODE_TOTAL"`
-		// gitlab/runner version 11.5/all
-		CINodeIndex string `env:"CI_NODE_INDEX"`
-
-		// Repo Info
-		// gitlab/runner version 8.10/0.5
-		CIProjectPath string `env:"CI_PROJECT_PATH"`
-		// gitlab/runner version 8.10/0.5
-		CIProjectURL string `env:"CI_PROJECT_URL"`
-
-		// Commit Info
-		// gitlab/runner version 9.0/all
-		CICommitSHA string `env:"CI_COMMIT_SHA"`
-		// gitlab/runner version 13.11/all
-		CICommitAuthor string `env:"CI_COMMIT_AUTHOR"`
-		// gitlab/runner version 12.6/0.5
-		CICommitBranch string `env:"CI_COMMIT_BRANCH"`
-		// gitlab/runner version 10.8/all
-		CICommitMessage string `env:"CI_COMMIT_MESSAGE"`
-
-		// Consider in the future checking CI_SERVER_VERSION >= 13.2 (the newest version with all of these fields)
-		// gitlab/runner version 11.7/all
-		CIAPIV4URL string `env:"CI_API_V4_URL"`
-	}
 	Secrets struct {
 		APIToken string `env:"RWX_ACCESS_TOKEN"`
 	}

@@ -10,220 +10,123 @@ import (
 )
 
 var _ = Describe("GithubProvider.Validate", func() {
+	var params providers.GitHubEnv
+
+	BeforeEach(func() {
+		params = providers.GitHubEnv{
+			// for branch name
+			EventName: "push",
+			RefName:   "main",
+			HeadRef:   "main",
+			// for commit message
+			EventPath: "/tmp/event.json",
+			// attempted by
+			ExecutingActor:  "test",
+			TriggeringActor: "test",
+			// for commit sha
+			CommitSha: "abc123",
+			// for tags
+			ID:         "123",
+			Attempt:    "1",
+			Repository: "rwx/captain-cli",
+			Name:       "some-job",
+			Matrix:     "",
+		}
+	})
+
 	It("is valid", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-			CommitMessage:  "fixed it",
-		}
-		Expect(github.Validate()).To(BeNil())
-		Expect(github.GetAttemptedBy()).To(Equal("test"))
-		Expect(github.GetBranchName()).To(Equal("main"))
-		Expect(github.GetCommitSha()).To(Equal("abc123"))
-		Expect(github.GetCommitMessage()).To(Equal("fixed it"))
-		Expect(github.GetProviderName()).To(Equal("github"))
+		provider, err := providers.MakeGithubProviderWithoutCommitMessageParsing(params, "fixed it")
+		Expect(err).To(BeNil())
+		Expect(provider.AttemptedBy).To(Equal("test"))
+		Expect(provider.BranchName).To(Equal("main"))
+		Expect(provider.CommitSha).To(Equal("abc123"))
+		Expect(provider.CommitMessage).To(Equal("fixed it"))
+		Expect(provider.ProviderName).To(Equal("github"))
 	})
 
-	It("requires an attempted by", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-		}
-		err := github.Validate()
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing attempted by"))
-	})
+	It("requires an repository", func() {
+		params.Repository = ""
 
-	It("requires an account name", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-		}
-		err := github.Validate()
+		_, err := providers.MakeGithubProviderWithoutCommitMessageParsing(params, "fixed it")
+
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing account name"))
+		Expect(err.Error()).To(ContainSubstring("missing repository"))
 	})
 
 	It("requires an job name", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-		}
-		err := github.Validate()
+		params.Name = ""
+		_, err := providers.MakeGithubProviderWithoutCommitMessageParsing(params, "fixed it")
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing job name"))
 	})
 
 	It("requires a run attempt name", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-		}
-		err := github.Validate()
+		params.Attempt = ""
+		_, err := providers.MakeGithubProviderWithoutCommitMessageParsing(params, "fixed it")
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing run attempt"))
 	})
 
 	It("requires a run ID", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "",
-			RepositoryName: "captain",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-		}
-		err := github.Validate()
+		params.ID = ""
+		_, err := providers.MakeGithubProviderWithoutCommitMessageParsing(params, "fixed it")
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing run ID"))
 	})
 
-	It("requires a repo name", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-		}
-		err := github.Validate()
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing repository name"))
-	})
-
-	It("requires a branch name", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "",
-			CommitSha:      "abc123",
-		}
-		err := github.Validate()
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing branch name"))
-	})
-
-	It("requires a commit sha", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "",
-		}
-		err := github.Validate()
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing commit sha"))
-	})
-
 	It("requires a json object be passed as the job matrix", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-			CommitMessage:  "fixed it",
-			JobMatrix:      "0",
-		}
-		err := github.Validate()
+		params.Matrix = "0"
+		_, err := providers.MakeGithubProviderWithoutCommitMessageParsing(params, "fixed it")
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(
 			`invalid github-job-matrix value supplied.
 Please provide '${{ toJSON(matrix) }}' with single quotes.
-This information is required due to a limitation with GitHub`,
+This information is required due to a limitation with GitHub.`,
 		))
 	})
 
 	It("accepts a json object job matrix", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-			CommitMessage:  "fixed it",
-			JobMatrix:      `{"index": 0, "total": 4}`,
-		}
-		Expect(github.Validate()).To(BeNil())
+		params.Matrix = `{"index": 0, "total": 4}`
+		_, err := providers.MakeGithubProviderWithoutCommitMessageParsing(params, "fixed it")
+		Expect(err).To(BeNil())
 	})
 
 	It("allows a null job matrix if someone blindly copies the docs but doesnt actually have a matrix", func() {
-		github := providers.GithubProvider{
-			AttemptedBy:    "test",
-			AccountName:    "rwx",
-			JobName:        "some-job",
-			RunAttempt:     "1",
-			RunID:          "123",
-			RepositoryName: "captain-cli",
-			BranchName:     "main",
-			CommitSha:      "abc123",
-			CommitMessage:  "fixed it",
-			JobMatrix:      "null",
-		}
-		Expect(github.Validate()).To(BeNil())
+		params.Matrix = "null"
+		_, err := providers.MakeGithubProviderWithoutCommitMessageParsing(params, "fixed it")
+		Expect(err).To(BeNil())
 	})
 })
 
 var _ = Describe("GithubProvider.GetJobTags", func() {
 	It("constructs job tags without job matrix", func() {
-		provider := providers.GithubProvider{
-			RunID:          "my_run_id",
-			RunAttempt:     "my_run_attempt",
-			RepositoryName: "my_repo_name",
-			AccountName:    "my_account_name",
-			JobName:        "my_job_name",
-			JobMatrix:      "",
-		}
-		Expect(provider.GetJobTags()).To(Equal(map[string]any{
+		provider, err := providers.MakeGithubProviderWithoutCommitMessageParsing(
+			providers.GitHubEnv{
+				// for branch name
+				EventName: "push",
+				RefName:   "main",
+				HeadRef:   "main",
+				// for commit message
+				EventPath: "/tmp/event.json",
+				// attempted by
+				ExecutingActor:  "test",
+				TriggeringActor: "test",
+				// for commit sha
+				CommitSha: "abc123",
+
+				// for tags
+				ID:         "my_run_id",
+				Attempt:    "my_run_attempt",
+				Repository: "my_account_name/my_repo_name",
+				Name:       "my_job_name",
+				Matrix:     "",
+			},
+			"fixed it",
+		)
+
+		Expect(err).To(BeNil())
+
+		Expect(provider.JobTags).To(Equal(map[string]any{
 			"github_run_id":          "my_run_id",
 			"github_run_attempt":     "my_run_attempt",
 			"github_repository_name": "my_repo_name",
@@ -233,16 +136,30 @@ var _ = Describe("GithubProvider.GetJobTags", func() {
 	})
 
 	It("constructs job tags with job matrix", func() {
-		provider := providers.GithubProvider{
-			RunID:          "my_run_id",
-			RunAttempt:     "my_run_attempt",
-			RepositoryName: "my_repo_name",
-			AccountName:    "my_account_name",
-			JobName:        "my_job_name",
-			JobMatrix:      "{ \"foo\": \"bar\"}",
-		}
+		provider, _ := providers.MakeGithubProviderWithoutCommitMessageParsing(
+			providers.GitHubEnv{
+				// for branch name
+				EventName: "push",
+				RefName:   "main",
+				HeadRef:   "main",
+				// for commit message
+				EventPath: "/tmp/event.json",
+				// attempted by
+				ExecutingActor:  "test",
+				TriggeringActor: "test",
+				// for commit sha
+				CommitSha: "abc123",
+				// for tags
+				ID:         "my_run_id",
+				Attempt:    "my_run_attempt",
+				Repository: "my_account_name/my_repo_name",
+				Name:       "my_job_name",
+				Matrix:     "{ \"foo\": \"bar\"}",
+			},
+			"fixed it",
+		)
 		matrix := json.RawMessage("{ \"foo\": \"bar\"}")
-		Expect(provider.GetJobTags()).To(Equal(map[string]any{
+		Expect(provider.JobTags).To(Equal(map[string]any{
 			"github_run_id":          "my_run_id",
 			"github_run_attempt":     "my_run_attempt",
 			"github_repository_name": "my_repo_name",
