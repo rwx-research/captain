@@ -97,12 +97,16 @@ func (rc RunConfig) MaxTestsToRetryPercentage() (*float64, error) {
 	return &percentage, nil
 }
 
+type PartitionNodes struct {
+	Total int
+	Index int
+}
+
 type PartitionConfig struct {
-	PartitionIndex  int
-	SuiteID         string
-	TestFilePaths   []string
-	TotalPartitions int
-	Delimiter       string
+	SuiteID        string
+	TestFilePaths  []string
+	Delimiter      string
+	PartitionNodes PartitionNodes
 }
 
 func (pc PartitionConfig) Validate() error {
@@ -110,15 +114,15 @@ func (pc PartitionConfig) Validate() error {
 		return errors.NewConfigurationError("suite-id is required")
 	}
 
-	if pc.TotalPartitions <= 0 {
+	if pc.PartitionNodes.Total <= 0 {
 		return errors.NewConfigurationError("total must be > 0")
 	}
 
-	if pc.PartitionIndex < 0 {
+	if pc.PartitionNodes.Index < 0 {
 		return errors.NewConfigurationError("index must be >= 0")
 	}
 
-	if pc.PartitionIndex >= pc.TotalPartitions {
+	if pc.PartitionNodes.Index >= pc.PartitionNodes.Total {
 		return errors.NewConfigurationError("index must be < total")
 	}
 

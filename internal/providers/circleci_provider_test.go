@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Circleciparams.Validate", func() {
+var _ = Describe("MakeCircleciProvider", func() {
 	var params providers.CircleCIEnv
 
 	BeforeEach(func() {
@@ -94,7 +94,7 @@ var _ = Describe("Circleciparams.Validate", func() {
 	})
 })
 
-var _ = Describe("Circleciparams.GetJobTags", func() {
+var _ = Describe("Circleciparams.JobTags", func() {
 	It("constructs job tags with parallel attributes", func() {
 		provider, _ := providers.MakeCircleciProvider(
 			providers.CircleCIEnv{

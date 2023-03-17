@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	captainCLI "github.com/rwx-research/captain-cli"
@@ -39,7 +41,8 @@ var (
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configFilePath, "config-file", "", "The config file for captain")
-	rootCmd.PersistentFlags().StringVar(&suiteID, "suite-id", "", "the id of the test suite")
+	rootCmd.PersistentFlags().StringVar(&suiteID, "suite-id", os.Getenv("CAPTAIN_SUITE_ID"),
+		"the id of the test suite. Also set with environment variable CAPTAIN_SUITE_ID")
 	rootCmd.PersistentFlags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	rootCmd.PersistentFlags().StringVar(
 		&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github",

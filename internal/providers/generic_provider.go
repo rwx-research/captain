@@ -1,18 +1,31 @@
 package providers
 
+import "github.com/rwx-research/captain-cli/internal/cli"
+
+// TODO: add node_index, node_total
+// - make it available to the run command
+// - make it accessible with to the generic provider
+// - expose it via job_tags
+
 type GenericEnv struct {
-	Who    string `env:"CAPTAIN_WHO"`
-	Branch string `env:"CAPTAIN_BRANCH"`
-	Sha    string `env:"CAPTAIN_SHA"`
+	Who            string
+	Branch         string
+	Sha            string
+	CommitMessage  string
+	BuildID        string
+	JobID          string
+	PartitionNodes cli.PartitionNodes
+	JobName        string
 }
 
 func MakeGenericProvider(cfg GenericEnv) Provider {
 	return Provider{
-		AttemptedBy:  cfg.Who,
-		BranchName:   cfg.Branch,
-		CommitSha:    cfg.Sha,
-		ProviderName: "generic",
-		JobTags:      makeGenericTags(cfg),
+		AttemptedBy:   cfg.Who,
+		BranchName:    cfg.Branch,
+		CommitSha:     cfg.Sha,
+		CommitMessage: cfg.CommitMessage,
+		ProviderName:  "generic",
+		JobTags:       makeGenericTags(cfg),
 	}
 }
 
@@ -24,5 +37,15 @@ func MergeGeneric(into GenericEnv, from GenericEnv) GenericEnv {
 }
 
 func makeGenericTags(cfg GenericEnv) map[string]any {
-	return map[string]any{}
+	tags := map[string]any{
+		"captain_build_id": cfg.BuildID,
+		"captain_job_name": cfg.JobName,
+		"captain_job_id":   cfg.JobID,
+	}
+
+	if cfg.PartitionNodes.Total >= 2 {
+		tags["captain_partition_index"] = cfg.PartitionNodes.Index
+		tags["captain_partition_total"] = cfg.PartitionNodes.Total
+	}
+	return tags
 }

@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("GithubProvider.Validate", func() {
+var _ = Describe("MakeGithubProvider", func() {
 	var params providers.GitHubEnv
 
 	BeforeEach(func() {
@@ -98,7 +98,7 @@ This information is required due to a limitation with GitHub.`,
 	})
 })
 
-var _ = Describe("GithubProvider.GetJobTags", func() {
+var _ = Describe("GithubProvider.JobTags", func() {
 	It("constructs job tags without job matrix", func() {
 		provider, err := providers.MakeGithubProviderWithoutCommitMessageParsing(
 			providers.GitHubEnv{

@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("GitLabCIprovider().ValidationError", func() {
+var _ = Describe("MakeGitLabProvider", func() {
 	var params providers.GitLabEnv
 
 	BeforeEach(func() {
@@ -133,7 +133,7 @@ var _ = Describe("GitLabCIprovider().ValidationError", func() {
 	})
 })
 
-var _ = Describe("GitLabCIparams.GetJobTags", func() {
+var _ = Describe("GitLabCIparams.JobTags", func() {
 	It("constructs job tags with parallel attributes", func() {
 		provider, _ := providers.MakeGitLabProvider(
 			providers.GitLabEnv{

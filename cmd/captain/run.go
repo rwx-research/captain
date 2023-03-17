@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -16,7 +17,7 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-var (
+type CliArgs struct {
 	testResults               string
 	failOnUploadError         bool
 	failRetriesFast           bool
@@ -30,8 +31,11 @@ var (
 	reporters                 []string
 	retries                   int
 	retryCommandTemplate      string
-	genericProvider           providers.GenericEnv
+	GenericProvider           providers.GenericEnv
+}
 
+var (
+	cliArgs                  CliArgs
 	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
 		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
 		v1.ElixirExUnitFramework:         new(targetedretries.ElixirExUnitSubstitution),
@@ -91,10 +95,10 @@ var (
 
 			runConfig := cli.RunConfig{
 				Args:                      args,
-				FailOnUploadError:         failOnUploadError,
+				FailOnUploadError:         cliArgs.failOnUploadError,
 				FailRetriesFast:           failFast,
 				FlakyRetries:              flakyRetries,
-				IntermediateArtifactsPath: intermediateArtifactsPath,
+				IntermediateArtifactsPath: cliArgs.intermediateArtifactsPath,
 				MaxTestsToRetry:           maxTests,
 				PostRetryCommands:         postRetryCommands,
 				PreRetryCommands:          preRetryCommands,
@@ -113,30 +117,30 @@ var (
 	}
 )
 
-func init() {
+func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 	runCmd.Flags().StringVar(
-		&testResults,
+		&cliArgs.testResults,
 		"test-results",
 		"",
 		"a filepath to a test result - supports globs for multiple result files",
 	)
 
 	runCmd.Flags().BoolVar(
-		&failOnUploadError,
+		&cliArgs.failOnUploadError,
 		"fail-on-upload-error",
 		false,
 		"return a non-zero exit code in case the test results upload fails",
 	)
 
 	runCmd.Flags().StringVar(
-		&intermediateArtifactsPath,
+		&cliArgs.intermediateArtifactsPath,
 		"intermediate-artifacts-path",
 		"",
 		"the path to store intermediate artifacts under. Intermediate artifacts will be removed if not set.",
 	)
 
 	runCmd.Flags().BoolVarP(
-		&quiet,
+		&cliArgs.quiet,
 		"quiet",
 		"q",
 		false,
@@ -144,28 +148,28 @@ func init() {
 	)
 
 	runCmd.Flags().StringArrayVar(
-		&postRetryCommands,
+		&cliArgs.postRetryCommands,
 		"post-retry",
 		[]string{},
 		"commands to run immediately after captain retries a test",
 	)
 
 	runCmd.Flags().StringArrayVar(
-		&preRetryCommands,
+		&cliArgs.preRetryCommands,
 		"pre-retry",
 		[]string{},
 		"commands to run immediately before captain retries a test",
 	)
 
 	runCmd.Flags().BoolVar(
-		&printSummary,
+		&cliArgs.printSummary,
 		"print-summary",
 		false,
 		"prints a summary of all tests to the console",
 	)
 
 	runCmd.Flags().StringArrayVar(
-		&reporters,
+		&cliArgs.reporters,
 		"reporter",
 		[]string{},
 		"one or more `type=output_path` pairs to enable different reporting options. "+
@@ -173,7 +177,7 @@ func init() {
 	)
 
 	runCmd.Flags().IntVar(
-		&retries,
+		&cliArgs.retries,
 		"retries",
 		-1,
 		"the number of times failed tests should be retried "+
@@ -181,7 +185,7 @@ func init() {
 	)
 
 	runCmd.Flags().IntVar(
-		&flakyRetries,
+		&cliArgs.flakyRetries,
 		"flaky-retries",
 		-1,
 		"the number of times failing flaky tests should be retried (takes precedence over --retries if the test is known "+
@@ -189,7 +193,7 @@ func init() {
 	)
 
 	runCmd.Flags().StringVar(
-		&maxTestsToRetry,
+		&cliArgs.maxTestsToRetry,
 		"max-tests-to-retry",
 		"",
 		"if set, retries will not be run when there are more than N tests to retry or if more than N%% of all tests "+
@@ -197,7 +201,7 @@ func init() {
 	)
 
 	runCmd.Flags().BoolVar(
-		&failRetriesFast,
+		&cliArgs.failRetriesFast,
 		"fail-retries-fast",
 		false,
 		"if set, your test suite will fail as quickly as we know it will fail (e.g. with --retries 1 and "+
@@ -218,7 +222,7 @@ func init() {
 	})
 
 	runCmd.Flags().StringVar(
-		&retryCommandTemplate,
+		&cliArgs.retryCommandTemplate,
 		"retry-command",
 		"",
 		fmt.Sprintf(
@@ -231,33 +235,108 @@ func init() {
 	)
 
 	runCmd.Flags().StringVar(
-		&genericProvider.Branch,
+		&cliArgs.GenericProvider.Branch,
 		"branch",
-		"",
-		"the branch name of the build\n"+
+		os.Getenv("CAPTAIN_BRANCH"),
+		"the branch name of the commit being built\n"+
 			"if using a supported CI provider, this will be automatically set\n"+
 			"otherwise use this flag or set the environment variable CAPTAIN_BRANCH\n",
 	)
 
 	runCmd.Flags().StringVar(
-		&genericProvider.Who,
+		&cliArgs.GenericProvider.Who,
 		"who",
-		"",
+		os.Getenv("CAPTAIN_WHO"),
 		"the person who triggered the build\n"+
 			"if using a supported CI provider, this will be automatically set\n"+
 			"otherwise use this flag or set the environment variable CAPTAIN_WHO\n",
 	)
 	runCmd.Flags().StringVar(
-		&genericProvider.Sha,
+		&cliArgs.GenericProvider.Sha,
 		"sha",
-		"",
-		"the git commit sha hash of the build\n"+
+		os.Getenv("CAPTAIN_SHA"),
+		"the git commit sha hash of the commit being built\n"+
 			"if using a supported CI provider, this will be automatically set\n"+
 			"otherwise use this flag or set the environment variable CAPTAIN_SHA\n",
 	)
 
-	addFrameworkFlags(runCmd)
+	runCmd.Flags().StringVar(
+		&cliArgs.GenericProvider.CommitMessage,
+		"commit-message",
+		os.Getenv("CAPTAIN_COMMIT_MESSAGE"),
+		"the git commit message of the commit being built\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_COMMIT_MESSAGE\n",
+	)
 
+	runCmd.Flags().StringVar(
+		&cliArgs.GenericProvider.BuildID,
+		"build-id",
+		os.Getenv("CAPTAIN_BUILD_ID"),
+		"a unique build id for the current build.\n"+
+			"this is used to group together all the test suites &cliArgs. retries that are part of the current build\n"+
+			"choose a value from your CI provider that changes between builds but is static between retries\n"+
+			"(in a pinch you could use the commit SHA)\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_BUILD_ID\n",
+	)
+
+	runCmd.Flags().StringVar(
+		&cliArgs.GenericProvider.JobID,
+		"job-id",
+		os.Getenv("CAPTAIN_JOB_ID"),
+		"a unique job id for the current build.\n"+
+			"this is used to indicate a unique job or attempt within a build\n"+
+			"choose a value from your CI provider that changes between jobs or retries\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_JOB_ID\n",
+	)
+
+	runCmd.Flags().StringVar(
+		&cliArgs.GenericProvider.JobName,
+		"job-name",
+		os.Getenv("CAPTAIN_JOB_NAME"),
+		"the name of the current job being run.\n"+
+			"when there are multiple variants of a single suite within a single build\n"+
+			"the job name is used to group each variant together.\n"+
+			"this should be fixed between all test runs of this variant.\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_JOB_NAME\n",
+	)
+
+	getEnvIntWithDefault := func(envVar string, defaultValue int) int {
+		envInt, err := strconv.Atoi(os.Getenv(envVar))
+		if err != nil {
+			envInt = defaultValue
+		}
+		return envInt
+	}
+
+	// Note: Explicitly don't reference ENV var here because it's not yet supported
+	// by the `partition` command
+	runCmd.Flags().IntVar(
+		&cliArgs.GenericProvider.PartitionNodes.Index,
+		"index",
+		getEnvIntWithDefault("CAPTAIN_PARTITION_INDEX", -1),
+		"this specifies the index of the current partition"+
+			"used to group partitions within a job\n"+
+			"only necessary when using partitioning on an unsupported CI provider.\n",
+	)
+
+	runCmd.Flags().IntVar(
+		&cliArgs.GenericProvider.PartitionNodes.Total,
+		"total",
+		getEnvIntWithDefault("CAPTAIN_PARTITION_TOTAL", -1),
+		"this specifies the total number of partitions"+
+			"used to group partitions within a job\n"+
+			"only necessary when using partitioning on an unsupported CI provider.\n",
+	)
+
+	addFrameworkFlags(runCmd)
+}
+
+func init() {
+	AddFlags(runCmd, &cliArgs)
 	rootCmd.AddCommand(runCmd)
 }
 
@@ -265,39 +344,39 @@ func init() {
 // from other parts of the app (e.g. config files, env vars)
 func bindRunCmdFlags(cfg Config) Config {
 	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-		if testResults != "" {
-			suiteConfig.Results.Path = testResults
+		if cliArgs.testResults != "" {
+			suiteConfig.Results.Path = cliArgs.testResults
 		}
 
-		if len(postRetryCommands) != 0 {
-			suiteConfig.Retries.PostRetryCommands = postRetryCommands
+		if len(cliArgs.postRetryCommands) != 0 {
+			suiteConfig.Retries.PostRetryCommands = cliArgs.postRetryCommands
 		}
 
-		if len(preRetryCommands) != 0 {
-			suiteConfig.Retries.PreRetryCommands = preRetryCommands
+		if len(cliArgs.preRetryCommands) != 0 {
+			suiteConfig.Retries.PreRetryCommands = cliArgs.preRetryCommands
 		}
 
-		if failRetriesFast {
+		if cliArgs.failRetriesFast {
 			suiteConfig.Retries.FailFast = true
 		}
 
 		// We want to use the default as set by `cobra`
-		if suiteConfig.Retries.FlakyAttempts == 0 || flakyRetries != -1 {
-			suiteConfig.Retries.FlakyAttempts = flakyRetries
+		if suiteConfig.Retries.FlakyAttempts == 0 || cliArgs.flakyRetries != -1 {
+			suiteConfig.Retries.FlakyAttempts = cliArgs.flakyRetries
 		}
 
-		if maxTestsToRetry != "" {
-			suiteConfig.Retries.MaxTests = maxTestsToRetry
+		if cliArgs.maxTestsToRetry != "" {
+			suiteConfig.Retries.MaxTests = cliArgs.maxTestsToRetry
 		}
 
-		if printSummary {
+		if cliArgs.printSummary {
 			suiteConfig.Output.PrintSummary = true
 		}
 
-		if reporters != nil {
+		if cliArgs.reporters != nil {
 			reporterConfig := make(map[string]string)
 
-			for _, r := range reporters {
+			for _, r := range cliArgs.reporters {
 				name, path, _ := strings.Cut(r, "=")
 				reporterConfig[name] = path
 			}
@@ -305,20 +384,20 @@ func bindRunCmdFlags(cfg Config) Config {
 			suiteConfig.Output.Reporters = reporterConfig
 		}
 
-		if suiteConfig.Retries.Attempts == 0 || retries != -1 {
-			suiteConfig.Retries.Attempts = retries
+		if suiteConfig.Retries.Attempts == 0 || cliArgs.retries != -1 {
+			suiteConfig.Retries.Attempts = cliArgs.retries
 		}
 
-		if retryCommandTemplate != "" {
-			suiteConfig.Retries.Command = retryCommandTemplate
+		if cliArgs.retryCommandTemplate != "" {
+			suiteConfig.Retries.Command = cliArgs.retryCommandTemplate
 		}
 
 		cfg.TestSuites[suiteID] = suiteConfig
 
-		cfg.Generic = providers.MergeGeneric(cfg.Generic, genericProvider)
+		cfg.Generic = providers.MergeGeneric(cfg.Generic, cliArgs.GenericProvider)
 	}
 
-	if quiet {
+	if cliArgs.quiet {
 		cfg.Output.Quiet = true
 	}
 

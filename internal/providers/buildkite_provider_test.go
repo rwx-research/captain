@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("BuildkiteProvider.Validate", func() {
+var _ = Describe("MakeBuildkiteProvider", func() {
 	var params providers.BuildkiteEnv
 
 	BeforeEach(func() {
@@ -88,7 +88,7 @@ var _ = Describe("BuildkiteProvider.Validate", func() {
 	})
 })
 
-var _ = Describe("BuildkiteProvider.GetJobTags", func() {
+var _ = Describe("BuildkiteProvider.JobTags", func() {
 	It("constructs job tags with parallel attributes", func() {
 		provider, _ := providers.MakeBuildkiteProvider(
 			providers.BuildkiteEnv{

@@ -75,12 +75,12 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 	for _, fileTimingMatch := range fileTimingMatches {
 		totalCapacity += fileTimingMatch.Duration()
 	}
-	partitionCapacity := totalCapacity / time.Duration(cfg.TotalPartitions)
+	partitionCapacity := totalCapacity / time.Duration(cfg.PartitionNodes.Total)
 
 	s.Log.Debugf("Total Capacity: %s", totalCapacity)
 	s.Log.Debugf("Target Partition Capacity: %s", partitionCapacity)
 
-	for i := 0; i < cfg.TotalPartitions; i++ {
+	for i := 0; i < cfg.PartitionNodes.Total; i++ {
 		partitions = append(partitions, testing.TestPartition{
 			Index:             i,
 			TestFilePaths:     make([]string, 0),
@@ -109,7 +109,7 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 		s.Log.Debugf("%s: Assigned '%s' using round robin strategy", partition, testFilepath)
 	}
 
-	activePartition := partitions[cfg.PartitionIndex]
+	activePartition := partitions[cfg.PartitionNodes.Index]
 	s.Log.Infoln(strings.Join(activePartition.TestFilePaths, cfg.Delimiter))
 
 	return nil

@@ -13,45 +13,36 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+func setEnvFromFile(fileName string) {
+	// first cleanup env
+	envPrefixes := []string{"GITHUB", "BUILDKITE", "CIRCLE", "GITLAB", "CI", "RWX", "CAPTAIN"}
+	for _, env := range os.Environ() {
+		for _, prefix := range envPrefixes {
+			if strings.HasPrefix(env, prefix) {
+				pair := strings.SplitN(env, "=", 2)
+				os.Unsetenv(pair[0])
+			}
+		}
+	}
+
+	fd, err := os.Open(fileName)
+	Expect(err).ToNot(HaveOccurred())
+	defer fd.Close()
+
+	scanner := bufio.NewScanner(fd)
+	for scanner.Scan() {
+		line := strings.TrimSpace(strings.TrimPrefix(scanner.Text(), "export"))
+		fields := strings.SplitN(line, "=", 2)
+		os.Setenv(fields[0], fields[1])
+	}
+}
+
 var _ = Describe("InitConfig", func() {
-	var (
-		cfg            captain.Config
-		cmd            *cobra.Command
-		err            error
-		setEnvFromFile func(string)
-	)
-
-	BeforeEach(func() {
-		envPrefixes := []string{"GITHUB", "BUILDKITE", "CIRCLE", "GITLAB", "CI", "RWX", "CAPTAIN"}
-		for _, env := range os.Environ() {
-			for _, prefix := range envPrefixes {
-				if strings.HasPrefix(env, prefix) {
-					pair := strings.SplitN(env, "=", 2)
-					os.Unsetenv(pair[0])
-				}
-			}
-		}
-
-		setEnvFromFile = func(fileName string) {
-			fd, err := os.Open(fileName)
-			Expect(err).ToNot(HaveOccurred())
-			defer fd.Close()
-
-			scanner := bufio.NewScanner(fd)
-			for scanner.Scan() {
-				line := strings.TrimSpace(strings.TrimPrefix(scanner.Text(), "export"))
-				fields := strings.SplitN(line, "=", 2)
-				os.Setenv(fields[0], fields[1])
-			}
-		}
-	})
-
-	JustBeforeEach(func() {
-		cfg, err = captain.InitConfig(cmd)
-	})
+	var cmd *cobra.Command
 
 	Context("no environment variables", func() {
 		It("uses cobra's default values", func() {
+			cfg, err := captain.InitConfig(cmd)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.TestSuites).To(HaveKey(""))
 			Expect(cfg.TestSuites[""].Retries.Attempts).To(Equal(-1))
@@ -65,6 +56,7 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("parses the GitHub options", func() {
+			cfg, err := captain.InitConfig(cmd)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.GitHub.Detected).To(BeTrue())
 			Expect(cfg.GitHub.Repository).To(Equal("rwx-research/captain-cli"))
@@ -86,6 +78,7 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("parses the Buildkite options", func() {
+			cfg, err := captain.InitConfig(cmd)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Buildkite.Detected).To(BeTrue())
 			Expect(cfg.Buildkite.Branch).To(Equal("some-branch"))
@@ -110,6 +103,7 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("parses the CircleCI options", func() {
+			cfg, err := captain.InitConfig(cmd)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.CircleCI.Detected).To(BeTrue())
 			Expect(cfg.CircleCI.BuildNum).To(Equal("18"))
@@ -132,6 +126,7 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("parses the GitLab options", func() {
+			cfg, err := captain.InitConfig(cmd)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.GitLab.Detected).To(BeTrue())
 			Expect(cfg.GitLab.JobName).To(Equal("rspec 1/2"))
@@ -150,19 +145,6 @@ var _ = Describe("InitConfig", func() {
 			Expect(cfg.GitLab.CommitBranch).To(Equal("main"))
 			Expect(cfg.GitLab.CommitMessage).To(Equal("print env"))
 			Expect(cfg.GitLab.APIV4URL).To(Equal("https://gitlab.com/api/v4"))
-		})
-	})
-
-	Context("with Captain-specific environment variables", func() {
-		BeforeEach(func() {
-			setEnvFromFile("../../test/.env.captain")
-		})
-
-		It("parses the Captain options", func() {
-			Expect(err).ToNot(HaveOccurred())
-			Expect(cfg.Generic.Who).To(Equal("test"))
-			Expect(cfg.Generic.Branch).To(Equal("testing-env-vars"))
-			Expect(cfg.Generic.Sha).To(Equal("abc123"))
 		})
 	})
 })

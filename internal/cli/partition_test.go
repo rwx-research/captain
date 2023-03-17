@@ -21,11 +21,13 @@ import (
 
 func cfgWithArgs(index int, total int, args []string, delimiter string) cli.PartitionConfig {
 	return cli.PartitionConfig{
-		TestFilePaths:   args,
-		PartitionIndex:  index,
-		TotalPartitions: total,
-		SuiteID:         "captain-cli-test",
-		Delimiter:       delimiter,
+		TestFilePaths: args,
+		PartitionNodes: cli.PartitionNodes{
+			Index: index,
+			Total: total,
+		},
+		SuiteID:   "captain-cli-test",
+		Delimiter: delimiter,
 	}
 }
 
