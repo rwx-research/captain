@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -270,66 +269,12 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 	)
 
 	runCmd.Flags().StringVar(
-		&cliArgs.GenericProvider.BuildID,
-		"build-id",
-		os.Getenv("CAPTAIN_BUILD_ID"),
-		"a unique build id for the current build.\n"+
-			"this is used to group together all the test suites &cliArgs. retries that are part of the current build\n"+
-			"choose a value from your CI provider that changes between builds but is static between retries\n"+
-			"(in a pinch you could use the commit SHA)\n"+
+		&cliArgs.GenericProvider.BuildURL,
+		"build-url",
+		os.Getenv("CAPTAIN_BUILD_URL"),
+		"the URL of the build results\n"+
 			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_BUILD_ID\n",
-	)
-
-	runCmd.Flags().StringVar(
-		&cliArgs.GenericProvider.JobID,
-		"job-id",
-		os.Getenv("CAPTAIN_JOB_ID"),
-		"a unique job id for the current build.\n"+
-			"this is used to indicate a unique job or attempt within a build\n"+
-			"choose a value from your CI provider that changes between jobs or retries\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_JOB_ID\n",
-	)
-
-	runCmd.Flags().StringVar(
-		&cliArgs.GenericProvider.JobName,
-		"job-name",
-		os.Getenv("CAPTAIN_JOB_NAME"),
-		"the name of the current job being run.\n"+
-			"when there are multiple variants of a single suite within a single build\n"+
-			"the job name is used to group each variant together.\n"+
-			"this should be fixed between all test runs of this variant.\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_JOB_NAME\n",
-	)
-
-	getEnvIntWithDefault := func(envVar string, defaultValue int) int {
-		envInt, err := strconv.Atoi(os.Getenv(envVar))
-		if err != nil {
-			envInt = defaultValue
-		}
-		return envInt
-	}
-
-	// Note: Explicitly don't reference ENV var here because it's not yet supported
-	// by the `partition` command
-	runCmd.Flags().IntVar(
-		&cliArgs.GenericProvider.PartitionNodes.Index,
-		"index",
-		getEnvIntWithDefault("CAPTAIN_PARTITION_INDEX", -1),
-		"this specifies the index of the current partition"+
-			"used to group partitions within a job\n"+
-			"only necessary when using partitioning on an unsupported CI provider.\n",
-	)
-
-	runCmd.Flags().IntVar(
-		&cliArgs.GenericProvider.PartitionNodes.Total,
-		"total",
-		getEnvIntWithDefault("CAPTAIN_PARTITION_TOTAL", -1),
-		"this specifies the total number of partitions"+
-			"used to group partitions within a job\n"+
-			"only necessary when using partitioning on an unsupported CI provider.\n",
+			"otherwise use this flag or set the environment variable CAPTAIN_BUILD_URL\n",
 	)
 
 	addFrameworkFlags(runCmd)

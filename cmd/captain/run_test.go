@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 
 	main "github.com/rwx-research/captain-cli/cmd/captain"
-	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/providers"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -45,14 +44,11 @@ var _ = Describe("AddFlags", func() {
 
 			provider := cliArgs.GenericProvider
 			Expect(provider).To(Equal(providers.GenericEnv{
-				Who:            "test",
-				Branch:         "testing-env-vars",
-				Sha:            "abc123",
-				CommitMessage:  "Testing env vars -- the commit message",
-				BuildID:        "123",
-				JobID:          "456",
-				PartitionNodes: cli.PartitionNodes{Index: 0, Total: 2},
-				JobName:        "rspec",
+				Who:           "test",
+				Branch:        "testing-env-vars",
+				Sha:           "abc123",
+				CommitMessage: "Testing env vars -- the commit message",
+				BuildURL:      "https://jenkins.example.com/job/test/123/",
 			}))
 		})
 	})
