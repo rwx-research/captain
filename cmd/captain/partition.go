@@ -43,16 +43,28 @@ var (
 
 func init() {
 	getEnvIntWithDefault := func(envVar string, defaultValue int) int {
-		envInt, err := strconv.Atoi(os.Getenv(envVar))
+		envValue := os.Getenv(envVar)
+		if envValue == "" {
+			return defaultValue
+		}
+
+		envInt, err := strconv.Atoi(envValue)
 		if err != nil {
-			envInt = defaultValue
+			initializationErrors = append(initializationErrors,
+				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", envVar, envValue),
+			)
+			return defaultValue
 		}
 		return envInt
 	}
 	addSuiteIDFlag(partitionCmd, &suiteID)
-	partitionCmd.Flags().IntVar(&pArgs.nodes.Index, "index", getEnvIntWithDefault("CAPTAIN_PARTITION_INDEX", 0),
+
+	defaultPartitionIndex := getEnvIntWithDefault("CAPTAIN_PARTITION_INDEX", -1)
+	partitionCmd.Flags().IntVar(&pArgs.nodes.Index, "index", defaultPartitionIndex,
 		"the 0-indexed index of a particular partition (required). Also set with CAPTAIN_PARTITION_INDEX")
-	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", getEnvIntWithDefault("CAPTAIN_PARTITION_TOTAL", 0),
+
+	defaultPartitionTotal := getEnvIntWithDefault("CAPTAIN_PARTITION_TOTAL", 0)
+	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", defaultPartitionTotal,
 		"the total number of partitions (required). Also set with CAPTAIN_PARTITION_TOTAL")
 
 	// it's a smell that we're using cliArgs here but I believe it's a major refactor to stop doing that.
@@ -60,12 +72,16 @@ func init() {
 
 	partitionCmd.Flags().StringVar(&pArgs.delimiter, "delimiter", " ", "the delimiter used to separate partitioned files")
 
-	if err := partitionCmd.MarkFlagRequired("index"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+	if defaultPartitionIndex < 0 {
+		if err := partitionCmd.MarkFlagRequired("index"); err != nil {
+			initializationErrors = append(initializationErrors, err)
+		}
 	}
 
-	if err := partitionCmd.MarkFlagRequired("total"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+	if defaultPartitionTotal < 1 {
+		if err := partitionCmd.MarkFlagRequired("total"); err != nil {
+			initializationErrors = append(initializationErrors, err)
+		}
 	}
 	rootCmd.AddCommand(partitionCmd)
 }

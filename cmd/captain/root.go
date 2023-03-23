@@ -42,7 +42,7 @@ var (
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configFilePath, "config-file", "", "The config file for captain")
 
-	addSuiteIDFlagOptionally(rootCmd, &suiteID)
+	_ = addSuiteIDFlagOptionally(rootCmd, &suiteID)
 
 	rootCmd.PersistentFlags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	rootCmd.PersistentFlags().StringVar(
@@ -87,18 +87,23 @@ func bindRootCmdFlags(cfg Config) Config {
 	return cfg
 }
 
-func addSuiteIDFlagOptionally(cmd *cobra.Command, destination *string) {
-	cmd.Flags().StringVar(&suiteID, "suite-id", os.Getenv("CAPTAIN_SUITE_ID"),
+func addSuiteIDFlagOptionally(cmd *cobra.Command, destination *string) string {
+	suiteIDFromEnv := os.Getenv("CAPTAIN_SUITE_ID")
+	cmd.Flags().StringVar(&suiteID, "suite-id", suiteIDFromEnv,
 		"the id of the test suite (required). Also set with environment variable CAPTAIN_SUITE_ID")
+	return suiteIDFromEnv
 }
 
 // Although `suite-id` is a global flag, we need to re-define it wherever we want to make it required
 // This is due to a bug in 'spf13/cobra'. See https://github.com/spf13/cobra/issues/921
 func addSuiteIDFlag(cmd *cobra.Command, destination *string) {
-	addSuiteIDFlagOptionally(cmd, destination)
+	suiteIDFromEnv := addSuiteIDFlagOptionally(cmd, destination)
 
-	if err := cmd.MarkFlagRequired("suite-id"); err != nil {
-		// smell: global
-		initializationErrors = append(initializationErrors, err)
+	// I wonder if there's a more graceful way here?
+	if suiteIDFromEnv == "" {
+		if err := cmd.MarkFlagRequired("suite-id"); err != nil {
+			// smell: global
+			initializationErrors = append(initializationErrors, err)
+		}
 	}
 }
