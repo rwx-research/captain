@@ -27,7 +27,7 @@ type BuildkiteEnv struct {
 	RetryCount       string `env:"BUILDKITE_RETRY_COUNT"`
 }
 
-func MakeBuildkiteProvider(cfg BuildkiteEnv) (Provider, error) {
+func (cfg BuildkiteEnv) MakeProvider() (Provider, error) {
 	tags, validationError := buildkiteTags(cfg)
 
 	if validationError != nil {

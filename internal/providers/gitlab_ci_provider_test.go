@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("MakeGitLabProvider", func() {
+var _ = Describe("GitLabEnv.MakeProvider", func() {
 	var params providers.GitLabEnv
 
 	BeforeEach(func() {
@@ -32,7 +32,7 @@ var _ = Describe("MakeGitLabProvider", func() {
 	})
 
 	It("is valid", func() {
-		provider, err := providers.MakeGitLabProvider(params)
+		provider, err := params.MakeProvider()
 		Expect(err).To(BeNil())
 		Expect(provider.AttemptedBy).To(Equal("michaelglass"))
 		Expect(provider.BranchName).To(Equal("main"))
@@ -43,83 +43,83 @@ var _ = Describe("MakeGitLabProvider", func() {
 
 	It("falls back to commit author if attempted by is not set", func() {
 		params.UserLogin = ""
-		provider, _ := providers.MakeGitLabProvider(params)
+		provider, _ := params.MakeProvider()
 
 		Expect(provider.AttemptedBy).To(Equal("Michael Glass <me@mike.is>"))
 	})
 
 	It("requires JobName", func() {
 		params.JobName = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing JobName"))
 	})
 
 	It("requires JobStage", func() {
 		params.JobStage = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing JobStage"))
 	})
 
 	It("requires JobID", func() {
 		params.JobID = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing JobID"))
 	})
 
 	It("requires PipelineID", func() {
 		params.PipelineID = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing PipelineID"))
 	})
 
 	It("requires JobURL", func() {
 		params.JobURL = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing JobURL"))
 	})
 
 	It("requires PipelineURL", func() {
 		params.PipelineURL = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing PipelineURL"))
 	})
 
 	It("doesn't requires AttemptedBy", func() {
 		params.UserLogin = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("doesn't requires NodeIndex", func() {
 		params.NodeIndex = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("requires NodeTotal", func() {
 		params.NodeTotal = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing NodeTotal"))
 	})
 
 	It("requires project path", func() {
 		params.ProjectPath = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing project path"))
 	})
 
 	It("requires ProjectURL", func() {
 		params.ProjectURL = ""
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing ProjectURL"))
 	})
@@ -127,7 +127,7 @@ var _ = Describe("MakeGitLabProvider", func() {
 	It("requires API URL", func() {
 		params.APIV4URL = ""
 
-		_, err := providers.MakeGitLabProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing API URL"))
 	})
@@ -135,26 +135,24 @@ var _ = Describe("MakeGitLabProvider", func() {
 
 var _ = Describe("GitLabCIparams.JobTags", func() {
 	It("constructs job tags with parallel attributes", func() {
-		provider, _ := providers.MakeGitLabProvider(
-			providers.GitLabEnv{
-				JobName:       "rspec 1/2",
-				JobStage:      "test",
-				JobID:         "3889399980",
-				PipelineID:    "798778026",
-				JobURL:        "https://gitlab.com/captain-examples/rspec/-/jobs/3889399980",
-				PipelineURL:   "https://gitlab.com/captain-examples/rspec/-/pipelines/798778026",
-				UserLogin:     "michaelglass",
-				NodeTotal:     "2",
-				NodeIndex:     "1",
-				ProjectPath:   "captain-examples/rspec",
-				ProjectURL:    "https://gitlab.com/captain-examples/rspec",
-				CommitSHA:     "03d68a49ef1e131cf8942d5a07a0ff008ede6a1a",
-				CommitAuthor:  "Michael Glass <me@mike.is>",
-				CommitBranch:  "main",
-				CommitMessage: "this is what I did\nand here are some details",
-				APIV4URL:      "https://gitlab.com/api/v4",
-			},
-		)
+		provider, _ := providers.GitLabEnv{
+			JobName:       "rspec 1/2",
+			JobStage:      "test",
+			JobID:         "3889399980",
+			PipelineID:    "798778026",
+			JobURL:        "https://gitlab.com/captain-examples/rspec/-/jobs/3889399980",
+			PipelineURL:   "https://gitlab.com/captain-examples/rspec/-/pipelines/798778026",
+			UserLogin:     "michaelglass",
+			NodeTotal:     "2",
+			NodeIndex:     "1",
+			ProjectPath:   "captain-examples/rspec",
+			ProjectURL:    "https://gitlab.com/captain-examples/rspec",
+			CommitSHA:     "03d68a49ef1e131cf8942d5a07a0ff008ede6a1a",
+			CommitAuthor:  "Michael Glass <me@mike.is>",
+			CommitBranch:  "main",
+			CommitMessage: "this is what I did\nand here are some details",
+			APIV4URL:      "https://gitlab.com/api/v4",
+		}.MakeProvider()
 
 		Expect(provider.JobTags).To(Equal(map[string]any{
 			"gitlab_project_url":     "https://gitlab.com/captain-examples/rspec",
@@ -172,25 +170,24 @@ var _ = Describe("GitLabCIparams.JobTags", func() {
 	})
 
 	It("constructs job tags without parallel attributes", func() {
-		provider, _ := providers.MakeGitLabProvider(
-			providers.GitLabEnv{
-				JobName:       "rspec",
-				JobStage:      "test",
-				JobID:         "3889399980",
-				PipelineID:    "798778026",
-				JobURL:        "https://gitlab.com/captain-examples/rspec/-/jobs/3889399980",
-				PipelineURL:   "https://gitlab.com/captain-examples/rspec/-/pipelines/798778026",
-				UserLogin:     "michaelglass",
-				NodeTotal:     "1",
-				NodeIndex:     "",
-				ProjectPath:   "captain-examples/rspec",
-				ProjectURL:    "https://gitlab.com/captain-examples/rspec",
-				CommitSHA:     "03d68a49ef1e131cf8942d5a07a0ff008ede6a1a",
-				CommitAuthor:  "Michael Glass <me@mike.is>",
-				CommitBranch:  "main",
-				CommitMessage: "this is what I did\nand here are some details",
-				APIV4URL:      "https://gitlab.com/api/v4",
-			})
+		provider, _ := providers.GitLabEnv{
+			JobName:       "rspec",
+			JobStage:      "test",
+			JobID:         "3889399980",
+			PipelineID:    "798778026",
+			JobURL:        "https://gitlab.com/captain-examples/rspec/-/jobs/3889399980",
+			PipelineURL:   "https://gitlab.com/captain-examples/rspec/-/pipelines/798778026",
+			UserLogin:     "michaelglass",
+			NodeTotal:     "1",
+			NodeIndex:     "",
+			ProjectPath:   "captain-examples/rspec",
+			ProjectURL:    "https://gitlab.com/captain-examples/rspec",
+			CommitSHA:     "03d68a49ef1e131cf8942d5a07a0ff008ede6a1a",
+			CommitAuthor:  "Michael Glass <me@mike.is>",
+			CommitBranch:  "main",
+			CommitMessage: "this is what I did\nand here are some details",
+			APIV4URL:      "https://gitlab.com/api/v4",
+		}.MakeProvider()
 
 		Expect(provider.JobTags).To(Equal(map[string]any{
 			"gitlab_job_stage":       "test",

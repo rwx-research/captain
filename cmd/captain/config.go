@@ -24,11 +24,7 @@ const (
 type Config struct {
 	ConfigFile
 
-	Generic   providers.GenericEnv
-	GitHub    providers.GitHubEnv
-	Buildkite providers.BuildkiteEnv
-	CircleCI  providers.CircleCIEnv
-	GitLab    providers.GitLabEnv
+	ProvidersEnv providers.Env
 
 	Secrets struct {
 		APIToken string `env:"RWX_ACCESS_TOKEN"`

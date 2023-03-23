@@ -2,6 +2,14 @@ package providers
 
 import "github.com/rwx-research/captain-cli/internal/errors"
 
+type Env struct {
+	Buildkite BuildkiteEnv
+	CircleCI  CircleCIEnv
+	Generic   GenericEnv
+	GitHub    GitHubEnv
+	GitLab    GitLabEnv
+}
+
 type Provider struct {
 	AttemptedBy   string
 	BranchName    string
@@ -11,8 +19,21 @@ type Provider struct {
 	ProviderName  string
 }
 
+func Validate(p Provider) error {
+	err := p.validate()
+	if err == nil {
+		return nil
+	}
+
+	if p.ProviderName == "generic" {
+		return errors.NewConfigurationError("Could not detect a supported CI provider. Without a " +
+			"supported CI provider, we require --who, --branch, and --sha to be set.")
+	}
+	return err
+}
+
 // assigns default validation error if it exists
-func (p Provider) Validate() error {
+func (p Provider) validate() error {
 	if p.ProviderName == "" {
 		return errors.NewInternalError("provider name should never be empty")
 	}
@@ -55,4 +76,30 @@ func firstNonempty(strs ...string) string {
 	}
 
 	return ""
+}
+
+func (env Env) MakeProviderAdapter() (Provider, error) {
+	// detect provider from environment if we can
+	wrapError := func(p Provider, err error) (Provider, error) {
+		return p, errors.Wrap(err, "error building detected provider")
+	}
+	detectedProvider, err := func() (Provider, error) {
+		switch {
+		case env.GitHub.Detected:
+			return wrapError(env.GitHub.MakeProvider())
+		case env.Buildkite.Detected:
+			return wrapError(env.Buildkite.MakeProvider())
+		case env.CircleCI.Detected:
+			return wrapError(env.CircleCI.MakeProvider())
+		case env.GitLab.Detected:
+			return wrapError(env.GitLab.MakeProvider())
+		}
+		return Provider{}, nil
+	}()
+	if err != nil {
+		return Provider{}, err
+	}
+
+	// merge the generic provider into the detected provider. The captain-specific flags & env vars take precedence.
+	return Merge(detectedProvider, env.Generic.MakeProvider()), nil
 }

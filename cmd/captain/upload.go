@@ -1,11 +1,10 @@
 package main
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
 var (
@@ -20,7 +19,7 @@ var (
 		Use:     "results [file]",
 		Short:   "Upload test results to Captain",
 		Long:    descriptionUploadResults,
-		PreRunE: initCLIService,
+		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Should also support reading from stdin
 			_, err := captain.UploadTestResults(cmd.Context(), suiteID, args)
@@ -32,13 +31,9 @@ var (
 func init() {
 	// Although `suite-id` is a global flag, we need to re-define it here in order to mark it as required.
 	// This is due to a bug in 'spf13/cobra'. See https://github.com/spf13/cobra/issues/921
-	uploadResultsCmd.Flags().StringVar(&suiteID, "suite-id", os.Getenv("CAPTAIN_SUITE_ID"),
-		"the id of the test suite (required). Also set with environment variable CAPTAIN_SUITE_ID")
+	addSuiteIDFlag(uploadResultsCmd, &suiteID)
 	addFrameworkFlags(uploadResultsCmd)
-
-	if err := uploadResultsCmd.MarkFlagRequired("suite-id"); err != nil {
-		initializationErrors = append(initializationErrors, err)
-	}
+	addGenericProviderFlags(uploadResultsCmd, &cliArgs.GenericProvider)
 
 	uploadCmd.AddCommand(uploadResultsCmd)
 	rootCmd.AddCommand(uploadCmd)

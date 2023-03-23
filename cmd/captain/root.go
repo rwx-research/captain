@@ -41,8 +41,9 @@ var (
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configFilePath, "config-file", "", "The config file for captain")
-	rootCmd.PersistentFlags().StringVar(&suiteID, "suite-id", os.Getenv("CAPTAIN_SUITE_ID"),
-		"the id of the test suite. Also set with environment variable CAPTAIN_SUITE_ID")
+
+	addSuiteIDFlagOptionally(rootCmd, &suiteID)
+
 	rootCmd.PersistentFlags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	rootCmd.PersistentFlags().StringVar(
 		&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github",
@@ -72,11 +73,11 @@ func bindRootCmdFlags(cfg Config) Config {
 	}
 
 	if githubJobName != "" {
-		cfg.GitHub.Name = githubJobName
+		cfg.ProvidersEnv.GitHub.Name = githubJobName
 	}
 
 	if githubJobMatrix != "" {
-		cfg.GitHub.Matrix = githubJobMatrix
+		cfg.ProvidersEnv.GitHub.Matrix = githubJobMatrix
 	}
 
 	if insecure {
@@ -84,4 +85,20 @@ func bindRootCmdFlags(cfg Config) Config {
 	}
 
 	return cfg
+}
+
+func addSuiteIDFlagOptionally(cmd *cobra.Command, destination *string) {
+	cmd.Flags().StringVar(&suiteID, "suite-id", os.Getenv("CAPTAIN_SUITE_ID"),
+		"the id of the test suite (required). Also set with environment variable CAPTAIN_SUITE_ID")
+}
+
+// Although `suite-id` is a global flag, we need to re-define it wherever we want to make it required
+// This is due to a bug in 'spf13/cobra'. See https://github.com/spf13/cobra/issues/921
+func addSuiteIDFlag(cmd *cobra.Command, destination *string) {
+	addSuiteIDFlagOptionally(cmd, destination)
+
+	if err := cmd.MarkFlagRequired("suite-id"); err != nil {
+		// smell: global
+		initializationErrors = append(initializationErrors, err)
+	}
 }

@@ -56,7 +56,7 @@ var (
 		Use:     "run",
 		Short:   "Execute a build- or test-suite",
 		Long:    descriptionRun,
-		PreRunE: initCLIService,
+		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var postRetryCommands, preRetryCommands []string
 			var failFast, printSummary bool
@@ -117,6 +117,8 @@ var (
 )
 
 func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
+	addSuiteIDFlag(runCmd, &suiteID)
+
 	runCmd.Flags().StringVar(
 		&cliArgs.testResults,
 		"test-results",
@@ -233,49 +235,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 		),
 	)
 
-	runCmd.Flags().StringVar(
-		&cliArgs.GenericProvider.Branch,
-		"branch",
-		os.Getenv("CAPTAIN_BRANCH"),
-		"the branch name of the commit being built\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_BRANCH\n",
-	)
-
-	runCmd.Flags().StringVar(
-		&cliArgs.GenericProvider.Who,
-		"who",
-		os.Getenv("CAPTAIN_WHO"),
-		"the person who triggered the build\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_WHO\n",
-	)
-	runCmd.Flags().StringVar(
-		&cliArgs.GenericProvider.Sha,
-		"sha",
-		os.Getenv("CAPTAIN_SHA"),
-		"the git commit sha hash of the commit being built\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_SHA\n",
-	)
-
-	runCmd.Flags().StringVar(
-		&cliArgs.GenericProvider.CommitMessage,
-		"commit-message",
-		os.Getenv("CAPTAIN_COMMIT_MESSAGE"),
-		"the git commit message of the commit being built\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_COMMIT_MESSAGE\n",
-	)
-
-	runCmd.Flags().StringVar(
-		&cliArgs.GenericProvider.BuildURL,
-		"build-url",
-		os.Getenv("CAPTAIN_BUILD_URL"),
-		"the URL of the build results\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_BUILD_URL\n",
-	)
+	addGenericProviderFlags(runCmd, &cliArgs.GenericProvider)
 
 	addFrameworkFlags(runCmd)
 }
@@ -339,7 +299,7 @@ func bindRunCmdFlags(cfg Config) Config {
 
 		cfg.TestSuites[suiteID] = suiteConfig
 
-		cfg.Generic = providers.MergeGeneric(cfg.Generic, cliArgs.GenericProvider)
+		cfg.ProvidersEnv.Generic = providers.MergeGeneric(cfg.ProvidersEnv.Generic, cliArgs.GenericProvider)
 	}
 
 	if cliArgs.quiet {
@@ -347,4 +307,55 @@ func bindRunCmdFlags(cfg Config) Config {
 	}
 
 	return cfg
+}
+
+func addGenericProviderFlags(cmd *cobra.Command, destination *providers.GenericEnv) {
+	cmd.Flags().StringVar(
+		&destination.Branch,
+		"branch",
+		os.Getenv("CAPTAIN_BRANCH"),
+		"the branch name of the commit being built\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_BRANCH\n",
+	)
+
+	cmd.Flags().StringVar(
+		&destination.Who,
+		"who",
+		os.Getenv("CAPTAIN_WHO"),
+		"the person who triggered the build\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_WHO\n",
+	)
+
+	addShaFlag(cmd, &destination.Sha)
+
+	cmd.Flags().StringVar(
+		&destination.CommitMessage,
+		"commit-message",
+		os.Getenv("CAPTAIN_COMMIT_MESSAGE"),
+		"the git commit message of the commit being built\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_COMMIT_MESSAGE\n",
+	)
+
+	cmd.Flags().StringVar(
+		&destination.BuildURL,
+		"build-url",
+		os.Getenv("CAPTAIN_BUILD_URL"),
+		"the URL of the build results\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_BUILD_URL\n",
+	)
+}
+
+func addShaFlag(cmd *cobra.Command, destination *string) {
+	cmd.Flags().StringVar(
+		destination,
+		"sha",
+		os.Getenv("CAPTAIN_SHA"),
+		"the git commit sha hash of the commit being built\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_SHA\n",
+	)
 }

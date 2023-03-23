@@ -54,128 +54,96 @@ var genericParsers []parsing.Parser = []parsing.Parser{
 }
 
 // TODO: It looks like errors returned from this function are not getting logged correctly
-func initCLIService(cmd *cobra.Command, args []string) error {
-	var apiClient backend.Client
-	var err error
+// note: different commands have different requirements for the provider
+// so they pass in their own validator accordingly
+func initCLIService(providerValidator func(providers.Provider) error) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		var apiClient backend.Client
+		var err error
 
-	cfg, err = InitConfig(cmd)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	logger := logging.NewProductionLogger()
-	if cfg.Output.Debug {
-		logger = logging.NewDebugLogger()
-	}
-
-	providerAdapter, err := MakeProviderAdapter(cfg)
-	if err != nil {
-		return errors.Wrap(err, "failed to construct provider adapter")
-	}
-
-	if cfg.Secrets.APIToken != "" {
-		apiClient, err = remote.NewClient(remote.ClientConfig{
-			Debug:    cfg.Output.Debug,
-			Host:     cfg.Cloud.APIHost,
-			Insecure: cfg.Cloud.Insecure,
-			Log:      logger,
-			Token:    cfg.Secrets.APIToken,
-			Provider: providerAdapter,
-		})
-	} else {
-		var flakyTestsFilePath, testTimingsFilePath string
-		flakyTestsFilePath, err = findInParentDir(flakyTestsFileName)
+		cfg, err = InitConfig(cmd)
 		if err != nil {
-			flakyTestsFilePath = flakyTestsFileName
-			logger.Warnf(
-				"Unable to find existing flaky-tests.json file. Captain will create a new one at %q",
-				flakyTestsFilePath,
-			)
+			return errors.WithStack(err)
 		}
 
-		testTimingsFilePath, err = findInParentDir(testTimingsFileName)
+		logger := logging.NewProductionLogger()
+		if cfg.Output.Debug {
+			logger = logging.NewDebugLogger()
+		}
+
+		providerAdapter, err := cfg.ProvidersEnv.MakeProviderAdapter()
 		if err != nil {
-			testTimingsFilePath = testTimingsFileName
-			logger.Warnf(
-				"Unable to find existing test-timings.json file. Captain will create a new one at %q",
-				testTimingsFilePath,
-			)
+			return errors.Wrap(err, "failed to construct provider adapter")
+		}
+		err = providerValidator(providerAdapter)
+		if err != nil {
+			return err
 		}
 
-		apiClient, err = local.NewClient(fs.Local{}, flakyTestsFilePath, testTimingsFilePath)
-	}
-	if err != nil {
-		return errors.Wrap(err, "unable to create API client")
-	}
+		if cfg.Secrets.APIToken != "" {
+			apiClient, err = remote.NewClient(remote.ClientConfig{
+				Debug:    cfg.Output.Debug,
+				Host:     cfg.Cloud.APIHost,
+				Insecure: cfg.Cloud.Insecure,
+				Log:      logger,
+				Token:    cfg.Secrets.APIToken,
+				Provider: providerAdapter,
+			})
+		} else {
+			var flakyTestsFilePath, testTimingsFilePath string
+			flakyTestsFilePath, err = findInParentDir(flakyTestsFileName)
+			if err != nil {
+				flakyTestsFilePath = flakyTestsFileName
+				logger.Warnf(
+					"Unable to find existing flaky-tests.json file. Captain will create a new one at %q",
+					flakyTestsFilePath,
+				)
+			}
 
-	var frameworkKind, frameworkLanguage string
-	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-		frameworkKind = suiteConfig.Results.Framework
-		frameworkLanguage = suiteConfig.Results.Language
-	}
+			testTimingsFilePath, err = findInParentDir(testTimingsFileName)
+			if err != nil {
+				testTimingsFilePath = testTimingsFileName
+				logger.Warnf(
+					"Unable to find existing test-timings.json file. Captain will create a new one at %q",
+					testTimingsFilePath,
+				)
+			}
 
-	parseConfig := parsing.Config{
-		ProvidedFrameworkKind:     frameworkKind,
-		ProvidedFrameworkLanguage: frameworkLanguage,
-		MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-		FrameworkParsers:          frameworkParsers,
-		GenericParsers:            genericParsers,
-		Logger:                    logger,
-	}
-
-	if err := parseConfig.Validate(); err != nil {
-		return errors.Wrap(err, "invalid parser config")
-	}
-
-	captain = cli.Service{
-		API:         apiClient,
-		Log:         logger,
-		FileSystem:  fs.Local{},
-		TaskRunner:  exec.Local{},
-		ParseConfig: parseConfig,
-	}
-
-	return nil
-}
-
-func MakeProviderAdapter(cfg Config) (providers.Provider, error) {
-	// detect provider from environment if we can
-	wrapError := func(p providers.Provider, err error) (providers.Provider, error) {
-		return p, errors.Wrap(err, "error building detected provider")
-	}
-	detectedProvider, err := func() (providers.Provider, error) {
-		switch {
-		case cfg.GitHub.Detected:
-			return wrapError(providers.MakeGithubProvider(cfg.GitHub))
-		case cfg.Buildkite.Detected:
-			return wrapError(providers.MakeBuildkiteProvider(cfg.Buildkite))
-		case cfg.CircleCI.Detected:
-			return wrapError(providers.MakeCircleciProvider(cfg.CircleCI))
-		case cfg.GitLab.Detected:
-			return wrapError(providers.MakeGitLabProvider(cfg.GitLab))
+			apiClient, err = local.NewClient(fs.Local{}, flakyTestsFilePath, testTimingsFilePath)
 		}
-		return providers.Provider{}, nil
-	}()
-	if err != nil {
-		return providers.Provider{}, err
-	}
-
-	// then build provider based on captain-specific flags & env vars
-	genericProvider := providers.MakeGenericProvider(cfg.Generic)
-
-	// merge the generic provider into the detected provider. The captain-specific flags & env vars take precedence.
-	mergedProvider := providers.Merge(detectedProvider, genericProvider)
-
-	err = mergedProvider.Validate()
-	if err != nil {
-		if mergedProvider.ProviderName == "generic" {
-			return providers.Provider{}, errors.NewConfigurationError("Could not detect a supported CI provider. Without a " +
-				"supported CI provider, we require --who, --branch, and --sha to be set.")
+		if err != nil {
+			return errors.Wrap(err, "unable to create API client")
 		}
-		return providers.Provider{}, errors.WithStack(err)
-	}
 
-	return mergedProvider, nil
+		var frameworkKind, frameworkLanguage string
+		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+			frameworkKind = suiteConfig.Results.Framework
+			frameworkLanguage = suiteConfig.Results.Language
+		}
+
+		parseConfig := parsing.Config{
+			ProvidedFrameworkKind:     frameworkKind,
+			ProvidedFrameworkLanguage: frameworkLanguage,
+			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+			FrameworkParsers:          frameworkParsers,
+			GenericParsers:            genericParsers,
+			Logger:                    logger,
+		}
+
+		if err := parseConfig.Validate(); err != nil {
+			return errors.Wrap(err, "invalid parser config")
+		}
+
+		captain = cli.Service{
+			API:         apiClient,
+			Log:         logger,
+			FileSystem:  fs.Local{},
+			TaskRunner:  exec.Local{},
+			ParseConfig: parseConfig,
+		}
+
+		return nil
+	}
 }
 
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running

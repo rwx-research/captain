@@ -33,7 +33,7 @@ type GitLabEnv struct {
 	APIV4URL string `env:"CI_API_V4_URL"`
 }
 
-func MakeGitLabProvider(cfg GitLabEnv) (Provider, error) {
+func (cfg GitLabEnv) MakeProvider() (Provider, error) {
 	attemptedBy := cfg.UserLogin
 	if attemptedBy == "" {
 		// presumably if there's no attempted by, the build was triggered by pushing the commit / the commit author

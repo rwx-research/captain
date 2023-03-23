@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("MakeCircleciProvider", func() {
+var _ = Describe("CircleCiEnv.MakeProvider", func() {
 	var params providers.CircleCIEnv
 
 	BeforeEach(func() {
@@ -30,7 +30,7 @@ var _ = Describe("MakeCircleciProvider", func() {
 	})
 
 	It("is valid", func() {
-		provider, err := providers.MakeCircleciProvider(params)
+		provider, err := params.MakeProvider()
 		Expect(err).To(BeNil())
 		Expect(provider.AttemptedBy).To(Equal("test"))
 		Expect(provider.BranchName).To(Equal("main"))
@@ -41,54 +41,54 @@ var _ = Describe("MakeCircleciProvider", func() {
 
 	It("requires BuildNum", func() {
 		params.BuildNum = ""
-		_, err := providers.MakeCircleciProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing Build Num"))
 	})
 
 	It("requires BuildURL", func() {
 		params.BuildURL = ""
-		_, err := providers.MakeCircleciProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing build URL"))
 	})
 
 	It("requires JobName", func() {
 		params.Job = ""
-		_, err := providers.MakeCircleciProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing job name"))
 	})
 
 	It("does not require NodeIndex", func() {
 		params.NodeIndex = ""
-		_, err := providers.MakeCircleciProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("does not require NodeTotal", func() {
 		params.NodeTotal = ""
-		_, err := providers.MakeCircleciProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("requires RepoAccountName", func() {
 		params.ProjectUsername = ""
-		_, err := providers.MakeCircleciProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing project username"))
 	})
 
 	It("requires RepoName", func() {
 		params.ProjectReponame = ""
-		_, err := providers.MakeCircleciProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing project reponame"))
 	})
 
 	It("requires RepoURL", func() {
 		params.RepositoryURL = ""
-		_, err := providers.MakeCircleciProvider(params)
+		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing repository URL"))
 	})
@@ -96,23 +96,21 @@ var _ = Describe("MakeCircleciProvider", func() {
 
 var _ = Describe("Circleciparams.JobTags", func() {
 	It("constructs job tags with parallel attributes", func() {
-		provider, _ := providers.MakeCircleciProvider(
-			providers.CircleCIEnv{
-				BuildNum:  "18",
-				BuildURL:  "https://circleci.com/gh/rwx-research/captain-cli/18",
-				Job:       "build",
-				NodeIndex: "0",
-				NodeTotal: "2",
+		provider, _ := providers.CircleCIEnv{
+			BuildNum:  "18",
+			BuildURL:  "https://circleci.com/gh/rwx-research/captain-cli/18",
+			Job:       "build",
+			NodeIndex: "0",
+			NodeTotal: "2",
 
-				ProjectUsername: "rwx",
-				ProjectReponame: "captain-cli",
-				RepositoryURL:   "git@github.com:rwx-research/captain-cli.git",
+			ProjectUsername: "rwx",
+			ProjectReponame: "captain-cli",
+			RepositoryURL:   "git@github.com:rwx-research/captain-cli.git",
 
-				Branch:   "main",
-				Sha1:     "000bd5713d35f778fb51d2b0bf034e8fff5b60b1",
-				Username: "test",
-			},
-		)
+			Branch:   "main",
+			Sha1:     "000bd5713d35f778fb51d2b0bf034e8fff5b60b1",
+			Username: "test",
+		}.MakeProvider()
 
 		Expect(provider.JobTags).To(Equal(map[string]any{
 			"circle_build_num":        "18",
@@ -127,23 +125,21 @@ var _ = Describe("Circleciparams.JobTags", func() {
 	})
 
 	It("constructs job tags without parallel attributes", func() {
-		provider, _ := providers.MakeCircleciProvider(
-			providers.CircleCIEnv{
-				BuildNum:  "18",
-				BuildURL:  "https://circleci.com/gh/rwx-research/captain-cli/18",
-				Job:       "build",
-				NodeIndex: "",
-				NodeTotal: "",
+		provider, _ := providers.CircleCIEnv{
+			BuildNum:  "18",
+			BuildURL:  "https://circleci.com/gh/rwx-research/captain-cli/18",
+			Job:       "build",
+			NodeIndex: "",
+			NodeTotal: "",
 
-				ProjectUsername: "rwx",
-				ProjectReponame: "captain-cli",
-				RepositoryURL:   "git@github.com:rwx-research/captain-cli.git",
+			ProjectUsername: "rwx",
+			ProjectReponame: "captain-cli",
+			RepositoryURL:   "git@github.com:rwx-research/captain-cli.git",
 
-				Branch:   "main",
-				Sha1:     "000bd5713d35f778fb51d2b0bf034e8fff5b60b1",
-				Username: "test",
-			},
-		)
+			Branch:   "main",
+			Sha1:     "000bd5713d35f778fb51d2b0bf034e8fff5b60b1",
+			Username: "test",
+		}.MakeProvider()
 
 		Expect(provider.JobTags).To(Equal(map[string]any{
 			"circle_build_num":        "18",

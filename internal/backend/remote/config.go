@@ -27,11 +27,6 @@ func (cfg ClientConfig) Validate() error {
 		return errors.NewConfigurationError("missing API token")
 	}
 
-	providerErr := cfg.Provider.Validate()
-	if providerErr != nil {
-		return errors.Wrap(providerErr, "invalid provider")
-	}
-
 	return nil
 }
 

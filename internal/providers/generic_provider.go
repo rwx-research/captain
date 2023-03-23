@@ -13,7 +13,7 @@ type GenericEnv struct {
 	BuildURL      string
 }
 
-func MakeGenericProvider(cfg GenericEnv) Provider {
+func (cfg GenericEnv) MakeProvider() Provider {
 	return Provider{
 		AttemptedBy:   cfg.Who,
 		BranchName:    cfg.Branch,

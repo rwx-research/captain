@@ -35,7 +35,7 @@ type GitHubEnv struct {
 	Matrix     string // passed in via CLI args
 }
 
-func MakeGithubProvider(cfg GitHubEnv) (Provider, error) {
+func (cfg GitHubEnv) MakeProvider() (Provider, error) {
 	eventPayloadData := struct {
 		HeadCommit struct {
 			Message string `json:"message"`
@@ -51,11 +51,11 @@ func MakeGithubProvider(cfg GitHubEnv) (Provider, error) {
 		}
 	}
 
-	return MakeGithubProviderWithoutCommitMessageParsing(cfg, eventPayloadData.HeadCommit.Message)
+	return cfg.MakeProviderWithoutCommitMessageParsing(eventPayloadData.HeadCommit.Message)
 }
 
 // this function is only here to make the provider easier to test without writing the event file to disk
-func MakeGithubProviderWithoutCommitMessageParsing(cfg GitHubEnv, message string) (Provider, error) {
+func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(message string) (Provider, error) {
 	branchName := cfg.RefName
 	if cfg.EventName == "pull_request" {
 		branchName = cfg.HeadRef
