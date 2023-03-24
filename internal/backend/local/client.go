@@ -2,24 +2,39 @@ package local
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/testing"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
 type Client struct {
-	RunConfiguration backend.RunConfiguration
-	Timings          []testing.TestFileTiming `json:",omitempty"`
+	fs              fs.FileSystem
+	Flakes          TestConfiguration
+	flakesPath      string
+	Quarantines     TestConfiguration
+	quarantinesPath string
+	quanratinesTime time.Time
+	Timings         map[string]time.Duration
+	timingsPath     string
 }
 
-func NewClient(fileSystem fs.FileSystem, runConfigPath, timingsPath string) (Client, error) {
-	var c Client
+func NewClient(fileSystem fs.FileSystem, flakesPath, quarantinesPath, timingsPath string) (Client, error) {
+	c := Client{
+		fs:              fileSystem,
+		flakesPath:      flakesPath,
+		quarantinesPath: quarantinesPath,
+		Timings:         make(map[string]time.Duration),
+		timingsPath:     timingsPath,
+	}
 
 	openOrCreate := func(path string, v any) (fs.File, error) {
 		fd, err := fileSystem.Open(path)
@@ -36,7 +51,7 @@ func NewClient(fileSystem fs.FileSystem, runConfigPath, timingsPath string) (Cli
 			return nil, errors.Wrap(err, fmt.Sprintf("unable to create %q", path))
 		}
 
-		if err = json.NewEncoder(fd).Encode(v); err != nil {
+		if err = yaml.NewEncoder(fd).Encode(v); err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("unable to write to %q", path))
 		}
 
@@ -55,38 +70,99 @@ func NewClient(fileSystem fs.FileSystem, runConfigPath, timingsPath string) (Cli
 		}
 		defer fd.Close()
 
-		if err := json.NewDecoder(fd).Decode(v); err != nil {
+		if path == quarantinesPath {
+			info, err := fd.Stat()
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			c.quanratinesTime = info.ModTime()
+		}
+
+		if err := yaml.NewDecoder(fd).Decode(v); err != nil && !errors.Is(err, io.EOF) {
 			return errors.WithStack(err)
 		}
 
 		return nil
 	}
 
-	if err := read(runConfigPath, &c.RunConfiguration); err != nil {
-		fmt.Println("one", err)
+	if err := read(flakesPath, &c.Flakes); err != nil {
+		return c, errors.WithStack(err)
+	}
+
+	if err := read(quarantinesPath, &c.Quarantines); err != nil {
 		return c, errors.WithStack(err)
 	}
 
 	if err := read(timingsPath, &c.Timings); err != nil {
-		fmt.Println("two", err)
 		return c, errors.WithStack(err)
 	}
 
 	return c, nil
 }
 
-func (c Client) GetRunConfiguration(ctx context.Context, suiteID string) (backend.RunConfiguration, error) {
-	return c.RunConfiguration, nil
-}
-
 func (c Client) GetTestTimingManifest(ctx context.Context, suiteID string) ([]testing.TestFileTiming, error) {
-	return c.Timings, nil
+	testTimings := make([]testing.TestFileTiming, 0)
+
+	for file, duration := range c.Timings {
+		testTimings = append(testTimings, testing.TestFileTiming{
+			Filepath: file,
+			Duration: duration,
+		})
+	}
+
+	return testTimings, nil
 }
 
-func (c Client) UploadTestResults(
+func (c Client) GetRunConfiguration(ctx context.Context, suiteID string) (backend.RunConfiguration, error) {
+	return makeRunConfiguration(c.Flakes[suiteID], c.Quarantines[suiteID], c.quanratinesTime)
+}
+
+func (c Client) UpdateTestResults(
 	ctx context.Context,
 	suiteID string,
-	testResultsFiles []backend.TestResultsFile,
+	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
-	return nil, errors.NewConfigurationError("Uploading test restuls requires a Captain Cloud subscription.")
+	if c.Timings == nil {
+		c.Timings = make(map[string]time.Duration)
+	}
+
+	newTimings := make(map[string]time.Duration)
+
+	for _, test := range testResults.Tests {
+		if test.Location != nil && test.Attempt.Duration != nil {
+			testDuration, ok := newTimings[test.Location.File]
+			if ok {
+				testDuration += *test.Attempt.Duration
+			} else {
+				testDuration = *test.Attempt.Duration
+			}
+			newTimings[test.Location.File] = testDuration
+		}
+	}
+
+	for file, duration := range newTimings {
+		c.Timings[file] = duration
+	}
+
+	timingsFile, err := c.fs.OpenFile(c.timingsPath, os.O_WRONLY, 0)
+	if err != nil {
+		return nil, errors.NewSystemError("unable to open %q: %s", c.timingsPath, err)
+	}
+	defer timingsFile.Close()
+
+	timingsEncoder := yaml.NewEncoder(timingsFile)
+	if err := timingsEncoder.Encode(c.Timings); err != nil {
+		return nil, errors.NewSystemError("unable to write to %q: %s", c.timingsPath, err)
+	}
+
+	originalPaths := make([]string, len(testResults.DerivedFrom))
+	for i, result := range testResults.DerivedFrom {
+		originalPaths[i] = result.OriginalFilePath
+	}
+
+	return []backend.TestResultsUploadResult{{
+		OriginalPaths: originalPaths,
+		Uploaded:      true,
+	}}, nil
 }

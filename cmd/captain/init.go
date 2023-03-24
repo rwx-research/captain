@@ -90,26 +90,35 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 				Provider: providerAdapter,
 			})
 		} else {
-			var flakyTestsFilePath, testTimingsFilePath string
-			flakyTestsFilePath, err = findInParentDir(flakyTestsFileName)
+			var flakesFilePath, quarantinesFilePath, timingsFilePath string
+			flakesFilePath, err = findInParentDir(flakesFileName)
 			if err != nil {
-				flakyTestsFilePath = flakyTestsFileName
+				flakesFilePath = flakesFileName
 				logger.Warnf(
-					"Unable to find existing flaky-tests.json file. Captain will create a new one at %q",
-					flakyTestsFilePath,
+					"Unable to find existing flakes.yaml file. Captain will create a new one at %q",
+					flakesFilePath,
 				)
 			}
 
-			testTimingsFilePath, err = findInParentDir(testTimingsFileName)
+			quarantinesFilePath, err = findInParentDir(quarantinesFileName)
 			if err != nil {
-				testTimingsFilePath = testTimingsFileName
+				quarantinesFilePath = quarantinesFileName
 				logger.Warnf(
-					"Unable to find existing test-timings.json file. Captain will create a new one at %q",
-					testTimingsFilePath,
+					"Unable to find existing quarantines.yaml file. Captain will create a new one at %q",
+					quarantinesFilePath,
 				)
 			}
 
-			apiClient, err = local.NewClient(fs.Local{}, flakyTestsFilePath, testTimingsFilePath)
+			timingsFilePath, err = findInParentDir(timingsFileName)
+			if err != nil {
+				timingsFilePath = timingsFileName
+				logger.Warnf(
+					"Unable to find existing timings.yaml file. Captain will create a new one at %q",
+					timingsFilePath,
+				)
+			}
+
+			apiClient, err = local.NewClient(fs.Local{}, flakesFilePath, quarantinesFilePath, timingsFilePath)
 		}
 		if err != nil {
 			return errors.Wrap(err, "unable to create API client")

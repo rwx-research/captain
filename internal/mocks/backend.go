@@ -6,13 +6,14 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/testing"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-// API is a mocked implementation of 'backend.APIClient'.
+// API is a mocked implementation of 'backend.Client'.
 type API struct {
 	MockGetRunConfiguration   func(context.Context, string) (backend.RunConfiguration, error)
 	MockGetTestTimingManifest func(context.Context, string) ([]testing.TestFileTiming, error)
-	MockUploadTestResults     func(context.Context, string, []backend.TestResultsFile) (
+	MockUpdateTestResults     func(context.Context, string, v1.TestResults) (
 		[]backend.TestResultsUploadResult, error,
 	)
 }
@@ -42,14 +43,14 @@ func (a *API) GetTestTimingManifest(
 }
 
 // UploadTestResults either calls the configured mock of itself or returns an error if that doesn't exist.
-func (a *API) UploadTestResults(
+func (a *API) UpdateTestResults(
 	ctx context.Context,
 	testSuiteID string,
-	testResultsFiles []backend.TestResultsFile,
+	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
-	if a.MockUploadTestResults != nil {
-		return a.MockUploadTestResults(ctx, testSuiteID, testResultsFiles)
+	if a.MockUpdateTestResults != nil {
+		return a.MockUpdateTestResults(ctx, testSuiteID, testResults)
 	}
 
-	return nil, errors.NewConfigurationError("MockUploadTestResults was not configured")
+	return nil, errors.NewConfigurationError("MockUpdateTestResults was not configured")
 }

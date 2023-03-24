@@ -17,6 +17,7 @@ type FileSystem struct {
 	MockMkdirAll   func(string, os.FileMode) error
 	MockMkdirTemp  func(string, string) (string, error)
 	MockOpen       func(name string) (fs.File, error)
+	MockOpenFile   func(name string, flag int, perm os.FileMode) (fs.File, error)
 	MockRemove     func(name string) error
 	MockRemoveAll  func(path string) error
 	MockRename     func(oldname string, newname string) error
@@ -72,6 +73,14 @@ func (f *FileSystem) Open(name string) (fs.File, error) {
 	}
 
 	return nil, errors.NewConfigurationError("MockOpen was not configured")
+}
+
+func (f *FileSystem) OpenFile(name string, flag int, perm os.FileMode) (fs.File, error) {
+	if f.MockOpenFile != nil {
+		return f.MockOpenFile(name, flag, perm)
+	}
+
+	return nil, errors.NewConfigurationError("MockOpenFile was not configured")
 }
 
 func (f *FileSystem) MkdirAll(path string, perm os.FileMode) error {

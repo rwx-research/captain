@@ -76,9 +76,14 @@ func (l Local) MkdirTemp(dir, pattern string) (string, error) {
 	return dir, errors.WithStack(err)
 }
 
-// Open opens a file for further processing
+// Open opens a file for reading. Use OpenFile to open a file with different permissions
 func (l Local) Open(name string) (File, error) {
 	f, err := os.Open(name)
+	return f, errors.WithStack(err)
+}
+
+func (l Local) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
+	f, err := os.OpenFile(name, flag, perm)
 	return f, errors.WithStack(err)
 }
 

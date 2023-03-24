@@ -1,6 +1,7 @@
 package remote
 
 import (
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -15,6 +16,7 @@ type ClientConfig struct {
 	Log      *zap.SugaredLogger
 	Token    string
 	Provider providers.Provider
+	NewUUID  func() (uuid.UUID, error)
 }
 
 // Validate checks the configuration for errors
@@ -34,6 +36,10 @@ func (cfg ClientConfig) Validate() error {
 func (cfg ClientConfig) WithDefaults() ClientConfig {
 	if cfg.Host == "" {
 		cfg.Host = defaultHost
+	}
+
+	if cfg.NewUUID == nil {
+		cfg.NewUUID = uuid.NewRandom
 	}
 
 	return cfg

@@ -1,5 +1,6 @@
-/.captain/flaky-tests.json
-/.captain/test-timings.json
+/.captain/flakes.yaml
+/.captain/quarantines.yaml
+/.captain/timings.yaml
 /.direnv
 /captain
 /report.xml

@@ -27,6 +27,7 @@ type RunConfig struct {
 	RetryCommandTemplate      string
 	SuiteID                   string
 	SubstitutionsByFramework  map[v1.Framework]targetedretries.Substitution
+	UpdateStoredResults       bool
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(

@@ -158,10 +158,10 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		)
 
 		for _, uploadedPath := range uploadedPaths {
-			s.Log.Infoln(fmt.Sprintf("- Uploaded %v", uploadedPath))
+			s.Log.Infoln(fmt.Sprintf("- Updated Captain with results from %v", uploadedPath))
 		}
 		for _, erroredPath := range erroredPaths {
-			s.Log.Infoln(fmt.Sprintf("- Unable to upload %v", erroredPath))
+			s.Log.Infoln(fmt.Sprintf("- Unable to update Captain with results from %v", erroredPath))
 		}
 	}
 
@@ -612,11 +612,16 @@ func (s Service) reportTestResults(
 	}
 
 	// only attempt the upload if the CLI is set up to interact with Captain Cloud.
-	if _, ok := s.API.(local.Client); !ok {
-		return s.performTestResultsUpload(ctx, cfg.SuiteID, []v1.TestResults{testResults})
+	if _, ok := s.API.(local.Client); ok && !cfg.UpdateStoredResults {
+		return nil, nil
 	}
 
-	return nil, nil
+	result, err := s.API.UpdateTestResults(ctx, cfg.SuiteID, testResults)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to update test results")
+	}
+
+	return result, nil
 }
 
 func (s Service) printHeader() {

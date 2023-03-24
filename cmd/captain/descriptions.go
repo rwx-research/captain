@@ -14,6 +14,13 @@ Example use:
 
 	captain upload results --suite-id="JUnit" *.xml`
 
+	descriptionUpdateResults = `'captain update results' will parse a test-results file and updates captain's
+internal storage accordingly.
+
+Example use:
+
+	captain update results --suite-id="JUnit" *.xml`
+
 	descriptionRun = `'captain run' can be used to execute a build- or test-suite and optionally upload the resulting
 artifacts.
 

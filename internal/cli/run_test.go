@@ -2,7 +2,6 @@ package cli_test
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	iofs "io/fs"
@@ -192,13 +191,12 @@ var _ = Describe("Run", func() {
 			mockUploadTestResults := func(
 				ctx context.Context,
 				testSuite string,
-				testResultsFiles []backend.TestResultsFile,
+				testResults v1.TestResults,
 			) ([]backend.TestResultsUploadResult, error) {
-				Expect(testResultsFiles).To(HaveLen(1))
 				testResultsFileUploaded = true
 				return []backend.TestResultsUploadResult{{OriginalPaths: []string{testResultsFilePath}, Uploaded: true}}, nil
 			}
-			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
+			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
 
 			mockGetRunConfiguration := func(
 				ctx context.Context,
@@ -247,7 +245,9 @@ var _ = Describe("Run", func() {
 			}
 
 			Expect(logMessages).To(ContainElement(ContainSubstring("Found 1 test result file")))
-			Expect(logMessages).To(ContainElement(ContainSubstring(fmt.Sprintf("- Uploaded %v", testResultsFilePath))))
+			Expect(logMessages).To(ContainElement(ContainSubstring(
+				fmt.Sprintf("- Updated Captain with results from %v", testResultsFilePath),
+			)))
 		})
 
 		Context("ABQ", func() {
@@ -409,7 +409,7 @@ var _ = Describe("Run", func() {
 			firstFailedTestDescription     string
 			secondFailedTestDescription    string
 			firstSuccessfulTestDescription string
-			uploadedTestResults            []byte
+			uploadedTestResults            *v1.TestResults
 		)
 
 		BeforeEach(func() {
@@ -458,21 +458,18 @@ var _ = Describe("Run", func() {
 			mockUploadTestResults := func(
 				ctx context.Context,
 				testSuite string,
-				testResultsFiles []backend.TestResultsFile,
+				testResults v1.TestResults,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
-				Expect(testResultsFiles).To(HaveLen(1))
 
-				buf, err := io.ReadAll(testResultsFiles[0].FD)
-				Expect(err).NotTo(HaveOccurred())
-				uploadedTestResults = buf
+				uploadedTestResults = &testResults
 
 				return []backend.TestResultsUploadResult{
 					{OriginalPaths: []string{testResultsFilePath}, Uploaded: true},
 					{OriginalPaths: []string{"./fake/path/1.json", "./fake/path/2.json"}, Uploaded: false},
 				}, nil
 			}
-			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
+			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
 		})
 
 		Context("no quarantined tests", func() {
@@ -491,9 +488,9 @@ var _ = Describe("Run", func() {
 				}
 
 				Expect(logMessages).To(ContainElement(ContainSubstring("Found 3 test result files:")))
-				Expect(logMessages).To(ContainElement(fmt.Sprintf("- Uploaded %v", testResultsFilePath)))
-				Expect(logMessages).To(ContainElement("- Unable to upload ./fake/path/1.json"))
-				Expect(logMessages).To(ContainElement("- Unable to upload ./fake/path/2.json"))
+				Expect(logMessages).To(ContainElement(fmt.Sprintf("- Updated Captain with results from %v", testResultsFilePath)))
+				Expect(logMessages).To(ContainElement("- Unable to update Captain with results from ./fake/path/1.json"))
+				Expect(logMessages).To(ContainElement("- Unable to update Captain with results from ./fake/path/2.json"))
 			})
 
 			Context("ABQ", func() {
@@ -754,18 +751,15 @@ var _ = Describe("Run", func() {
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).To(BeNil())
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Quarantined).To(Equal(2))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
 
-				Expect(testResults.Summary.Quarantined).To(Equal(2))
-				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
 
-				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
-
-				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
 			})
 
 			Context("ABQ", func() {
@@ -875,18 +869,15 @@ var _ = Describe("Run", func() {
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).To(BeNil())
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Quarantined).To(Equal(2))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
 
-				Expect(testResults.Summary.Quarantined).To(Equal(2))
-				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
 
-				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
-
-				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
 			})
 
 			Context("ABQ", func() {
@@ -966,17 +957,14 @@ var _ = Describe("Run", func() {
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).To(BeNil())
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
 
-				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
 
-				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
-
-				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
 			})
 
 			Context("ABQ", func() {
@@ -1010,7 +998,7 @@ var _ = Describe("Run", func() {
 		var (
 			parseCount            int
 			exitCode              int
-			uploadedTestResults   []byte
+			uploadedTestResults   *v1.TestResults
 			firstTestDescription  string
 			secondTestDescription string
 			thirdTestDescription  string
@@ -1068,21 +1056,18 @@ var _ = Describe("Run", func() {
 			mockUploadTestResults := func(
 				ctx context.Context,
 				testSuite string,
-				testResultsFiles []backend.TestResultsFile,
+				testResults v1.TestResults,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
-				Expect(testResultsFiles).To(HaveLen(1))
 
-				buf, err := io.ReadAll(testResultsFiles[0].FD)
-				Expect(err).NotTo(HaveOccurred())
-				uploadedTestResults = buf
+				uploadedTestResults = &testResults
 
 				return []backend.TestResultsUploadResult{
 					{OriginalPaths: []string{testResultsFilePath}, Uploaded: true},
 					{OriginalPaths: []string{"./fake/path/1.json", "./fake/path/2.json"}, Uploaded: false},
 				}, nil
 			}
-			service.API.(*mocks.API).MockUploadTestResults = mockUploadTestResults
+			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
 
 			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
 				*v1.TestResults,
@@ -1154,29 +1139,26 @@ var _ = Describe("Run", func() {
 			It("stops retrying", func() {
 				Expect(err).NotTo(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
 
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(0))
-				Expect(testResults.Summary.Retries).To(Equal(3))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(2))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
 
-				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-				Expect(testResults.Tests[0].PastAttempts).To(HaveLen(2))
-				Expect(testResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
-				Expect(testResults.Tests[0].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].PastAttempts).To(HaveLen(2))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusSuccessful))
 
-				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-				Expect(testResults.Tests[1].PastAttempts).To(HaveLen(2))
-				Expect(testResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
-				Expect(testResults.Tests[1].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusSuccessful))
-
-				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-				Expect(testResults.Tests[2].PastAttempts).To(HaveLen(2))
-				Expect(testResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
-				Expect(testResults.Tests[2].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[2].PastAttempts).To(HaveLen(2))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusSuccessful))
 			})
 		})
 
@@ -1318,26 +1300,23 @@ var _ = Describe("Run", func() {
 				Expect(ok).To(BeTrue(), "Error is an execution error")
 				Expect(executionError.Code).To(Equal(exitCode))
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(2))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(1))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
 
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(2))
-				Expect(testResults.Summary.Failed).To(Equal(1))
-				Expect(testResults.Summary.Retries).To(Equal(3))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
 
-				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusFailed))
-				Expect(testResults.Tests[0].PastAttempts).To(HaveLen(1))
-				Expect(testResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
 
-				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-				Expect(testResults.Tests[1].PastAttempts).To(HaveLen(1))
-				Expect(testResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
-
-				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-				Expect(testResults.Tests[2].PastAttempts).To(HaveLen(1))
-				Expect(testResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[2].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
 			})
 		})
 
@@ -1368,28 +1347,25 @@ var _ = Describe("Run", func() {
 			It("quarantines any remaining failures that are marked as such", func() {
 				Expect(err).NotTo(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(2))
+				Expect(uploadedTestResults.Summary.Quarantined).To(Equal(1))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
 
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(2))
-				Expect(testResults.Summary.Quarantined).To(Equal(1))
-				Expect(testResults.Summary.Failed).To(Equal(0))
-				Expect(testResults.Summary.Retries).To(Equal(3))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
 
-				Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(testResults.Tests[0].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
-				Expect(testResults.Tests[0].PastAttempts).To(HaveLen(1))
-				Expect(testResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
 
-				Expect(testResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-				Expect(testResults.Tests[1].PastAttempts).To(HaveLen(1))
-				Expect(testResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
-
-				Expect(testResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-				Expect(testResults.Tests[2].PastAttempts).To(HaveLen(1))
-				Expect(testResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[2].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
 			})
 		})
 
@@ -1411,13 +1387,10 @@ var _ = Describe("Run", func() {
 			It("does not retry", func() {
 				Expect(err).To(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(3))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 
@@ -1753,13 +1726,10 @@ var _ = Describe("Run", func() {
 			It("fails quickly", func() {
 				Expect(err).To(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(3))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 
@@ -1790,14 +1760,11 @@ var _ = Describe("Run", func() {
 			It("finishes retrying", func() {
 				Expect(err).NotTo(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(0))
-				Expect(testResults.Summary.Retries).To(Equal(3))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
 			})
 		})
 
@@ -1810,13 +1777,10 @@ var _ = Describe("Run", func() {
 			It("does not retry", func() {
 				Expect(err).To(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(3))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 
@@ -1829,14 +1793,11 @@ var _ = Describe("Run", func() {
 			It("retries", func() {
 				Expect(err).NotTo(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(0))
-				Expect(testResults.Summary.Retries).To(Equal(3))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
 			})
 		})
 
@@ -1849,13 +1810,10 @@ var _ = Describe("Run", func() {
 			It("does not retry", func() {
 				Expect(err).To(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(3))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 
@@ -1868,14 +1826,11 @@ var _ = Describe("Run", func() {
 			It("retries", func() {
 				Expect(err).NotTo(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(0))
-				Expect(testResults.Summary.Retries).To(Equal(3))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
 			})
 		})
 
@@ -1926,14 +1881,11 @@ var _ = Describe("Run", func() {
 			It("does not retry", func() {
 				Expect(err).NotTo(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(3))
-				Expect(testResults.Summary.Failed).To(Equal(0))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 
@@ -1953,14 +1905,11 @@ var _ = Describe("Run", func() {
 			It("does not retry", func() {
 				Expect(err).To(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(0))
-				Expect(testResults.Summary.Failed).To(Equal(3))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 
@@ -1972,14 +1921,11 @@ var _ = Describe("Run", func() {
 			It("does not retry", func() {
 				Expect(err).To(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(0))
-				Expect(testResults.Summary.Failed).To(Equal(3))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 
@@ -1991,14 +1937,11 @@ var _ = Describe("Run", func() {
 			It("does not retry", func() {
 				Expect(err).To(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(0))
-				Expect(testResults.Summary.Failed).To(Equal(3))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 
@@ -2010,14 +1953,11 @@ var _ = Describe("Run", func() {
 			It("does not retry", func() {
 				Expect(err).To(HaveOccurred())
 
-				testResults := &v1.TestResults{}
-				err := json.Unmarshal(uploadedTestResults, testResults)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(testResults.Summary.Tests).To(Equal(3))
-				Expect(testResults.Summary.Successful).To(Equal(0))
-				Expect(testResults.Summary.Failed).To(Equal(3))
-				Expect(testResults.Summary.Retries).To(Equal(0))
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
 

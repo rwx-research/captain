@@ -30,6 +30,7 @@ type CliArgs struct {
 	reporters                 []string
 	retries                   int
 	retryCommandTemplate      string
+	updateStoredResults       bool
 	GenericProvider           providers.GenericEnv
 }
 
@@ -109,6 +110,7 @@ var (
 				SubstitutionsByFramework:  substitutionsByFramework,
 				SuiteID:                   suiteID,
 				TestResultsFileGlob:       testResultsPath,
+				UpdateStoredResults:       cliArgs.updateStoredResults,
 			}
 
 			return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))
@@ -235,8 +237,15 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 		),
 	)
 
-	addGenericProviderFlags(runCmd, &cliArgs.GenericProvider)
+	runCmd.Flags().BoolVar(
+		&cliArgs.updateStoredResults,
+		"update-stored-results",
+		false,
+		"if set, captain will update its internal storage files under '.captain' with the latest test results, "+
+			"such as flaky tests and test timings.",
+	)
 
+	addGenericProviderFlags(runCmd, &cliArgs.GenericProvider)
 	addFrameworkFlags(runCmd)
 }
 

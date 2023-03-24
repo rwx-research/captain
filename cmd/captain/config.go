@@ -16,8 +16,9 @@ import (
 
 const (
 	configFileName      = ".captain/config.yaml"
-	flakyTestsFileName  = ".captain/flaky-tests.json"
-	testTimingsFileName = ".captain/test-timings.json"
+	flakesFileName      = ".captain/flakes.yaml"
+	quarantinesFileName = ".captain/quarantines.yaml"
+	timingsFileName     = ".captain/timings.yaml"
 )
 
 // Config is the internal representation of the configuration.

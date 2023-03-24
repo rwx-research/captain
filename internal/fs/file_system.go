@@ -13,6 +13,7 @@ type FileSystem interface {
 	MkdirAll(string, os.FileMode) error
 	MkdirTemp(string, string) (string, error)
 	Open(name string) (File, error)
+	OpenFile(name string, flag int, perm os.FileMode) (File, error)
 	Remove(name string) error
 	RemoveAll(path string) error
 	Rename(oldname string, newname string) error
