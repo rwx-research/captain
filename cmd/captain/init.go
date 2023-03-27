@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"path/filepath"
+
 	"github.com/spf13/cobra"
 
 	"github.com/rwx-research/captain-cli/internal/backend"
@@ -66,6 +69,10 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 			return errors.WithStack(err)
 		}
 
+		if auxiliarySuiteID != "" {
+			suiteID = auxiliarySuiteID
+		}
+
 		logger := logging.NewProductionLogger()
 		if cfg.Output.Debug {
 			logger = logging.NewDebugLogger()
@@ -91,27 +98,36 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 			})
 		} else {
 			var flakesFilePath, quarantinesFilePath, timingsFilePath string
-			flakesFilePath, err = findInParentDir(flakesFileName)
+			if suiteID == "" {
+				return errors.NewConfigurationError("suite-id is required")
+			}
+
+			if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
+				return errors.NewConfigurationError(
+					fmt.Sprintf("suite-id %q cannot contain special characters except '_'", suiteID))
+			}
+
+			flakesFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, flakesFileName))
 			if err != nil {
-				flakesFilePath = flakesFileName
+				flakesFilePath = filepath.Join(captainDirectory, suiteID, flakesFileName)
 				logger.Warnf(
-					"Unable to find existing flakes.yaml file. Captain will create a new one at %q",
-					flakesFilePath,
+					"Unable to find existing flakes.yaml file for suite %q. Captain will create a new one at %q",
+					suiteID, flakesFilePath,
 				)
 			}
 
-			quarantinesFilePath, err = findInParentDir(quarantinesFileName)
+			quarantinesFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, quarantinesFileName))
 			if err != nil {
-				quarantinesFilePath = quarantinesFileName
+				quarantinesFilePath = filepath.Join(captainDirectory, suiteID, quarantinesFileName)
 				logger.Warnf(
-					"Unable to find existing quarantines.yaml file. Captain will create a new one at %q",
-					quarantinesFilePath,
+					"Unable to find existing quarantines.yaml for suite %q file. Captain will create a new one at %q",
+					suiteID, quarantinesFilePath,
 				)
 			}
 
-			timingsFilePath, err = findInParentDir(timingsFileName)
+			timingsFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, timingsFileName))
 			if err != nil {
-				timingsFilePath = timingsFileName
+				timingsFilePath = filepath.Join(captainDirectory, suiteID, timingsFileName)
 				logger.Warnf(
 					"Unable to find existing timings.yaml file. Captain will create a new one at %q",
 					timingsFilePath,

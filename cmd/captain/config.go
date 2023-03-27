@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 
 	"github.com/caarlos0/env/v7"
 	"github.com/spf13/cobra"
@@ -15,11 +16,14 @@ import (
 )
 
 const (
-	configFileName      = ".captain/config.yaml"
-	flakesFileName      = ".captain/flakes.yaml"
-	quarantinesFileName = ".captain/quarantines.yaml"
-	timingsFileName     = ".captain/timings.yaml"
+	captainDirectory    = ".captain"
+	configFileName      = "config.yaml"
+	flakesFileName      = "flakes.yaml"
+	quarantinesFileName = "quarantines.yaml"
+	timingsFileName     = "timings.yaml"
 )
+
+var invalidSuiteIDRegexp = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
 
 // Config is the internal representation of the configuration.
 type Config struct {
@@ -116,7 +120,7 @@ func findInParentDir(fileName string) (string, error) {
 // Flags take precedence over all other options.
 func InitConfig(cmd *cobra.Command) (cfg Config, err error) {
 	if configFilePath == "" {
-		configFilePath, err = findInParentDir(configFileName)
+		configFilePath, err = findInParentDir(filepath.Join(captainDirectory, configFileName))
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			return cfg, errors.NewConfigurationError("unable to determine config file path: %s", err.Error())
 		}

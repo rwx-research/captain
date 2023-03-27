@@ -2,11 +2,92 @@ package cli
 
 import (
 	"context"
+	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/backend/local"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
+
+func parseFlags(args []string) local.Map {
+	order := make([]string, 0)
+	values := make(map[string]string)
+
+	for i, arg := range args {
+		if len(arg) < 2 {
+			continue
+		}
+
+		if arg[:2] == "--" {
+			fields := strings.SplitN(arg[2:], "=", 2)
+			if len(fields) > 1 {
+				values[fields[0]] = fields[1]
+			} else if len(args) > i+1 {
+				values[fields[0]] = args[i+1]
+			}
+
+			if fields[0] != "suite-id" {
+				order = append(order, fields[0])
+			}
+		}
+	}
+
+	return local.Map{Order: order, Values: values}
+}
+
+func (s Service) AddFlake(ctx context.Context, args []string) error {
+	localStorage, ok := s.API.(local.Client)
+	if !ok {
+		return errors.NewConfigurationError("captain add flake only works with a local file backend.")
+	}
+
+	localStorage.Flakes = append(localStorage.Flakes, parseFlags(args).ToYAML())
+
+	return errors.WithStack(localStorage.Flush())
+}
+
+func (s Service) AddQuarantine(ctx context.Context, args []string) error {
+	localStorage, ok := s.API.(local.Client)
+	if !ok {
+		return errors.NewConfigurationError("captain add flake only works with a local file backend.")
+	}
+
+	localStorage.Quarantines = append(localStorage.Quarantines, parseFlags(args).ToYAML())
+
+	return errors.WithStack(localStorage.Flush())
+}
+
+func (s Service) RemoveFlake(ctx context.Context, args []string) error {
+	localStorage, ok := s.API.(local.Client)
+	if !ok {
+		return errors.NewConfigurationError("captain add flake only works with a local file backend.")
+	}
+
+	identity := parseFlags(args)
+	for i := len(localStorage.Flakes) - 1; i >= 0; i-- {
+		if identity.Equals(local.NewMapFromYAML(localStorage.Flakes[i])) {
+			localStorage.Flakes = append(localStorage.Flakes[:i], localStorage.Flakes[i+1:]...)
+		}
+	}
+
+	return errors.WithStack(localStorage.Flush())
+}
+
+func (s Service) RemoveQuarantine(ctx context.Context, args []string) error {
+	localStorage, ok := s.API.(local.Client)
+	if !ok {
+		return errors.NewConfigurationError("captain add flake only works with a local file backend.")
+	}
+
+	identity := parseFlags(args)
+	for i := len(localStorage.Quarantines) - 1; i >= 0; i-- {
+		if identity.Equals(local.NewMapFromYAML(localStorage.Quarantines[i])) {
+			localStorage.Quarantines = append(localStorage.Quarantines[:i], localStorage.Quarantines[i+1:]...)
+		}
+	}
+
+	return errors.WithStack(localStorage.Flush())
+}
 
 // UploadTestResults is the implementation of `captain upload results`.
 // Deprecated: Use `captain update results` instead, which supports both the local and remote backend.

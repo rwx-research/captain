@@ -1,6 +1,6 @@
-/.captain/flakes.yaml
-/.captain/quarantines.yaml
-/.captain/timings.yaml
+/.captain/*/flakes.yaml
+/.captain/*/quarantines.yaml
+/.captain/*/timings.yaml
 /.direnv
 /captain
 /report.xml

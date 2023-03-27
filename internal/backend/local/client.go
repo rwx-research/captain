@@ -18,9 +18,9 @@ import (
 
 type Client struct {
 	fs              fs.FileSystem
-	Flakes          TestConfiguration
+	Flakes          []yaml.Node
 	flakesPath      string
-	Quarantines     TestConfiguration
+	Quarantines     []yaml.Node
 	quarantinesPath string
 	quanratinesTime time.Time
 	Timings         map[string]time.Duration
@@ -101,6 +101,33 @@ func NewClient(fileSystem fs.FileSystem, flakesPath, quarantinesPath, timingsPat
 	return c, nil
 }
 
+func (c Client) Flush() error {
+	write := func(filepath string, data any) error {
+		file, err := c.fs.OpenFile(filepath, os.O_WRONLY|os.O_TRUNC, 0)
+		if err != nil {
+			return errors.NewSystemError("unable to open %q: %s", filepath, err)
+		}
+		defer file.Close()
+
+		encoder := yaml.NewEncoder(file)
+		if err := encoder.Encode(data); err != nil {
+			return errors.NewSystemError("unable to write to %q: %s", filepath, err)
+		}
+
+		return nil
+	}
+
+	if err := write(c.flakesPath, c.Flakes); err != nil {
+		return err
+	}
+
+	if err := write(c.quarantinesPath, c.Quarantines); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c Client) GetTestTimingManifest(ctx context.Context, suiteID string) ([]testing.TestFileTiming, error) {
 	testTimings := make([]testing.TestFileTiming, 0)
 
@@ -115,7 +142,7 @@ func (c Client) GetTestTimingManifest(ctx context.Context, suiteID string) ([]te
 }
 
 func (c Client) GetRunConfiguration(ctx context.Context, suiteID string) (backend.RunConfiguration, error) {
-	return makeRunConfiguration(c.Flakes[suiteID], c.Quarantines[suiteID], c.quanratinesTime)
+	return makeRunConfiguration(c.Flakes, c.Quarantines, c.quanratinesTime)
 }
 
 func (c Client) UpdateTestResults(
@@ -145,7 +172,7 @@ func (c Client) UpdateTestResults(
 		c.Timings[file] = duration
 	}
 
-	timingsFile, err := c.fs.OpenFile(c.timingsPath, os.O_WRONLY, 0)
+	timingsFile, err := c.fs.OpenFile(c.timingsPath, os.O_WRONLY|os.O_TRUNC, 0)
 	if err != nil {
 		return nil, errors.NewSystemError("unable to open %q: %s", c.timingsPath, err)
 	}
