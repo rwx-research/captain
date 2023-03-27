@@ -62,7 +62,11 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 			unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)
 		}
 	}
-	sort.Slice(fileTimingMatches, func(i, j int) bool {
+	sort.SliceStable(fileTimingMatches, func(i, j int) bool {
+		if fileTimingMatches[i].Duration() == fileTimingMatches[j].Duration() {
+			return fileTimingMatches[i].ClientFilepath > fileTimingMatches[j].ClientFilepath
+		}
+
 		return fileTimingMatches[i].Duration() > fileTimingMatches[j].Duration()
 	})
 
