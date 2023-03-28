@@ -128,6 +128,14 @@ func (c Client) Flush() error {
 	return nil
 }
 
+func (c Client) IsLocal() bool {
+	return true
+}
+
+func (c Client) IsRemote() bool {
+	return false
+}
+
 func (c Client) GetTestTimingManifest(ctx context.Context, suiteID string) ([]testing.TestFileTiming, error) {
 	testTimings := make([]testing.TestFileTiming, 0)
 

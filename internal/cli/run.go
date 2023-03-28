@@ -11,7 +11,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/rwx-research/captain-cli/internal/backend"
-	"github.com/rwx-research/captain-cli/internal/backend/local"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/reporting"
@@ -611,8 +610,11 @@ func (s Service) reportTestResults(
 		}
 	}
 
-	// only attempt the upload if the CLI is set up to interact with Captain Cloud.
-	if _, ok := s.API.(local.Client); ok && !cfg.UpdateStoredResults {
+	if s.API.IsLocal() && !cfg.UpdateStoredResults {
+		return nil, nil
+	}
+
+	if s.API.IsRemote() && !cfg.UploadResults {
 		return nil, nil
 	}
 

@@ -401,6 +401,102 @@ var _ = Describe("Run", func() {
 				})
 			})
 		})
+
+		Context("With updating disabled and a local client", func() {
+			BeforeEach(func() {
+				runConfig = cli.RunConfig{
+					Args:                []string{arg},
+					TestResultsFileGlob: testResultsFilePath,
+					SuiteID:             "test",
+					UpdateStoredResults: false,
+				}
+				mockIsLocal := func() bool {
+					return true
+				}
+				service.API.(*mocks.API).MockIsLocal = mockIsLocal
+			})
+
+			It("runs the supplied command", func() {
+				Expect(commandStarted).To(BeTrue())
+			})
+
+			It("waits until the supplied command stopped running", func() {
+				Expect(commandFinished).To(BeTrue())
+			})
+
+			It("fetches the run configuration with the quarantined tests", func() {
+				Expect(fetchedRunConfiguration).To(BeTrue())
+			})
+
+			It("reads the test results file", func() {
+				Expect(filesOpened).To(ContainElement(testResultsFilePath))
+			})
+
+			It("does not upload the test results file", func() {
+				Expect(testResultsFileUploaded).To(BeFalse())
+			})
+
+			It("does not log the uploaded files", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring("Found 1 test result file")))
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring(
+					fmt.Sprintf("- Updated Captain with results from %v", testResultsFilePath),
+				)))
+			})
+		})
+
+		Context("With uploading disabled and a remote client", func() {
+			BeforeEach(func() {
+				runConfig = cli.RunConfig{
+					Args:                []string{arg},
+					TestResultsFileGlob: testResultsFilePath,
+					SuiteID:             "test",
+					UploadResults:       false,
+				}
+				mockIsRemote := func() bool {
+					return true
+				}
+				service.API.(*mocks.API).MockIsRemote = mockIsRemote
+			})
+
+			It("runs the supplied command", func() {
+				Expect(commandStarted).To(BeTrue())
+			})
+
+			It("waits until the supplied command stopped running", func() {
+				Expect(commandFinished).To(BeTrue())
+			})
+
+			It("fetches the run configuration with the quarantined tests", func() {
+				Expect(fetchedRunConfiguration).To(BeTrue())
+			})
+
+			It("reads the test results file", func() {
+				Expect(filesOpened).To(ContainElement(testResultsFilePath))
+			})
+
+			It("does not upload the test results file", func() {
+				Expect(testResultsFileUploaded).To(BeFalse())
+			})
+
+			It("does not log the uploaded files", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring("Found 1 test result file")))
+				Expect(logMessages).NotTo(ContainElement(ContainSubstring(
+					fmt.Sprintf("- Updated Captain with results from %v", testResultsFilePath),
+				)))
+			})
+		})
 	})
 
 	Context("with an erroring command", func() {

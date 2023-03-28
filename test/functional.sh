@@ -29,6 +29,38 @@ else
 fi
 set -e
 
+echo Testing Quarantining with quarantine command...
+
+set +e
+./captain quarantine \
+  --suite-id "captain-cli-quarantine-test" \
+  --test-results .github/workflows/fixtures/rspec-quarantine.json \
+  -- bash -c "exit 1"
+res=$?
+if [[ res -eq 0 ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  echo "exit code was $res"
+  exit 1;
+fi
+set -e
+
+echo Testing all failures quarantined, but with other errors with quarantine command...
+
+set +e
+./captain quarantine \
+  --suite-id "captain-cli-quarantine-test" \
+  --test-results .github/workflows/fixtures/rspec-quarantined-with-other-errors.json \
+  -- bash -c "exit 123"
+if [[ $? -eq 123 ]]; then
+  echo PASSED;
+else
+  echo FAILED;
+  exit 1;
+fi
+set -e
+
 echo Testing command output passthrough...
 
 set +e

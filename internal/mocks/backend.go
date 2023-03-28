@@ -11,11 +11,31 @@ import (
 
 // API is a mocked implementation of 'backend.Client'.
 type API struct {
+	MockIsLocal               func() bool
+	MockIsRemote              func() bool
 	MockGetRunConfiguration   func(context.Context, string) (backend.RunConfiguration, error)
 	MockGetTestTimingManifest func(context.Context, string) ([]testing.TestFileTiming, error)
 	MockUpdateTestResults     func(context.Context, string, v1.TestResults) (
 		[]backend.TestResultsUploadResult, error,
 	)
+}
+
+// IsLocal either calls the configured mock of itself or returns false
+func (a *API) IsLocal() bool {
+	if a.MockIsLocal != nil {
+		return a.MockIsLocal()
+	}
+
+	return false
+}
+
+// IsRemote either calls the configured mock of itself or returns false
+func (a *API) IsRemote() bool {
+	if a.MockIsRemote != nil {
+		return a.MockIsRemote()
+	}
+
+	return false
 }
 
 // GetRunConfiguration either calls the configured mock of itself or returns an error if that doesn't exist.

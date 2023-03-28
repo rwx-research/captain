@@ -55,4 +55,14 @@ Example use:
 
 	bundle exec rspec $(captain partition spec/**/*_spec.rb --suide-id your-project-rspec --index 0 --total 2)
 	bundle exec rspec $(captain partition spec/**/*_spec.rb --suide-id your-project-rspec --index 1 --total 2)`
+
+	descriptionQuarantine = `'captain quarantine' can be used to execute a test-suite and modify its exit code based on
+quarantined tests.
+
+You may be looking for 'captain run' instead. 'captain run' does everything 'captain quarantine' does, but it also
+handles automatically retrying tests and optionally uploading results to Captain Cloud.
+
+Example use:
+
+	captain quarantine --suite-id="your-project-jest" --test-results "jest-result.json" -- jest`
 )

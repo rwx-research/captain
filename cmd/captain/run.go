@@ -111,6 +111,7 @@ var (
 				SuiteID:                   suiteID,
 				TestResultsFileGlob:       testResultsPath,
 				UpdateStoredResults:       cliArgs.updateStoredResults,
+				UploadResults:             true,
 			}
 
 			return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))

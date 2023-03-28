@@ -28,6 +28,7 @@ type RunConfig struct {
 	SuiteID                   string
 	SubstitutionsByFramework  map[v1.Framework]targetedretries.Substitution
 	UpdateStoredResults       bool
+	UploadResults             bool
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(
@@ -132,4 +133,14 @@ func (pc PartitionConfig) Validate() error {
 	}
 
 	return nil
+}
+
+type QuarantineConfig struct {
+	Args                []string
+	TestResultsFileGlob string
+	PrintSummary        bool
+	Quiet               bool
+	Reporters           map[string]Reporter
+	SuiteID             string
+	UpdateStoredResults bool
 }
