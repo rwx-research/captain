@@ -21,7 +21,7 @@ var quarantineCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(1),
 	PreRunE: initCLIService(providers.Validate),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var printSummary bool
+		var printSummary, quiet bool
 		var testResultsPath string
 
 		reporterFuncs := make(map[string]cli.Reporter)
@@ -44,12 +44,13 @@ var quarantineCmd = &cobra.Command{
 
 			printSummary = suiteConfig.Output.PrintSummary
 			testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
+			quiet = suiteConfig.Output.Quiet
 		}
 
 		runConfig := cli.RunConfig{
 			Args:                args,
 			PrintSummary:        printSummary,
-			Quiet:               cfg.Output.Quiet,
+			Quiet:               quiet,
 			Reporters:           reporterFuncs,
 			SuiteID:             suiteID,
 			TestResultsFileGlob: testResultsPath,

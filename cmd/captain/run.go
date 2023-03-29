@@ -63,9 +63,9 @@ var (
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var postRetryCommands, preRetryCommands []string
-			var failFast, printSummary bool
+			var failOnUploadError, failFast, printSummary, quiet bool
 			var flakyRetries, retries int
-			var retryCommand, testResultsPath, maxTests string
+			var intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
 
 			reporterFuncs := make(map[string]cli.Reporter)
 
@@ -85,28 +85,31 @@ var (
 					}
 				}
 
+				failOnUploadError = suiteConfig.FailOnUploadError
 				failFast = suiteConfig.Retries.FailFast
 				flakyRetries = suiteConfig.Retries.FlakyAttempts
 				maxTests = suiteConfig.Retries.MaxTests
 				postRetryCommands = suiteConfig.Retries.PostRetryCommands
 				preRetryCommands = suiteConfig.Retries.PreRetryCommands
 				printSummary = suiteConfig.Output.PrintSummary
+				quiet = suiteConfig.Output.Quiet
 				retries = suiteConfig.Retries.Attempts
 				retryCommand = suiteConfig.Retries.Command
+				intermediateArtifactsPath = suiteConfig.Retries.IntermediateArtifactsPath
 				testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
 			}
 
 			runConfig := cli.RunConfig{
 				Args:                      args,
-				FailOnUploadError:         cliArgs.failOnUploadError,
+				FailOnUploadError:         failOnUploadError,
 				FailRetriesFast:           failFast,
 				FlakyRetries:              flakyRetries,
-				IntermediateArtifactsPath: cliArgs.intermediateArtifactsPath,
+				IntermediateArtifactsPath: intermediateArtifactsPath,
 				MaxTestsToRetry:           maxTests,
 				PostRetryCommands:         postRetryCommands,
 				PreRetryCommands:          preRetryCommands,
 				PrintSummary:              printSummary,
-				Quiet:                     cfg.Output.Quiet,
+				Quiet:                     quiet,
 				Reporters:                 reporterFuncs,
 				Retries:                   retries,
 				RetryCommandTemplate:      retryCommand,
@@ -268,6 +271,10 @@ func init() {
 // from other parts of the app (e.g. config files, env vars)
 func bindRunCmdFlags(cfg Config) Config {
 	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+		if cliArgs.failOnUploadError {
+			suiteConfig.FailOnUploadError = true
+		}
+
 		if cliArgs.testResults != "" {
 			suiteConfig.Results.Path = cliArgs.testResults
 		}
@@ -297,6 +304,10 @@ func bindRunCmdFlags(cfg Config) Config {
 			suiteConfig.Output.PrintSummary = true
 		}
 
+		if cliArgs.quiet {
+			suiteConfig.Output.Quiet = true
+		}
+
 		if cliArgs.reporters != nil {
 			reporterConfig := make(map[string]string)
 
@@ -316,13 +327,13 @@ func bindRunCmdFlags(cfg Config) Config {
 			suiteConfig.Retries.Command = cliArgs.retryCommandTemplate
 		}
 
+		if cliArgs.intermediateArtifactsPath != "" {
+			suiteConfig.Retries.IntermediateArtifactsPath = cliArgs.intermediateArtifactsPath
+		}
+
 		cfg.TestSuites[suiteID] = suiteConfig
 
 		cfg.ProvidersEnv.Generic = providers.MergeGeneric(cfg.ProvidersEnv.Generic, cliArgs.GenericProvider)
-	}
-
-	if cliArgs.quiet {
-		cfg.Output.Quiet = true
 	}
 
 	return cfg

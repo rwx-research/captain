@@ -45,17 +45,18 @@ type ConfigFile struct {
 	Flags  map[string]any
 	Output struct {
 		Debug bool
-		Quiet bool
 	}
 	TestSuites map[string]SuiteConfig `yaml:"test-suites"`
 }
 
 // SuiteConfig holds options that can be customized per suite
 type SuiteConfig struct {
-	Command string
-	Output  struct {
+	Command           string
+	FailOnUploadError bool `yaml:"fail-on-upload-error"`
+	Output            struct {
 		PrintSummary bool `yaml:"print-summary"`
 		Reporters    map[string]string
+		Quiet        bool
 	}
 	Results struct {
 		Framework string
@@ -63,13 +64,14 @@ type SuiteConfig struct {
 		Path      string
 	}
 	Retries struct {
-		Attempts          int
-		Command           string
-		FailFast          bool `yaml:"fail-fast"`
-		FlakyAttempts     int  `yaml:"flaky-attempts"`
-		MaxTests          string
-		PostRetryCommands []string `yaml:"post-retry-commands"`
-		PreRetryCommands  []string `yaml:"pre-retry-commands"`
+		Attempts                  int
+		Command                   string
+		FailFast                  bool `yaml:"fail-fast"`
+		FlakyAttempts             int  `yaml:"flaky-attempts"`
+		MaxTests                  string
+		PostRetryCommands         []string `yaml:"post-retry-commands"`
+		PreRetryCommands          []string `yaml:"pre-retry-commands"`
+		IntermediateArtifactsPath string   `yaml:"intermediate-artifacts-path"`
 	}
 }
 
