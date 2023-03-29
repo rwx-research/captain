@@ -17,8 +17,6 @@ jobs:
       - run: |
           REPORT=true ./captain run \
             --suite-id="captain-cli-ginkgo" \
-            --github-job-name="Build & Test" \
-            --github-job-matrix='${{ toJSON(matrix) }}' \
             --test-results=report.xml \
             --fail-on-upload-error \
             -- nix develop --command mage test

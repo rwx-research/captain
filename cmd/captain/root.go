@@ -45,9 +45,16 @@ func init() {
 	_ = addSuiteIDFlagOptionally(rootCmd, &suiteID)
 
 	rootCmd.PersistentFlags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
+	if err := rootCmd.PersistentFlags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+
 	rootCmd.PersistentFlags().StringVar(
 		&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github",
 	)
+	if err := rootCmd.PersistentFlags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
 
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug output")
 	if err := rootCmd.PersistentFlags().MarkHidden("debug"); err != nil {
@@ -70,14 +77,6 @@ func init() {
 func bindRootCmdFlags(cfg Config) Config {
 	if debug {
 		cfg.Output.Debug = true
-	}
-
-	if githubJobName != "" {
-		cfg.ProvidersEnv.GitHub.Name = githubJobName
-	}
-
-	if githubJobMatrix != "" {
-		cfg.ProvidersEnv.GitHub.Matrix = githubJobMatrix
 	}
 
 	if insecure {

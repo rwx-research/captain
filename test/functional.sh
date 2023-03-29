@@ -7,7 +7,6 @@ echo Testing Quarantining...
 ./captain run \
   --suite-id "captain-cli-quarantine-test" \
   --test-results .github/workflows/fixtures/rspec-quarantine.json \
-  --github-job-name "Build & Test" \
   --fail-on-upload-error \
   -- bash -c "exit 1"
 echo PASSED;
@@ -18,7 +17,6 @@ set +e
 ./captain run \
   --suite-id "captain-cli-quarantine-test" \
   --test-results .github/workflows/fixtures/rspec-quarantined-with-other-errors.json \
-  --github-job-name "Build & Test" \
   --fail-on-upload-error \
   -- bash -c "exit 123"
 if [[ $? -eq 123 ]]; then
@@ -67,7 +65,6 @@ set +e
 result=$(./captain run \
   --suite-id "captain-cli-functional-tests" \
   --test-results .github/workflows/fixtures/rspec-passed.json \
-  --github-job-name "Build & Test" \
   --fail-on-upload-error \
   -- bash -c "echo abc; echo def 1>&2; echo ghi" \
   2>&1)
@@ -89,7 +86,6 @@ set +e
 result=$(./captain run \
   --suite-id "captain-cli-functional-tests" \
   --test-results .github/workflows/fixtures/rspec-passed.json \
-  --github-job-name "Build & Test" \
   --fail-on-upload-error \
   -- bash -c "echo abc; echo def 1>&2" \
   2>&1 > /dev/null)
@@ -109,7 +105,6 @@ set +e
 ./captain run \
   --suite-id "captain-cli-functional-tests" \
   --test-results .github/workflows/fixtures/rspec-failed-not-quarantined.json \
-  --github-job-name "Build & Test" \
   --fail-on-upload-error \
   -- bash -c "exit 123"
 if [[ $? -eq 123 ]]; then
@@ -125,7 +120,6 @@ echo Testing Retried Failures Quarantined...
 result=$(./captain run \
   --suite-id "captain-cli-quarantine-test" \
   --test-results .github/workflows/fixtures/rspec-quarantine.json \
-  --github-job-name "Build & Test" \
   --fail-on-upload-error \
   --retries 1 \
   --retry-command 'echo "{{ tests }}"' \
@@ -143,7 +137,6 @@ set +e
 result=$(./captain run \
   --suite-id "captain-cli-functional-tests" \
   --test-results .github/workflows/fixtures/rspec-failed-not-quarantined.json \
-  --github-job-name "Build & Test" \
   --fail-on-upload-error \
   --retries 1 \
   --retry-command 'echo "{{ tests }}"' \
@@ -167,7 +160,6 @@ set +e
 ./captain run \
   --suite-id "captain-cli-functional-tests" \
   --test-results .github/workflows/fixtures/does-not-exist.json \
-  --github-job-name "Build & Test" \
   -- bash -c "exit 123"
 if [[ $? -eq 123 ]]; then
   echo PASSED;

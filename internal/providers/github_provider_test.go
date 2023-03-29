@@ -1,8 +1,6 @@
 package providers_test
 
 import (
-	"encoding/json"
-
 	"github.com/rwx-research/captain-cli/internal/providers"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -30,7 +28,6 @@ var _ = Describe("GitHubEnv.MakeProvider", func() {
 			Attempt:    "1",
 			Repository: "rwx/captain-cli",
 			Name:       "some-job",
-			Matrix:     "",
 		}
 	})
 
@@ -73,33 +70,10 @@ var _ = Describe("GitHubEnv.MakeProvider", func() {
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("missing run ID"))
 	})
-
-	It("requires a json object be passed as the job matrix", func() {
-		params.Matrix = "0"
-		_, err := params.MakeProviderWithoutCommitMessageParsing("fixed it")
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring(
-			`invalid github-job-matrix value supplied.
-Please provide '${{ toJSON(matrix) }}' with single quotes.
-This information is required due to a limitation with GitHub.`,
-		))
-	})
-
-	It("accepts a json object job matrix", func() {
-		params.Matrix = `{"index": 0, "total": 4}`
-		_, err := params.MakeProviderWithoutCommitMessageParsing("fixed it")
-		Expect(err).To(BeNil())
-	})
-
-	It("allows a null job matrix if someone blindly copies the docs but doesnt actually have a matrix", func() {
-		params.Matrix = "null"
-		_, err := params.MakeProviderWithoutCommitMessageParsing("fixed it")
-		Expect(err).To(BeNil())
-	})
 })
 
 var _ = Describe("GithubProvider.JobTags", func() {
-	It("constructs job tags without job matrix", func() {
+	It("constructs job tags", func() {
 		provider, err := providers.GitHubEnv{
 			// for branch name
 			EventName: "push",
@@ -118,7 +92,6 @@ var _ = Describe("GithubProvider.JobTags", func() {
 			Attempt:    "my_run_attempt",
 			Repository: "my_account_name/my_repo_name",
 			Name:       "my_job_name",
-			Matrix:     "",
 		}.MakeProviderWithoutCommitMessageParsing("fixed it")
 
 		Expect(err).To(BeNil())
@@ -129,37 +102,6 @@ var _ = Describe("GithubProvider.JobTags", func() {
 			"github_repository_name": "my_repo_name",
 			"github_account_owner":   "my_account_name",
 			"github_job_name":        "my_job_name",
-		}))
-	})
-
-	It("constructs job tags with job matrix", func() {
-		provider, _ := providers.GitHubEnv{
-			// for branch name
-			EventName: "push",
-			RefName:   "main",
-			HeadRef:   "main",
-			// for commit message
-			EventPath: "/tmp/event.json",
-			// attempted by
-			ExecutingActor:  "test",
-			TriggeringActor: "test",
-			// for commit sha
-			CommitSha: "abc123",
-			// for tags
-			ID:         "my_run_id",
-			Attempt:    "my_run_attempt",
-			Repository: "my_account_name/my_repo_name",
-			Name:       "my_job_name",
-			Matrix:     "{ \"foo\": \"bar\"}",
-		}.MakeProviderWithoutCommitMessageParsing("fixed it")
-		matrix := json.RawMessage("{ \"foo\": \"bar\"}")
-		Expect(provider.JobTags).To(Equal(map[string]any{
-			"github_run_id":          "my_run_id",
-			"github_run_attempt":     "my_run_attempt",
-			"github_repository_name": "my_repo_name",
-			"github_account_owner":   "my_account_name",
-			"github_job_name":        "my_job_name",
-			"github_job_matrix":      &matrix,
 		}))
 	})
 })

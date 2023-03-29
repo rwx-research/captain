@@ -32,7 +32,6 @@ type GitHubEnv struct {
 	ID         string `env:"GITHUB_RUN_ID"`
 	Name       string `env:"GITHUB_JOB"`
 	Repository string `env:"GITHUB_REPOSITORY"`
-	Matrix     string // passed in via CLI args
 }
 
 func (cfg GitHubEnv) MakeProvider() (Provider, error) {
@@ -101,14 +100,6 @@ func githubTags(cfg GitHubEnv) (map[string]any, error) {
 			return errors.NewConfigurationError("missing repository")
 		}
 
-		if cfg.Matrix != "" && cfg.Matrix != "null" {
-			if !json.Valid([]byte(cfg.Matrix)) || cfg.Matrix[0] != byte('{') {
-				return errors.NewConfigurationError(
-					`invalid github-job-matrix value supplied.
-Please provide '${{ toJSON(matrix) }}' with single quotes.
-This information is required due to a limitation with GitHub.`)
-			}
-		}
 		return nil
 	}()
 	owner, repo := path.Split(cfg.Repository)
@@ -119,11 +110,6 @@ This information is required due to a limitation with GitHub.`)
 		"github_repository_name": repo,
 		"github_account_owner":   strings.TrimSuffix(owner, "/"),
 		"github_job_name":        cfg.Name,
-	}
-
-	if cfg.Matrix != "" {
-		rawJobMatrix := json.RawMessage(cfg.Matrix)
-		tags["github_job_matrix"] = &rawJobMatrix
 	}
 
 	return tags, err
