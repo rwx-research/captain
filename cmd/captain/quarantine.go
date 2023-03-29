@@ -15,9 +15,9 @@ import (
 var quarantineCmd = &cobra.Command{
 	Use:   "quarantine [flags] --suite-id=<suite> <args>",
 	Short: "Execute a test-suite and modify its exit code based on quarantined tests",
-	Long: "'captain add quarantine' can be used to quarantine a test. To select a test, specify the metadata that " +
-		"uniquely identifies a single test.",
-	Example: `  captain add quarantine --suite-id "example" --file "./test/controller_spec.rb" --description "My test"`,
+	Long: "'captain quarantine' executes a test-suite and modifies its exit code based on quarantined tests." +
+		"Unlike run, it does not attempt retries or update test results.",
+	Example: `  captain quarantine --suite-id "example" --test-results "./tmp/rspec.json" -- bundle exec rake`,
 	Args:    cobra.MinimumNArgs(1),
 	PreRunE: initCLIService(providers.Validate),
 	RunE: func(cmd *cobra.Command, args []string) error {
