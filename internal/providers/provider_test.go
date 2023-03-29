@@ -28,8 +28,7 @@ var _ = Describe("Validate", func() {
 			provider.AttemptedBy = ""
 			err := providers.Validate(provider)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("Could not detect a supported CI provider. Without a " +
-				"supported CI provider, we require --who, --branch, and --sha to be set."))
+			Expect(err.Error()).To(ContainSubstring("Unsupported runtime environment"))
 		})
 	})
 
@@ -53,20 +52,20 @@ var _ = Describe("Validate", func() {
 			provider.AttemptedBy = ""
 			err := providers.Validate(provider)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("missing attempted by"))
+			Expect(err.Error()).To(ContainSubstring("Missing 'who'"))
 		})
 
 		It("is invalid if BranchName is empty", func() {
 			provider.BranchName = ""
 			err := providers.Validate(provider)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("missing branch name"))
+			Expect(err.Error()).To(ContainSubstring("Missing branch name"))
 		})
 		It("is invalid if CommitSha is empty", func() {
 			provider.CommitSha = ""
 			err := providers.Validate(provider)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("missing commit sha"))
+			Expect(err.Error()).To(ContainSubstring("Missing commit SHA"))
 		})
 		It("is VALID if CommitMessage is empty", func() {
 			provider.CommitMessage = ""
@@ -212,7 +211,7 @@ var _ = Describe("MakeProviderAdapter", func() {
 			provider, _ := env.MakeProviderAdapter()
 			err := providers.Validate(provider)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("missing branch name"))
+			Expect(err.Error()).To(ContainSubstring("Missing branch name"))
 		})
 
 		Context("and with a generic provider that will be valid after merge", func() {

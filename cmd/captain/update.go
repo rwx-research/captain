@@ -11,14 +11,17 @@ var (
 	// updateCmd represents the "update" sub-command itself
 	updateCmd = &cobra.Command{
 		Use:   "update",
-		Short: "updates a specific resource in captain",
+		Short: "Updates a specific resource in captain",
 	}
 
 	// updateResultsCmd is the "results" sub-command of "update".
 	updateResultsCmd = &cobra.Command{
-		Use:     "results [file]",
-		Short:   "Updates captain with new test-results",
-		Long:    descriptionUpdateResults,
+		Use:   "results [flags] --suite-id=<suite> <args>",
+		Short: "Updates captain with new test-results",
+		Long: "'captain update results' will parse a test-results file and updates captain's internal storage " +
+			"accordingly.",
+		Example: `captain update results --suite-id="JUnit" *.xml`,
+		Args:    cobra.MinimumNArgs(1),
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Should also support reading from stdin
@@ -29,15 +32,18 @@ var (
 )
 
 func init() {
-	// Although `suite-id` is a global flag, we need to re-define it here in order to mark it as required.
-	// This is due to a bug in 'spf13/cobra'. See https://github.com/spf13/cobra/issues/921
-	updateResultsCmd.Flags().StringVar(&suiteID, "suite-id", "", "the id of the test suite (required)")
-	addFrameworkFlags(updateResultsCmd)
-
-	if err := updateResultsCmd.MarkFlagRequired("suite-id"); err != nil {
+	updateResultsCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
+	if err := updateResultsCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
 		initializationErrors = append(initializationErrors, err)
 	}
 
+	updateResultsCmd.Flags().
+		StringVar(&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
+	if err := updateResultsCmd.Flags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+
+	addFrameworkFlags(updateResultsCmd)
 	updateCmd.AddCommand(updateResultsCmd)
 	rootCmd.AddCommand(updateCmd)
 }

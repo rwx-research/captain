@@ -25,11 +25,23 @@ type Config struct {
 
 func (c Config) Validate() error {
 	if c.ProvidedFrameworkKind != "" && c.ProvidedFrameworkLanguage == "" {
-		return errors.NewConfigurationError("when specifying a framework, the language also needs to be provided")
+		return errors.NewConfigurationError(
+			"Unable to determine test result format",
+			"You provided the test framework that produced the test result, but not the language. Captain needs "+
+				"both options in order to interpret the results file correctly.",
+			"The test-framework language can be set using the --language flag. Alternatively, you can use "+
+				"the Captain configuration file to permanently set the framework options for a test suite.",
+		)
 	}
 
 	if c.ProvidedFrameworkLanguage != "" && c.ProvidedFrameworkKind == "" {
-		return errors.NewConfigurationError("when specifying a language, the framework also needs to be provided")
+		return errors.NewConfigurationError(
+			"Unable to determine test result format",
+			"You provided the test-framework language that produced the test result, but not the framework name "+
+				"itself. Captain needs both options in order to interpret the results file correctly.",
+			"The test framework can be set using the --framework flag. Alternatively, you can use "+
+				"the Captain configuration file to permanently set the framework options for a test suite.",
+		)
 	}
 
 	if c.Logger == nil {

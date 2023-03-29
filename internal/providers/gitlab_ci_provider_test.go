@@ -52,42 +52,42 @@ var _ = Describe("GitLabEnv.MakeProvider", func() {
 		params.JobName = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing JobName"))
+		Expect(err.Error()).To(ContainSubstring("Missing job name"))
 	})
 
 	It("requires JobStage", func() {
 		params.JobStage = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing JobStage"))
+		Expect(err.Error()).To(ContainSubstring("Missing job stage"))
 	})
 
 	It("requires JobID", func() {
 		params.JobID = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing JobID"))
+		Expect(err.Error()).To(ContainSubstring("Missing job ID"))
 	})
 
 	It("requires PipelineID", func() {
 		params.PipelineID = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing PipelineID"))
+		Expect(err.Error()).To(ContainSubstring("Missing pipeline ID"))
 	})
 
 	It("requires JobURL", func() {
 		params.JobURL = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing JobURL"))
+		Expect(err.Error()).To(ContainSubstring("Missing job URL"))
 	})
 
 	It("requires PipelineURL", func() {
 		params.PipelineURL = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing PipelineURL"))
+		Expect(err.Error()).To(ContainSubstring("Missing pipeline URL"))
 	})
 
 	It("doesn't requires AttemptedBy", func() {
@@ -107,21 +107,21 @@ var _ = Describe("GitLabEnv.MakeProvider", func() {
 		params.NodeTotal = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing NodeTotal"))
+		Expect(err.Error()).To(ContainSubstring("Missing node total"))
 	})
 
 	It("requires project path", func() {
 		params.ProjectPath = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing project path"))
+		Expect(err.Error()).To(ContainSubstring("Missing project path"))
 	})
 
 	It("requires ProjectURL", func() {
 		params.ProjectURL = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing ProjectURL"))
+		Expect(err.Error()).To(ContainSubstring("Missing project URL"))
 	})
 
 	It("requires API URL", func() {
@@ -129,7 +129,7 @@ var _ = Describe("GitLabEnv.MakeProvider", func() {
 
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing API URL"))
+		Expect(err.Error()).To(ContainSubstring("Missing API URL"))
 	})
 })
 

@@ -24,7 +24,7 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 
 	testFilePaths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
 	if err != nil {
-		return s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
+		return errors.NewSystemError("unable to expand filepath glob: %s", err)
 	}
 
 	// Compare expanded client file paths w/ expanded server file paths

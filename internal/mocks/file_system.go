@@ -31,7 +31,7 @@ func (f *FileSystem) Create(filePath string) (fs.File, error) {
 		return f.MockCreate(filePath)
 	}
 
-	return nil, errors.NewConfigurationError("MockCreate was not configured")
+	return nil, errors.NewInternalError("MockCreate was not configured")
 }
 
 func (f *FileSystem) Getwd() (string, error) {
@@ -39,7 +39,7 @@ func (f *FileSystem) Getwd() (string, error) {
 		return f.MockGetwd()
 	}
 
-	return "", errors.NewConfigurationError("MockGetwd was not configured")
+	return "", errors.NewInternalError("MockGetwd was not configured")
 }
 
 // CreateTemp either calls the configured mock of itself or returns an error if that doesn't exist.
@@ -48,7 +48,7 @@ func (f *FileSystem) CreateTemp(dir string, pattern string) (fs.File, error) {
 		return f.MockCreateTemp(dir, pattern)
 	}
 
-	return nil, errors.NewConfigurationError("MockCreateTemp was not configured")
+	return nil, errors.NewInternalError("MockCreateTemp was not configured")
 }
 
 func (f *FileSystem) Glob(pattern string) ([]string, error) {
@@ -56,7 +56,7 @@ func (f *FileSystem) Glob(pattern string) ([]string, error) {
 		return f.MockGlob(pattern)
 	}
 
-	return nil, errors.NewConfigurationError("MockGlob was not configured")
+	return nil, errors.NewInternalError("MockGlob was not configured")
 }
 
 func (f *FileSystem) GlobMany(patterns []string) ([]string, error) {
@@ -64,7 +64,7 @@ func (f *FileSystem) GlobMany(patterns []string) ([]string, error) {
 		return f.MockGlob(patterns[0])
 	}
 
-	return nil, errors.NewConfigurationError("MockGlob was not configured")
+	return nil, errors.NewInternalError("MockGlob was not configured")
 }
 
 func (f *FileSystem) Open(name string) (fs.File, error) {
@@ -72,7 +72,7 @@ func (f *FileSystem) Open(name string) (fs.File, error) {
 		return f.MockOpen(name)
 	}
 
-	return nil, errors.NewConfigurationError("MockOpen was not configured")
+	return nil, errors.NewInternalError("MockOpen was not configured")
 }
 
 func (f *FileSystem) OpenFile(name string, flag int, perm os.FileMode) (fs.File, error) {
@@ -80,7 +80,7 @@ func (f *FileSystem) OpenFile(name string, flag int, perm os.FileMode) (fs.File,
 		return f.MockOpenFile(name, flag, perm)
 	}
 
-	return nil, errors.NewConfigurationError("MockOpenFile was not configured")
+	return nil, errors.NewInternalError("MockOpenFile was not configured")
 }
 
 func (f *FileSystem) MkdirAll(path string, perm os.FileMode) error {
@@ -88,7 +88,7 @@ func (f *FileSystem) MkdirAll(path string, perm os.FileMode) error {
 		return f.MockMkdirAll(path, perm)
 	}
 
-	return errors.NewConfigurationError("MockMkdirAll was not configured")
+	return errors.NewInternalError("MockMkdirAll was not configured")
 }
 
 func (f *FileSystem) MkdirTemp(dir, pattern string) (string, error) {
@@ -96,7 +96,7 @@ func (f *FileSystem) MkdirTemp(dir, pattern string) (string, error) {
 		return f.MockMkdirTemp(dir, pattern)
 	}
 
-	return "", errors.NewConfigurationError("MockMkdirTemp was not configured")
+	return "", errors.NewInternalError("MockMkdirTemp was not configured")
 }
 
 func (f *FileSystem) Remove(name string) error {
@@ -104,7 +104,7 @@ func (f *FileSystem) Remove(name string) error {
 		return f.MockRemove(name)
 	}
 
-	return errors.NewConfigurationError("MockRemove was not configured")
+	return errors.NewInternalError("MockRemove was not configured")
 }
 
 func (f *FileSystem) RemoveAll(path string) error {
@@ -112,7 +112,7 @@ func (f *FileSystem) RemoveAll(path string) error {
 		return f.MockRemoveAll(path)
 	}
 
-	return errors.NewConfigurationError("MockRemoveAll was not configured")
+	return errors.NewInternalError("MockRemoveAll was not configured")
 }
 
 func (f *FileSystem) Rename(oldname string, newname string) error {
@@ -120,7 +120,7 @@ func (f *FileSystem) Rename(oldname string, newname string) error {
 		return f.MockRename(oldname, newname)
 	}
 
-	return errors.NewConfigurationError("MockRename was not configured")
+	return errors.NewInternalError("MockRename was not configured")
 }
 
 func (f *FileSystem) Stat(name string) (os.FileInfo, error) {
@@ -128,7 +128,7 @@ func (f *FileSystem) Stat(name string) (os.FileInfo, error) {
 		return f.MockStat(name)
 	}
 
-	return nil, errors.NewConfigurationError("MockStat was not configured")
+	return nil, errors.NewInternalError("MockStat was not configured")
 }
 
 func (f *FileSystem) TempDir() string {

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 
@@ -37,11 +38,25 @@ var maxTestsToRetryRegexp = regexp.MustCompile(
 
 func (rc RunConfig) Validate() error {
 	if rc.RetryCommandTemplate == "" && (rc.Retries > 0 || rc.FlakyRetries > 0) {
-		return errors.NewConfigurationError("retry-command must be provided if retries or flaky-retries are > 0")
+		return errors.NewConfigurationError(
+			"Missing retry command",
+			"You seem to have retries enabled, but there is no retry command template configured.",
+			"The retry command template can be set using the --retry-command flag. Alternatively, you can "+
+				"use the Captain configuration file to permanently set a command template for a "+
+				"given test suite.",
+		)
 	}
 
 	if rc.MaxTestsToRetry != "" && !maxTestsToRetryRegexp.MatchString(rc.MaxTestsToRetry) {
-		return errors.NewConfigurationError("max-tests-to-retry must be either an integer or percentage")
+		return errors.NewConfigurationError(
+			"Unsupported --max-tests-to-retry value",
+			fmt.Sprintf(
+				"Captain is unable to parse the --max-tests-to-retry option, which is currently set to %q",
+				rc.MaxTestsToRetry,
+			),
+			"It is expected that this option is either set to a positive integer or to a percentage of the total "+
+				"tests to retry. Percentages can be fractional.",
+		)
 	}
 
 	return nil
@@ -113,23 +128,51 @@ type PartitionConfig struct {
 
 func (pc PartitionConfig) Validate() error {
 	if pc.SuiteID == "" {
-		return errors.NewConfigurationError("suite-id is required")
+		return errors.NewConfigurationError(
+			"Missing suite ID",
+			"A suite ID is required in order to use the partitioning feature.",
+			"The suite ID can be set using the --suite-id flag or setting a CAPTAIN_SUITE_ID environment variable",
+		)
 	}
 
 	if pc.PartitionNodes.Total <= 0 {
-		return errors.NewConfigurationError("total must be > 0")
+		return errors.NewConfigurationError(
+			"Missing total partition count",
+			"In order to use the partitioning feature, Captain needs to know the total number of partitions.",
+			"The total number of partitions can be set using the --total flag or alternatively the "+
+				"CAPTAIN_PARTITION_TOTAL environment variable.",
+		)
 	}
 
 	if pc.PartitionNodes.Index < 0 {
-		return errors.NewConfigurationError("index must be >= 0")
+		return errors.NewConfigurationError(
+			"Missing partition index",
+			"Captain is missing the index of the partition that you would like to generate.",
+			"The partition index can be set using the --index flag or alternatively the CAPTAIN_PARTITION_INDEX "+
+				"environment variable.",
+		)
 	}
 
 	if pc.PartitionNodes.Index >= pc.PartitionNodes.Total {
-		return errors.NewConfigurationError("index must be < total")
+		return errors.NewConfigurationError(
+			"Unsupported partitioning setup",
+			fmt.Sprintf(
+				"You specified a partition index (%d) that is greater than or equal to the total number of partitions (%d)",
+				pc.PartitionNodes.Index, pc.PartitionNodes.Total,
+			),
+			"Please set the index to be below the total number of partitions. Note that captain is using '0' as the first "+
+				"partition number",
+		)
 	}
 
 	if len(pc.TestFilePaths) == 0 {
-		return errors.NewConfigurationError("no test file paths provided")
+		return errors.NewConfigurationError(
+			"Missing test file paths",
+			"No test file paths are given.",
+			"Please specify the path or paths to your test files as arguments to the 'captain partition' command.\n\n"+
+				"\tcaptain partition [flags] <filepath>\n\n"+
+				"You can also execute 'captain partition --help' for further information.",
+		)
 	}
 
 	return nil

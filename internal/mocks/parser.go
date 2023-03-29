@@ -18,5 +18,5 @@ func (p *Parser) Parse(reader io.Reader) (*v1.TestResults, error) {
 		return p.MockParse(reader)
 	}
 
-	return nil, errors.NewConfigurationError("MockParser was not configured")
+	return nil, errors.NewInternalError("MockParser was not configured")
 }

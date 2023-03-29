@@ -18,7 +18,7 @@ var (
 
 	// parseResultsCmd is the 'results' sub-command of 'parse'
 	parseResultsCmd = &cobra.Command{
-		Use: "results [file]",
+		Use: "results [flags] <args>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return errors.WithStack(captain.Parse(cmd.Context(), args))
 		},

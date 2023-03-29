@@ -20,14 +20,16 @@ var (
 	// addCmd represents the "add" sub-command itself
 	addCmd = &cobra.Command{
 		Use:   "add",
-		Short: "adds a resource to captain",
+		Short: "Adds a resource to captain",
 	}
 
 	// addFlakeCmd is the "flake" sub-command of "add".
 	addFlakeCmd = &cobra.Command{
-		Use:     "flake",
-		Short:   "Mark a test as flaky",
-		Long:    descriptionAddFlake,
+		Use:   "flake",
+		Short: "Mark a test as flaky",
+		Long: "'captain add flake' can be used to mark a test as flaky. To select a test, specify the metadata that " +
+			"uniquely identifies a single test.",
+		Example: `captain add flake --suite-id "example" --file "./test/controller_spec.rb" --description "My test"`,
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return errors.WithStack(captain.AddFlake(cmd.Context(), args))
@@ -37,9 +39,11 @@ var (
 
 	// addQuarantineCmd is the "quarantine" sub-command of "add".
 	addQuarantineCmd = &cobra.Command{
-		Use:     "quarantine",
-		Short:   "Quarantine a test in Captain",
-		Long:    descriptionAddQuarantine,
+		Use:   "quarantine",
+		Short: "Quarantine a test in Captain",
+		Long: "'captain add quarantine' can be used to quarantine a test. To select a test, specify the metadata that " +
+			"uniquely identifies a single test.",
+		Example: `captain add quarantine --suite-id "example" --file "./test/controller_spec.rb" --description "My test"`,
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return errors.WithStack(captain.AddQuarantine(cmd.Context(), args))
@@ -49,6 +53,12 @@ var (
 )
 
 func init() {
+	auxiliaryFlagSet.Usage = func() {} // Disable secondary "usage" output in cobra
+
+	// Re-define the global flags from `root`
+	auxiliaryFlagSet.StringVar(&configFilePath, "config-file", "", "the config file for captain")
+	auxiliaryFlagSet.BoolVarP(&cliArgs.quiet, "quiet", "q", false, "disables most default output")
+
 	suiteIDFromEnv := os.Getenv("CAPTAIN_SUITE_ID")
 	auxiliaryFlagSet.StringVar(&auxiliarySuiteID, "suite-id", suiteIDFromEnv,
 		"the id of the test suite (required). Also set with environment variable CAPTAIN_SUITE_ID")

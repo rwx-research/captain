@@ -18,18 +18,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Logging is expected to take place in `internal/cli`, as text output is _the_ primary way of communicating
+	// Logging is expected to take place in `internal/cli`, as text output is the primary way of communicating
 	// to a user on the terminal and is therefore one of our main concerns.
 	// This error here is mainly used to communicate any necessary exit Code.
 	if err := rootCmd.Execute(); err != nil {
 		if e, ok := errors.AsExecutionError(err); ok {
 			os.Exit(e.Code)
 		}
-
-		if _, ok := errors.AsConfigurationError(err); ok {
-			fmt.Fprintln(os.Stderr, err)
-		}
-
 		os.Exit(1)
 	}
 }

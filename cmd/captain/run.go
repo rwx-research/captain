@@ -54,19 +54,18 @@ var (
 	}
 
 	runCmd = &cobra.Command{
-		Use:     "run",
-		Short:   "Execute a build- or test-suite",
-		Long:    descriptionRun,
+		Use:   "run [flags] --suite-id=<suite> <args>",
+		Short: "Execute a build- or test-suite",
+		Long:  "'captain run' can be used to execute a build- or test-suite and optionally upload the resulting artifacts.",
+		Example: `  captain run --suite-id="your-project-rake" -- bundle exec rake` + "\n" +
+			`  captain run --suite-id="your-project-jest" --test-results "jest-result.json" -- jest`,
+		Args:    cobra.MinimumNArgs(1),
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var postRetryCommands, preRetryCommands []string
 			var failFast, printSummary bool
 			var flakyRetries, retries int
 			var retryCommand, testResultsPath, maxTests string
-
-			if len(args) == 0 {
-				return errors.WithStack(cmd.Usage())
-			}
 
 			reporterFuncs := make(map[string]cli.Reporter)
 
@@ -78,7 +77,11 @@ var (
 					case "junit-xml":
 						reporterFuncs[path] = reporting.WriteJUnitSummary
 					default:
-						return errors.NewConfigurationError("Unknown reporter %q.", name)
+						return errors.WithDecoration(errors.NewConfigurationError(
+							fmt.Sprintf("Unknown reporter %q", name),
+							"Available reporters are 'rwx-v1-json' and 'junit-xml'.",
+							"",
+						))
 					}
 				}
 
@@ -114,14 +117,17 @@ var (
 				UploadResults:             true,
 			}
 
-			return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))
+			err := captain.RunSuite(cmd.Context(), runConfig)
+			if _, ok := errors.AsConfigurationError(err); !ok {
+				cmd.SilenceUsage = true
+			}
+
+			return errors.WithDecoration(err)
 		},
 	}
 )
 
 func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
-	addSuiteIDFlag(runCmd, &suiteID)
-
 	runCmd.Flags().StringVar(
 		&cliArgs.testResults,
 		"test-results",
@@ -141,14 +147,6 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 		"intermediate-artifacts-path",
 		"",
 		"the path to store intermediate artifacts under. Intermediate artifacts will be removed if not set.",
-	)
-
-	runCmd.Flags().BoolVarP(
-		&cliArgs.quiet,
-		"quiet",
-		"q",
-		false,
-		"disables most default output",
 	)
 
 	runCmd.Flags().StringArrayVar(
@@ -215,6 +213,15 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 			"them)",
 	)
 
+	runCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
+	if err := runCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+	runCmd.Flags().StringVar(&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
+	if err := runCmd.Flags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+
 	formattedSubstitutionExamples := make([]string, len(substitutionsByFramework))
 	i := 0
 	for framework, substitution := range substitutionsByFramework {
@@ -252,6 +259,8 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 
 func init() {
 	AddFlags(runCmd, &cliArgs)
+	runCmd.SetHelpTemplate(helpTemplate)
+	runCmd.SetUsageTemplate(shortUsageTemplate)
 	rootCmd.AddCommand(runCmd)
 }
 
@@ -364,8 +373,6 @@ func addShaFlag(cmd *cobra.Command, destination *string) {
 		destination,
 		"sha",
 		os.Getenv("CAPTAIN_SHA"),
-		"the git commit sha hash of the commit being built\n"+
-			"if using a supported CI provider, this will be automatically set\n"+
-			"otherwise use this flag or set the environment variable CAPTAIN_SHA\n",
+		"the git commit sha hash of the commit being built",
 	)
 }

@@ -51,7 +51,16 @@ func (s Service) newIntermediateArtifactStorage(path string) (*intermediateArtif
 	}
 
 	if info != nil && !info.IsDir() {
-		return nil, errors.NewConfigurationError("intermediate artifacts path %q needs to be a directory", path)
+		return nil, errors.NewConfigurationError(
+			"Intermediate artifacts path is not a directory",
+			fmt.Sprintf(
+				"You specified %q as the path for intermediate artifacts. However, this appears to be a file, not a "+
+					"directory.",
+				path,
+			),
+			"Please make sure that the intermediate artifacts path points to new path or an existing directory. Captain "+
+				"will create a directory in case the path doesn't exist yet.",
+		)
 	}
 
 	return ias, nil
@@ -76,7 +85,17 @@ func (ias *intermediateArtifactStorage) moveTestResults(artifacts []string) erro
 		}
 
 		if dir != "" && !fs.IsLocal(dir) {
-			return errors.NewConfigurationError("test results are outside of working directory")
+			return errors.NewConfigurationError(
+				"Test results are outside of working directory",
+				fmt.Sprintf(
+					"Captain found a test result at %q, which appears to be outside of the current working directory (%q). "+
+						"Unfortunately this is an unsupported edge-case when using --intermediate-artifiacts-path "+
+						"as Captain is unable to construct the necessary directory structure in %q.",
+					artifact, ias.workingDir, ias.basePath,
+				),
+				"Please make sure that your test-results are all inside the current working directory. Alternatively, try "+
+					"Captain from a parent directory.",
+			)
 		}
 
 		targetPath := filepath.Join(attemptPath, dir)

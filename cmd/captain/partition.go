@@ -19,16 +19,26 @@ type partitionArgs struct {
 var (
 	pArgs        partitionArgs
 	partitionCmd = &cobra.Command{
-		Use:   "partition",
-		Short: "Partition a test suite using historical file timings recorded by Captain",
-		Long:  descriptionPartition,
+		Use: "partition [--help] [--config-file=<path>] [--delimiter=<delim>] [--sha=<sha>] --suite-id=<suite> --index=<i> " +
+			"--total=<total> <args>",
+		Short: "Partitions a test suite using historical file timings recorded by Captain",
+		Long: "'captain partition' can be used to split up your test suite by test file, leveraging test file timings " +
+			"recorded in captain.",
+		Example: "" +
+			"  bundle exec rspec $(captain partition --suide-id your-project-rspec --index 0 --total 2 spec/**/*_spec.rb)\n" +
+			"  bundle exec rspec $(captain partition --suide-id your-project-rspec --index 1 --total 2 spec/**/*_spec.rb)",
+		Args:                  cobra.MinimumNArgs(1),
+		DisableFlagsInUseLine: true,
 		PreRunE: initCLIService(func(p providers.Provider) error {
 			if p.CommitSha == "" {
-				return errors.NewConfigurationError("missing commit sha")
+				return errors.NewConfigurationError(
+					"Missing commit SHA",
+					"Captain requires a commit SHA in order to track test runs correctly.",
+					"You can specify the SHA by using the --sha flag or the CAPTAIN_SHA environment variable",
+				)
 			}
 			return nil
 		}),
-		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := captain.Partition(cmd.Context(), cli.PartitionConfig{
 				SuiteID:        suiteID,
@@ -42,46 +52,45 @@ var (
 )
 
 func init() {
-	getEnvIntWithDefault := func(envVar string, defaultValue int) int {
-		envValue := os.Getenv(envVar)
-		if envValue == "" {
-			return defaultValue
+	getEnvAsInt := func(name string) (int, bool) {
+		value := os.Getenv(name)
+		if value == "" {
+			return 0, false
 		}
 
-		envInt, err := strconv.Atoi(envValue)
+		i, err := strconv.Atoi(value)
 		if err != nil {
 			initializationErrors = append(initializationErrors,
-				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", envVar, envValue),
+				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", name, value),
 			)
-			return defaultValue
+			return 0, false
 		}
-		return envInt
+
+		return i, true
 	}
-	addSuiteIDFlag(partitionCmd, &suiteID)
 
-	defaultPartitionIndex := getEnvIntWithDefault("CAPTAIN_PARTITION_INDEX", -1)
-	partitionCmd.Flags().IntVar(&pArgs.nodes.Index, "index", defaultPartitionIndex,
-		"the 0-indexed index of a particular partition (required). Also set with CAPTAIN_PARTITION_INDEX")
+	defaultPartitionIndex, ok := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
+	partitionCmd.Flags().IntVar(
+		&pArgs.nodes.Index, "index", defaultPartitionIndex, "the 0-indexed index of a particular partition",
+	)
+	if !ok {
+		if err := partitionCmd.MarkFlagRequired("index"); err != nil {
+			initializationErrors = append(initializationErrors, err)
+		}
+	}
 
-	defaultPartitionTotal := getEnvIntWithDefault("CAPTAIN_PARTITION_TOTAL", 0)
-	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", defaultPartitionTotal,
-		"the total number of partitions (required). Also set with CAPTAIN_PARTITION_TOTAL")
+	defaultPartitionTotal, ok := getEnvAsInt("CAPTAIN_PARTITION_TOTAL")
+	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", defaultPartitionTotal, "the total number of partitions")
+	if !ok || defaultPartitionTotal < 1 {
+		if err := partitionCmd.MarkFlagRequired("total"); err != nil {
+			initializationErrors = append(initializationErrors, err)
+		}
+	}
 
 	// it's a smell that we're using cliArgs here but I believe it's a major refactor to stop doing that.
 	addShaFlag(partitionCmd, &cliArgs.GenericProvider.Sha)
 
 	partitionCmd.Flags().StringVar(&pArgs.delimiter, "delimiter", " ", "the delimiter used to separate partitioned files")
 
-	if defaultPartitionIndex < 0 {
-		if err := partitionCmd.MarkFlagRequired("index"); err != nil {
-			initializationErrors = append(initializationErrors, err)
-		}
-	}
-
-	if defaultPartitionTotal < 1 {
-		if err := partitionCmd.MarkFlagRequired("total"); err != nil {
-			initializationErrors = append(initializationErrors, err)
-		}
-	}
 	rootCmd.AddCommand(partitionCmd)
 }

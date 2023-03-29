@@ -12,7 +12,7 @@ import (
 var _ = Describe("Errors", func() {
 	Describe("ConfigurationError", func() {
 		It("behaves like an error", func() {
-			err := errors.NewConfigurationError("some error %v", "some value")
+			err := errors.NewConfigurationError(fmt.Sprintf("some error %v", "some value"), "", "")
 			Expect(err.Error()).To(Equal("some error some value"))
 			Expect(fmt.Sprintf("%+v", err)).To(ContainSubstring("/errors_test.go"))
 

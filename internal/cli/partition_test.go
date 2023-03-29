@@ -65,19 +65,19 @@ var _ = Describe("Partition", func() {
 	Context("when misconfigured", func() {
 		It("requires an index be >= 0", func() {
 			err = service.Partition(ctx, cfgWithGlob(-1, 2, "*.test"))
-			Expect(err.Error()).To(ContainSubstring("index must be >= 0"))
+			Expect(err.Error()).To(ContainSubstring("Missing partition index"))
 		})
 
 		It("requires an index be < total", func() {
 			err = service.Partition(ctx, cfgWithGlob(1, 1, "*.test"))
-			Expect(err.Error()).To(ContainSubstring("index must be < total"))
+			Expect(err.Error()).To(ContainSubstring("Unsupported partitioning setup"))
 			err = service.Partition(ctx, cfgWithGlob(2, 1, "*.test"))
-			Expect(err.Error()).To(ContainSubstring("index must be < total"))
+			Expect(err.Error()).To(ContainSubstring("Unsupported partitioning setup"))
 		})
 
 		It("must specify filepath args", func() {
 			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}, " "))
-			Expect(err.Error()).To(ContainSubstring("no test file paths provided"))
+			Expect(err.Error()).To(ContainSubstring("Missing test file paths"))
 		})
 	})
 

@@ -19,7 +19,7 @@ func (t *TaskRunner) NewCommand(ctx context.Context, cfg exec.CommandConfig) (ex
 		return t.MockNewCommand(ctx, cfg)
 	}
 
-	return nil, errors.NewConfigurationError("MockNewCommand was not configured")
+	return nil, errors.NewInternalError("MockNewCommand was not configured")
 }
 
 // GetExitStatusFromError either calls the configured mock of itself or returns an error if that doesn't exist.
@@ -28,5 +28,5 @@ func (t *TaskRunner) GetExitStatusFromError(err error) (int, error) {
 		return t.MockGetExitStatusFromError(err)
 	}
 
-	return 0, errors.NewConfigurationError("MockGetExitStatusFromError was not configured")
+	return 0, errors.NewInternalError("MockGetExitStatusFromError was not configured")
 }

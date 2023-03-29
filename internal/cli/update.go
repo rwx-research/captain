@@ -38,7 +38,12 @@ func parseFlags(args []string) local.Map {
 func (s Service) AddFlake(ctx context.Context, args []string) error {
 	localStorage, ok := s.API.(local.Client)
 	if !ok {
-		return errors.NewConfigurationError("captain add flake only works with a local file backend.")
+		return errors.NewConfigurationError(
+			"'captain add flake' only works in OSS mode",
+			"You are trying to register a new flake in Captain, however it appears that you are using "+
+				"Captain Cloud.",
+			"Please visit https://captain.build/ to configure your flakes or quarantines.",
+		)
 	}
 
 	localStorage.Flakes = append(localStorage.Flakes, parseFlags(args).ToYAML())
@@ -49,7 +54,12 @@ func (s Service) AddFlake(ctx context.Context, args []string) error {
 func (s Service) AddQuarantine(ctx context.Context, args []string) error {
 	localStorage, ok := s.API.(local.Client)
 	if !ok {
-		return errors.NewConfigurationError("captain add flake only works with a local file backend.")
+		return errors.NewConfigurationError(
+			"'captain add quarantine' only works in OSS mode",
+			"You are trying to quarantine a new test in Captain, however it appears that you are using "+
+				"Captain Cloud.",
+			"Please visit https://captain.build/ to configure your flakes or quarantines.",
+		)
 	}
 
 	localStorage.Quarantines = append(localStorage.Quarantines, parseFlags(args).ToYAML())
@@ -60,7 +70,12 @@ func (s Service) AddQuarantine(ctx context.Context, args []string) error {
 func (s Service) RemoveFlake(ctx context.Context, args []string) error {
 	localStorage, ok := s.API.(local.Client)
 	if !ok {
-		return errors.NewConfigurationError("captain add flake only works with a local file backend.")
+		return errors.NewConfigurationError(
+			"'captain remove flake' only works in OSS mode",
+			"You are trying to remove a flake in Captain, however it appears that you are using "+
+				"Captain Cloud.",
+			"Please visit https://captain.build/ to configure your flakes or quarantines.",
+		)
 	}
 
 	identity := parseFlags(args)
@@ -76,7 +91,12 @@ func (s Service) RemoveFlake(ctx context.Context, args []string) error {
 func (s Service) RemoveQuarantine(ctx context.Context, args []string) error {
 	localStorage, ok := s.API.(local.Client)
 	if !ok {
-		return errors.NewConfigurationError("captain add flake only works with a local file backend.")
+		return errors.NewConfigurationError(
+			"'captain remove quarantine' only works in OSS mode",
+			"You are trying to remove a quarantine in Captain, however it appears that you are using "+
+				"Captain Cloud.",
+			"Please visit https://captain.build/ to configure your flakes or quarantines.",
+		)
 	}
 
 	identity := parseFlags(args)
@@ -98,7 +118,11 @@ func (s Service) UploadTestResults(
 ) ([]backend.TestResultsUploadResult, error) {
 	// only attempt the upload if the CLI is set up to interact with Captain Cloud.
 	if _, ok := s.API.(local.Client); ok {
-		return nil, errors.NewConfigurationError("Uploading test results requires a Captain Cloud subscription.")
+		return nil, errors.NewConfigurationError(
+			"Missing Cloud subscription",
+			"Uploading test results requires a Captain Cloud subscription.",
+			"Please visit https://www.rwx.com to learn about purchasing options.",
+		)
 	}
 
 	return s.UpdateTestResults(ctx, testSuiteID, filepaths)
@@ -112,7 +136,11 @@ func (s Service) UpdateTestResults(
 	filepaths []string,
 ) ([]backend.TestResultsUploadResult, error) {
 	if testSuiteID == "" {
-		return nil, errors.NewConfigurationError("suite-id is required")
+		return nil, errors.NewConfigurationError(
+			"Missing suite ID",
+			"A suite ID is required in order to use the upload feature.",
+			"The suite ID can be set using the --suite-id flag or setting a CAPTAIN_SUITE_ID environment variable.",
+		)
 	}
 
 	if len(filepaths) == 0 {
@@ -122,7 +150,7 @@ func (s Service) UpdateTestResults(
 
 	expandedFilepaths, err := s.FileSystem.GlobMany(filepaths)
 	if err != nil {
-		return nil, s.logError(errors.NewSystemError("unable to expand filepath glob: %s", err))
+		return nil, errors.NewSystemError("unable to expand filepath glob: %s", err)
 	}
 	if len(expandedFilepaths) == 0 {
 		s.Log.Debug("No paths to test results provided")
@@ -131,7 +159,7 @@ func (s Service) UpdateTestResults(
 
 	parsedResults, err := s.parse(expandedFilepaths, 1)
 	if err != nil {
-		return nil, s.logError(errors.WithStack(err))
+		return nil, errors.WithStack(err)
 	}
 
 	result, err := s.API.UpdateTestResults(ctx, testSuiteID, *parsedResults)

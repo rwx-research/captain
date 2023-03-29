@@ -1,8 +1,6 @@
 package providers
 
-import (
-	"github.com/rwx-research/captain-cli/internal/errors"
-)
+import "github.com/rwx-research/captain-cli/internal/errors"
 
 type BuildkiteEnv struct {
 	Detected bool `env:"BUILDKITE"`
@@ -49,31 +47,59 @@ func (cfg BuildkiteEnv) MakeProvider() (Provider, error) {
 func buildkiteTags(cfg BuildkiteEnv) (map[string]any, error) {
 	err := func() error {
 		if cfg.OrganizationSlug == "" {
-			return errors.NewConfigurationError("missing OrganizationSlug")
+			return errors.NewConfigurationError(
+				"Missing organization slug",
+				"It appears that you are running on Buildkite, however Captain is unable to determine your organization slug.",
+				"You can configure Buildkite's organization slug by setting the BUILDKITE_ORGANIZATION_SLUG environment variable.",
+			)
 		}
 
 		if cfg.Repo == "" {
-			return errors.NewConfigurationError("missing Repo")
+			return errors.NewConfigurationError(
+				"Missing repository",
+				"It appears that you are running on Buildkite, however Captain is unable to determine your repository name.",
+				"You can configure Buildkite's repository name by setting the BUILDKITE_REPO environment variable.",
+			)
 		}
 
 		if cfg.Label == "" {
-			return errors.NewConfigurationError("missing Label")
+			return errors.NewConfigurationError(
+				"Missing label",
+				"It appears that you are running on Buildkite, however Captain is unable to read Buildkite's labels.",
+				"You can configure labels by setting the BUILDKITE_LABEL environment variable.",
+			)
 		}
 
 		if cfg.JobID == "" {
-			return errors.NewConfigurationError("missing JobID")
+			return errors.NewConfigurationError(
+				"Missing job ID",
+				"It appears that you are running on Buildkite, however Captain is unable to determine Buildkite's job ID.",
+				"You can configure the job ID by setting the BUILDKITE_JOB_ID environment variable.",
+			)
 		}
 
 		if cfg.RetryCount == "" {
-			return errors.NewConfigurationError("missing RetryCount")
+			return errors.NewConfigurationError(
+				"Missing retry count",
+				"It appears that you are running on Buildkite, however Captain is unable to determine Buildkite's retry count.",
+				"You can configure the retry count by setting the BUILDKITE_RETRY_COUNT environment variable.",
+			)
 		}
 
 		if cfg.BuildID == "" {
-			return errors.NewConfigurationError("missing BuildID")
+			return errors.NewConfigurationError(
+				"Missing build ID",
+				"It appears that you are running on Buildkite, however Captain is unable to determine Buildkite's build ID.",
+				"You can configure the build ID by setting the BUILDKITE_BUILD_ID environment variable.",
+			)
 		}
 
 		if cfg.BuildURL == "" {
-			return errors.NewConfigurationError("missing BuildURL")
+			return errors.NewConfigurationError(
+				"Missing build URL",
+				"It appears that you are running on Buildkite, however Captain is unable to determine Buildkite's build URL.",
+				"You can configure the build URL by setting the BUILDKITE_BUILD_URL environment variable.",
+			)
 		}
 
 		return nil

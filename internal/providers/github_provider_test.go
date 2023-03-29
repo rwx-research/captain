@@ -47,28 +47,28 @@ var _ = Describe("GitHubEnv.MakeProvider", func() {
 		_, err := params.MakeProviderWithoutCommitMessageParsing("fixed it")
 
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing repository"))
+		Expect(err.Error()).To(ContainSubstring("Missing repository"))
 	})
 
 	It("requires an job name", func() {
 		params.Name = ""
 		_, err := params.MakeProviderWithoutCommitMessageParsing("fixed it")
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing job name"))
+		Expect(err.Error()).To(ContainSubstring("Missing job name"))
 	})
 
 	It("requires a run attempt name", func() {
 		params.Attempt = ""
 		_, err := params.MakeProviderWithoutCommitMessageParsing("fixed it")
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing run attempt"))
+		Expect(err.Error()).To(ContainSubstring("Missing run attempt"))
 	})
 
 	It("requires a run ID", func() {
 		params.ID = ""
 		_, err := params.MakeProviderWithoutCommitMessageParsing("fixed it")
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing run ID"))
+		Expect(err.Error()).To(ContainSubstring("Missing run ID"))
 	})
 })
 

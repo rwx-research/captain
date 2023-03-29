@@ -14,15 +14,15 @@ var _ = Describe("RunConfig", func() {
 
 			err = cli.RunConfig{MaxTestsToRetry: "1.5"}.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("max-tests-to-retry must be either an integer or percentage"))
+			Expect(err.Error()).To(ContainSubstring("Unsupported --max-tests-to-retry value"))
 
 			err = cli.RunConfig{MaxTestsToRetry: "something"}.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("max-tests-to-retry must be either an integer or percentage"))
+			Expect(err.Error()).To(ContainSubstring("Unsupported --max-tests-to-retry value"))
 
 			err = cli.RunConfig{MaxTestsToRetry: "something%"}.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("max-tests-to-retry must be either an integer or percentage"))
+			Expect(err.Error()).To(ContainSubstring("Unsupported --max-tests-to-retry value"))
 
 			err = cli.RunConfig{MaxTestsToRetry: " 1 "}.Validate()
 			Expect(err).NotTo(HaveOccurred())
@@ -40,13 +40,13 @@ var _ = Describe("RunConfig", func() {
 		It("errs when retries are positive and the retry command is missing", func() {
 			err := cli.RunConfig{Retries: 1, RetryCommandTemplate: ""}.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries or flaky-retries are > 0"))
+			Expect(err.Error()).To(ContainSubstring("Missing retry command"))
 		})
 
 		It("errs when flaky-retries are positive and the retry command is missing", func() {
 			err := cli.RunConfig{FlakyRetries: 1, RetryCommandTemplate: ""}.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries or flaky-retries are > 0"))
+			Expect(err.Error()).To(ContainSubstring("Missing retry command"))
 		})
 
 		It("is valid when retries are positive and the retry command is present", func() {

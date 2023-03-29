@@ -47,7 +47,7 @@ func (a *API) GetRunConfiguration(
 		return a.MockGetRunConfiguration(ctx, testSuiteIdentifier)
 	}
 
-	return backend.RunConfiguration{}, errors.NewConfigurationError("MockGetRunConfiguration was not configured")
+	return backend.RunConfiguration{}, errors.NewInternalError("MockGetRunConfiguration was not configured")
 }
 
 // GetTestTimingManifest either calls the configured mock of itself or returns an error if that doesn't exist.
@@ -59,7 +59,7 @@ func (a *API) GetTestTimingManifest(
 		return a.MockGetTestTimingManifest(ctx, testSuiteIdentifier)
 	}
 
-	return nil, errors.NewConfigurationError("MockGetTestTimingManifest was not configured")
+	return nil, errors.NewInternalError("MockGetTestTimingManifest was not configured")
 }
 
 // UploadTestResults either calls the configured mock of itself or returns an error if that doesn't exist.
@@ -72,5 +72,5 @@ func (a *API) UpdateTestResults(
 		return a.MockUpdateTestResults(ctx, testSuiteID, testResults)
 	}
 
-	return nil, errors.NewConfigurationError("MockUpdateTestResults was not configured")
+	return nil, errors.NewInternalError("MockUpdateTestResults was not configured")
 }

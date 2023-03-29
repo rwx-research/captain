@@ -49,27 +49,51 @@ func circleciTags(cfg CircleCIEnv) (map[string]any, error) {
 		// ParallelJobTotal -- only present if parallelization enabled
 
 		if cfg.BuildNum == "" {
-			return errors.NewConfigurationError("missing Build Num")
+			return errors.NewConfigurationError(
+				"Missing build number",
+				"It appears that you are running on CircleCI, however Captain is unable to determine your build number.",
+				"You can configure CircleCI's build number by setting the CIRCLE_BUILD_NUM environment variable.",
+			)
 		}
 
 		if cfg.BuildURL == "" {
-			return errors.NewConfigurationError("missing build URL")
+			return errors.NewConfigurationError(
+				"Missing build URL",
+				"It appears that you are running on CircleCI, however Captain is unable to determine your build URL.",
+				"You can configure CircleCI's build URL by setting the CIRCLE_BUILD_URL environment variable.",
+			)
 		}
 
 		if cfg.Job == "" {
-			return errors.NewConfigurationError("missing job name")
+			return errors.NewConfigurationError(
+				"Missing job name",
+				"It appears that you are running on CircleCI, however Captain is unable to determine your job name.",
+				"You can configure CircleCI's job name by setting the CIRCLE_JOB environment variable.",
+			)
 		}
 
 		if cfg.ProjectUsername == "" {
-			return errors.NewConfigurationError("missing project username")
+			return errors.NewConfigurationError(
+				"Missing project username",
+				"It appears that you are running on CircleCI, however Captain is unable to determine your user-name.",
+				"You can configure CircleCI's user-name by setting the CIRCLE_PROJECT_USERNAME environment variable.",
+			)
 		}
 
 		if cfg.ProjectReponame == "" {
-			return errors.NewConfigurationError("missing project reponame")
+			return errors.NewConfigurationError(
+				"Missing repository name",
+				"It appears that you are running on CircleCI, however Captain is unable to determine your repository name.",
+				"You can configure the repository name by setting the CIRCLE_PROJECT_REPONAME environment variable.",
+			)
 		}
 
 		if cfg.RepositoryURL == "" {
-			return errors.NewConfigurationError("missing repository URL")
+			return errors.NewConfigurationError(
+				"Missing repository URL",
+				"It appears that you are running on CircleCI, however Captain is unable to determine your repository URL.",
+				"You can configure the repository URL by setting the CIRCLE_REPOSITORY_URL environment variable.",
+			)
 		}
 
 		return nil

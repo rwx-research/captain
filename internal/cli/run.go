@@ -502,15 +502,19 @@ func (s Service) handleCommandOutcome(
 
 	testResultsFiles, err := s.FileSystem.Glob(cfg.TestResultsFileGlob)
 	if err != nil {
-		return nil, testResultsFiles, errors.WithStack(runErr), s.logError(
-			errors.NewSystemError("unable to expand filepath glob: %s", err),
-		)
+		return nil,
+			testResultsFiles,
+			errors.WithStack(runErr),
+			errors.NewSystemError("unable to expand filepath glob: %s", err)
 	}
 
 	// Parse testResultsFiles
 	testResults, err := s.parse(testResultsFiles, groupNumber)
 	if err != nil {
-		return nil, testResultsFiles, errors.WithStack(runErr), s.logError(errors.WithStack(err))
+		return nil,
+			testResultsFiles,
+			errors.WithStack(runErr),
+			errors.WithStack(err)
 	}
 
 	return testResults, testResultsFiles, errors.WithStack(runErr), nil
@@ -535,12 +539,12 @@ func (s Service) runCommand(
 		Stderr: os.Stderr,
 	})
 	if err != nil {
-		return ctx, s.logError(errors.NewSystemError("unable to spawn sub-process: %s", err))
+		return ctx, errors.NewSystemError("unable to spawn sub-process: %s", err)
 	}
 
 	s.Log.Debugf("Executing %q", strings.Join(args, " "))
 	if err := cmd.Start(); err != nil {
-		return ctx, s.logError(errors.NewSystemError("unable to execute sub-command: %s", err))
+		return ctx, errors.NewSystemError("unable to execute sub-command: %s", err)
 	}
 	defer s.Log.Debugf("Finished executing %q", strings.Join(args, " "))
 
@@ -549,7 +553,7 @@ func (s Service) runCommand(
 			return ctx, errors.NewExecutionError(code, "encountered error during execution of sub-process")
 		}
 
-		return ctx, s.logError(errors.NewSystemError("Error during program execution: %s", err))
+		return ctx, errors.NewSystemError("Error during program execution: %s", err)
 	}
 
 	return ctx, nil

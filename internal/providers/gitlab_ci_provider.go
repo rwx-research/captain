@@ -60,43 +60,83 @@ func (cfg GitLabEnv) MakeProvider() (Provider, error) {
 func gitlabciTags(cfg GitLabEnv) (map[string]any, error) {
 	err := func() error {
 		if cfg.JobName == "" {
-			return errors.NewConfigurationError("missing JobName")
+			return errors.NewConfigurationError(
+				"Missing job name",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your job name.",
+				"You can configure GitLab's job name by setting the CI_JOB_NAME environment variable.",
+			)
 		}
 
 		if cfg.JobStage == "" {
-			return errors.NewConfigurationError("missing JobStage")
+			return errors.NewConfigurationError(
+				"Missing job stage",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your job stage.",
+				"You can configure GitLab's job stage by setting the CI_JOB_STAGE environment variable.",
+			)
 		}
 
 		if cfg.JobID == "" {
-			return errors.NewConfigurationError("missing JobID")
+			return errors.NewConfigurationError(
+				"Missing job ID",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your job ID.",
+				"You can configure GitLab's job ID by setting the CI_JOB_ID environment variable.",
+			)
 		}
 
 		if cfg.PipelineID == "" {
-			return errors.NewConfigurationError("missing PipelineID")
+			return errors.NewConfigurationError(
+				"Missing pipeline ID",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your pipeline ID.",
+				"You can configure GitLab's pipeline ID by setting the CI_PIPELINE_ID environment variable.",
+			)
 		}
 
 		if cfg.JobURL == "" {
-			return errors.NewConfigurationError("missing JobURL")
+			return errors.NewConfigurationError(
+				"Missing job URL",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your job URL.",
+				"You can configure GitLab's job URL by setting the CI_JOB_URL environment variable.",
+			)
 		}
 
 		if cfg.PipelineURL == "" {
-			return errors.NewConfigurationError("missing PipelineURL")
+			return errors.NewConfigurationError(
+				"Missing pipeline URL",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your pipeline URL.",
+				"You can configure GitLab's pipeline URL by setting the CI_PIPELINE_URL environment variable.",
+			)
 		}
 
 		if cfg.NodeTotal == "" {
-			return errors.NewConfigurationError("missing NodeTotal")
+			return errors.NewConfigurationError(
+				"Missing node total",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your total node count.",
+				"You can configure GitLab's node count by setting the CI_NODE_TOTAL environment variable.",
+			)
 		}
 
 		if cfg.ProjectPath == "" {
-			return errors.NewConfigurationError("missing project path")
+			return errors.NewConfigurationError(
+				"Missing project path",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your project path.",
+				"You can configure GitLab's project path by setting the CI_PROJECT_PATH environment variable.",
+			)
 		}
 
 		if cfg.ProjectURL == "" {
-			return errors.NewConfigurationError("missing ProjectURL")
+			return errors.NewConfigurationError(
+				"Missing project URL",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine your project URL.",
+				"You can configure GitLab's project URL by setting the CI_PROJECT_URL environment variable.",
+			)
 		}
 
 		if cfg.APIV4URL == "" {
-			return errors.NewConfigurationError("missing API URL")
+			return errors.NewConfigurationError(
+				"Missing API URL",
+				"It appears that you are running on a GitLab runner, however Captain is unable to determine GitLab's API endpoint.",
+				"You can configure the API endpoint by setting the CI_API_V4_URL environment variable.",
+			)
 		}
 
 		return nil

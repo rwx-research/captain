@@ -42,49 +42,49 @@ var _ = Describe("BuildkiteEnv.MakeProvider", func() {
 		params.BuildID = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildID"))
+		Expect(err.Error()).To(ContainSubstring("Missing build ID"))
 	})
 
 	It("requires build retry count", func() {
 		params.RetryCount = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing RetryCount"))
+		Expect(err.Error()).To(ContainSubstring("Missing retry count"))
 	})
 
 	It("requires build url", func() {
 		params.BuildURL = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing BuildURL"))
+		Expect(err.Error()).To(ContainSubstring("Missing build URL"))
 	})
 
 	It("requires job id", func() {
 		params.JobID = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing JobID"))
+		Expect(err.Error()).To(ContainSubstring("Missing job ID"))
 	})
 
 	It("requires job name", func() {
 		params.Label = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing Label"))
+		Expect(err.Error()).To(ContainSubstring("Missing label"))
 	})
 
 	It("requires buildkite org slug", func() {
 		params.OrganizationSlug = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing OrganizationSlug"))
+		Expect(err.Error()).To(ContainSubstring("Missing organization slug"))
 	})
 
 	It("requires repository url", func() {
 		params.Repo = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing Repo"))
+		Expect(err.Error()).To(ContainSubstring("Missing repository"))
 	})
 })
 

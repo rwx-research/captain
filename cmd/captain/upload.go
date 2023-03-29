@@ -10,15 +10,18 @@ import (
 var (
 	// uploadCmd represents the "upload" sub-command itself
 	uploadCmd = &cobra.Command{
-		Use:   "upload",
-		Short: "Upload a resource to Captain",
+		Use:        "upload",
+		Short:      "Upload a resource to Captain",
+		Deprecated: "use 'captain update' instead.",
 	}
 
 	// uploadResultsCmd is the "results" sub-command of "uploads".
 	uploadResultsCmd = &cobra.Command{
-		Use:     "results [file]",
+		Use:     "results [flags] --suite-id=<suite> <args>",
 		Short:   "Upload test results to Captain",
-		Long:    descriptionUploadResults,
+		Long:    "'captain upload results' will upload test results from various test runners, such as JUnit or RSpec.",
+		Example: `captain upload results --suite-id="JUnit" *.xml`,
+		Args:    cobra.MinimumNArgs(1),
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Should also support reading from stdin
@@ -29,9 +32,17 @@ var (
 )
 
 func init() {
-	// Although `suite-id` is a global flag, we need to re-define it here in order to mark it as required.
-	// This is due to a bug in 'spf13/cobra'. See https://github.com/spf13/cobra/issues/921
-	addSuiteIDFlag(uploadResultsCmd, &suiteID)
+	uploadResultsCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
+	if err := uploadResultsCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+
+	uploadResultsCmd.Flags().
+		StringVar(&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
+	if err := uploadResultsCmd.Flags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
+		initializationErrors = append(initializationErrors, err)
+	}
+
 	addFrameworkFlags(uploadResultsCmd)
 	addGenericProviderFlags(uploadResultsCmd, &cliArgs.GenericProvider)
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -12,17 +13,16 @@ import (
 )
 
 var quarantineCmd = &cobra.Command{
-	Use:     "quarantine",
-	Short:   "Execute a test-suite and modify its exit code based on quarantined tests",
-	Long:    descriptionQuarantine,
+	Use:   "quarantine [flags] --suite-id=<suite> <args>",
+	Short: "Execute a test-suite and modify its exit code based on quarantined tests",
+	Long: "'captain add quarantine' can be used to quarantine a test. To select a test, specify the metadata that " +
+		"uniquely identifies a single test.",
+	Example: `  captain add quarantine --suite-id "example" --file "./test/controller_spec.rb" --description "My test"`,
+	Args:    cobra.MinimumNArgs(1),
 	PreRunE: initCLIService(providers.Validate),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var printSummary bool
 		var testResultsPath string
-
-		if len(args) == 0 {
-			return errors.WithStack(cmd.Usage())
-		}
 
 		reporterFuncs := make(map[string]cli.Reporter)
 
@@ -34,7 +34,11 @@ var quarantineCmd = &cobra.Command{
 				case "junit-xml":
 					reporterFuncs[path] = reporting.WriteJUnitSummary
 				default:
-					return errors.NewConfigurationError("Unknown reporter %q.", name)
+					return errors.WithDecoration(errors.NewConfigurationError(
+						fmt.Sprintf("Unknown reporter %q", name),
+						"Available reporters are 'rwx-v1-json' and 'junit-xml'.",
+						"",
+					))
 				}
 			}
 
@@ -63,8 +67,6 @@ var quarantineCmd = &cobra.Command{
 }
 
 func AddQuarantineFlags(quarantineCmd *cobra.Command, cliArgs *CliArgs) {
-	addSuiteIDFlag(quarantineCmd, &suiteID)
-
 	quarantineCmd.Flags().StringVar(
 		&cliArgs.testResults,
 		"test-results",

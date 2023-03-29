@@ -14,7 +14,7 @@ func (c *Command) Start() error {
 		return c.MockStart()
 	}
 
-	return errors.NewConfigurationError("MockStart was not configured")
+	return errors.NewInternalError("MockStart was not configured")
 }
 
 // Wait either calls the configured mock of itself or returns an error if that doesn't exist.
@@ -23,5 +23,5 @@ func (c *Command) Wait() error {
 		return c.MockWait()
 	}
 
-	return errors.NewConfigurationError("MockWait was not configured")
+	return errors.NewInternalError("MockWait was not configured")
 }

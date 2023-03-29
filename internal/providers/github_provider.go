@@ -85,19 +85,36 @@ func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(message string) (Pr
 func githubTags(cfg GitHubEnv) (map[string]any, error) {
 	err := func() error {
 		if cfg.ID == "" {
-			return errors.NewConfigurationError("missing run ID")
+			return errors.NewConfigurationError(
+				"Missing run ID",
+				"It appears that you are running on Github Actions, however Captain is unable to determine your run ID.",
+				"You can configure Github's run ID by setting the GITHUB_RUN_ID environment variable.",
+			)
 		}
 
 		if cfg.Attempt == "" {
-			return errors.NewConfigurationError("missing run attempt")
+			return errors.NewConfigurationError(
+				"Missing run attempt",
+				"It appears that you are running on Github Actions, however Captain is unable to determine your run attempt "+
+					"number.",
+				"You can configure Github's run attempt number by setting the GITHUB_RUN_ATTEMPT environment variable.",
+			)
 		}
 
 		if cfg.Name == "" {
-			return errors.NewConfigurationError("missing job name")
+			return errors.NewConfigurationError(
+				"Missing job name",
+				"It appears that you are running on Github Actions, however Captain is unable to determine your job name.",
+				"You can configure Github's job name by setting the GITHUB_JOB environment variable.",
+			)
 		}
 
 		if cfg.Repository == "" {
-			return errors.NewConfigurationError("missing repository")
+			return errors.NewConfigurationError(
+				"Missing repository",
+				"It appears that you are running on Github Actions, however Captain is unable to determine your repository name.",
+				"You can configure the repository name by setting the GITHUB_REPOSITORY environment variable.",
+			)
 		}
 
 		return nil

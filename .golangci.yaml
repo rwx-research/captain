@@ -56,6 +56,7 @@ linters-settings:
       - dot
   wrapcheck:
     ignoreSigRegexps:
+      - errors\.WithDecoration\(
       - errors\.New.*Error\(
 
 issues:

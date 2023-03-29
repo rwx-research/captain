@@ -9,7 +9,7 @@ echo Testing Quarantining...
   --test-results .github/workflows/fixtures/rspec-quarantine.json \
   --fail-on-upload-error \
   -- bash -c "exit 1"
-echo PASSED;
+echo PASSED
 
 echo Testing all failures quarantined, but with other errors...
 
@@ -20,10 +20,12 @@ set +e
   --fail-on-upload-error \
   -- bash -c "exit 123"
 if [[ $? -eq 123 ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
-  exit 1;
+  status=$?
+  echo FAILED
+  echo "expected exit status to be 123 but was $status"
+  exit 1
 fi
 set -e
 
@@ -72,11 +74,11 @@ expected='abc
 def
 ghi'
 if [[ "$result" == "$expected"* ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
+  echo FAILED
   echo "expected result to start with 'abc\ndef\nghi\n' but it was: $result"
-  exit 1;
+  exit 1
 fi
 set -e
 
@@ -88,14 +90,14 @@ result=$(./captain run \
   --test-results .github/workflows/fixtures/rspec-passed.json \
   --fail-on-upload-error \
   -- bash -c "echo abc; echo def 1>&2" \
-  2>&1 > /dev/null)
+  2>&1 >/dev/null)
 expected='def'
 if [[ "$result" == "$expected"* ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
+  echo FAILED
   echo "expected result to start with 'def' but it was: $result"
-  exit 1;
+  exit 1
 fi
 set -e
 
@@ -108,10 +110,12 @@ set +e
   --fail-on-upload-error \
   -- bash -c "exit 123"
 if [[ $? -eq 123 ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
-  exit 1;
+  status=$?
+  echo FAILED
+  echo "expected exit status to be 123 but was $status"
+  exit 1
 fi
 set -e
 
@@ -125,10 +129,11 @@ result=$(./captain run \
   --retry-command 'echo "{{ tests }}"' \
   -- bash -c "exit 123")
 if [[ "$result" == *"'./x.rb[1:1]'"* ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
-  exit 1;
+  echo FAILED
+  echo "expected result to contain './x.rb[1:1]' but it was: $result"
+  exit 1
 fi
 
 echo Testing Retried Failures not Quarantined...
@@ -143,14 +148,17 @@ result=$(./captain run \
   -- bash -c "exit 123")
 if [[ $? -eq 123 ]]; then
   if [[ "$result" == *"'./x.rb[1:1]'"* ]]; then
-    echo PASSED;
+    echo PASSED
   else
-    echo FAILED;
-    exit 1;
+    echo FAILED
+    echo "expected result to contain './x.rb[1:1]' but it was: $result"
+    exit 1
   fi
 else
-  echo FAILED;
-  exit 1;
+  status=$?
+  echo FAILED
+  echo "expected exit status to be 123 but was $status"
+  exit 1
 fi
 set -e
 
@@ -162,10 +170,12 @@ set +e
   --test-results .github/workflows/fixtures/does-not-exist.json \
   -- bash -c "exit 123"
 if [[ $? -eq 123 ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
-  exit 1;
+  status=$?
+  echo FAILED
+  echo "expected exit status to be 123 but was $status"
+  exit 1
 fi
 set -e
 
@@ -177,10 +187,11 @@ part1=$(./captain partition \
   --suite-id "captain-cli-functional-tests" --index 0 --total 2)
 
 if [[ "$part1" == ".github/workflows/fixtures/partition/x.rb .github/workflows/fixtures/partition/z.rb" ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
-  exit 1;
+  echo FAILED
+  echo "first partition was $part1"
+  exit 1
 fi
 
 part2=$(./captain partition \
@@ -188,10 +199,11 @@ part2=$(./captain partition \
   --suite-id "captain-cli-functional-tests" --index 1 --total 2)
 
 if [[ "$part2" == ".github/workflows/fixtures/partition/y.rb" ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
-  exit 1;
+  echo FAILED
+  echo "second partition was $part2"
+  exit 1
 fi
 set -e
 
@@ -205,10 +217,10 @@ part1=$(./captain partition \
   --suite-id "captain-cli-functional-tests" --index 0 --total 2)
 
 if [[ "$part1" == ".github/workflows/fixtures/partition/a_spec.rb .github/workflows/fixtures/partition/d_spec.rb" ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo "FAILED: $part1";
-  exit 1;
+  echo "FAILED: $part1"
+  exit 1
 fi
 
 part2=$(./captain partition \
@@ -216,13 +228,12 @@ part2=$(./captain partition \
   --suite-id "captain-cli-functional-tests" --index 1 --total 2)
 
 if [[ "$part2" == ".github/workflows/fixtures/partition/b_spec.rb .github/workflows/fixtures/partition/c_spec.rb" ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo "FAILED: $part2";
-  exit 1;
+  echo "FAILED: $part2"
+  exit 1
 fi
 set -e
-
 
 echo Testing recursive globbing...
 
@@ -232,23 +243,24 @@ filepaths=$(./captain partition \
   --suite-id "captain-cli-functional-tests" --index 0 --total 1)
 
 if [[ "$filepaths" == ".github/workflows/fixtures/partition/a_spec.rb .github/workflows/fixtures/partition/b_spec.rb .github/workflows/fixtures/partition/c_spec.rb .github/workflows/fixtures/partition/d_spec.rb" ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo "FAILED: $part1";
-  exit 1;
+  echo "FAILED: $part1"
+  exit 1
 fi
 set -e
-
 
 echo Testing upload short circuits when nothing to upload...
 
 set +e
 ./captain upload results nonexistingfile.json --suite-id captain-cli-functional-tests
 if [[ $? -eq 0 ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
-  exit 1;
+  status=$?
+  echo FAILED
+  echo "expected exit status to be 0 but was $status"
+  exit 1
 fi
 set -e
 
@@ -259,10 +271,10 @@ set +e
 # output something exactly in the format `v#.#.#` and nothing else
 version_output=$(./captain --version)
 if [[ "$version_output" =~ ^\v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo PASSED;
+  echo PASSED
 else
-  echo FAILED;
-  echo "$version_output did not match format v#.#.#";
-  exit 1;
+  echo FAILED
+  echo "$version_output did not match format v#.#.#"
+  exit 1
 fi
 set -e

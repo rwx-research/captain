@@ -122,7 +122,14 @@ func InitConfig(cmd *cobra.Command) (cfg Config, err error) {
 	if configFilePath == "" {
 		configFilePath, err = findInParentDir(filepath.Join(captainDirectory, configFileName))
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
-			return cfg, errors.NewConfigurationError("unable to determine config file path: %s", err.Error())
+			return cfg, errors.NewConfigurationError(
+				"Unable to read configuration file",
+				fmt.Sprintf(
+					"The following system error occurred while attempting to read the config file at %q: %s",
+					configFilePath, err.Error(),
+				),
+				"Please make sure that Captain has the correct permissions to access the config file.",
+			)
 		}
 	}
 

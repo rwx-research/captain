@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -66,7 +65,7 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 
 		cfg, err = InitConfig(cmd)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.WithDecoration(err)
 		}
 
 		if auxiliarySuiteID != "" {
@@ -80,11 +79,11 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 
 		providerAdapter, err := cfg.ProvidersEnv.MakeProviderAdapter()
 		if err != nil {
-			return errors.Wrap(err, "failed to construct provider adapter")
+			return errors.WithDecoration(errors.Wrap(err, "failed to construct provider adapter"))
 		}
 		err = providerValidator(providerAdapter)
 		if err != nil {
-			return err
+			return errors.WithDecoration(err)
 		}
 
 		if cfg.Secrets.APIToken != "" {
@@ -99,12 +98,15 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 		} else {
 			var flakesFilePath, quarantinesFilePath, timingsFilePath string
 			if suiteID == "" {
-				return errors.NewConfigurationError("suite-id is required")
+				return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
 			}
 
 			if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
 				return errors.NewConfigurationError(
-					fmt.Sprintf("suite-id %q cannot contain special characters except '_'", suiteID))
+					"Invalid suite-id",
+					"A suite ID can only contain alphanumeric characters, `_` and `-`.",
+					"Please make sure that the ID doesn't contain any special characters.",
+				)
 			}
 
 			flakesFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, flakesFileName))
@@ -137,7 +139,7 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 			apiClient, err = local.NewClient(fs.Local{}, flakesFilePath, quarantinesFilePath, timingsFilePath)
 		}
 		if err != nil {
-			return errors.Wrap(err, "unable to create API client")
+			return errors.WithDecoration(errors.Wrap(err, "unable to create API client"))
 		}
 
 		var frameworkKind, frameworkLanguage string
@@ -156,7 +158,7 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 		}
 
 		if err := parseConfig.Validate(); err != nil {
-			return errors.Wrap(err, "invalid parser config")
+			return errors.WithDecoration(errors.Wrap(err, "invalid parser config"))
 		}
 
 		captain = cli.Service{

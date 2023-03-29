@@ -18,6 +18,8 @@ require github.com/mattn/go-shellwords v1.0.12
 
 require github.com/mileusna/useragent v1.2.1
 
+require github.com/mitchellh/go-wordwrap v1.0.1
+
 require (
 	github.com/caarlos0/env/v7 v7.1.0
 	github.com/kr/pretty v0.3.0 // indirect

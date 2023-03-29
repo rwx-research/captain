@@ -43,21 +43,21 @@ var _ = Describe("CircleCiEnv.MakeProvider", func() {
 		params.BuildNum = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing Build Num"))
+		Expect(err.Error()).To(ContainSubstring("Missing build number"))
 	})
 
 	It("requires BuildURL", func() {
 		params.BuildURL = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing build URL"))
+		Expect(err.Error()).To(ContainSubstring("Missing build URL"))
 	})
 
 	It("requires JobName", func() {
 		params.Job = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing job name"))
+		Expect(err.Error()).To(ContainSubstring("Missing job name"))
 	})
 
 	It("does not require NodeIndex", func() {
@@ -76,21 +76,21 @@ var _ = Describe("CircleCiEnv.MakeProvider", func() {
 		params.ProjectUsername = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing project username"))
+		Expect(err.Error()).To(ContainSubstring("Missing project username"))
 	})
 
 	It("requires RepoName", func() {
 		params.ProjectReponame = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing project reponame"))
+		Expect(err.Error()).To(ContainSubstring("Missing repository name"))
 	})
 
 	It("requires RepoURL", func() {
 		params.RepositoryURL = ""
 		_, err := params.MakeProvider()
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("missing repository URL"))
+		Expect(err.Error()).To(ContainSubstring("Missing repository URL"))
 	})
 })
 

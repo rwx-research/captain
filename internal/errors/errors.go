@@ -7,16 +7,30 @@ import "github.com/pkg/errors"
 // ConfigurationError represent a configuration error. When used, it should ideally also point towards the configuration
 // value that caused this error to occur.
 type ConfigurationError struct {
-	E error
+	desc string
+	err  error
+	fix  string
 }
 
 func (e ConfigurationError) Error() string {
-	return e.E.Error()
+	return e.err.Error()
+}
+
+func (e ConfigurationError) Description() string {
+	return e.desc
+}
+
+func (e ConfigurationError) Resolution() string {
+	return e.fix
+}
+
+func (e ConfigurationError) Type() string {
+	return "Invalid configuration"
 }
 
 // NewConfigurationError returns a new ConfigurationError
-func NewConfigurationError(msg string, a ...any) error {
-	return WithStack(ConfigurationError{errors.Errorf(msg, a...)})
+func NewConfigurationError(title, desc, fix string) error {
+	return WithStack(ConfigurationError{err: errors.New(title), desc: desc, fix: fix})
 }
 
 // AsConfigurationError checks whether the error is a configuration error

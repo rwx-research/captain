@@ -13,12 +13,12 @@ import (
 func (s Service) Parse(ctx context.Context, filepaths []string) error {
 	results, err := s.parse(filepaths, 1)
 	if err != nil {
-		return s.logError(errors.WithStack(err))
+		return errors.WithStack(err)
 	}
 
 	newOutput, err := json.MarshalIndent(results, "", "  ")
 	if err != nil {
-		return s.logError(errors.NewInternalError("Unable to output test results as JSON: %s", err))
+		return errors.NewInternalError("Unable to output test results as JSON: %s", err)
 	}
 	s.Log.Infoln(string(newOutput))
 

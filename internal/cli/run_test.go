@@ -182,7 +182,7 @@ var _ = Describe("Run", func() {
 
 		It("errs", func() {
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("retry-command must be provided if retries or flaky-retries are > 0"))
+			Expect(err.Error()).To(ContainSubstring("Missing retry command"))
 		})
 	})
 
@@ -2110,20 +2110,9 @@ var _ = Describe("Run", func() {
 
 		It("exits non-zero and logs an error", func() {
 			Expect(err).To(HaveOccurred())
-
-			logMessages := make([]string, 0)
-
-			for _, log := range recordedLogs.All() {
-				logMessages = append(logMessages, log.Message)
-			}
-
-			Expect(logMessages).To(
-				ContainElement(
-					ContainSubstring(
-						"Multiple frameworks detected. The captain CLI only works with one framework at a time",
-					),
-				),
-			)
+			Expect(err.Error()).To(ContainSubstring(
+				"Multiple frameworks detected. The captain CLI only works with one framework at a time",
+			))
 		})
 	})
 })

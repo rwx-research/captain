@@ -26,8 +26,13 @@ func Validate(p Provider) error {
 	}
 
 	if p.ProviderName == "generic" {
-		return errors.NewConfigurationError("Could not detect a supported CI provider. Without a " +
-			"supported CI provider, we require --who, --branch, and --sha to be set.")
+		return errors.NewConfigurationError(
+			"Unsupported runtime environment",
+			"Captain was unable to detect the presence of a supported CI provider.",
+			"To use Captain locally or on unsupported hosts, please use the --who, --branch, and --sha flags. "+
+				"Alternatively, these options can also be set via the CAPTAIN_WHO, CAPTAIN_BRANCH, and CAPTAIN_SHA "+
+				"environment variables.",
+		)
 	}
 	return err
 }
@@ -39,15 +44,29 @@ func (p Provider) validate() error {
 	}
 
 	if p.AttemptedBy == "" {
-		return errors.NewConfigurationError("missing attempted by")
+		return errors.NewConfigurationError(
+			"Missing 'who'",
+			"Captain requires the name of the user that triggered a build / test run.",
+			"You can specify this name by using the --who flag. Alternatively you can also set this option "+
+				"using the CAPTAIN_WHO environment variable.",
+		)
 	}
 
 	if p.BranchName == "" {
-		return errors.NewConfigurationError("missing branch name")
+		return errors.NewConfigurationError(
+			"Missing branch name",
+			"Captain requires a branch name in order to track test runs correctly.",
+			"You can specify this name by using the --branch flag. Alternatively you can also set this option "+
+				"using the CAPTAIN_BRANCH environment variable.",
+		)
 	}
 
 	if p.CommitSha == "" {
-		return errors.NewConfigurationError("missing commit sha")
+		return errors.NewConfigurationError(
+			"Missing commit SHA",
+			"Captain requires a commit SHA in order to track test runs correctly.",
+			"You can specify the SHA by using the --sha flag or the CAPTAIN_SHA environment variable",
+		)
 	}
 
 	return nil

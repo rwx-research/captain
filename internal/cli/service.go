@@ -20,8 +20,3 @@ type Service struct {
 	TaskRunner  TaskRunner
 	ParseConfig parsing.Config
 }
-
-func (s Service) logError(err error) error {
-	s.Log.Errorf(err.Error())
-	return err
-}
