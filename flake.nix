@@ -12,7 +12,11 @@
       {
         formatter = pkgs.nixpkgs-fmt;
         devShell = pkgs.mkShell {
-          packages = with pkgs; [ ginkgo go_1_19 golangci-lint mage ];
+          # silence ginkgo deprecation warnings
+          ACK_GINKGO_DEPRECATIONS = "2.6.0";
+
+          packages = with pkgs;
+            [ ginkgo go_1_19 golangci-lint mage ];
         };
       });
 }

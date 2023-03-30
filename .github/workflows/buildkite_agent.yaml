@@ -15,8 +15,12 @@ jobs:
           extra_nix_config: |
             keep-derivations = true
             keep-outputs = true
-      - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
-      - run: cp ./captain /tmp/captain
+      - run: |
+          CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage build
+          cp ./captain /tmp/captain
+          CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command ginkgo build --tags integration ./test/
+          cp ./test/test.test /tmp/test
+
       - name: Install Buildkite agent
         run: |
           curl -fsSL https://keys.openpgp.org/vks/v1/by-fingerprint/32A37959C2FA5C3C99EFBC32A79206696452D198 | sudo gpg --dearmor -o /usr/share/keyrings/buildkite-agent-archive-keyring.gpg

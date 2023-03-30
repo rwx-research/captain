@@ -63,7 +63,12 @@ var quarantineCmd = &cobra.Command{
 			UploadResults:     false,
 		}
 
-		return errors.WithStack(captain.RunSuite(cmd.Context(), runConfig))
+		err := captain.RunSuite(cmd.Context(), runConfig)
+		if _, ok := errors.AsConfigurationError(err); !ok {
+			cmd.SilenceUsage = true
+		}
+
+		return errors.WithDecoration(err)
 	},
 }
 

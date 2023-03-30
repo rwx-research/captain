@@ -1,8 +1,9 @@
 package main_test
 
 import (
-	"bufio"
+	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -25,14 +26,22 @@ func setEnvFromFile(fileName string) {
 		}
 	}
 
-	fd, err := os.Open(fileName)
-	Expect(err).ToNot(HaveOccurred())
-	defer fd.Close()
+	// use shell to parse the env file to support quotations, comments, etc
 
-	scanner := bufio.NewScanner(fd)
-	for scanner.Scan() {
-		line := strings.TrimSpace(strings.TrimPrefix(scanner.Text(), "export"))
+	// #nosec G204 -- test where we we control the filename
+	cmd := exec.Command("env", "-i", "bash", "-c", fmt.Sprintf("source %s && env", fileName))
+	output, err := cmd.Output()
+
+	// fmt.Fprintf(GinkgoWriter, "ENV OUTPUT: %s", string(output))
+
+	Expect(err).ToNot(HaveOccurred())
+
+	for _, line := range strings.Split(string(output), "\n") {
 		fields := strings.SplitN(line, "=", 2)
+		if fields[0] == "_" || fields[0] == "SHLVL" || fields[0] == "PWD" || len(fields) != 2 {
+			continue
+		}
+
 		os.Setenv(fields[0], fields[1])
 	}
 }
@@ -88,7 +97,7 @@ var _ = Describe("InitConfig", func() {
 			Expect(cfg.ProvidersEnv.Buildkite.Commit).To(Equal("abc123"))
 			Expect(cfg.ProvidersEnv.Buildkite.JobID).To(Equal("987"))
 			Expect(cfg.ProvidersEnv.Buildkite.Label).To(Equal("Fake"))
-			Expect(cfg.ProvidersEnv.Buildkite.Message).To(Equal("\"Fixed it\""))
+			Expect(cfg.ProvidersEnv.Buildkite.Message).To(Equal("Fixed it"))
 			Expect(cfg.ProvidersEnv.Buildkite.OrganizationSlug).To(Equal("rwx"))
 			Expect(cfg.ProvidersEnv.Buildkite.Repo).To(Equal("https://github.com/rwx-research/captain-cli"))
 			Expect(cfg.ProvidersEnv.Buildkite.RetryCount).To(Equal("0"))

@@ -2,4 +2,8 @@ steps:
   - label: "Functional Tests"
     command:
       - cp /tmp/captain ./captain
-      - ./test/functional.sh
+      - cp /tmp/test ./test/test
+      - cd test && ./test
+    env:
+      # disable integration tests that aren't using buildkite's inherited env
+      ONLY_TEST_INHERITED_ENV: true

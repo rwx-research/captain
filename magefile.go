@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 )
 
@@ -22,6 +23,8 @@ func All(ctx context.Context) error {
 		Clean,
 		Build,
 		Test,
+		UnitTest,
+		IntegrationTest,
 		Lint,
 		LintFix,
 	}
@@ -65,16 +68,36 @@ func LintFix(ctx context.Context) error {
 	return sh.RunV("golangci-lint", "run", "--fix", "./...")
 }
 
-// Test executes the test-suite for the Captain-CLI.
 func Test(ctx context.Context) error {
-	if report := os.Getenv("REPORT"); report != "" {
-		return sh.RunV("ginkgo", "--junit-report=report.xml", "./...")
-	}
+	mg.Deps(Build)
+	return (makeTestTask("-tags", "integration", "./..."))(ctx)
+}
 
-	cmd := exec.Command("command", "-v", "ginkgo")
-	if err := cmd.Run(); err != nil {
-		return sh.RunV("go", "test", "./...")
-	}
+// Test executes the test-suite for the Captain-CLI.
+func UnitTest(ctx context.Context) error {
+	// `ginkgo ./...` or `go test ./...`  work out of the box
+	// but `ginkgo ./...` includes ~ confusing empty test output for integration tests
+	// so `mage test` explicitly doesn't call ginkgo against the `/test/` directory
+	return (makeTestTask("./internal/...", "./cmd/..."))(ctx)
+}
 
-	return sh.RunV("ginkgo", "./...")
+// Test executes the test-suite for the Captain-CLI.
+func IntegrationTest(ctx context.Context) error {
+	mg.Deps(Build)
+	return (makeTestTask("-tags", "integration", "./test/"))(ctx)
+}
+
+func makeTestTask(args ...string) func(ctx context.Context) error {
+	return func(ctx context.Context) error {
+		if report := os.Getenv("REPORT"); report != "" {
+			return sh.RunV("ginkgo", append([]string{"--junit-report=report.xml"}, args...)...)
+		}
+
+		cmd := exec.Command("command", "-v", "ginkgo")
+		if err := cmd.Run(); err != nil {
+			return sh.RunV("go", append([]string{"test"}, args...)...)
+		}
+
+		return sh.RunV("ginkgo", args...)
+	}
 }
