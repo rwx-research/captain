@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -25,7 +27,15 @@ var (
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Should also support reading from stdin
-			_, err := captain.UpdateTestResults(cmd.Context(), suiteID, args)
+			artifacts := args
+
+			if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+				if len(artifacts) == 0 && suiteConfig.Results.Path != "" {
+					artifacts = []string{os.ExpandEnv(suiteConfig.Results.Path)}
+				}
+			}
+
+			_, err := captain.UpdateTestResults(cmd.Context(), suiteID, artifacts)
 			return errors.WithStack(err)
 		},
 	}
