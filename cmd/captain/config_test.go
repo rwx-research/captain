@@ -1,50 +1,14 @@
 package main_test
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
-
 	"github.com/spf13/cobra"
 
 	captain "github.com/rwx-research/captain-cli/cmd/captain"
+	"github.com/rwx-research/captain-cli/test/helpers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
-
-func setEnvFromFile(fileName string) {
-	// first cleanup env
-	envPrefixes := []string{"GITHUB", "BUILDKITE", "CIRCLE", "GITLAB", "CI", "RWX", "CAPTAIN"}
-	for _, env := range os.Environ() {
-		for _, prefix := range envPrefixes {
-			if strings.HasPrefix(env, prefix) {
-				pair := strings.SplitN(env, "=", 2)
-				os.Unsetenv(pair[0])
-			}
-		}
-	}
-
-	// use shell to parse the env file to support quotations, comments, etc
-
-	// #nosec G204 -- test where we we control the filename
-	cmd := exec.Command("env", "-i", "bash", "-c", fmt.Sprintf("source %s && env", fileName))
-	output, err := cmd.Output()
-
-	// fmt.Fprintf(GinkgoWriter, "ENV OUTPUT: %s", string(output))
-
-	Expect(err).ToNot(HaveOccurred())
-
-	for _, line := range strings.Split(string(output), "\n") {
-		fields := strings.SplitN(line, "=", 2)
-		if fields[0] == "_" || fields[0] == "SHLVL" || fields[0] == "PWD" || len(fields) != 2 {
-			continue
-		}
-
-		os.Setenv(fields[0], fields[1])
-	}
-}
 
 var _ = Describe("InitConfig", func() {
 	var cmd *cobra.Command
@@ -59,9 +23,13 @@ var _ = Describe("InitConfig", func() {
 		})
 	})
 
+	BeforeEach(func() {
+		helpers.UnsetCIEnv()
+	})
+
 	Context("with GitHub Actions environment variables", func() {
 		BeforeEach(func() {
-			setEnvFromFile("../../test/.env.github.actions")
+			helpers.SetEnvFromFile("../../test/.env.github.actions")
 		})
 
 		It("parses the GitHub options", func() {
@@ -72,7 +40,7 @@ var _ = Describe("InitConfig", func() {
 			Expect(cfg.ProvidersEnv.GitHub.Name).To(Equal("some-job-name"))
 			Expect(cfg.ProvidersEnv.GitHub.Attempt).To(Equal("4"))
 			Expect(cfg.ProvidersEnv.GitHub.ID).To(Equal("1234"))
-			Expect(cfg.ProvidersEnv.GitHub.CommitSha).To(Equal("some-sha-for-testing"))
+			Expect(cfg.ProvidersEnv.GitHub.CommitSha).To(Equal("1fc108cab0bb46083c6cdd50f8cd1deb5005e235"))
 			Expect(cfg.ProvidersEnv.GitHub.ExecutingActor).To(Equal("captain-cli-test"))
 			Expect(cfg.ProvidersEnv.GitHub.TriggeringActor).To(Equal("captain-cli-test-trigger"))
 			Expect(cfg.ProvidersEnv.GitHub.EventName).To(Equal("some-event-name"))
@@ -83,7 +51,7 @@ var _ = Describe("InitConfig", func() {
 
 	Context("with Buildkite environment variables", func() {
 		BeforeEach(func() {
-			setEnvFromFile("../../test/.env.buildkite")
+			helpers.SetEnvFromFile("../../test/.env.buildkite")
 		})
 
 		It("parses the Buildkite options", func() {
@@ -94,7 +62,7 @@ var _ = Describe("InitConfig", func() {
 			Expect(cfg.ProvidersEnv.Buildkite.BuildCreatorEmail).To(Equal("foo@bar.com"))
 			Expect(cfg.ProvidersEnv.Buildkite.BuildID).To(Equal("123"))
 			Expect(cfg.ProvidersEnv.Buildkite.BuildURL).To(Equal("https://buildkite.com/builds/123"))
-			Expect(cfg.ProvidersEnv.Buildkite.Commit).To(Equal("abc123"))
+			Expect(cfg.ProvidersEnv.Buildkite.Commit).To(Equal("1fc108cab0bb46083c6cdd50f8cd1deb5005e235"))
 			Expect(cfg.ProvidersEnv.Buildkite.JobID).To(Equal("987"))
 			Expect(cfg.ProvidersEnv.Buildkite.Label).To(Equal("Fake"))
 			Expect(cfg.ProvidersEnv.Buildkite.Message).To(Equal("Fixed it"))
@@ -108,7 +76,7 @@ var _ = Describe("InitConfig", func() {
 
 	Context("with CircleCI environment variables", func() {
 		BeforeEach(func() {
-			setEnvFromFile("../../test/.env.circleci")
+			helpers.SetEnvFromFile("../../test/.env.circleci")
 		})
 
 		It("parses the CircleCI options", func() {
@@ -124,14 +92,14 @@ var _ = Describe("InitConfig", func() {
 			Expect(cfg.ProvidersEnv.CircleCI.ProjectUsername).To(Equal("michaelglass"))
 			Expect(cfg.ProvidersEnv.CircleCI.RepositoryURL).To(Equal("git@github.com:michaelglass/rspec-abq-test.git"))
 			Expect(cfg.ProvidersEnv.CircleCI.Branch).To(Equal("circle-ci"))
-			Expect(cfg.ProvidersEnv.CircleCI.Sha1).To(Equal("000bd5713d35f778fb51d2b0bf034e8fff5b60b1"))
+			Expect(cfg.ProvidersEnv.CircleCI.Sha1).To(Equal("1fc108cab0bb46083c6cdd50f8cd1deb5005e235"))
 			Expect(cfg.ProvidersEnv.CircleCI.Username).To(Equal("michaelglass"))
 		})
 	})
 
 	Context("with GitLab environment variables", func() {
 		BeforeEach(func() {
-			setEnvFromFile("../../test/.env.gitlab_ci")
+			helpers.SetEnvFromFile("../../test/.env.gitlab_ci")
 		})
 
 		It("parses the GitLab options", func() {
@@ -150,7 +118,7 @@ var _ = Describe("InitConfig", func() {
 			Expect(cfg.ProvidersEnv.GitLab.UserLogin).To(Equal("michaelglass"))
 			Expect(cfg.ProvidersEnv.GitLab.ProjectPath).To(Equal("captain-examples/rspec"))
 			Expect(cfg.ProvidersEnv.GitLab.ProjectURL).To(Equal("https://gitlab.com/captain-examples/rspec"))
-			Expect(cfg.ProvidersEnv.GitLab.CommitSHA).To(Equal("03d68a49ef1e131cf8942d5a07a0ff008ede6a1a"))
+			Expect(cfg.ProvidersEnv.GitLab.CommitSHA).To(Equal("1fc108cab0bb46083c6cdd50f8cd1deb5005e235"))
 			Expect(cfg.ProvidersEnv.GitLab.CommitAuthor).To(Equal("Michael Glass <me@mike.is>"))
 			Expect(cfg.ProvidersEnv.GitLab.CommitBranch).To(Equal("main"))
 			Expect(cfg.ProvidersEnv.GitLab.CommitMessage).To(Equal("print env"))

@@ -7,6 +7,7 @@ import (
 
 	main "github.com/rwx-research/captain-cli/cmd/captain"
 	"github.com/rwx-research/captain-cli/internal/providers"
+	"github.com/rwx-research/captain-cli/test/helpers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -36,7 +37,8 @@ var _ = Describe("AddFlags", func() {
 
 	Context("with Captain-specific environment variables", func() {
 		BeforeEach(func() {
-			setEnvFromFile("../../test/.env.captain")
+			helpers.UnsetCIEnv()
+			helpers.SetEnvFromFile("../../test/.env.captain")
 		})
 
 		It("parses the Captain options", func() {
@@ -46,7 +48,7 @@ var _ = Describe("AddFlags", func() {
 			Expect(provider).To(Equal(providers.GenericEnv{
 				Who:           "test",
 				Branch:        "testing-env-vars",
-				Sha:           "abc123",
+				Sha:           "1fc108cab0bb46083c6cdd50f8cd1deb5005e235",
 				CommitMessage: "Testing env vars -- the commit message",
 				BuildURL:      "https://jenkins.example.com/job/test/123/",
 			}))

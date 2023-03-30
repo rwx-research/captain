@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/rwx-research/captain-cli"
+	"github.com/rwx-research/captain-cli/test/helpers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -105,14 +107,14 @@ func envAsMap() map[string]string {
 
 type envGenerator func() map[string]string
 
-type sharedTestGen func(envGenerator)
+type sharedTestGen func(envGenerator, string)
 
 var _ = Describe("Integration Tests", func() {
 	withAndWithoutInheritedEnv := func(sharedTests sharedTestGen) {
 		if os.Getenv("CI") != "" {
 			// these tests are only run in CI
 			Describe("using CI environment", func() {
-				sharedTests(envAsMap)
+				sharedTests(envAsMap, "inherited-env")
 			})
 		}
 
@@ -120,16 +122,34 @@ var _ = Describe("Integration Tests", func() {
 			// don't run these on buildkite
 			Describe("using the generic provider", func() {
 				sharedTests(func() map[string]string {
-					contrivedEnv := map[string]string{
-						"CAPTAIN_BRANCH": "integration-test-branch",
-						"CAPTAIN_SHA":    "1fc108cab0bb46083c6cdd50f8cd1deb5005e235",
-						"CAPTAIN_WHO":    "fake integration user",
-					}
-
-					return contrivedEnv
-				})
+					return helpers.ReadEnvFromFile(".env.captain")
+				}, "generic")
 			})
-			// TODO: add tests for contrived versions of other providers
+
+			Describe("using the GitHub Actions provider", func() {
+				sharedTests(func() map[string]string {
+					return helpers.ReadEnvFromFile(".env.github.actions")
+				}, "github-actions")
+			})
+
+			Describe("using the GitLab CI provider", func() {
+				sharedTests(func() map[string]string {
+					return helpers.ReadEnvFromFile(".env.gitlab_ci")
+				}, "gitlab-ci")
+			})
+
+			Describe("using the CircleCI provider", func() {
+				sharedTests(func() map[string]string {
+					return helpers.ReadEnvFromFile(".env.circleci")
+				}, "circleci")
+			})
+
+			Describe("using the Buildkite provider", func() {
+				sharedTests(func() map[string]string {
+					return helpers.ReadEnvFromFile(".env.buildkite")
+				}, "buildkite")
+			})
+
 		}
 	}
 
@@ -138,7 +158,7 @@ var _ = Describe("Integration Tests", func() {
 			Expect(os.Getenv("RWX_ACCESS_TOKEN")).ToNot(BeEmpty(), "Integration tests require a valid RWX_ACCESS_TOKEN")
 		})
 
-		withAndWithoutInheritedEnv(func(getEnv envGenerator) {
+		withAndWithoutInheritedEnv(func(getEnv envGenerator, prefix string) {
 			Describe("captain run", func() {
 				It("fails & passes through exit code on failure when results files is missing", func() {
 					result := runCaptain(captainArgs{
@@ -249,24 +269,25 @@ var _ = Describe("Integration Tests", func() {
 				})
 
 				Context("retries", func() {
-					var _testFilePath string
-					var _testFileContents []byte
+					var _symlinkDestPath string
+					var _symlinkSrcPath string
 
-					// retry tests delete test results between retries. We resurrect them so we don't pollute the git index.
-					saveTestFile := func(path string) string {
+					// retry tests delete test results between retries.
+					// this function ensures a symlink exists to the test results file
+					// that can be freely removed
+					// the symlink will be resuscitated after the test in the AfterEach
+					symlinkToNewPath := func(srcPath string, prefix string) string {
 						var err error
-						_testFilePath = path
-						_testFileContents, err = os.ReadFile(_testFilePath)
+						_symlinkDestPath = fmt.Sprintf("fixtures/integration-tests/retries/%s-%s", prefix, filepath.Base(srcPath))
+						_symlinkSrcPath = fmt.Sprintf("../%s", filepath.Base(srcPath))
 						Expect(err).ToNot(HaveOccurred())
-						return path
+
+						os.Symlink(_symlinkSrcPath, _symlinkDestPath)
+						return _symlinkDestPath
 					}
 
 					AfterEach(func() {
-						Expect(_testFileContents).ToNot(BeNil(), "retry tests require saving the testFilePath before running the test")
-						err := os.WriteFile(_testFilePath, _testFileContents, 0644)
-						Expect(err).ToNot(HaveOccurred())
-						_testFilePath = ""
-						_testFileContents = nil
+						os.Symlink(_symlinkSrcPath, _symlinkDestPath)
 					})
 
 					It("succeeds when all failures quarantined", func() {
@@ -274,7 +295,7 @@ var _ = Describe("Integration Tests", func() {
 							args: []string{
 								"run",
 								"--suite-id", "captain-cli-quarantine-test",
-								"--test-results", saveTestFile("fixtures/integration-tests/rspec-quarantine.json"),
+								"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
 								"--fail-on-upload-error",
 								"--retries", "1",
 								"--retry-command", `echo "{{ tests }}"`,
@@ -293,7 +314,7 @@ var _ = Describe("Integration Tests", func() {
 							args: []string{
 								"run",
 								"--suite-id", "captain-cli-functional-tests",
-								"--test-results", saveTestFile("fixtures/integration-tests/rspec-failed-not-quarantined.json"),
+								"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix),
 								"--fail-on-upload-error",
 								"--retries", "1",
 								"--retry-command", `echo "{{ tests }}"`,
@@ -534,7 +555,7 @@ var _ = Describe("Integration Tests", func() {
 	})
 
 	Context("Without a valid RWX_ACCESS_TOKEN", func() {
-		withAndWithoutInheritedEnv(func(getEnv envGenerator) {
+		withAndWithoutInheritedEnv(func(getEnv envGenerator, _prefix string) {
 			Describe("captain --version", func() {
 				It("renders the version I expect", func() {
 					result := runCaptain(captainArgs{

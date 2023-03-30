@@ -90,7 +90,7 @@ func IntegrationTest(ctx context.Context) error {
 func makeTestTask(args ...string) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
 		if report := os.Getenv("REPORT"); report != "" {
-			return sh.RunV("ginkgo", append([]string{"--junit-report=report.xml"}, args...)...)
+			return sh.RunV("ginkgo", append([]string{"-p", "--junit-report=report.xml"}, args...)...)
 		}
 
 		cmd := exec.Command("command", "-v", "ginkgo")
@@ -98,6 +98,6 @@ func makeTestTask(args ...string) func(ctx context.Context) error {
 			return sh.RunV("go", append([]string{"test"}, args...)...)
 		}
 
-		return sh.RunV("ginkgo", args...)
+		return sh.RunV("ginkgo", append([]string{"-p"}, args...)...)
 	}
 }
