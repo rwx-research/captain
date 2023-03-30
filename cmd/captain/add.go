@@ -52,7 +52,7 @@ var (
 	}
 )
 
-func init() {
+func configureAddCmd() {
 	auxiliaryFlagSet.Usage = func() {} // Disable secondary "usage" output in cobra
 
 	// Re-define the global flags from `root`

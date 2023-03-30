@@ -41,19 +41,20 @@ var (
 	}
 )
 
-func init() {
+func configureUpdateCmd() error {
 	updateResultsCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	if err := updateResultsCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+		return errors.WithStack(err)
 	}
 
 	updateResultsCmd.Flags().
 		StringVar(&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
 	if err := updateResultsCmd.Flags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+		return errors.WithStack(err)
 	}
 
 	addFrameworkFlags(updateResultsCmd)
 	updateCmd.AddCommand(updateResultsCmd)
 	rootCmd.AddCommand(updateCmd)
+	return nil
 }

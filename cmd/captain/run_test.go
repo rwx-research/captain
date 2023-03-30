@@ -31,7 +31,8 @@ var _ = Describe("AddFlags", func() {
 
 	JustBeforeEach(func() {
 		cliArgs = main.CliArgs{}
-		main.AddFlags(cmd, &cliArgs)
+		err = main.AddFlags(cmd, &cliArgs)
+		Expect(err).ToNot(HaveOccurred())
 		err = cmd.ParseFlags(strings.Split(args, " "))
 	})
 

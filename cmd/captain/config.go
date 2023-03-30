@@ -120,7 +120,7 @@ func findInParentDir(fileName string) (string, error) {
 // InitConfig reads our configuration from the system.
 // Environment variables take precedence over a config file.
 // Flags take precedence over all other options.
-func InitConfig(cmd *cobra.Command) (cfg Config, err error) {
+func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 	if configFilePath == "" {
 		configFilePath, err = findInParentDir(filepath.Join(captainDirectory, configFileName))
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -168,7 +168,7 @@ func InitConfig(cmd *cobra.Command) (cfg Config, err error) {
 
 	cfg = bindRootCmdFlags(cfg)
 	cfg = bindFrameworkFlags(cfg)
-	cfg = bindRunCmdFlags(cfg)
+	cfg = bindRunCmdFlags(cfg, cliArgs)
 
 	return cfg, nil
 }

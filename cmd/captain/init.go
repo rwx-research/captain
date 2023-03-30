@@ -63,7 +63,7 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 		var apiClient backend.Client
 		var err error
 
-		cfg, err = InitConfig(cmd)
+		cfg, err = InitConfig(cmd, cliArgs)
 		if err != nil {
 			return errors.WithDecoration(err)
 		}
@@ -179,7 +179,7 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 func unsafeInitParsingOnly(cmd *cobra.Command, args []string) error {
 	var err error
 
-	cfg, err = InitConfig(cmd)
+	cfg, err = InitConfig(cmd, cliArgs)
 	if err != nil {
 		return errors.WithStack(err)
 	}

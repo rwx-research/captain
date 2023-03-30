@@ -40,9 +40,3 @@ var (
 		DisableFlagParsing: true,
 	}
 )
-
-func init() {
-	removeCmd.AddCommand(removeFlakeCmd)
-	removeCmd.AddCommand(removeQuarantineCmd)
-	rootCmd.AddCommand(removeCmd)
-}

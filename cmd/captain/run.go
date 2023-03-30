@@ -29,7 +29,7 @@ type CliArgs struct {
 	printSummary              bool
 	quiet                     bool
 	reporters                 []string
-	retries                   int
+	Retries                   int
 	retryCommandTemplate      string
 	updateStoredResults       bool
 	GenericProvider           providers.GenericEnv
@@ -132,7 +132,7 @@ var (
 	}
 )
 
-func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
+func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 	runCmd.Flags().StringVarP(
 		&cliArgs.command,
 		"command",
@@ -192,7 +192,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 	)
 
 	runCmd.Flags().IntVar(
-		&cliArgs.retries,
+		&cliArgs.Retries,
 		"retries",
 		-1,
 		"the number of times failed tests should be retried "+
@@ -228,11 +228,11 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 
 	runCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	if err := runCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+		return errors.WithStack(err)
 	}
 	runCmd.Flags().StringVar(&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
 	if err := runCmd.Flags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+		return errors.WithStack(err)
 	}
 
 	formattedSubstitutionExamples := make([]string, len(substitutionsByFramework))
@@ -268,18 +268,12 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
 
 	addGenericProviderFlags(runCmd, &cliArgs.GenericProvider)
 	addFrameworkFlags(runCmd)
-}
-
-func init() {
-	AddFlags(runCmd, &cliArgs)
-	runCmd.SetHelpTemplate(helpTemplate)
-	runCmd.SetUsageTemplate(shortUsageTemplate)
-	rootCmd.AddCommand(runCmd)
+	return nil
 }
 
 // this should be run _last_ as it has the highest precedence, and the assignments we make here overwrite settings
 // from other parts of the app (e.g. config files, env vars)
-func bindRunCmdFlags(cfg Config) Config {
+func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
 		if cliArgs.command != "" {
 			suiteConfig.Command = cliArgs.command
@@ -333,8 +327,8 @@ func bindRunCmdFlags(cfg Config) Config {
 			suiteConfig.Output.Reporters = reporterConfig
 		}
 
-		if suiteConfig.Retries.Attempts == 0 || cliArgs.retries != -1 {
-			suiteConfig.Retries.Attempts = cliArgs.retries
+		if suiteConfig.Retries.Attempts == 0 || cliArgs.Retries != -1 {
+			suiteConfig.Retries.Attempts = cliArgs.Retries
 		}
 
 		if cliArgs.retryCommandTemplate != "" {

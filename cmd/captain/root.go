@@ -7,6 +7,7 @@ import (
 
 	captainCLI "github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/cli"
+	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
 var (
@@ -28,7 +29,7 @@ var (
 	}
 )
 
-func init() {
+func ConfigureRootCmd(rootCmd *cobra.Command) error {
 	rootCmd.PersistentFlags().StringVar(&configFilePath, "config-file", "", "the config file for captain")
 
 	suiteIDFromEnv := os.Getenv("CAPTAIN_SUITE_ID")
@@ -36,18 +37,18 @@ func init() {
 
 	if suiteIDFromEnv == "" {
 		if err := rootCmd.MarkPersistentFlagRequired("suite-id"); err != nil {
-			initializationErrors = append(initializationErrors, err)
+			return errors.WithStack(err)
 		}
 	}
 
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug output")
 	if err := rootCmd.PersistentFlags().MarkHidden("debug"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+		return errors.WithStack(err)
 	}
 
 	rootCmd.PersistentFlags().BoolVar(&insecure, "insecure", false, "disable TLS for the API")
 	if err := rootCmd.PersistentFlags().MarkHidden("insecure"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+		return errors.WithStack(err)
 	}
 
 	rootCmd.PersistentFlags().BoolVarP(&cliArgs.quiet, "quiet", "q", false, "disables most default output")
@@ -57,6 +58,7 @@ func init() {
 
 	// Change `--version` to output only the version number itself
 	rootCmd.SetVersionTemplate(`{{ printf "%s\n" .Version }}`)
+	return nil
 }
 
 func bindRootCmdFlags(cfg Config) Config {

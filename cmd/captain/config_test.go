@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	captain "github.com/rwx-research/captain-cli/cmd/captain"
+	main "github.com/rwx-research/captain-cli/cmd/captain"
 	"github.com/rwx-research/captain-cli/test/helpers"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -13,18 +14,32 @@ import (
 var _ = Describe("InitConfig", func() {
 	var cmd *cobra.Command
 
+	BeforeEach(func() {
+		cmd = &cobra.Command{
+			Use: "mycli",
+			Run: func(cmd *cobra.Command, args []string) {}, // do nothing
+		}
+		helpers.UnsetCIEnv()
+	})
+
 	Context("no environment variables", func() {
 		It("uses cobra's default values", func() {
-			cfg, err := captain.InitConfig(cmd)
+			cliArgs := main.CliArgs{}
+			err := captain.ConfigureRootCmd(cmd)
+			Expect(err).ToNot(HaveOccurred())
+			err = captain.AddFlags(cmd, &cliArgs)
+			Expect(err).ToNot(HaveOccurred())
+			err = cmd.ParseFlags([]string{})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(cliArgs.Retries).To(Equal(-1))
+
+			cfg, err := captain.InitConfig(cmd, cliArgs)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.TestSuites).To(HaveKey(""))
 			Expect(cfg.TestSuites[""].Retries.Attempts).To(Equal(-1))
 			Expect(cfg.TestSuites[""].Retries.FlakyAttempts).To(Equal(-1))
 		})
-	})
-
-	BeforeEach(func() {
-		helpers.UnsetCIEnv()
 	})
 
 	Context("with GitHub Actions environment variables", func() {
@@ -33,7 +48,7 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("parses the GitHub options", func() {
-			cfg, err := captain.InitConfig(cmd)
+			cfg, err := captain.InitConfig(cmd, main.CliArgs{})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.ProvidersEnv.GitHub.Detected).To(BeTrue())
 			Expect(cfg.ProvidersEnv.GitHub.Repository).To(Equal("rwx-research/captain-cli"))
@@ -55,7 +70,7 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("parses the Buildkite options", func() {
-			cfg, err := captain.InitConfig(cmd)
+			cfg, err := captain.InitConfig(cmd, main.CliArgs{})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.ProvidersEnv.Buildkite.Detected).To(BeTrue())
 			Expect(cfg.ProvidersEnv.Buildkite.Branch).To(Equal("some-branch"))
@@ -80,7 +95,7 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("parses the CircleCI options", func() {
-			cfg, err := captain.InitConfig(cmd)
+			cfg, err := captain.InitConfig(cmd, main.CliArgs{})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.ProvidersEnv.CircleCI.Detected).To(BeTrue())
 			Expect(cfg.ProvidersEnv.CircleCI.BuildNum).To(Equal("18"))
@@ -103,7 +118,7 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("parses the GitLab options", func() {
-			cfg, err := captain.InitConfig(cmd)
+			cfg, err := captain.InitConfig(cmd, main.CliArgs{})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.ProvidersEnv.GitLab.Detected).To(BeTrue())
 			Expect(cfg.ProvidersEnv.GitLab.JobName).To(Equal("rspec 1/2"))

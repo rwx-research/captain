@@ -31,16 +31,16 @@ var (
 	}
 )
 
-func init() {
+func configureUploadCmd() error {
 	uploadResultsCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	if err := uploadResultsCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+		return errors.WithStack(err)
 	}
 
 	uploadResultsCmd.Flags().
 		StringVar(&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
 	if err := uploadResultsCmd.Flags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
-		initializationErrors = append(initializationErrors, err)
+		return errors.WithStack(err)
 	}
 
 	addFrameworkFlags(uploadResultsCmd)
@@ -48,4 +48,5 @@ func init() {
 
 	uploadCmd.AddCommand(uploadResultsCmd)
 	rootCmd.AddCommand(uploadCmd)
+	return nil
 }

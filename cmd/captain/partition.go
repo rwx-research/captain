@@ -51,39 +51,44 @@ var (
 	}
 )
 
-func init() {
-	getEnvAsInt := func(name string) (int, bool) {
+func configurePartitionCmd() error {
+	getEnvAsInt := func(name string) (int, bool, error) {
 		value := os.Getenv(name)
 		if value == "" {
-			return 0, false
+			return 0, false, nil
 		}
 
 		i, err := strconv.Atoi(value)
 		if err != nil {
-			initializationErrors = append(initializationErrors,
-				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", name, value),
-			)
-			return 0, false
+			return 0, false,
+				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", name, value)
 		}
 
-		return i, true
+		return i, true, nil
 	}
 
-	defaultPartitionIndex, ok := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
+	defaultPartitionIndex, gotDefaultFromEnv, err := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
+	if err != nil {
+		return err
+	}
+
 	partitionCmd.Flags().IntVar(
 		&pArgs.nodes.Index, "index", defaultPartitionIndex, "the 0-indexed index of a particular partition",
 	)
-	if !ok {
+	if !gotDefaultFromEnv {
 		if err := partitionCmd.MarkFlagRequired("index"); err != nil {
-			initializationErrors = append(initializationErrors, err)
+			return errors.WithStack(err)
 		}
 	}
 
-	defaultPartitionTotal, ok := getEnvAsInt("CAPTAIN_PARTITION_TOTAL")
+	defaultPartitionTotal, ok, err := getEnvAsInt("CAPTAIN_PARTITION_TOTAL")
+	if err != nil {
+		return err
+	}
 	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", defaultPartitionTotal, "the total number of partitions")
 	if !ok || defaultPartitionTotal < 1 {
 		if err := partitionCmd.MarkFlagRequired("total"); err != nil {
-			initializationErrors = append(initializationErrors, err)
+			return errors.WithStack(err)
 		}
 	}
 
@@ -93,4 +98,5 @@ func init() {
 	partitionCmd.Flags().StringVar(&pArgs.delimiter, "delimiter", " ", "the delimiter used to separate partitioned files")
 
 	rootCmd.AddCommand(partitionCmd)
+	return nil
 }

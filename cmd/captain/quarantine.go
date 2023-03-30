@@ -122,8 +122,3 @@ func AddQuarantineFlags(quarantineCmd *cobra.Command, cliArgs *CliArgs) {
 
 	addFrameworkFlags(quarantineCmd)
 }
-
-func init() {
-	AddQuarantineFlags(quarantineCmd, &cliArgs)
-	rootCmd.AddCommand(quarantineCmd)
-}
