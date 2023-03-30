@@ -17,12 +17,11 @@ var quarantineCmd = &cobra.Command{
 	Short: "Execute a test-suite and modify its exit code based on quarantined tests",
 	Long: "'captain quarantine' executes a test-suite and modifies its exit code based on quarantined tests." +
 		"Unlike run, it does not attempt retries or update test results.",
-	Example: `  captain quarantine --suite-id "example" --test-results "./tmp/rspec.json" -- bundle exec rake`,
-	Args:    cobra.MinimumNArgs(1),
+	Example: `  captain quarantine --suite-id "example" --test-results "./tmp/rspec.json" -c "bundle exec rake"`,
 	PreRunE: initCLIService(providers.Validate),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var printSummary, quiet bool
-		var testResultsPath string
+		var testResultsPath, command string
 
 		reporterFuncs := make(map[string]cli.Reporter)
 
@@ -42,6 +41,7 @@ var quarantineCmd = &cobra.Command{
 				}
 			}
 
+			command = suiteConfig.Command
 			printSummary = suiteConfig.Output.PrintSummary
 			testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
 			quiet = suiteConfig.Output.Quiet
@@ -49,6 +49,7 @@ var quarantineCmd = &cobra.Command{
 
 		runConfig := cli.RunConfig{
 			Args:                args,
+			Command:             command,
 			PrintSummary:        printSummary,
 			Quiet:               quiet,
 			Reporters:           reporterFuncs,
@@ -73,6 +74,14 @@ var quarantineCmd = &cobra.Command{
 }
 
 func AddQuarantineFlags(quarantineCmd *cobra.Command, cliArgs *CliArgs) {
+	quarantineCmd.Flags().StringVarP(
+		&cliArgs.command,
+		"command",
+		"c",
+		"",
+		"the command to run",
+	)
+
 	quarantineCmd.Flags().StringVar(
 		&cliArgs.testResults,
 		"test-results",

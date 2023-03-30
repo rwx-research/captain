@@ -167,7 +167,7 @@ var _ = Describe("Integration Tests", func() {
 							"--suite-id", "captain-cli-functional-tests",
 							"--test-results", "fixtures/integration-tests/does-not-exist.json",
 							"--fail-on-upload-error",
-							"--", "bash", "-c", "exit 123",
+							"-c", "bash -c 'exit 123'",
 						},
 						env: getEnv(),
 					})
@@ -185,7 +185,42 @@ var _ = Describe("Integration Tests", func() {
 							"--suite-id", "captain-cli-functional-tests",
 							"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
 							"--fail-on-upload-error",
+							"-c", "bash -c 'exit 123'",
+						},
+						env: getEnv(),
+					})
+
+					Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+					Expect(result.stdout).ToNot(BeEmpty())
+					Expect(result.exitCode).To(Equal(123))
+				})
+
+				It("allows using the -- command specification", func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"--suite-id", "captain-cli-functional-tests",
+							"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+							"--fail-on-upload-error",
 							"--", "bash", "-c", "exit 123",
+						},
+						env: getEnv(),
+					})
+
+					Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+					Expect(result.stdout).ToNot(BeEmpty())
+					Expect(result.exitCode).To(Equal(123))
+				})
+
+				It("allows combining the --command specification with the -- specification", func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"--suite-id", "captain-cli-functional-tests",
+							"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+							"--fail-on-upload-error",
+							"-c", "bash",
+							"--", "-c", "exit 123",
 						},
 						env: getEnv(),
 					})
@@ -203,7 +238,7 @@ var _ = Describe("Integration Tests", func() {
 								"--suite-id", "captain-cli-quarantine-test",
 								"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 								"--fail-on-upload-error",
-								"--", "bash", "-c", "exit 2",
+								"-c", "bash -c 'exit 2'",
 							},
 							env: getEnv(),
 						})
@@ -220,7 +255,7 @@ var _ = Describe("Integration Tests", func() {
 								"--suite-id", "captain-cli-quarantine-test",
 								"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
 								"--fail-on-upload-error",
-								"--", "bash", "-c", "exit 123",
+								"-c", "bash -c 'exit 123'",
 							},
 							env: getEnv(),
 						})
@@ -239,7 +274,7 @@ var _ = Describe("Integration Tests", func() {
 								"--suite-id", "captain-cli-quarantine-test",
 								"--test-results", "fixtures/integration-tests/rspec-passed.json",
 								"--fail-on-upload-error",
-								"--", "bash", "-c", "echo abc; echo def 1>&2; echo ghi",
+								"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
 							},
 							env: getEnv(),
 						})
@@ -256,7 +291,7 @@ var _ = Describe("Integration Tests", func() {
 								"--suite-id", "captain-cli-quarantine-test",
 								"--test-results", "fixtures/integration-tests/rspec-passed.json",
 								"--fail-on-upload-error",
-								"--", "bash", "-c", "echo abc; echo def 1>&2; echo ghi",
+								"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
 							},
 							env: getEnv(),
 						})
@@ -299,7 +334,7 @@ var _ = Describe("Integration Tests", func() {
 								"--fail-on-upload-error",
 								"--retries", "1",
 								"--retry-command", `echo "{{ tests }}"`,
-								"--", "bash", "-c", "exit 123",
+								"-c", "bash -c 'exit 123'",
 							},
 							env: getEnv(),
 						})
@@ -318,7 +353,7 @@ var _ = Describe("Integration Tests", func() {
 								"--fail-on-upload-error",
 								"--retries", "1",
 								"--retry-command", `echo "{{ tests }}"`,
-								"--", "bash", "-c", "exit 123",
+								"-c", "bash -c 'exit 123'",
 							},
 							env: getEnv(),
 						})
@@ -337,7 +372,7 @@ var _ = Describe("Integration Tests", func() {
 								"--suite-id", "captain-cli-abq-test",
 								"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 								"--fail-on-upload-error",
-								"--", "bash", "-c", "echo exit_code=$ABQ_SET_EXIT_CODE",
+								"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
 							},
 							env: getEnv(),
 						})
@@ -354,7 +389,7 @@ var _ = Describe("Integration Tests", func() {
 								"--suite-id", "captain-cli-abq-test",
 								"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 								"--fail-on-upload-error",
-								"--", "bash", "-c", "echo exit_code=$ABQ_SET_EXIT_CODE",
+								"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
 							},
 							env: mergeMaps(getEnv(), map[string]string{"ABQ_SET_EXIT_CODE": "1234"}),
 						})
@@ -371,7 +406,7 @@ var _ = Describe("Integration Tests", func() {
 								"--suite-id", "captain-cli-abq-test",
 								"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 								"--fail-on-upload-error",
-								"--", "bash", "-c", "echo state_file=$ABQ_STATE_FILE",
+								"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
 							},
 							env: getEnv(),
 						})
@@ -388,7 +423,7 @@ var _ = Describe("Integration Tests", func() {
 								"--suite-id", "captain-cli-abq-test",
 								"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 								"--fail-on-upload-error",
-								"--", "bash", "-c", "echo state_file=$ABQ_STATE_FILE",
+								"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
 							},
 							env: mergeMaps(getEnv(), map[string]string{"ABQ_STATE_FILE": "/tmp/functional-abq-1234.json"}),
 						})
@@ -407,7 +442,7 @@ var _ = Describe("Integration Tests", func() {
 							"quarantine",
 							"--suite-id", "captain-cli-quarantine-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
-							"--", "bash", "-c", "exit 2",
+							"-c", "bash -c 'exit 2'",
 						},
 						env: getEnv(),
 					})
@@ -423,7 +458,7 @@ var _ = Describe("Integration Tests", func() {
 							"quarantine",
 							"--suite-id", "captain-cli-quarantine-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
-							"--", "bash", "-c", "exit 123",
+							"-c", "bash -c 'exit 123'",
 						},
 						env: getEnv(),
 					})

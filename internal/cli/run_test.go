@@ -159,7 +159,7 @@ var _ = Describe("Run", func() {
 
 		arg = fmt.Sprintf("fake-command-%d", GinkgoRandomSeed())
 		runConfig = cli.RunConfig{
-			Args:                []string{arg},
+			Command:             arg,
 			TestResultsFileGlob: testResultsFilePath,
 			SuiteID:             "test",
 		}
@@ -405,7 +405,7 @@ var _ = Describe("Run", func() {
 		Context("With updating disabled and a local client", func() {
 			BeforeEach(func() {
 				runConfig = cli.RunConfig{
-					Args:                []string{arg},
+					Command:             arg,
 					TestResultsFileGlob: testResultsFilePath,
 					SuiteID:             "test",
 					UpdateStoredResults: false,
@@ -453,7 +453,7 @@ var _ = Describe("Run", func() {
 		Context("With uploading disabled and a remote client", func() {
 			BeforeEach(func() {
 				runConfig = cli.RunConfig{
-					Args:                []string{arg},
+					Command:             arg,
 					TestResultsFileGlob: testResultsFilePath,
 					SuiteID:             "test",
 					UploadResults:       false,

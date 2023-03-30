@@ -25,11 +25,6 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		return errors.WithStack(err)
 	}
 
-	if len(cfg.Args) == 0 {
-		s.Log.Debug("No arguments provided to `RunSuite`")
-		return nil
-	}
-
 	// Fetch run configuration in the background
 	var apiConfiguration backend.RunConfiguration
 	eg, egCtx := errgroup.WithContext(ctx)
@@ -58,8 +53,26 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 	}
 
+	commandArgs := make([]string, 0)
+
+	if cfg.Command != "" {
+		parsedCommand, err := shellwords.Parse(cfg.Command)
+		if err != nil {
+			return errors.Wrapf(err, "Unable to parse %q into shell arguments", cfg.Command)
+		}
+		commandArgs = append(commandArgs, parsedCommand...)
+	}
+
+	if len(cfg.Args) > 0 {
+		commandArgs = append(commandArgs, cfg.Args...)
+	}
+
+	if len(commandArgs) == 0 {
+		return errors.NewInputError("No command was provided")
+	}
+
 	// Run sub-command
-	ctx, cmdErr := s.runCommand(ctx, cfg.Args, stdout, true)
+	ctx, cmdErr := s.runCommand(ctx, commandArgs, stdout, true)
 	defer func() {
 		if abqErr := s.setAbqExitCode(ctx, finalErr); abqErr != nil {
 			finalErr = errors.Wrap(finalErr, abqErr.Error())
@@ -527,6 +540,7 @@ func (s Service) runCommand(
 	setAbqEnviron bool,
 ) (context.Context, error) {
 	var environ []string
+
 	if setAbqEnviron {
 		ctx, environ = s.applyAbqEnvironment(ctx)
 	}

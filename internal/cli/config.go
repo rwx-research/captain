@@ -13,6 +13,7 @@ import (
 // RunConfig holds the configuration for running a test suite (used by `RunSuite`)
 type RunConfig struct {
 	Args                      []string
+	Command                   string
 	TestResultsFileGlob       string
 	FailOnUploadError         bool
 	FailRetriesFast           bool

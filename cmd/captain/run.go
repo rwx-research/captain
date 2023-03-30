@@ -17,6 +17,7 @@ import (
 )
 
 type CliArgs struct {
+	command                   string
 	testResults               string
 	failOnUploadError         bool
 	failRetriesFast           bool
@@ -57,15 +58,14 @@ var (
 		Use:   "run [flags] --suite-id=<suite> <args>",
 		Short: "Execute a build- or test-suite",
 		Long:  "'captain run' can be used to execute a build- or test-suite and optionally upload the resulting artifacts.",
-		Example: `  captain run --suite-id="your-project-rake" -- bundle exec rake` + "\n" +
-			`  captain run --suite-id="your-project-jest" --test-results "jest-result.json" -- jest`,
-		Args:    cobra.MinimumNArgs(1),
+		Example: `  captain run --suite-id="your-project-rake" -c "bundle exec rake"` + "\n" +
+			`  captain run --suite-id="your-project-jest" --test-results "jest-result.json" -c jest`,
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var postRetryCommands, preRetryCommands []string
 			var failOnUploadError, failFast, printSummary, quiet bool
 			var flakyRetries, retries int
-			var intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
+			var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
 
 			reporterFuncs := make(map[string]cli.Reporter)
 
@@ -85,6 +85,7 @@ var (
 					}
 				}
 
+				command = suiteConfig.Command
 				failOnUploadError = suiteConfig.FailOnUploadError
 				failFast = suiteConfig.Retries.FailFast
 				flakyRetries = suiteConfig.Retries.FlakyAttempts
@@ -101,6 +102,7 @@ var (
 
 			runConfig := cli.RunConfig{
 				Args:                      args,
+				Command:                   command,
 				FailOnUploadError:         failOnUploadError,
 				FailRetriesFast:           failFast,
 				FlakyRetries:              flakyRetries,
@@ -131,6 +133,14 @@ var (
 )
 
 func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) {
+	runCmd.Flags().StringVarP(
+		&cliArgs.command,
+		"command",
+		"c",
+		"",
+		"the command to run",
+	)
+
 	runCmd.Flags().StringVar(
 		&cliArgs.testResults,
 		"test-results",
@@ -271,6 +281,10 @@ func init() {
 // from other parts of the app (e.g. config files, env vars)
 func bindRunCmdFlags(cfg Config) Config {
 	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+		if cliArgs.command != "" {
+			suiteConfig.Command = cliArgs.command
+		}
+
 		if cliArgs.failOnUploadError {
 			suiteConfig.FailOnUploadError = true
 		}
