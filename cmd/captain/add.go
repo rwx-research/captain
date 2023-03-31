@@ -12,7 +12,7 @@ import (
 
 var (
 	// auxiliaryFlagSet is a secondary (global) flag set that can be used in case we cannot rely on cobra's internal
-	// onet. This is case for the add / remove commands, which accept arbitrary flags and require disabling cobra's
+	// one. This is case for the add / remove commands, which accept arbitrary flags and require disabling cobra's
 	// own flag parsing.
 	auxiliaryFlagSet = pflag.NewFlagSet("auxiliary", pflag.ContinueOnError)
 	auxiliarySuiteID string
