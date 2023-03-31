@@ -61,7 +61,8 @@ var (
 		Example: `  captain run --suite-id="your-project-rake" -c "bundle exec rake"` + "\n" +
 			`  captain run --suite-id="your-project-jest" --test-results "jest-result.json" -c jest`,
 		PreRunE: initCLIService(providers.Validate),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
 			var postRetryCommands, preRetryCommands []string
 			var failOnUploadError, failFast, printSummary, quiet bool
 			var flakyRetries, retries int

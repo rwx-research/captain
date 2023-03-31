@@ -1,6 +1,8 @@
 package main_test
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	captain "github.com/rwx-research/captain-cli/cmd/captain"
@@ -20,14 +22,15 @@ var _ = Describe("InitConfig", func() {
 			Run: func(cmd *cobra.Command, args []string) {}, // do nothing
 		}
 		helpers.UnsetCIEnv()
+		os.Setenv("CAPTAIN_SUITE_ID", "some-suite")
+		err := captain.ConfigureRootCmd(cmd)
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Context("no environment variables", func() {
 		It("uses cobra's default values", func() {
 			cliArgs := main.CliArgs{}
-			err := captain.ConfigureRootCmd(cmd)
-			Expect(err).ToNot(HaveOccurred())
-			err = captain.AddFlags(cmd, &cliArgs)
+			err := captain.AddFlags(cmd, &cliArgs)
 			Expect(err).ToNot(HaveOccurred())
 			err = cmd.ParseFlags([]string{})
 			Expect(err).ToNot(HaveOccurred())
@@ -36,9 +39,9 @@ var _ = Describe("InitConfig", func() {
 
 			cfg, err := captain.InitConfig(cmd, cliArgs)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(cfg.TestSuites).To(HaveKey(""))
-			Expect(cfg.TestSuites[""].Retries.Attempts).To(Equal(-1))
-			Expect(cfg.TestSuites[""].Retries.FlakyAttempts).To(Equal(-1))
+			Expect(cfg.TestSuites).To(HaveKey("some-suite"))
+			Expect(cfg.TestSuites["some-suite"].Retries.Attempts).To(Equal(-1))
+			Expect(cfg.TestSuites["some-suite"].Retries.FlakyAttempts).To(Equal(-1))
 		})
 	})
 

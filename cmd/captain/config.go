@@ -158,6 +158,10 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 		return cfg, errors.Wrap(err, "unable to parse environment variables")
 	}
 
+	if err = extractSuiteIDFromPositionalArgs(cmd); err != nil {
+		return cfg, err
+	}
+
 	if _, ok := cfg.TestSuites[suiteID]; !ok {
 		if cfg.TestSuites == nil {
 			cfg.TestSuites = make(map[string]SuiteConfig)

@@ -19,7 +19,9 @@ var quarantineCmd = &cobra.Command{
 		"Unlike run, it does not attempt retries or update test results.",
 	Example: `  captain quarantine --suite-id "example" --test-results "./tmp/rspec.json" -c "bundle exec rake"`,
 	PreRunE: initCLIService(providers.Validate),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, _ []string) error {
+		args := positionalArgs
+
 		var printSummary, quiet bool
 		var testResultsPath, command string
 

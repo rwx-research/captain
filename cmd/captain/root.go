@@ -19,6 +19,7 @@ var (
 	githubJobMatrix string
 	insecure        bool
 	suiteID         string
+	positionalArgs  []string
 
 	rootCmd = &cobra.Command{
 		Use: "captain",
@@ -34,12 +35,6 @@ func ConfigureRootCmd(rootCmd *cobra.Command) error {
 
 	suiteIDFromEnv := os.Getenv("CAPTAIN_SUITE_ID")
 	rootCmd.PersistentFlags().StringVar(&suiteID, "suite-id", suiteIDFromEnv, "the id of the test suite")
-
-	if suiteIDFromEnv == "" {
-		if err := rootCmd.MarkPersistentFlagRequired("suite-id"); err != nil {
-			return errors.WithStack(err)
-		}
-	}
 
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug output")
 	if err := rootCmd.PersistentFlags().MarkHidden("debug"); err != nil {
@@ -71,4 +66,21 @@ func bindRootCmdFlags(cfg Config) Config {
 	}
 
 	return cfg
+}
+
+func extractSuiteIDFromPositionalArgs(cmd *cobra.Command) error {
+	positionalArgs = cmd.Flags().Args()
+
+	if suiteID != "" {
+		return nil
+	}
+
+	if len(positionalArgs) == 0 {
+		return errors.NewInputError("required flag \"suite-id\" not set")
+	}
+
+	suiteID = positionalArgs[0]
+	positionalArgs = positionalArgs[1:]
+
+	return nil
 }

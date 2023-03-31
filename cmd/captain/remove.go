@@ -21,7 +21,8 @@ var (
 		Long: "'captain remove flake' can be used to remove a specific test for the list of flakes. Effectively, this is " +
 			"the inverse of 'captain add flake'.",
 		PreRunE: initCLIService(providers.Validate),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
 			return errors.WithStack(captain.RemoveFlake(cmd.Context(), args))
 		},
 		DisableFlagParsing: true,
@@ -34,7 +35,8 @@ var (
 		Long: "'captain remove quarantine' can be used to remove a quarantine from a specific test. Effectively, this is " +
 			"the inverse of 'captain add quarantine'.",
 		PreRunE: initCLIService(providers.Validate),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
 			return errors.WithStack(captain.RemoveQuarantine(cmd.Context(), args))
 		},
 		DisableFlagParsing: true,

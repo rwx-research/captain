@@ -25,7 +25,8 @@ var (
 		Example: `captain update results --suite-id="JUnit" *.xml`,
 		Args:    cobra.MinimumNArgs(1),
 		PreRunE: initCLIService(providers.Validate),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
 			// TODO: Should also support reading from stdin
 			artifacts := args
 

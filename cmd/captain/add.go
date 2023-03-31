@@ -31,7 +31,8 @@ var (
 			"uniquely identifies a single test.",
 		Example: `captain add flake --suite-id "example" --file "./test/controller_spec.rb" --description "My test"`,
 		PreRunE: initCLIService(providers.Validate),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
 			return errors.WithStack(captain.AddFlake(cmd.Context(), args))
 		},
 		DisableFlagParsing: true,
@@ -45,7 +46,8 @@ var (
 			"uniquely identifies a single test.",
 		Example: `captain add quarantine --suite-id "example" --file "./test/controller_spec.rb" --description "My test"`,
 		PreRunE: initCLIService(providers.Validate),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
 			return errors.WithStack(captain.AddQuarantine(cmd.Context(), args))
 		},
 		DisableFlagParsing: true,

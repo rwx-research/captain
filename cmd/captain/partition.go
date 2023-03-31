@@ -39,7 +39,8 @@ var (
 			}
 			return nil
 		}),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
 			err := captain.Partition(cmd.Context(), cli.PartitionConfig{
 				SuiteID:        suiteID,
 				TestFilePaths:  args,
