@@ -3,9 +3,7 @@ run-name: Upload CLI release to S3
 on:
   workflow_run:
     workflows:
-      - Continuous Integration
-    branches:
-      - main
+      - Release Requirements
     types:
       - completed
 
