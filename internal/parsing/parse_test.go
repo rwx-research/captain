@@ -51,7 +51,7 @@ func (p ErrorParser) Parse(testResults io.Reader) (*v1.TestResults, error) {
 
 type NeitherErrorNorResultsParser struct{}
 
-func (p NeitherErrorNorResultsParser) Parse(testResults io.Reader) (*v1.TestResults, error) {
+func (p NeitherErrorNorResultsParser) Parse(_ io.Reader) (*v1.TestResults, error) {
 	return nil, nil
 }
 

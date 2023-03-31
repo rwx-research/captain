@@ -7,16 +7,25 @@
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-      let pkgs = import nixpkgs { system = system; };
+      let
+        pkgs = import nixpkgs { system = system; };
+        assertVersion = version: pkg: (
+          assert (pkgs.lib.assertMsg (builtins.toString pkg.version == version) ''
+            Expecting version of ${pkg.name} to be ${version} but got ${pkg.version};
+          '');
+          pkg
+        );
       in
       {
         formatter = pkgs.nixpkgs-fmt;
         devShell = pkgs.mkShell {
-          # silence ginkgo deprecation warnings
-          ACK_GINKGO_DEPRECATIONS = "2.6.0";
-
           packages = with pkgs;
-            [ ginkgo go_1_19 golangci-lint mage ];
+            [
+              (assertVersion "2.9.2" ginkgo)
+              (assertVersion "1.19.7" go_1_19)
+              (assertVersion "1.52.2" golangci-lint)
+              (assertVersion "1.14.0" mage)
+            ];
         };
       });
 }

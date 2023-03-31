@@ -22,7 +22,7 @@ type Client struct {
 	flakesPath      string
 	Quarantines     []yaml.Node
 	quarantinesPath string
-	quanratinesTime time.Time
+	quarantinesTime time.Time
 	Timings         map[string]time.Duration
 	timingsPath     string
 }
@@ -76,7 +76,7 @@ func NewClient(fileSystem fs.FileSystem, flakesPath, quarantinesPath, timingsPat
 				return errors.WithStack(err)
 			}
 
-			c.quanratinesTime = info.ModTime()
+			c.quarantinesTime = info.ModTime()
 		}
 
 		if err := yaml.NewDecoder(fd).Decode(v); err != nil && !errors.Is(err, io.EOF) {
@@ -121,11 +121,7 @@ func (c Client) Flush() error {
 		return err
 	}
 
-	if err := write(c.quarantinesPath, c.Quarantines); err != nil {
-		return err
-	}
-
-	return nil
+	return write(c.quarantinesPath, c.Quarantines)
 }
 
 func (c Client) IsLocal() bool {
@@ -136,7 +132,7 @@ func (c Client) IsRemote() bool {
 	return false
 }
 
-func (c Client) GetTestTimingManifest(ctx context.Context, suiteID string) ([]testing.TestFileTiming, error) {
+func (c Client) GetTestTimingManifest(_ context.Context, _ string) ([]testing.TestFileTiming, error) {
 	testTimings := make([]testing.TestFileTiming, 0)
 
 	for file, duration := range c.Timings {
@@ -149,13 +145,13 @@ func (c Client) GetTestTimingManifest(ctx context.Context, suiteID string) ([]te
 	return testTimings, nil
 }
 
-func (c Client) GetRunConfiguration(ctx context.Context, suiteID string) (backend.RunConfiguration, error) {
-	return makeRunConfiguration(c.Flakes, c.Quarantines, c.quanratinesTime)
+func (c Client) GetRunConfiguration(_ context.Context, _ string) (backend.RunConfiguration, error) {
+	return makeRunConfiguration(c.Flakes, c.Quarantines, c.quarantinesTime)
 }
 
 func (c Client) UpdateTestResults(
-	ctx context.Context,
-	suiteID string,
+	_ context.Context,
+	_ string,
 	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
 	if c.Timings == nil {

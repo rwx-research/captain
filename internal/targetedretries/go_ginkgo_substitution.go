@@ -39,7 +39,7 @@ func (s GoGinkgoSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate
 }
 
 func (s GoGinkgoSubstitution) SubstitutionsFor(
-	compiledTemplate CompiledTemplate,
+	_ CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {

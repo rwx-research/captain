@@ -10,7 +10,7 @@ import (
 )
 
 // Parse parses the files supplied in `filepaths` and prints them as formatted JSON to stdout.
-func (s Service) Parse(ctx context.Context, filepaths []string) error {
+func (s Service) Parse(_ context.Context, filepaths []string) error {
 	results, err := s.parse(filepaths, 1)
 	if err != nil {
 		return errors.WithStack(err)

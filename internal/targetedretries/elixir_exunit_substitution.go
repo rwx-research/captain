@@ -40,7 +40,7 @@ func (s ElixirExUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemp
 }
 
 func (s ElixirExUnitSubstitution) SubstitutionsFor(
-	compiledTemplate CompiledTemplate,
+	_ CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {

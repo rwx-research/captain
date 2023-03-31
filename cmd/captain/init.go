@@ -176,7 +176,7 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running
 // `captain parse`, but not for any other operation.
 // It is considered unsafe since the captain CLI service might still expect a configured API at one point.
-func unsafeInitParsingOnly(cmd *cobra.Command, args []string) error {
+func unsafeInitParsingOnly(cmd *cobra.Command, _ []string) error {
 	var err error
 
 	cfg, err = InitConfig(cmd, cliArgs)

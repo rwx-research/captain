@@ -12,7 +12,7 @@ type Substitution interface {
 	Example() string
 	ValidateTemplate(compiledTemplate CompiledTemplate) error
 	SubstitutionsFor(
-		compiledTemplate CompiledTemplate,
+		_ CompiledTemplate,
 		testResults v1.TestResults,
 		filter func(v1.Test) bool,
 	) ([]map[string]string, error)

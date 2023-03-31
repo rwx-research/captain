@@ -39,7 +39,7 @@ func (s RubyRSpecSubstitution) ValidateTemplate(compiledTemplate CompiledTemplat
 }
 
 func (s RubyRSpecSubstitution) SubstitutionsFor(
-	compiledTemplate CompiledTemplate,
+	_ CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(test v1.Test) bool,
 ) ([]map[string]string, error) {

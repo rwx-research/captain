@@ -35,7 +35,7 @@ func parseFlags(args []string) local.Map {
 	return local.Map{Order: order, Values: values}
 }
 
-func (s Service) AddFlake(ctx context.Context, args []string) error {
+func (s Service) AddFlake(_ context.Context, args []string) error {
 	localStorage, ok := s.API.(local.Client)
 	if !ok {
 		return errors.NewConfigurationError(
@@ -51,7 +51,7 @@ func (s Service) AddFlake(ctx context.Context, args []string) error {
 	return errors.WithStack(localStorage.Flush())
 }
 
-func (s Service) AddQuarantine(ctx context.Context, args []string) error {
+func (s Service) AddQuarantine(_ context.Context, args []string) error {
 	localStorage, ok := s.API.(local.Client)
 	if !ok {
 		return errors.NewConfigurationError(
@@ -67,7 +67,7 @@ func (s Service) AddQuarantine(ctx context.Context, args []string) error {
 	return errors.WithStack(localStorage.Flush())
 }
 
-func (s Service) RemoveFlake(ctx context.Context, args []string) error {
+func (s Service) RemoveFlake(_ context.Context, args []string) error {
 	localStorage, ok := s.API.(local.Client)
 	if !ok {
 		return errors.NewConfigurationError(
@@ -88,7 +88,7 @@ func (s Service) RemoveFlake(ctx context.Context, args []string) error {
 	return errors.WithStack(localStorage.Flush())
 }
 
-func (s Service) RemoveQuarantine(ctx context.Context, args []string) error {
+func (s Service) RemoveQuarantine(_ context.Context, args []string) error {
 	localStorage, ok := s.API.(local.Client)
 	if !ok {
 		return errors.NewConfigurationError(
