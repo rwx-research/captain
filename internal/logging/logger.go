@@ -22,11 +22,12 @@ func NewProductionLogger() *zap.SugaredLogger {
 		},
 	})
 
-	errorLevels := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-		return level >= zapcore.ErrorLevel
-	})
 	infoLevels := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-		return !errorLevels(level) && level != zapcore.DebugLevel
+		return level == zapcore.InfoLevel
+	})
+
+	errorLevels := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
+		return !infoLevels(level) && level != zapcore.DebugLevel
 	})
 
 	return zap.New(zapcore.NewTee(
@@ -48,15 +49,16 @@ func NewDebugLogger() *zap.SugaredLogger {
 		EncodeTime:    zapcore.ISO8601TimeEncoder,
 	})
 
-	errorLevels := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-		return level >= zapcore.ErrorLevel
+	infoLevels := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
+		return level == zapcore.InfoLevel
 	})
-	debugLevels := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-		return !errorLevels(level)
+
+	errorLevels := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
+		return !infoLevels(level)
 	})
 
 	return zap.New(zapcore.NewTee(
-		zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), debugLevels),
+		zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), infoLevels),
 		zapcore.NewCore(encoder, zapcore.Lock(os.Stderr), errorLevels),
 	)).WithOptions(
 		zap.Development(),

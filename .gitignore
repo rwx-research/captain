@@ -6,3 +6,4 @@
 /report.xml
 test/.captain
 *.test
+local_env.sh

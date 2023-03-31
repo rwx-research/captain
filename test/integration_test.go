@@ -47,7 +47,6 @@ func captainCmd(args captainArgs) *exec.Cmd {
 	// always set the RWX_ACCESS_TOKEN and PATH
 	env := []string{
 		fmt.Sprintf("%s=%s", "PATH", os.Getenv("PATH")),
-		fmt.Sprintf("%s=%s", "RWX_ACCESS_TOKEN", os.Getenv("RWX_ACCESS_TOKEN")),
 	}
 
 	for key, value := range args.env {
@@ -126,39 +125,45 @@ var _ = Describe("Integration Tests", func() {
 				}, "generic")
 			})
 
-			Describe("using the GitHub Actions provider", func() {
-				sharedTests(func() map[string]string {
-					return helpers.ReadEnvFromFile(".env.github.actions")
-				}, "github-actions")
-			})
+			if os.Getenv("FAST_INTEGRATION") == "" {
+				Describe("using the GitHub Actions provider", func() {
+					sharedTests(func() map[string]string {
+						return helpers.ReadEnvFromFile(".env.github.actions")
+					}, "github-actions")
+				})
 
-			Describe("using the GitLab CI provider", func() {
-				sharedTests(func() map[string]string {
-					return helpers.ReadEnvFromFile(".env.gitlab_ci")
-				}, "gitlab-ci")
-			})
+				Describe("using the GitLab CI provider", func() {
+					sharedTests(func() map[string]string {
+						return helpers.ReadEnvFromFile(".env.gitlab_ci")
+					}, "gitlab-ci")
+				})
 
-			Describe("using the CircleCI provider", func() {
-				sharedTests(func() map[string]string {
-					return helpers.ReadEnvFromFile(".env.circleci")
-				}, "circleci")
-			})
+				Describe("using the CircleCI provider", func() {
+					sharedTests(func() map[string]string {
+						return helpers.ReadEnvFromFile(".env.circleci")
+					}, "circleci")
+				})
 
-			Describe("using the Buildkite provider", func() {
-				sharedTests(func() map[string]string {
-					return helpers.ReadEnvFromFile(".env.buildkite")
-				}, "buildkite")
-			})
-
+				Describe("using the Buildkite provider", func() {
+					sharedTests(func() map[string]string {
+						return helpers.ReadEnvFromFile(".env.buildkite")
+					}, "buildkite")
+				})
+			}
 		}
 	}
 
 	Context("With a valid RWX_ACCESS_TOKEN", func() {
 		BeforeEach(func() {
-			Expect(os.Getenv("RWX_ACCESS_TOKEN")).ToNot(BeEmpty(), "Integration tests require a valid RWX_ACCESS_TOKEN")
+			Expect(os.Getenv("RWX_ACCESS_TOKEN")).ToNot(BeEmpty(), "These integration tests require a valid RWX_ACCESS_TOKEN")
 		})
 
 		withAndWithoutInheritedEnv(func(getEnv envGenerator, prefix string) {
+			getEnvWithAccessToken := func() map[string]string {
+				env := getEnv()
+				env["RWX_ACCESS_TOKEN"] = os.Getenv("RWX_ACCESS_TOKEN")
+				return env
+			}
 			Describe("captain run", func() {
 				It("fails & passes through exit code on failure when results files is missing", func() {
 					result := runCaptain(captainArgs{
@@ -169,7 +174,7 @@ var _ = Describe("Integration Tests", func() {
 							"--fail-on-upload-error",
 							"-c", "bash -c 'exit 123'",
 						},
-						env: getEnv(),
+						env: getEnvWithAccessToken(),
 					})
 
 					// Stderr being empty isn't ideal. See: https://github.com/rwx-research/captain-cli/issues/243
@@ -187,7 +192,7 @@ var _ = Describe("Integration Tests", func() {
 							"--fail-on-upload-error",
 							"-c", "bash -c 'exit 123'",
 						},
-						env: getEnv(),
+						env: getEnvWithAccessToken(),
 					})
 
 					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
@@ -204,7 +209,7 @@ var _ = Describe("Integration Tests", func() {
 							"--fail-on-upload-error",
 							"--", "bash", "-c", "exit 123",
 						},
-						env: getEnv(),
+						env: getEnvWithAccessToken(),
 					})
 
 					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
@@ -222,7 +227,7 @@ var _ = Describe("Integration Tests", func() {
 							"-c", "bash",
 							"--", "-c", "exit 123",
 						},
-						env: getEnv(),
+						env: getEnvWithAccessToken(),
 					})
 
 					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
@@ -240,7 +245,7 @@ var _ = Describe("Integration Tests", func() {
 								"--fail-on-upload-error",
 								"-c", "bash -c 'exit 2'",
 							},
-							env: getEnv(),
+							env: getEnvWithAccessToken(),
 						})
 
 						Expect(result.stderr).To(BeEmpty())
@@ -257,7 +262,7 @@ var _ = Describe("Integration Tests", func() {
 								"--fail-on-upload-error",
 								"-c", "bash -c 'exit 123'",
 							},
-							env: getEnv(),
+							env: getEnvWithAccessToken(),
 						})
 
 						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
@@ -276,7 +281,7 @@ var _ = Describe("Integration Tests", func() {
 								"--fail-on-upload-error",
 								"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
 							},
-							env: getEnv(),
+							env: getEnvWithAccessToken(),
 						})
 
 						Expect(result.stderr).To(Equal("def"))
@@ -293,7 +298,7 @@ var _ = Describe("Integration Tests", func() {
 								"--fail-on-upload-error",
 								"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
 							},
-							env: getEnv(),
+							env: getEnvWithAccessToken(),
 						})
 
 						combinedOutputBytes, err := cmd.CombinedOutput()
@@ -336,7 +341,7 @@ var _ = Describe("Integration Tests", func() {
 								"--retry-command", `echo "{{ tests }}"`,
 								"-c", "bash -c 'exit 123'",
 							},
-							env: getEnv(),
+							env: getEnvWithAccessToken(),
 						})
 
 						Expect(result.stderr).To(BeEmpty())
@@ -355,7 +360,7 @@ var _ = Describe("Integration Tests", func() {
 								"--retry-command", `echo "{{ tests }}"`,
 								"-c", "bash -c 'exit 123'",
 							},
-							env: getEnv(),
+							env: getEnvWithAccessToken(),
 						})
 
 						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
@@ -374,7 +379,7 @@ var _ = Describe("Integration Tests", func() {
 								"--fail-on-upload-error",
 								"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
 							},
-							env: getEnv(),
+							env: getEnvWithAccessToken(),
 						})
 
 						Expect(result.stderr).To(BeEmpty())
@@ -394,7 +399,6 @@ var _ = Describe("Integration Tests", func() {
 							env: mergeMaps(getEnv(), map[string]string{"ABQ_SET_EXIT_CODE": "1234"}),
 						})
 
-						Expect(result.stderr).To(BeEmpty())
 						Expect(result.stdout).To(HavePrefix("exit_code=false"))
 						Expect(result.exitCode).To(Equal(0))
 					})
@@ -408,7 +412,7 @@ var _ = Describe("Integration Tests", func() {
 								"--fail-on-upload-error",
 								"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
 							},
-							env: getEnv(),
+							env: getEnvWithAccessToken(),
 						})
 
 						Expect(result.stderr).To(BeEmpty())
@@ -428,7 +432,6 @@ var _ = Describe("Integration Tests", func() {
 							env: mergeMaps(getEnv(), map[string]string{"ABQ_STATE_FILE": "/tmp/functional-abq-1234.json"}),
 						})
 
-						Expect(result.stderr).To(BeEmpty())
 						Expect(result.stdout).To(HavePrefix("state_file=/tmp/functional-abq-1234.json"))
 						Expect(result.exitCode).To(Equal(0))
 					})
@@ -444,7 +447,7 @@ var _ = Describe("Integration Tests", func() {
 							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 							"-c", "bash -c 'exit 2'",
 						},
-						env: getEnv(),
+						env: getEnvWithAccessToken(),
 					})
 
 					Expect(result.stderr).To(BeEmpty())
@@ -460,12 +463,148 @@ var _ = Describe("Integration Tests", func() {
 							"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
 							"-c", "bash -c 'exit 123'",
 						},
-						env: getEnv(),
+						env: getEnvWithAccessToken(),
 					})
 
 					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 					Expect(result.stdout).ToNot(BeEmpty())
 					Expect(result.exitCode).To(Equal(123))
+				})
+			})
+
+			Describe("captain partition", func() {
+				Context("without timings", func() {
+					It("sets partition 1 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"partition",
+								"fixtures/integration-tests/partition/x.rb",
+								"fixtures/integration-tests/partition/y.rb",
+								"fixtures/integration-tests/partition/z.rb",
+								"--suite-id", "captain-cli-functional-tests",
+								"--index", "0",
+								"--total", "2",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+
+					It("sets partition 2 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"partition",
+								"fixtures/integration-tests/partition/x.rb",
+								"fixtures/integration-tests/partition/y.rb",
+								"fixtures/integration-tests/partition/z.rb",
+								"--suite-id", "captain-cli-functional-tests",
+								"--index", "1",
+								"--total", "2",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/y.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+				})
+
+				Context("with timings", func() {
+					// to regenerate timings, edit rspec-partition.json and then run
+					// 1. captain upload results test/fixtures/integration-tests/partition/rspec-partition.json --suite-id captain-cli-functional-tests
+					// 2. change the CAPTAIN_SHA parameter to pull in the new timings
+
+					It("sets partition 1 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"partition",
+								"fixtures/integration-tests/partition/*_spec.rb",
+								"--suite-id", "captain-cli-functional-tests",
+								"--index", "0",
+								"--total", "2",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						Expect(result.stderr).To(BeEmpty())
+						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+
+					It("sets partition 2 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"partition",
+								"fixtures/integration-tests/partition/*_spec.rb",
+								"--suite-id", "captain-cli-functional-tests",
+								"--index", "1",
+								"--total", "2",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						Expect(result.stderr).To(BeEmpty())
+						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+				})
+
+				Context("globbing", func() {
+					It("sets partition 1 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"partition",
+								"fixtures/integration-tests/**/*_spec.rb",
+								"--suite-id", "captain-cli-functional-tests",
+								"--index", "0",
+								"--total", "1",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						Expect(result.stderr).To(BeEmpty())
+						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+				})
+			})
+
+			Describe("captain upload", func() {
+				It("short circuits when there's nothing to upload", func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"upload", "results",
+							"nonexistingfile.json",
+							"--suite-id", "captain-cli-functional-tests",
+						},
+						env: getEnvWithAccessToken(),
+					})
+
+					Expect(result.stderr).To(BeEmpty())
+					Expect(result.stdout).To(BeEmpty())
+					Expect(result.exitCode).To(Equal(0))
+				})
+			})
+		})
+	})
+
+	Context("Without a valid RWX_ACCESS_TOKEN", func() {
+		withAndWithoutInheritedEnv(func(getEnv envGenerator, _prefix string) {
+			Describe("captain --version", func() {
+				It("renders the version I expect", func() {
+					result := runCaptain(captainArgs{
+						args: []string{"--version"},
+						env:  getEnv(),
+					})
+
+					Expect(result.exitCode).To(Equal(0))
+					Expect(result.stdout).To(Equal(captain.Version))
+					Expect(result.stdout).To(MatchRegexp(`^v\d+\.\d+\.\d+$`))
+					Expect(result.stderr).To(BeEmpty())
 				})
 			})
 
@@ -508,100 +647,6 @@ var _ = Describe("Integration Tests", func() {
 						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/y.rb"))
 						Expect(result.exitCode).To(Equal(0))
 					})
-				})
-
-				Context("with timings", func() {
-					// to regenerate timings, edit rspec-partition.json and then run
-					// 1. captain upload results test/fixtures/integration-tests/partition/rspec-partition.json --suite-id captain-cli-functional-tests
-					// 2. change the CAPTAIN_SHA parameter to pull in the new timings
-
-					It("sets partition 1 correctly", func() {
-						result := runCaptain(captainArgs{
-							args: []string{
-								"partition",
-								"fixtures/integration-tests/partition/*_spec.rb",
-								"--suite-id", "captain-cli-functional-tests",
-								"--index", "0",
-								"--total", "2",
-							},
-							env: getEnv(),
-						})
-
-						Expect(result.stderr).To(BeEmpty())
-						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
-						Expect(result.exitCode).To(Equal(0))
-					})
-
-					It("sets partition 2 correctly", func() {
-						result := runCaptain(captainArgs{
-							args: []string{
-								"partition",
-								"fixtures/integration-tests/partition/*_spec.rb",
-								"--suite-id", "captain-cli-functional-tests",
-								"--index", "1",
-								"--total", "2",
-							},
-							env: getEnv(),
-						})
-
-						Expect(result.stderr).To(BeEmpty())
-						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
-						Expect(result.exitCode).To(Equal(0))
-					})
-				})
-
-				Context("globbing", func() {
-					It("sets partition 1 correctly", func() {
-						result := runCaptain(captainArgs{
-							args: []string{
-								"partition",
-								"fixtures/integration-tests/**/*_spec.rb",
-								"--suite-id", "captain-cli-functional-tests",
-								"--index", "0",
-								"--total", "1",
-							},
-							env: getEnv(),
-						})
-
-						Expect(result.stderr).To(BeEmpty())
-						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
-						Expect(result.exitCode).To(Equal(0))
-					})
-				})
-			})
-
-			Describe("captain upload", func() {
-				It("short circuits when there's nothing to upload", func() {
-					result := runCaptain(captainArgs{
-						args: []string{
-							"upload", "results",
-							"nonexistingfile.json",
-							"--suite-id", "captain-cli-functional-tests",
-						},
-						env: getEnv(),
-					})
-
-					Expect(result.stderr).To(BeEmpty())
-					Expect(result.stdout).To(BeEmpty())
-					Expect(result.exitCode).To(Equal(0))
-				})
-			})
-		})
-	})
-
-	Context("Without a valid RWX_ACCESS_TOKEN", func() {
-		withAndWithoutInheritedEnv(func(getEnv envGenerator, _prefix string) {
-			Describe("captain --version", func() {
-				It("renders the version I expect", func() {
-					result := runCaptain(captainArgs{
-						args: []string{"--version"},
-						env:  getEnv(),
-					})
-
-					Expect(result.exitCode).To(Equal(0))
-					Expect(result.stdout).To(Equal(captain.Version))
-					Expect(result.stdout).To(MatchRegexp(`^v\d+\.\d+\.\d+$`))
-					Expect(result.stderr).To(BeEmpty())
 				})
 			})
 		})
