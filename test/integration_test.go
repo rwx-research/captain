@@ -173,7 +173,7 @@ var _ = Describe("Integration Tests", func() {
 					})
 
 					// Stderr being empty isn't ideal. See: https://github.com/rwx-research/captain-cli/issues/243
-					Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 					Expect(result.stdout).To(BeEmpty())
 					Expect(result.exitCode).To(Equal(123))
 				})
@@ -190,7 +190,7 @@ var _ = Describe("Integration Tests", func() {
 						env: getEnv(),
 					})
 
-					Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 					Expect(result.stdout).ToNot(BeEmpty())
 					Expect(result.exitCode).To(Equal(123))
 				})
@@ -207,7 +207,7 @@ var _ = Describe("Integration Tests", func() {
 						env: getEnv(),
 					})
 
-					Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 					Expect(result.stdout).ToNot(BeEmpty())
 					Expect(result.exitCode).To(Equal(123))
 				})
@@ -225,7 +225,7 @@ var _ = Describe("Integration Tests", func() {
 						env: getEnv(),
 					})
 
-					Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 					Expect(result.stdout).ToNot(BeEmpty())
 					Expect(result.exitCode).To(Equal(123))
 				})
@@ -260,7 +260,7 @@ var _ = Describe("Integration Tests", func() {
 							env: getEnv(),
 						})
 
-						Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 						Expect(result.stdout).ToNot(BeEmpty())
 						Expect(result.exitCode).To(Equal(123))
 					})
@@ -358,7 +358,7 @@ var _ = Describe("Integration Tests", func() {
 							env: getEnv(),
 						})
 
-						Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 						Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 						Expect(result.exitCode).To(Equal(123))
 					})
@@ -463,7 +463,7 @@ var _ = Describe("Integration Tests", func() {
 						env: getEnv(),
 					})
 
-					Expect(result.stderr).To(Equal("Error: encountered error during execution of sub-process"))
+					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 					Expect(result.stdout).ToNot(BeEmpty())
 					Expect(result.exitCode).To(Equal(123))
 				})

@@ -11,6 +11,8 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/rwx-research/captain-cli/internal/backend"
+	"github.com/rwx-research/captain-cli/internal/backend/local"
+	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/reporting"
@@ -564,7 +566,7 @@ func (s Service) runCommand(
 
 	if err := cmd.Wait(); err != nil {
 		if code, e := s.TaskRunner.GetExitStatusFromError(err); e == nil {
-			return ctx, errors.NewExecutionError(code, "encountered error during execution of sub-process")
+			return ctx, errors.NewExecutionError(code, "test suite exited with non-zero exit code")
 		}
 
 		return ctx, errors.NewSystemError("Error during program execution: %s", err)
@@ -625,14 +627,17 @@ func (s Service) reportTestResults(
 	if cfg.PrintSummary {
 		if err := reporting.WriteTextSummary(os.Stdout, testResults); err != nil {
 			s.Log.Warnf("Unable to write text summary to stdout: %s", err.Error())
+		} else {
+			// Append an empty line to make output more readable
+			fmt.Fprintf(os.Stdout, "\n")
 		}
 	}
 
-	if s.API.IsLocal() && !cfg.UpdateStoredResults {
+	if _, ok := s.API.(local.Client); ok && !cfg.UpdateStoredResults {
 		return nil, nil
 	}
 
-	if s.API.IsRemote() && !cfg.UploadResults {
+	if _, ok := s.API.(remote.Client); ok && !cfg.UploadResults {
 		return nil, nil
 	}
 

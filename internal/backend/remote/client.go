@@ -79,14 +79,6 @@ func NewClient(cfg ClientConfig) (Client, error) {
 	return Client{cfg, roundTrip}, nil
 }
 
-func (c Client) IsLocal() bool {
-	return false
-}
-
-func (c Client) IsRemote() bool {
-	return true
-}
-
 func (c Client) GetTestTimingManifest(
 	ctx context.Context,
 	testSuiteIdentifier string,

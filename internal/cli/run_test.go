@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	iofs "io/fs"
+	"net/http"
 	"os"
 	"strings"
 
@@ -14,6 +15,8 @@ import (
 	"go.uber.org/zap/zaptest/observer"
 
 	"github.com/rwx-research/captain-cli/internal/backend"
+	"github.com/rwx-research/captain-cli/internal/backend/local"
+	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
@@ -410,10 +413,7 @@ var _ = Describe("Run", func() {
 					SuiteID:             "test",
 					UpdateStoredResults: false,
 				}
-				mockIsLocal := func() bool {
-					return true
-				}
-				service.API.(*mocks.API).MockIsLocal = mockIsLocal
+				service.API = local.Client{}
 			})
 
 			It("runs the supplied command", func() {
@@ -422,10 +422,6 @@ var _ = Describe("Run", func() {
 
 			It("waits until the supplied command stopped running", func() {
 				Expect(commandFinished).To(BeTrue())
-			})
-
-			It("fetches the run configuration with the quarantined tests", func() {
-				Expect(fetchedRunConfiguration).To(BeTrue())
 			})
 
 			It("reads the test results file", func() {
@@ -451,6 +447,8 @@ var _ = Describe("Run", func() {
 		})
 
 		Context("With uploading disabled and a remote client", func() {
+			var mockRoundTripper func(*http.Request) (*http.Response, error)
+
 			BeforeEach(func() {
 				runConfig = cli.RunConfig{
 					Command:             arg,
@@ -458,10 +456,17 @@ var _ = Describe("Run", func() {
 					SuiteID:             "test",
 					UploadResults:       false,
 				}
-				mockIsRemote := func() bool {
-					return true
+				mockRoundTripper = func(req *http.Request) (*http.Response, error) {
+					var resp http.Response
+
+					Expect(req.Method).To(Equal(http.MethodGet))
+					Expect(req.URL.Path).To(HaveSuffix("run_configuration"))
+
+					resp.Body = io.NopCloser(strings.NewReader(`{}`))
+
+					return &resp, nil
 				}
-				service.API.(*mocks.API).MockIsRemote = mockIsRemote
+				service.API = remote.Client{RoundTrip: mockRoundTripper}
 			})
 
 			It("runs the supplied command", func() {
@@ -470,10 +475,6 @@ var _ = Describe("Run", func() {
 
 			It("waits until the supplied command stopped running", func() {
 				Expect(commandFinished).To(BeTrue())
-			})
-
-			It("fetches the run configuration with the quarantined tests", func() {
-				Expect(fetchedRunConfiguration).To(BeTrue())
 			})
 
 			It("reads the test results file", func() {

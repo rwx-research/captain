@@ -124,14 +124,6 @@ func (c Client) Flush() error {
 	return write(c.quarantinesPath, c.Quarantines)
 }
 
-func (c Client) IsLocal() bool {
-	return true
-}
-
-func (c Client) IsRemote() bool {
-	return false
-}
-
 func (c Client) GetTestTimingManifest(_ context.Context, _ string) ([]testing.TestFileTiming, error) {
 	testTimings := make([]testing.TestFileTiming, 0)
 

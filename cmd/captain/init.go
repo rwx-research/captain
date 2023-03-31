@@ -86,7 +86,7 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 			return errors.WithDecoration(err)
 		}
 
-		if cfg.Secrets.APIToken != "" {
+		if cfg.Secrets.APIToken != "" && !cfg.Cloud.Disabled {
 			apiClient, err = remote.NewClient(remote.ClientConfig{
 				Debug:    cfg.Output.Debug,
 				Host:     cfg.Cloud.APIHost,
@@ -99,6 +99,19 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 			var flakesFilePath, quarantinesFilePath, timingsFilePath string
 			if suiteID == "" {
 				return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
+			}
+
+			if !cfg.Cloud.Disabled {
+				logger.Warnf("Unable to find RWX_ACCESS_TOKEN in the environment. Captain will default to OSS mode.")
+				logger.Warnf("You can silence this warning by setting the following in the config file:")
+				logger.Warnf("")
+				logger.Warnf("cloud:")
+				logger.Warnf("  disabled: true")
+				logger.Warnf("")
+			}
+			if cfg.Secrets.APIToken != "" {
+				logger.Warnf("Captain detected an RWX_ACCESS_TOKEN in your environment, however Cloud mode was disabled.")
+				logger.Warnf("To start using Captain Cloud, please remove the 'cloud.disabled' setting in the config file.")
 			}
 
 			if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
