@@ -36,3 +36,17 @@ jobs:
             keep-outputs = true
       - run: nix develop --command mage lint
       - run: nix fmt -- --check flake.nix
+
+  tidy:
+    name: go mod tidy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            keep-derivations = true
+            keep-outputs = true
+      - run: nix develop --command go mod tidy
+      - run: git diff-index --quiet HEAD
+

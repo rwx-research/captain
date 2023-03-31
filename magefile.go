@@ -65,7 +65,15 @@ func Lint(ctx context.Context) error {
 
 // Applies lint checks and fixes any issues.
 func LintFix(ctx context.Context) error {
-	return sh.RunV("golangci-lint", "run", "--fix", "./...")
+	if err := sh.RunV("golangci-lint", "run", "--fix", "./..."); err != nil {
+		return err
+	}
+
+	if err := sh.RunV("go", "mod", "tidy"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func Test(ctx context.Context) error {
