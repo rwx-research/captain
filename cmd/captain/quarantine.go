@@ -12,70 +12,70 @@ import (
 	"github.com/rwx-research/captain-cli/internal/reporting"
 )
 
-var quarantineCmd = &cobra.Command{
-	Use:   "quarantine [flags] --suite-id=<suite> <args>",
-	Short: "Execute a test-suite and modify its exit code based on quarantined tests",
-	Long: "'captain quarantine' executes a test-suite and modifies its exit code based on quarantined tests." +
-		"Unlike run, it does not attempt retries or update test results.",
-	Example: `  captain quarantine --suite-id "example" --test-results "./tmp/rspec.json" -c "bundle exec rake"`,
-	PreRunE: initCLIService(providers.Validate),
-	RunE: func(cmd *cobra.Command, _ []string) error {
-		args := positionalArgs
+func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
+	quarantineCmd := &cobra.Command{
+		Use:   "quarantine [flags] --suite-id=<suite> <args>",
+		Short: "Execute a test-suite and modify its exit code based on quarantined tests",
+		Long: "'captain quarantine' executes a test-suite and modifies its exit code based on quarantined tests." +
+			"Unlike run, it does not attempt retries or update test results.",
+		Example: `  captain quarantine --suite-id "example" --test-results "./tmp/rspec.json" -c "bundle exec rake"`,
+		PreRunE: initCLIService(providers.Validate),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
 
-		var printSummary, quiet bool
-		var testResultsPath, command string
+			var printSummary, quiet bool
+			var testResultsPath, command string
 
-		reporterFuncs := make(map[string]cli.Reporter)
+			reporterFuncs := make(map[string]cli.Reporter)
 
-		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-			for name, path := range suiteConfig.Output.Reporters {
-				switch name {
-				case "rwx-v1-json":
-					reporterFuncs[path] = reporting.WriteJSONSummary
-				case "junit-xml":
-					reporterFuncs[path] = reporting.WriteJUnitSummary
-				default:
-					return errors.WithDecoration(errors.NewConfigurationError(
-						fmt.Sprintf("Unknown reporter %q", name),
-						"Available reporters are 'rwx-v1-json' and 'junit-xml'.",
-						"",
-					))
+			if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+				for name, path := range suiteConfig.Output.Reporters {
+					switch name {
+					case "rwx-v1-json":
+						reporterFuncs[path] = reporting.WriteJSONSummary
+					case "junit-xml":
+						reporterFuncs[path] = reporting.WriteJUnitSummary
+					default:
+						return errors.WithDecoration(errors.NewConfigurationError(
+							fmt.Sprintf("Unknown reporter %q", name),
+							"Available reporters are 'rwx-v1-json' and 'junit-xml'.",
+							"",
+						))
+					}
 				}
+
+				command = suiteConfig.Command
+				printSummary = suiteConfig.Output.PrintSummary
+				testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
+				quiet = suiteConfig.Output.Quiet
 			}
 
-			command = suiteConfig.Command
-			printSummary = suiteConfig.Output.PrintSummary
-			testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
-			quiet = suiteConfig.Output.Quiet
-		}
+			runConfig := cli.RunConfig{
+				Args:                args,
+				Command:             command,
+				PrintSummary:        printSummary,
+				Quiet:               quiet,
+				Reporters:           reporterFuncs,
+				SuiteID:             suiteID,
+				TestResultsFileGlob: testResultsPath,
+				UpdateStoredResults: cliArgs.updateStoredResults,
 
-		runConfig := cli.RunConfig{
-			Args:                args,
-			Command:             command,
-			PrintSummary:        printSummary,
-			Quiet:               quiet,
-			Reporters:           reporterFuncs,
-			SuiteID:             suiteID,
-			TestResultsFileGlob: testResultsPath,
-			UpdateStoredResults: cliArgs.updateStoredResults,
+				FailOnUploadError: false,
+				FailRetriesFast:   false,
+				FlakyRetries:      0,
+				Retries:           0,
+				UploadResults:     false,
+			}
 
-			FailOnUploadError: false,
-			FailRetriesFast:   false,
-			FlakyRetries:      0,
-			Retries:           0,
-			UploadResults:     false,
-		}
+			err := captain.RunSuite(cmd.Context(), runConfig)
+			if _, ok := errors.AsConfigurationError(err); !ok {
+				cmd.SilenceUsage = true
+			}
 
-		err := captain.RunSuite(cmd.Context(), runConfig)
-		if _, ok := errors.AsConfigurationError(err); !ok {
-			cmd.SilenceUsage = true
-		}
+			return errors.WithDecoration(err)
+		},
+	}
 
-		return errors.WithDecoration(err)
-	},
-}
-
-func AddQuarantineFlags(quarantineCmd *cobra.Command, cliArgs *CliArgs) {
 	quarantineCmd.Flags().StringVarP(
 		&cliArgs.command,
 		"command",
@@ -123,4 +123,5 @@ func AddQuarantineFlags(quarantineCmd *cobra.Command, cliArgs *CliArgs) {
 	)
 
 	addFrameworkFlags(quarantineCmd)
+	rootCmd.AddCommand(quarantineCmd)
 }

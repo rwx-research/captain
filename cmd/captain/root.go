@@ -5,11 +5,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	captainCLI "github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
+// TODO figure out how to handle shared state
 var (
 	cfg             Config
 	captain         cli.Service
@@ -20,14 +20,6 @@ var (
 	insecure        bool
 	suiteID         string
 	positionalArgs  []string
-
-	rootCmd = &cobra.Command{
-		Use: "captain",
-		Long: "Captain provides client-side utilities related to build- and test-suites. This CLI is a complementary " +
-			"component to the main WebUI at https://captain.build.",
-
-		Version: captainCLI.Version,
-	}
 )
 
 func ConfigureRootCmd(rootCmd *cobra.Command) error {

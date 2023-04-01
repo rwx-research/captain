@@ -2,6 +2,7 @@ package main
 
 import (
 	"path/filepath"
+	"regexp"
 
 	"github.com/spf13/cobra"
 
@@ -55,6 +56,8 @@ var genericParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.JUnitParser),
 }
 
+var invalidSuiteIDRegexp = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
+
 // TODO: It looks like errors returned from this function are not getting logged correctly
 // note: different commands have different requirements for the provider
 // so they pass in their own validator accordingly
@@ -66,10 +69,6 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 		cfg, err = InitConfig(cmd, cliArgs)
 		if err != nil {
 			return errors.WithDecoration(err)
-		}
-
-		if auxiliarySuiteID != "" {
-			suiteID = auxiliarySuiteID
 		}
 
 		logger := logging.NewProductionLogger()

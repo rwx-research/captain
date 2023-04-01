@@ -16,9 +16,29 @@ type partitionArgs struct {
 	delimiter string
 }
 
-var (
-	pArgs        partitionArgs
-	partitionCmd = &cobra.Command{
+func configurePartitionCmd(rootCmd *cobra.Command) error {
+	var pArgs partitionArgs
+	getEnvAsInt := func(name string) (int, bool, error) {
+		value := os.Getenv(name)
+		if value == "" {
+			return 0, false, nil
+		}
+
+		i, err := strconv.Atoi(value)
+		if err != nil {
+			return 0, false,
+				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", name, value)
+		}
+
+		return i, true, nil
+	}
+
+	defaultPartitionIndex, gotDefaultFromEnv, err := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
+	if err != nil {
+		return err
+	}
+
+	partitionCmd := &cobra.Command{
 		Use: "partition [--help] [--config-file=<path>] [--delimiter=<delim>] [--sha=<sha>] --suite-id=<suite> --index=<i> " +
 			"--total=<total> <args>",
 		Short: "Partitions a test suite using historical file timings recorded by Captain",
@@ -50,29 +70,6 @@ var (
 			return errors.WithStack(err)
 		},
 	}
-)
-
-func configurePartitionCmd() error {
-	getEnvAsInt := func(name string) (int, bool, error) {
-		value := os.Getenv(name)
-		if value == "" {
-			return 0, false, nil
-		}
-
-		i, err := strconv.Atoi(value)
-		if err != nil {
-			return 0, false,
-				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", name, value)
-		}
-
-		return i, true, nil
-	}
-
-	defaultPartitionIndex, gotDefaultFromEnv, err := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
-	if err != nil {
-		return err
-	}
-
 	partitionCmd.Flags().IntVar(
 		&pArgs.nodes.Index, "index", defaultPartitionIndex, "the 0-indexed index of a particular partition",
 	)

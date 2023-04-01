@@ -9,15 +9,9 @@ import (
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
-var (
-	// updateCmd represents the "update" sub-command itself
-	updateCmd = &cobra.Command{
-		Use:   "update",
-		Short: "Updates a specific resource in captain",
-	}
-
+func configureUpdateCmd(rootCmd *cobra.Command) error {
 	// updateResultsCmd is the "results" sub-command of "update".
-	updateResultsCmd = &cobra.Command{
+	updateResultsCmd := &cobra.Command{
 		Use:   "results [flags] --suite-id=<suite> <args>",
 		Short: "Updates captain with new test-results",
 		Long: "'captain update results' will parse a test-results file and updates captain's internal storage " +
@@ -40,9 +34,6 @@ var (
 			return errors.WithStack(err)
 		},
 	}
-)
-
-func configureUpdateCmd() error {
 	updateResultsCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	if err := updateResultsCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
 		return errors.WithStack(err)
@@ -55,6 +46,13 @@ func configureUpdateCmd() error {
 	}
 
 	addFrameworkFlags(updateResultsCmd)
+
+	// updateCmd represents the "update" sub-command itself
+	updateCmd := &cobra.Command{
+		Use:   "update",
+		Short: "Updates a specific resource in captain",
+	}
+
 	updateCmd.AddCommand(updateResultsCmd)
 	rootCmd.AddCommand(updateCmd)
 	return nil

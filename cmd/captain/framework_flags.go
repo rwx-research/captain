@@ -9,6 +9,7 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
+// TODO figure out how to handle shared state
 var (
 	providedFrameworkLanguage string
 	providedFrameworkKind     string

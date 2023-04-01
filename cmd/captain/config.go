@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 
 	"github.com/caarlos0/env/v7"
 	"github.com/spf13/cobra"
@@ -22,8 +21,6 @@ const (
 	quarantinesFileName = "quarantines.yaml"
 	timingsFileName     = "timings.yaml"
 )
-
-var invalidSuiteIDRegexp = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
 
 // Config is the internal representation of the configuration.
 type Config struct {

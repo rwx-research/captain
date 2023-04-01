@@ -6,36 +6,97 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
+
+	captainCLI "github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
 func main() {
+	rootCmd := &cobra.Command{
+		Use: "captain",
+		Long: "Captain provides client-side utilities related to build- and test-suites. This CLI is a complementary " +
+			"component to the main WebUI at https://captain.build.",
+
+		Version: captainCLI.Version,
+	}
+
 	if err := ConfigureRootCmd(rootCmd); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	configureAddCmd()
+	configureAddCmd(rootCmd)
 
 	// quarantine
-	AddQuarantineFlags(quarantineCmd, &cliArgs)
-	rootCmd.AddCommand(quarantineCmd)
+	AddQuarantineFlags(rootCmd, &cliArgs)
 
 	// add and remove
+	// parseCmd represents the `parse` sub-command itself
+	// TODO: consider adding some help text here as well. The command is hidden, but maybe adding a small blurb
+	// when running `captain help parse` would be useful.
+	parseCmd := &cobra.Command{
+		Use:               "parse",
+		Hidden:            true,
+		PersistentPreRunE: unsafeInitParsingOnly,
+	}
+
+	// parseResultsCmd is the 'results' sub-command of 'parse'
+	parseResultsCmd := &cobra.Command{
+		Use: "results [flags] <args>",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return errors.WithStack(captain.Parse(cmd.Context(), args))
+		},
+	}
 	addFrameworkFlags(parseResultsCmd)
 	parseCmd.AddCommand(parseResultsCmd)
 	rootCmd.AddCommand(parseCmd)
 
+	// removeCmd represents the "remove" sub-command itself
+	removeCmd := &cobra.Command{
+		Use:   "remove",
+		Short: "Removes a resource from captain",
+	}
+
+	// removeFlakeCmd is the "flake" sub-command of "remove".
+	removeFlakeCmd := &cobra.Command{
+		Use:   "flake",
+		Short: "Mark a test as flaky",
+		Long: "'captain remove flake' can be used to remove a specific test for the list of flakes. Effectively, this is " +
+			"the inverse of 'captain add flake'.",
+		PreRunE: initCLIService(providers.Validate),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
+			return errors.WithStack(captain.RemoveFlake(cmd.Context(), args))
+		},
+		DisableFlagParsing: true,
+	}
+
+	// removeQuarantineCmd is the "quarantine" sub-command of "remove".
+	removeQuarantineCmd := &cobra.Command{
+		Use:   "quarantine",
+		Short: "Quarantine a test in Captain",
+		Long: "'captain remove quarantine' can be used to remove a quarantine from a specific test. Effectively, this is " +
+			"the inverse of 'captain add quarantine'.",
+		PreRunE: initCLIService(providers.Validate),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			args := positionalArgs
+			return errors.WithStack(captain.RemoveQuarantine(cmd.Context(), args))
+		},
+		DisableFlagParsing: true,
+	}
 	removeCmd.AddCommand(removeFlakeCmd)
 	removeCmd.AddCommand(removeQuarantineCmd)
 	rootCmd.AddCommand(removeCmd)
 
-	if err := configurePartitionCmd(); err != nil {
+	if err := configurePartitionCmd(rootCmd); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
 	// run
+	runCmd := createRunCmd()
 	if err := AddFlags(runCmd, &cliArgs); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -45,12 +106,12 @@ func main() {
 	runCmd.SetUsageTemplate(shortUsageTemplate)
 	rootCmd.AddCommand(runCmd)
 
-	if err := configureUpdateCmd(); err != nil {
+	if err := configureUpdateCmd(rootCmd); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	if err := configureUploadCmd(); err != nil {
+	if err := configureUploadCmd(rootCmd); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

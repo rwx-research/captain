@@ -7,16 +7,9 @@ import (
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
-var (
-	// uploadCmd represents the "upload" sub-command itself
-	uploadCmd = &cobra.Command{
-		Use:        "upload",
-		Short:      "Upload a resource to Captain",
-		Deprecated: "use 'captain update' instead.",
-	}
-
+func configureUploadCmd(rootCmd *cobra.Command) error {
 	// uploadResultsCmd is the "results" sub-command of "uploads".
-	uploadResultsCmd = &cobra.Command{
+	uploadResultsCmd := &cobra.Command{
 		Use:     "results [flags] --suite-id=<suite> <args>",
 		Short:   "Upload test results to Captain",
 		Long:    "'captain upload results' will upload test results from various test runners, such as JUnit or RSpec.",
@@ -30,9 +23,7 @@ var (
 			return errors.WithStack(err)
 		},
 	}
-)
 
-func configureUploadCmd() error {
 	uploadResultsCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
 	if err := uploadResultsCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
 		return errors.WithStack(err)
@@ -46,6 +37,13 @@ func configureUploadCmd() error {
 
 	addFrameworkFlags(uploadResultsCmd)
 	addGenericProviderFlags(uploadResultsCmd, &cliArgs.GenericProvider)
+
+	// uploadCmd represents the "upload" sub-command itself
+	uploadCmd := &cobra.Command{
+		Use:        "upload",
+		Short:      "Upload a resource to Captain",
+		Deprecated: "use 'captain update' instead.",
+	}
 
 	uploadCmd.AddCommand(uploadResultsCmd)
 	rootCmd.AddCommand(uploadCmd)

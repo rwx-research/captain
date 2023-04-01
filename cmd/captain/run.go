@@ -36,7 +36,9 @@ type CliArgs struct {
 }
 
 var (
-	cliArgs                  CliArgs
+	// TODO figure out how to handle shared state
+	cliArgs CliArgs
+
 	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
 		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
 		v1.ElixirExUnitFramework:         new(targetedretries.ElixirExUnitSubstitution),
@@ -53,8 +55,10 @@ var (
 		v1.RubyMinitestFramework:         new(targetedretries.RubyMinitestSubstitution),
 		v1.RubyRSpecFramework:            new(targetedretries.RubyRSpecSubstitution),
 	}
+)
 
-	runCmd = &cobra.Command{
+func createRunCmd() *cobra.Command {
+	return &cobra.Command{
 		Use:   "run [flags] --suite-id=<suite> <args>",
 		Short: "Execute a build- or test-suite",
 		Long:  "'captain run' can be used to execute a build- or test-suite and optionally upload the resulting artifacts.",
@@ -131,7 +135,7 @@ var (
 			return errors.WithDecoration(err)
 		},
 	}
-)
+}
 
 func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 	runCmd.Flags().StringVarP(
