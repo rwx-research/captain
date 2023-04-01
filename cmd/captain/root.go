@@ -5,14 +5,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
 // TODO figure out how to handle shared state
 var (
-	cfg             Config
-	captain         cli.Service
 	configFilePath  string
 	debug           bool
 	githubJobName   string

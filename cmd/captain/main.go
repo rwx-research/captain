@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	captainCLI "github.com/rwx-research/captain-cli"
+	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
@@ -46,6 +47,11 @@ func main() {
 	parseResultsCmd := &cobra.Command{
 		Use: "results [flags] <args>",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// note: fetching from the parent command because this command doesn't run PreRunE
+			captain, err := cli.GetService(parseCmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			return errors.WithStack(captain.Parse(cmd.Context(), args))
 		},
 	}
@@ -68,6 +74,10 @@ func main() {
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			args := positionalArgs
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			return errors.WithStack(captain.RemoveFlake(cmd.Context(), args))
 		},
 		DisableFlagParsing: true,
@@ -82,6 +92,10 @@ func main() {
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			args := positionalArgs
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			return errors.WithStack(captain.RemoveQuarantine(cmd.Context(), args))
 		},
 		DisableFlagParsing: true,

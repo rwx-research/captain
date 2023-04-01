@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
@@ -51,6 +52,10 @@ func configureAddCmd(rootCmd *cobra.Command) {
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			args := positionalArgs
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			return errors.WithStack(captain.AddFlake(cmd.Context(), args))
 		},
 		DisableFlagParsing: true,
@@ -68,6 +73,10 @@ func configureAddCmd(rootCmd *cobra.Command) {
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			args := positionalArgs
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			return errors.WithStack(captain.AddQuarantine(cmd.Context(), args))
 		},
 		DisableFlagParsing: true,

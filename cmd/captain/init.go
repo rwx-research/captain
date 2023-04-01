@@ -64,10 +64,13 @@ var invalidSuiteIDRegexp = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
 func initCLIService(providerValidator func(providers.Provider) error) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		var apiClient backend.Client
-		var err error
 
-		cfg, err = InitConfig(cmd, cliArgs)
+		cfg, err := InitConfig(cmd, cliArgs)
 		if err != nil {
+			return errors.WithDecoration(err)
+		}
+
+		if err = setConfig(cmd, cfg); err != nil {
 			return errors.WithDecoration(err)
 		}
 
@@ -173,12 +176,16 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 			return errors.WithDecoration(errors.Wrap(err, "invalid parser config"))
 		}
 
-		captain = cli.Service{
+		captain := cli.Service{
 			API:         apiClient,
 			Log:         logger,
 			FileSystem:  fs.Local{},
 			TaskRunner:  exec.Local{},
 			ParseConfig: parseConfig,
+		}
+
+		if err := cli.SetService(cmd, captain); err != nil {
+			return errors.WithStack(err)
 		}
 
 		return nil
@@ -189,10 +196,12 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 // `captain parse`, but not for any other operation.
 // It is considered unsafe since the captain CLI service might still expect a configured API at one point.
 func unsafeInitParsingOnly(cmd *cobra.Command, _ []string) error {
-	var err error
-
-	cfg, err = InitConfig(cmd, cliArgs)
+	cfg, err := InitConfig(cmd, cliArgs)
 	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	if err := setConfig(cmd, cfg); err != nil {
 		return errors.WithStack(err)
 	}
 
@@ -219,10 +228,13 @@ func unsafeInitParsingOnly(cmd *cobra.Command, _ []string) error {
 		return errors.Wrap(err, "invalid parser config")
 	}
 
-	captain = cli.Service{
+	captain := cli.Service{
 		Log:         logger,
 		FileSystem:  fs.Local{},
 		ParseConfig: parseConfig,
+	}
+	if err := cli.SetService(cmd, captain); err != nil {
+		return errors.WithStack(err)
 	}
 
 	return nil

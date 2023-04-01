@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -13,6 +14,36 @@ import (
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
+
+type contextKey string
+
+var configKey = contextKey("captainConfig")
+
+func getConfig(cmd *cobra.Command) (Config, error) {
+	val := cmd.Context().Value(configKey)
+	if val == nil {
+		return Config{}, errors.NewInternalError(
+			"Tried to fetch config from the command but it wasn't set. This should never happen!")
+	}
+
+	cfg, ok := val.(Config)
+	if !ok {
+		return Config{}, errors.NewInternalError(
+			"Tried to fetch config from the command but it was of the wrong type. This should never happen!")
+	}
+
+	return cfg, nil
+}
+
+func setConfig(cmd *cobra.Command, cfg Config) error {
+	if _, err := getConfig(cmd); err == nil {
+		return errors.NewInternalError("Tried to set config on the command but it was already set. This should never happen!")
+	}
+
+	ctx := context.WithValue(cmd.Context(), configKey, cfg)
+	cmd.SetContext(ctx)
+	return nil
+}
 
 const (
 	captainDirectory    = ".captain"

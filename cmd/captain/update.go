@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
@@ -24,13 +25,21 @@ func configureUpdateCmd(rootCmd *cobra.Command) error {
 			// TODO: Should also support reading from stdin
 			artifacts := args
 
+			cfg, err := getConfig(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
 				if len(artifacts) == 0 && suiteConfig.Results.Path != "" {
 					artifacts = []string{os.ExpandEnv(suiteConfig.Results.Path)}
 				}
 			}
 
-			_, err := captain.UpdateTestResults(cmd.Context(), suiteID, artifacts)
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			_, err = captain.UpdateTestResults(cmd.Context(), suiteID, artifacts)
 			return errors.WithStack(err)
 		},
 	}

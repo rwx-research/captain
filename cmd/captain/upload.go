@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
@@ -18,8 +19,12 @@ func configureUploadCmd(rootCmd *cobra.Command) error {
 		PreRunE: initCLIService(providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			args := positionalArgs
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			// TODO: Should also support reading from stdin
-			_, err := captain.UploadTestResults(cmd.Context(), suiteID, args)
+			_, err = captain.UploadTestResults(cmd.Context(), suiteID, args)
 			return errors.WithStack(err)
 		},
 	}

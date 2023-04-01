@@ -61,7 +61,11 @@ func configurePartitionCmd(rootCmd *cobra.Command) error {
 		}),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			args := positionalArgs
-			err := captain.Partition(cmd.Context(), cli.PartitionConfig{
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			err = captain.Partition(cmd.Context(), cli.PartitionConfig{
 				SuiteID:        suiteID,
 				TestFilePaths:  args,
 				PartitionNodes: pArgs.nodes,

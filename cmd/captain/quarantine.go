@@ -28,6 +28,10 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 
 			reporterFuncs := make(map[string]cli.Reporter)
 
+			cfg, err := getConfig(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
 				for name, path := range suiteConfig.Output.Reporters {
 					switch name {
@@ -67,7 +71,11 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 				UploadResults:     false,
 			}
 
-			err := captain.RunSuite(cmd.Context(), runConfig)
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			err = captain.RunSuite(cmd.Context(), runConfig)
 			if _, ok := errors.AsConfigurationError(err); !ok {
 				cmd.SilenceUsage = true
 			}
