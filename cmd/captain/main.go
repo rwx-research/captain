@@ -22,13 +22,14 @@ func main() {
 
 		Version: captainCLI.Version,
 	}
+	cliArgs := CliArgs{}
 
-	if err := ConfigureRootCmd(rootCmd); err != nil {
+	if err := ConfigureRootCmd(rootCmd, &cliArgs); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	configureAddCmd(rootCmd)
+	configureAddCmd(rootCmd, &cliArgs)
 
 	// quarantine
 	AddQuarantineFlags(rootCmd, &cliArgs)
@@ -40,7 +41,7 @@ func main() {
 	parseCmd := &cobra.Command{
 		Use:               "parse",
 		Hidden:            true,
-		PersistentPreRunE: unsafeInitParsingOnly,
+		PersistentPreRunE: unsafeInitParsingOnly(&cliArgs),
 	}
 
 	// parseResultsCmd is the 'results' sub-command of 'parse'
@@ -55,7 +56,7 @@ func main() {
 			return errors.WithStack(captain.Parse(cmd.Context(), args))
 		},
 	}
-	addFrameworkFlags(parseResultsCmd)
+	addFrameworkFlags(parseResultsCmd, &cliArgs.frameworkParams)
 	parseCmd.AddCommand(parseResultsCmd)
 	rootCmd.AddCommand(parseCmd)
 
@@ -71,9 +72,9 @@ func main() {
 		Short: "Mark a test as flaky",
 		Long: "'captain remove flake' can be used to remove a specific test for the list of flakes. Effectively, this is " +
 			"the inverse of 'captain add flake'.",
-		PreRunE: initCLIService(providers.Validate),
+		PreRunE: initCLIService(&cliArgs, providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := positionalArgs
+			args := cliArgs.RootCliArgs.positionalArgs
 			captain, err := cli.GetService(cmd)
 			if err != nil {
 				return errors.WithStack(err)
@@ -89,9 +90,9 @@ func main() {
 		Short: "Quarantine a test in Captain",
 		Long: "'captain remove quarantine' can be used to remove a quarantine from a specific test. Effectively, this is " +
 			"the inverse of 'captain add quarantine'.",
-		PreRunE: initCLIService(providers.Validate),
+		PreRunE: initCLIService(&cliArgs, providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := positionalArgs
+			args := cliArgs.RootCliArgs.positionalArgs
 			captain, err := cli.GetService(cmd)
 			if err != nil {
 				return errors.WithStack(err)
@@ -104,13 +105,13 @@ func main() {
 	removeCmd.AddCommand(removeQuarantineCmd)
 	rootCmd.AddCommand(removeCmd)
 
-	if err := configurePartitionCmd(rootCmd); err != nil {
+	if err := configurePartitionCmd(rootCmd, &cliArgs); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
 	// run
-	runCmd := createRunCmd()
+	runCmd := createRunCmd(&cliArgs)
 	if err := AddFlags(runCmd, &cliArgs); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -120,12 +121,12 @@ func main() {
 	runCmd.SetUsageTemplate(shortUsageTemplate)
 	rootCmd.AddCommand(runCmd)
 
-	if err := configureUpdateCmd(rootCmd); err != nil {
+	if err := configureUpdateCmd(rootCmd, &cliArgs); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	if err := configureUploadCmd(rootCmd); err != nil {
+	if err := configureUploadCmd(rootCmd, &cliArgs); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/rwx-research/captain-cli"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -77,13 +78,21 @@ var _ = Describe("OSS mode Integration Tests", func() {
 			})
 
 			Context("with timings", func() {
+				var suiteId string
 				BeforeEach(func() {
-					// 1. captain upload results test/fixtures/integration-tests/partition/rspec-partition.json --suite-id captain-cli-functional-tests
+					// create a random suite ID so that concurrent tests don't try to read / write from the same timings files
+					suiteUUID, err := uuid.NewRandom()
+					if err != nil {
+						Expect(err).ToNot(HaveOccurred())
+					}
+
+					suiteId = suiteUUID.String()
+
 					_ = runCaptain(captainArgs{
 						args: []string{
 							"update", "results",
 							"fixtures/integration-tests/partition/rspec-partition.json",
-							"--suite-id", "captain-cli-functional-tests",
+							"--suite-id", suiteId,
 						},
 						env: getEnvWithoutAccessToken(),
 					})
@@ -94,7 +103,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						args: []string{
 							"partition",
 							"fixtures/integration-tests/partition/*_spec.rb",
-							"--suite-id", "captain-cli-functional-tests",
+							"--suite-id", suiteId,
 							"--index", "0",
 							"--total", "2",
 						},
@@ -110,7 +119,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						args: []string{
 							"partition",
 							"fixtures/integration-tests/partition/*_spec.rb",
-							"--suite-id", "captain-cli-functional-tests",
+							"--suite-id", suiteId,
 							"--index", "1",
 							"--total", "2",
 						},

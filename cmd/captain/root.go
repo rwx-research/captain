@@ -8,8 +8,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
-// TODO figure out how to handle shared state
-var (
+type rootCliArgs struct {
 	configFilePath  string
 	debug           bool
 	githubJobName   string
@@ -17,20 +16,22 @@ var (
 	insecure        bool
 	suiteID         string
 	positionalArgs  []string
-)
+}
 
-func ConfigureRootCmd(rootCmd *cobra.Command) error {
-	rootCmd.PersistentFlags().StringVar(&configFilePath, "config-file", "", "the config file for captain")
+func ConfigureRootCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
+	rootCmd.
+		PersistentFlags().StringVar(&cliArgs.RootCliArgs.configFilePath, "config-file", "", "the config file for captain")
 
 	suiteIDFromEnv := os.Getenv("CAPTAIN_SUITE_ID")
-	rootCmd.PersistentFlags().StringVar(&suiteID, "suite-id", suiteIDFromEnv, "the id of the test suite")
+	rootCmd.
+		PersistentFlags().StringVar(&cliArgs.RootCliArgs.suiteID, "suite-id", suiteIDFromEnv, "the id of the test suite")
 
-	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug output")
+	rootCmd.PersistentFlags().BoolVar(&cliArgs.RootCliArgs.debug, "debug", false, "enable debug output")
 	if err := rootCmd.PersistentFlags().MarkHidden("debug"); err != nil {
 		return errors.WithStack(err)
 	}
 
-	rootCmd.PersistentFlags().BoolVar(&insecure, "insecure", false, "disable TLS for the API")
+	rootCmd.PersistentFlags().BoolVar(&cliArgs.RootCliArgs.insecure, "insecure", false, "disable TLS for the API")
 	if err := rootCmd.PersistentFlags().MarkHidden("insecure"); err != nil {
 		return errors.WithStack(err)
 	}
@@ -45,31 +46,31 @@ func ConfigureRootCmd(rootCmd *cobra.Command) error {
 	return nil
 }
 
-func bindRootCmdFlags(cfg Config) Config {
-	if debug {
+func bindRootCmdFlags(cfg Config, rootCliArgs rootCliArgs) Config {
+	if rootCliArgs.debug {
 		cfg.Output.Debug = true
 	}
 
-	if insecure {
+	if rootCliArgs.insecure {
 		cfg.Cloud.Insecure = true
 	}
 
 	return cfg
 }
 
-func extractSuiteIDFromPositionalArgs(cmd *cobra.Command) error {
-	positionalArgs = cmd.Flags().Args()
+func extractSuiteIDFromPositionalArgs(cmd *cobra.Command, rootCliArgs *rootCliArgs) error {
+	rootCliArgs.positionalArgs = cmd.Flags().Args()
 
-	if suiteID != "" {
+	if rootCliArgs.suiteID != "" {
 		return nil
 	}
 
-	if len(positionalArgs) == 0 {
+	if len(rootCliArgs.positionalArgs) == 0 {
 		return errors.NewInputError("required flag \"suite-id\" not set")
 	}
 
-	suiteID = positionalArgs[0]
-	positionalArgs = positionalArgs[1:]
+	rootCliArgs.suiteID = rootCliArgs.positionalArgs[0]
+	rootCliArgs.positionalArgs = rootCliArgs.positionalArgs[1:]
 
 	return nil
 }

@@ -61,7 +61,10 @@ var invalidSuiteIDRegexp = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
 // TODO: It looks like errors returned from this function are not getting logged correctly
 // note: different commands have different requirements for the provider
 // so they pass in their own validator accordingly
-func initCLIService(providerValidator func(providers.Provider) error) func(*cobra.Command, []string) error {
+func initCLIService(
+	cliArgs *CliArgs,
+	providerValidator func(providers.Provider) error,
+) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		var apiClient backend.Client
 
@@ -87,6 +90,8 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 		if err != nil {
 			return errors.WithDecoration(err)
 		}
+
+		suiteID := cliArgs.RootCliArgs.suiteID
 
 		if cfg.Secrets.APIToken != "" && !cfg.Cloud.Disabled {
 			apiClient, err = remote.NewClient(remote.ClientConfig{
@@ -195,47 +200,50 @@ func initCLIService(providerValidator func(providers.Provider) error) func(*cobr
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running
 // `captain parse`, but not for any other operation.
 // It is considered unsafe since the captain CLI service might still expect a configured API at one point.
-func unsafeInitParsingOnly(cmd *cobra.Command, _ []string) error {
-	cfg, err := InitConfig(cmd, cliArgs)
-	if err != nil {
-		return errors.WithStack(err)
-	}
 
-	if err := setConfig(cmd, cfg); err != nil {
-		return errors.WithStack(err)
-	}
+func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		cfg, err := InitConfig(cmd, cliArgs)
+		if err != nil {
+			return errors.WithStack(err)
+		}
 
-	logger := logging.NewProductionLogger()
-	if cfg.Output.Debug {
-		logger = logging.NewDebugLogger()
-	}
+		if err := setConfig(cmd, cfg); err != nil {
+			return errors.WithStack(err)
+		}
 
-	var frameworkKind, frameworkLanguage string
-	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-		frameworkKind = suiteConfig.Results.Framework
-		frameworkLanguage = suiteConfig.Results.Language
-	}
+		logger := logging.NewProductionLogger()
+		if cfg.Output.Debug {
+			logger = logging.NewDebugLogger()
+		}
 
-	parseConfig := parsing.Config{
-		ProvidedFrameworkKind:     frameworkKind,
-		ProvidedFrameworkLanguage: frameworkLanguage,
-		MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-		FrameworkParsers:          frameworkParsers,
-		GenericParsers:            genericParsers,
-		Logger:                    logger,
-	}
-	if err := parseConfig.Validate(); err != nil {
-		return errors.Wrap(err, "invalid parser config")
-	}
+		var frameworkKind, frameworkLanguage string
+		if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
+			frameworkKind = suiteConfig.Results.Framework
+			frameworkLanguage = suiteConfig.Results.Language
+		}
 
-	captain := cli.Service{
-		Log:         logger,
-		FileSystem:  fs.Local{},
-		ParseConfig: parseConfig,
-	}
-	if err := cli.SetService(cmd, captain); err != nil {
-		return errors.WithStack(err)
-	}
+		parseConfig := parsing.Config{
+			ProvidedFrameworkKind:     frameworkKind,
+			ProvidedFrameworkLanguage: frameworkLanguage,
+			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+			FrameworkParsers:          frameworkParsers,
+			GenericParsers:            genericParsers,
+			Logger:                    logger,
+		}
+		if err := parseConfig.Validate(); err != nil {
+			return errors.Wrap(err, "invalid parser config")
+		}
 
-	return nil
+		captain := cli.Service{
+			Log:         logger,
+			FileSystem:  fs.Local{},
+			ParseConfig: parseConfig,
+		}
+		if err := cli.SetService(cmd, captain); err != nil {
+			return errors.WithStack(err)
+		}
+
+		return nil
+	}
 }

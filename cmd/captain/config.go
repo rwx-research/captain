@@ -149,26 +149,26 @@ func findInParentDir(fileName string) (string, error) {
 // InitConfig reads our configuration from the system.
 // Environment variables take precedence over a config file.
 // Flags take precedence over all other options.
-func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
-	if configFilePath == "" {
-		configFilePath, err = findInParentDir(filepath.Join(captainDirectory, configFileName))
+func InitConfig(cmd *cobra.Command, cliArgs *CliArgs) (cfg Config, err error) {
+	if cliArgs.RootCliArgs.configFilePath == "" {
+		cliArgs.RootCliArgs.configFilePath, err = findInParentDir(filepath.Join(captainDirectory, configFileName))
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			return cfg, errors.NewConfigurationError(
 				"Unable to read configuration file",
 				fmt.Sprintf(
 					"The following system error occurred while attempting to read the config file at %q: %s",
-					configFilePath, err.Error(),
+					cliArgs.RootCliArgs.configFilePath, err.Error(),
 				),
 				"Please make sure that Captain has the correct permissions to access the config file.",
 			)
 		}
 	}
 
-	if configFilePath != "" {
-		fd, err := os.Open(configFilePath)
+	if cliArgs.RootCliArgs.configFilePath != "" {
+		fd, err := os.Open(cliArgs.RootCliArgs.configFilePath)
 		if err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
-				return cfg, errors.Wrap(err, fmt.Sprintf("unable to open config file %q", configFilePath))
+				return cfg, errors.Wrap(err, fmt.Sprintf("unable to open config file %q", cliArgs.RootCliArgs.configFilePath))
 			}
 		} else {
 			if err = yaml.NewDecoder(fd).Decode(&cfg.ConfigFile); err != nil {
@@ -187,21 +187,21 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 		return cfg, errors.Wrap(err, "unable to parse environment variables")
 	}
 
-	if err = extractSuiteIDFromPositionalArgs(cmd); err != nil {
+	if err = extractSuiteIDFromPositionalArgs(cmd, &cliArgs.RootCliArgs); err != nil {
 		return cfg, err
 	}
 
-	if _, ok := cfg.TestSuites[suiteID]; !ok {
+	if _, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; !ok {
 		if cfg.TestSuites == nil {
 			cfg.TestSuites = make(map[string]SuiteConfig)
 		}
 
-		cfg.TestSuites[suiteID] = SuiteConfig{}
+		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = SuiteConfig{}
 	}
 
-	cfg = bindRootCmdFlags(cfg)
-	cfg = bindFrameworkFlags(cfg)
-	cfg = bindRunCmdFlags(cfg, cliArgs)
+	cfg = bindRootCmdFlags(cfg, cliArgs.RootCliArgs)
+	cfg = bindFrameworkFlags(cfg, cliArgs.frameworkParams, cliArgs.RootCliArgs.suiteID)
+	cfg = bindRunCmdFlags(cfg, *cliArgs)
 
 	return cfg, nil
 }

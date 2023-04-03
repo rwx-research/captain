@@ -19,9 +19,9 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 		Long: "'captain quarantine' executes a test-suite and modifies its exit code based on quarantined tests." +
 			"Unlike run, it does not attempt retries or update test results.",
 		Example: `  captain quarantine --suite-id "example" --test-results "./tmp/rspec.json" -c "bundle exec rake"`,
-		PreRunE: initCLIService(providers.Validate),
+		PreRunE: initCLIService(cliArgs, providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := positionalArgs
+			args := cliArgs.RootCliArgs.positionalArgs
 
 			var printSummary, quiet bool
 			var testResultsPath, command string
@@ -32,7 +32,7 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 				for name, path := range suiteConfig.Output.Reporters {
 					switch name {
 					case "rwx-v1-json":
@@ -60,7 +60,7 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 				PrintSummary:        printSummary,
 				Quiet:               quiet,
 				Reporters:           reporterFuncs,
-				SuiteID:             suiteID,
+				SuiteID:             cliArgs.RootCliArgs.suiteID,
 				TestResultsFileGlob: testResultsPath,
 				UpdateStoredResults: cliArgs.updateStoredResults,
 
@@ -130,6 +130,6 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 			"such as flaky tests and test timings.",
 	)
 
-	addFrameworkFlags(quarantineCmd)
+	addFrameworkFlags(quarantineCmd, &cliArgs.frameworkParams)
 	rootCmd.AddCommand(quarantineCmd)
 }

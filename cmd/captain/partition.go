@@ -16,7 +16,7 @@ type partitionArgs struct {
 	delimiter string
 }
 
-func configurePartitionCmd(rootCmd *cobra.Command) error {
+func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	var pArgs partitionArgs
 	getEnvAsInt := func(name string) (int, bool, error) {
 		value := os.Getenv(name)
@@ -49,7 +49,7 @@ func configurePartitionCmd(rootCmd *cobra.Command) error {
 			"  bundle exec rspec $(captain partition --suide-id your-project-rspec --index 1 --total 2 spec/**/*_spec.rb)",
 		Args:                  cobra.MinimumNArgs(1),
 		DisableFlagsInUseLine: true,
-		PreRunE: initCLIService(func(p providers.Provider) error {
+		PreRunE: initCLIService(cliArgs, func(p providers.Provider) error {
 			if p.CommitSha == "" {
 				return errors.NewConfigurationError(
 					"Missing commit SHA",
@@ -60,13 +60,13 @@ func configurePartitionCmd(rootCmd *cobra.Command) error {
 			return nil
 		}),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := positionalArgs
+			args := cliArgs.RootCliArgs.positionalArgs
 			captain, err := cli.GetService(cmd)
 			if err != nil {
 				return errors.WithStack(err)
 			}
 			err = captain.Partition(cmd.Context(), cli.PartitionConfig{
-				SuiteID:        suiteID,
+				SuiteID:        cliArgs.RootCliArgs.suiteID,
 				TestFilePaths:  args,
 				PartitionNodes: pArgs.nodes,
 				Delimiter:      pArgs.delimiter,

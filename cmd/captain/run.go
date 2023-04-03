@@ -33,40 +33,37 @@ type CliArgs struct {
 	retryCommandTemplate      string
 	updateStoredResults       bool
 	GenericProvider           providers.GenericEnv
+	frameworkParams           frameworkParams
+	RootCliArgs               rootCliArgs
 }
 
-var (
-	// TODO figure out how to handle shared state
-	cliArgs CliArgs
+var substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
+	v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
+	v1.ElixirExUnitFramework:         new(targetedretries.ElixirExUnitSubstitution),
+	v1.GoGinkgoFramework:             new(targetedretries.GoGinkgoSubstitution),
+	v1.GoTestFramework:               new(targetedretries.GoTestSubstitution),
+	v1.JavaScriptCypressFramework:    new(targetedretries.JavaScriptCypressSubstitution),
+	v1.JavaScriptJestFramework:       new(targetedretries.JavaScriptJestSubstitution),
+	v1.JavaScriptMochaFramework:      new(targetedretries.JavaScriptMochaSubstitution),
+	v1.JavaScriptPlaywrightFramework: new(targetedretries.JavaScriptPlaywrightSubstitution),
+	v1.PHPUnitFramework:              new(targetedretries.PHPUnitSubstitution),
+	v1.PythonPytestFramework:         new(targetedretries.PythonPytestSubstitution),
+	v1.PythonUnitTestFramework:       new(targetedretries.PythonUnitTestSubstitution),
+	v1.RubyCucumberFramework:         new(targetedretries.RubyCucumberSubstitution),
+	v1.RubyMinitestFramework:         new(targetedretries.RubyMinitestSubstitution),
+	v1.RubyRSpecFramework:            new(targetedretries.RubyRSpecSubstitution),
+}
 
-	substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
-		v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
-		v1.ElixirExUnitFramework:         new(targetedretries.ElixirExUnitSubstitution),
-		v1.GoGinkgoFramework:             new(targetedretries.GoGinkgoSubstitution),
-		v1.GoTestFramework:               new(targetedretries.GoTestSubstitution),
-		v1.JavaScriptCypressFramework:    new(targetedretries.JavaScriptCypressSubstitution),
-		v1.JavaScriptJestFramework:       new(targetedretries.JavaScriptJestSubstitution),
-		v1.JavaScriptMochaFramework:      new(targetedretries.JavaScriptMochaSubstitution),
-		v1.JavaScriptPlaywrightFramework: new(targetedretries.JavaScriptPlaywrightSubstitution),
-		v1.PHPUnitFramework:              new(targetedretries.PHPUnitSubstitution),
-		v1.PythonPytestFramework:         new(targetedretries.PythonPytestSubstitution),
-		v1.PythonUnitTestFramework:       new(targetedretries.PythonUnitTestSubstitution),
-		v1.RubyCucumberFramework:         new(targetedretries.RubyCucumberSubstitution),
-		v1.RubyMinitestFramework:         new(targetedretries.RubyMinitestSubstitution),
-		v1.RubyRSpecFramework:            new(targetedretries.RubyRSpecSubstitution),
-	}
-)
-
-func createRunCmd() *cobra.Command {
+func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 	return &cobra.Command{
 		Use:   "run [flags] --suite-id=<suite> <args>",
 		Short: "Execute a build- or test-suite",
 		Long:  "'captain run' can be used to execute a build- or test-suite and optionally upload the resulting artifacts.",
 		Example: `  captain run --suite-id="your-project-rake" -c "bundle exec rake"` + "\n" +
 			`  captain run --suite-id="your-project-jest" --test-results "jest-result.json" -c jest`,
-		PreRunE: initCLIService(providers.Validate),
+		PreRunE: initCLIService(cliArgs, providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := positionalArgs
+			args := cliArgs.RootCliArgs.positionalArgs
 			var postRetryCommands, preRetryCommands []string
 			var failOnUploadError, failFast, printSummary, quiet bool
 			var flakyRetries, retries int
@@ -78,7 +75,7 @@ func createRunCmd() *cobra.Command {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 				for name, path := range suiteConfig.Output.Reporters {
 					switch name {
 					case "rwx-v1-json":
@@ -125,7 +122,7 @@ func createRunCmd() *cobra.Command {
 				Retries:                   retries,
 				RetryCommandTemplate:      retryCommand,
 				SubstitutionsByFramework:  substitutionsByFramework,
-				SuiteID:                   suiteID,
+				SuiteID:                   cliArgs.RootCliArgs.suiteID,
 				TestResultsFileGlob:       testResultsPath,
 				UpdateStoredResults:       cliArgs.updateStoredResults,
 				UploadResults:             true,
@@ -239,11 +236,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"them)",
 	)
 
-	runCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
+	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",
+		"the name of the current Github Job")
 	if err := runCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
 		return errors.WithStack(err)
 	}
-	runCmd.Flags().StringVar(&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
+	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobMatrix, "github-job-matrix", "",
+		"the JSON encoded job-matrix from Github")
 	if err := runCmd.Flags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
 		return errors.WithStack(err)
 	}
@@ -280,14 +279,14 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 	)
 
 	addGenericProviderFlags(runCmd, &cliArgs.GenericProvider)
-	addFrameworkFlags(runCmd)
+	addFrameworkFlags(runCmd, &cliArgs.frameworkParams)
 	return nil
 }
 
 // this should be run _last_ as it has the highest precedence, and the assignments we make here overwrite settings
 // from other parts of the app (e.g. config files, env vars)
 func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
-	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+	if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 		if cliArgs.command != "" {
 			suiteConfig.Command = cliArgs.command
 		}
@@ -352,7 +351,7 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 			suiteConfig.Retries.IntermediateArtifactsPath = cliArgs.intermediateArtifactsPath
 		}
 
-		cfg.TestSuites[suiteID] = suiteConfig
+		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suiteConfig
 
 		cfg.ProvidersEnv.Generic = providers.MergeGeneric(cfg.ProvidersEnv.Generic, cliArgs.GenericProvider)
 	}

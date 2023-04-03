@@ -11,7 +11,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
-func configureAddCmd(rootCmd *cobra.Command) {
+func configureAddCmd(rootCmd *cobra.Command, cliArgs *CliArgs) {
 	// auxiliaryFlagSet is a secondary (global) flag set that can be used in case we cannot rely on cobra's internal
 	// one. This is case for the add / remove commands, which accept arbitrary flags and require disabling cobra's
 	// own flag parsing.
@@ -19,7 +19,7 @@ func configureAddCmd(rootCmd *cobra.Command) {
 	auxiliaryFlagSet.Usage = func() {} // Disable secondary "usage" output in cobra
 
 	// Re-define the global flags from `root`
-	auxiliaryFlagSet.StringVar(&configFilePath, "config-file", "", "the config file for captain")
+	auxiliaryFlagSet.StringVar(&cliArgs.RootCliArgs.configFilePath, "config-file", "", "the config file for captain")
 	auxiliaryFlagSet.BoolVarP(&cliArgs.quiet, "quiet", "q", false, "disables most default output")
 
 	suiteIDFromEnv := os.Getenv("CAPTAIN_SUITE_ID")
@@ -46,12 +46,12 @@ func configureAddCmd(rootCmd *cobra.Command) {
 		Example: `captain add flake --suite-id "example" --file "./test/controller_spec.rb" --description "My test"`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if auxiliarySuiteID != "" {
-				suiteID = auxiliarySuiteID
+				cliArgs.RootCliArgs.suiteID = auxiliarySuiteID
 			}
-			return initCLIService(providers.Validate)(cmd, args)
+			return initCLIService(cliArgs, providers.Validate)(cmd, args)
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := positionalArgs
+			args := cliArgs.RootCliArgs.positionalArgs
 			captain, err := cli.GetService(cmd)
 			if err != nil {
 				return errors.WithStack(err)
@@ -70,9 +70,9 @@ func configureAddCmd(rootCmd *cobra.Command) {
 		Long: "'captain add quarantine' can be used to quarantine a test. To select a test, specify the metadata that " +
 			"uniquely identifies a single test.",
 		Example: `captain add quarantine --suite-id "example" --file "./test/controller_spec.rb" --description "My test"`,
-		PreRunE: initCLIService(providers.Validate),
+		PreRunE: initCLIService(cliArgs, providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := positionalArgs
+			args := cliArgs.RootCliArgs.positionalArgs
 			captain, err := cli.GetService(cmd)
 			if err != nil {
 				return errors.WithStack(err)

@@ -9,20 +9,19 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-// TODO figure out how to handle shared state
-var (
-	providedFrameworkLanguage string
-	providedFrameworkKind     string
-)
+type frameworkParams struct {
+	kind     string
+	language string
+}
 
-func addFrameworkFlags(command *cobra.Command) {
+func addFrameworkFlags(command *cobra.Command, frameworkParams *frameworkParams) {
 	formattedKnownFrameworks := make([]string, len(v1.KnownFrameworks))
 	for i, framework := range v1.KnownFrameworks {
 		formattedKnownFrameworks[i] = fmt.Sprintf("  --language %v --framework %v", framework.Language, framework.Kind)
 	}
 
 	command.Flags().StringVar(
-		&providedFrameworkLanguage,
+		&frameworkParams.language,
 		"language",
 		"",
 		fmt.Sprintf(
@@ -32,7 +31,7 @@ func addFrameworkFlags(command *cobra.Command) {
 		),
 	)
 	command.Flags().StringVar(
-		&providedFrameworkKind,
+		&frameworkParams.kind,
 		"framework",
 		"",
 		fmt.Sprintf(
@@ -43,14 +42,14 @@ func addFrameworkFlags(command *cobra.Command) {
 	)
 }
 
-func bindFrameworkFlags(cfg Config) Config {
+func bindFrameworkFlags(cfg Config, frameworkParams frameworkParams, suiteID string) Config {
 	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-		if providedFrameworkKind != "" {
-			suiteConfig.Results.Framework = providedFrameworkKind
+		if frameworkParams.language != "" {
+			suiteConfig.Results.Framework = frameworkParams.kind
 		}
 
-		if providedFrameworkLanguage != "" {
-			suiteConfig.Results.Language = providedFrameworkLanguage
+		if frameworkParams.language != "" {
+			suiteConfig.Results.Language = frameworkParams.kind
 		}
 
 		cfg.TestSuites[suiteID] = suiteConfig

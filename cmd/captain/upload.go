@@ -8,7 +8,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
-func configureUploadCmd(rootCmd *cobra.Command) error {
+func configureUploadCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	// uploadResultsCmd is the "results" sub-command of "uploads".
 	uploadResultsCmd := &cobra.Command{
 		Use:     "results [flags] --suite-id=<suite> <args>",
@@ -16,31 +16,32 @@ func configureUploadCmd(rootCmd *cobra.Command) error {
 		Long:    "'captain upload results' will upload test results from various test runners, such as JUnit or RSpec.",
 		Example: `captain upload results --suite-id="JUnit" *.xml`,
 		Args:    cobra.MinimumNArgs(1),
-		PreRunE: initCLIService(providers.Validate),
+		PreRunE: initCLIService(cliArgs, providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := positionalArgs
+			args := cliArgs.RootCliArgs.positionalArgs
 			captain, err := cli.GetService(cmd)
 			if err != nil {
 				return errors.WithStack(err)
 			}
 			// TODO: Should also support reading from stdin
-			_, err = captain.UploadTestResults(cmd.Context(), suiteID, args)
+			_, err = captain.UploadTestResults(cmd.Context(), cliArgs.RootCliArgs.suiteID, args)
 			return errors.WithStack(err)
 		},
 	}
 
-	uploadResultsCmd.Flags().StringVar(&githubJobName, "github-job-name", "", "the name of the current Github Job")
+	uploadResultsCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",
+		"the name of the current Github Job")
 	if err := uploadResultsCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
 		return errors.WithStack(err)
 	}
 
 	uploadResultsCmd.Flags().
-		StringVar(&githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
+		StringVar(&cliArgs.RootCliArgs.githubJobMatrix, "github-job-matrix", "", "the JSON encoded job-matrix from Github")
 	if err := uploadResultsCmd.Flags().MarkDeprecated("github-job-matrix", "the value will be ignored"); err != nil {
 		return errors.WithStack(err)
 	}
 
-	addFrameworkFlags(uploadResultsCmd)
+	addFrameworkFlags(uploadResultsCmd, &cliArgs.frameworkParams)
 	addGenericProviderFlags(uploadResultsCmd, &cliArgs.GenericProvider)
 
 	// uploadCmd represents the "upload" sub-command itself
