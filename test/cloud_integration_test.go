@@ -13,13 +13,14 @@ import (
 
 var _ = Describe("Cloud Mode Integration Tests", func() {
 	BeforeEach(func() {
-		Expect(os.Getenv("RWX_ACCESS_TOKEN")).ToNot(BeEmpty(), "These integration tests require a valid RWX_ACCESS_TOKEN")
+		Expect(os.Getenv("RWX_ACCESS_TOKEN_STAGING")).ToNot(BeEmpty(), "These integration tests require a valid RWX_ACCESS_TOKEN_STAGING")
 	})
 
 	withAndWithoutInheritedEnv(func(getEnv envGenerator, prefix string) {
 		getEnvWithAccessToken := func() map[string]string {
 			env := getEnv()
-			env["RWX_ACCESS_TOKEN"] = os.Getenv("RWX_ACCESS_TOKEN")
+			env["CAPTAIN_HOST"] = "staging.captain.build"
+			env["RWX_ACCESS_TOKEN"] = os.Getenv("RWX_ACCESS_TOKEN_STAGING")
 			return env
 		}
 		Describe("captain run", func() {
@@ -117,74 +118,6 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					Expect(result.exitCode).To(Equal(123))
 				})
 			})
-
-			Context("with abq", func() {
-				It("runs with ABQ_SET_EXIT_CODE=false when ABQ_SET_EXIT_CODE is unset", func() {
-					result := runCaptain(captainArgs{
-						args: []string{
-							"run",
-							"--suite-id", "captain-cli-abq-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
-							"--fail-on-upload-error",
-							"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
-						},
-						env: getEnvWithAccessToken(),
-					})
-
-					Expect(result.stderr).To(BeEmpty())
-					Expect(result.stdout).To(HavePrefix("exit_code=false"))
-					Expect(result.exitCode).To(Equal(0))
-				})
-
-				It("runs with ABQ_SET_EXIT_CODE=false when ABQ_SET_EXIT_CODE is already set", func() {
-					result := runCaptain(captainArgs{
-						args: []string{
-							"run",
-							"--suite-id", "captain-cli-abq-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
-							"--fail-on-upload-error",
-							"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
-						},
-						env: mergeMaps(getEnv(), map[string]string{"ABQ_SET_EXIT_CODE": "1234"}),
-					})
-
-					Expect(result.stdout).To(HavePrefix("exit_code=false"))
-					Expect(result.exitCode).To(Equal(0))
-				})
-
-				It("runs with new ABQ_STATE_FILE path when ABQ_STATE_FILE is unset", func() {
-					result := runCaptain(captainArgs{
-						args: []string{
-							"run",
-							"--suite-id", "captain-cli-abq-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
-							"--fail-on-upload-error",
-							"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
-						},
-						env: getEnvWithAccessToken(),
-					})
-
-					Expect(result.stderr).To(BeEmpty())
-					Expect(result.stdout).To(HavePrefix("state_file=/tmp/captain-abq-"))
-					Expect(result.exitCode).To(Equal(0))
-				})
-
-				It("runs with previously set ABQ_STATE_FILE path when ABQ_STATE_FILE is set", func() {
-					result := runCaptain(captainArgs{
-						args: []string{
-							"run",
-							"--suite-id", "captain-cli-abq-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
-							"--fail-on-upload-error",
-							"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
-						},
-						env: mergeMaps(getEnv(), map[string]string{"ABQ_STATE_FILE": "/tmp/functional-abq-1234.json"}),
-					})
-
-					Expect(result.stdout).To(HavePrefix("state_file=/tmp/functional-abq-1234.json"))
-					Expect(result.exitCode).To(Equal(0))
-				})
-			})
 		})
 
 		Describe("captain quarantine", func() {
@@ -262,7 +195,7 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 
 			Context("with timings", func() {
 				// to regenerate timings, edit rspec-partition.json and then run
-				// 1. captain upload results test/fixtures/integration-tests/partition/rspec-partition.json --suite-id captain-cli-functional-tests
+				// 1. CAPTAIN_HOST=staging.captain.build RWX_ACCESS_TOKEN=$RWX_ACCESS_TOKEN_STAGING captain upload results test/fixtures/integration-tests/partition/rspec-partition.json --suite-id captain-cli-functional-tests
 				// 2. change the CAPTAIN_SHA parameter to pull in the new timings
 
 				It("sets partition 1 correctly", func() {

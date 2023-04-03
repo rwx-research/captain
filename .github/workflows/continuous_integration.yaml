@@ -22,6 +22,7 @@ jobs:
             -- nix develop --command mage test
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
+          RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
           DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
 
   lint:
@@ -49,4 +50,3 @@ jobs:
             keep-outputs = true
       - run: nix develop --command go mod tidy
       - run: git diff-index --quiet HEAD
-

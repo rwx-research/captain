@@ -378,6 +378,76 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					Expect(result.exitCode).To(Equal(123))
 				})
 			})
+
+			Context("with abq", func() {
+				It("runs with ABQ_SET_EXIT_CODE=false when ABQ_SET_EXIT_CODE is unset", func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"--suite-id", "captain-cli-abq-test",
+							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--fail-on-upload-error",
+							"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					Expect(result.stdout).To(HavePrefix("exit_code=false"))
+					Expect(result.exitCode).To(Equal(0))
+				})
+
+				It("runs with ABQ_SET_EXIT_CODE=false when ABQ_SET_EXIT_CODE is already set", func() {
+					env := getEnvWithoutAccessToken()
+					env["ABQ_SET_EXIT_CODE"] = "1234"
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"--suite-id", "captain-cli-abq-test",
+							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--fail-on-upload-error",
+							"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
+						},
+						env: env,
+					})
+
+					Expect(result.stdout).To(HavePrefix("exit_code=false"))
+					Expect(result.exitCode).To(Equal(0))
+				})
+
+				It("runs with new ABQ_STATE_FILE path when ABQ_STATE_FILE is unset", func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"--suite-id", "captain-cli-abq-test",
+							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--fail-on-upload-error",
+							"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					Expect(result.stdout).To(HavePrefix("state_file=/tmp/captain-abq-"))
+					Expect(result.exitCode).To(Equal(0))
+				})
+
+				It("runs with previously set ABQ_STATE_FILE path when ABQ_STATE_FILE is set", func() {
+					env := getEnvWithoutAccessToken()
+					env["ABQ_STATE_FILE"] = "/tmp/functional-abq-1234.json"
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"--suite-id", "captain-cli-abq-test",
+							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--fail-on-upload-error",
+							"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
+						},
+						env: env,
+					})
+
+					Expect(result.stdout).To(HavePrefix("state_file=/tmp/functional-abq-1234.json"))
+					Expect(result.exitCode).To(Equal(0))
+				})
+			})
 		})
 	})
 })

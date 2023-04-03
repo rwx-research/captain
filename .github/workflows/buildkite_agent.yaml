@@ -41,6 +41,7 @@ jobs:
           sudo tee /etc/buildkite-agent/hooks/environment > /dev/null <<'EOF'
           #!/usr/bin/env bash
           export RWX_ACCESS_TOKEN="${{ secrets.RWX_ACCESS_TOKEN }}"
+          export RWX_ACCESS_TOKEN_STAGING="${{ secrets.RWX_ACCESS_TOKEN_STAGING }}"
           EOF
           sudo chmod +x /etc/buildkite-agent/hooks/environment
       - name: Sleep
