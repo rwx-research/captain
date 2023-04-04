@@ -41,8 +41,8 @@ func (cfg GitHubEnv) MakeProvider() (Provider, error) {
 			Message string `json:"message"`
 		} `json:"head_commit"`
 		PullRequest struct {
-			Number int `json:"number"`
-			Title string `json:"title"`
+			Number int    `json:"number"`
+			Title  string `json:"title"`
 		} `json:"pull_request"`
 	}{}
 
