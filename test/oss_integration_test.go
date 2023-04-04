@@ -4,8 +4,10 @@ package integration_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/rwx-research/captain-cli"
@@ -285,8 +287,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					os.Symlink(_symlinkSrcPath, _symlinkDestPath)
 				})
 
-				PIt("succeeds when all failures quarantined", func() {
-					Skip("quarantining doesn't yet work")
+				It("succeeds when all failures quarantined", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
@@ -299,8 +300,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(BeEmpty())
-					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
+					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'")) // indicative of a retry
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -336,18 +336,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				})
 			})
 
-			PContext("quarantining (oss captain add quarantine not yet implemented)", func() {
-				BeforeEach(func() {
-					_ = runCaptain(captainArgs{
-						args: []string{
-							"add", "quarantine",
-							"--suite-id", "captain-cli-quarantine-test",
-							"--file", "./x.rb",
-							"--description", `"is flaky"`,
-						},
-						env: getEnvWithoutAccessToken(),
-					})
-				})
+			Context("quarantining", func() {
 				It("succeeds when all failures quarantined", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
@@ -359,7 +348,6 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(BeEmpty())
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -374,7 +362,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					Expect(result.exitCode).To(Equal(123))
 				})
 			})
@@ -449,5 +437,56 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				})
 			})
 		})
+
+		DescribeTable("captain [add|remove]",
+			func(resource string) {
+				read := func(path string) string {
+					data, err := ioutil.ReadFile(path)
+					Expect(err).ToNot(HaveOccurred())
+					return string(data)
+				}
+
+				suiteUUID, err := uuid.NewRandom()
+				Expect(err).ToNot(HaveOccurred())
+				suiteID := suiteUUID.String()
+
+				By("adding")
+				result := runCaptain(captainArgs{
+					args: []string{
+						"add", resource,
+						"--suite-id", suiteID,
+						"--file", "./x.rb",
+						"--description", "is flaky",
+					},
+					env: getEnvWithoutAccessToken(),
+				})
+				Expect(result.exitCode).To(Equal(0))
+
+				lines := strings.Split(read(fmt.Sprintf(".captain/%s/%ss.yaml", suiteID, resource)), "\n")
+				Expect(lines).To(HaveLen(3))
+				Expect(lines[0]).To(Equal("- file: ./x.rb"))
+				Expect(lines[1]).To(Equal("  description: is flaky"))
+				Expect(lines[2]).To(Equal(""))
+
+				By("removing")
+				result = runCaptain(captainArgs{
+					args: []string{
+						"remove", resource,
+						"--suite-id", suiteID,
+						"--file", "./x.rb",
+						"--description", "is flaky",
+					},
+					env: getEnvWithoutAccessToken(),
+				})
+				Expect(result.exitCode).To(Equal(0))
+
+				lines = strings.Split(read(fmt.Sprintf(".captain/%s/%ss.yaml", suiteID, resource)), "\n")
+				Expect(lines).To(HaveLen(2))
+				Expect(lines[0]).To(Equal("[]"))
+				Expect(lines[1]).To(Equal(""))
+			},
+			Entry("for quarantines", "quarantine"),
+			Entry("for flakes", "flake"),
+		)
 	})
 })

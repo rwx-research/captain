@@ -108,7 +108,7 @@ var _ = Describe("Update Captain", func() {
 					args = []string{"--project", "foobar", "--description", "another test"}
 				})
 
-				It("updates the local flakes file", func() {
+				It("updates the local quarantines file", func() {
 					fileContent := quarantines.Builder.String()
 					Expect(fileContent).To(HavePrefix("- project:"), "The first line should be the first argument")
 					Expect(fileContent).To(ContainSubstring("project: foobar"))

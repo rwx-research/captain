@@ -11,7 +11,6 @@ import (
 	captainCLI "github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
-	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
 func main() {
@@ -30,6 +29,7 @@ func main() {
 	}
 
 	configureAddCmd(rootCmd, &cliArgs)
+	configureRemoveCmd(rootCmd, &cliArgs)
 
 	// quarantine
 	AddQuarantineFlags(rootCmd, &cliArgs)
@@ -59,51 +59,6 @@ func main() {
 	addFrameworkFlags(parseResultsCmd, &cliArgs.frameworkParams)
 	parseCmd.AddCommand(parseResultsCmd)
 	rootCmd.AddCommand(parseCmd)
-
-	// removeCmd represents the "remove" sub-command itself
-	removeCmd := &cobra.Command{
-		Use:   "remove",
-		Short: "Removes a resource from captain",
-	}
-
-	// removeFlakeCmd is the "flake" sub-command of "remove".
-	removeFlakeCmd := &cobra.Command{
-		Use:   "flake",
-		Short: "Mark a test as flaky",
-		Long: "'captain remove flake' can be used to remove a specific test for the list of flakes. Effectively, this is " +
-			"the inverse of 'captain add flake'.",
-		PreRunE: initCLIService(&cliArgs, providers.Validate),
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := cliArgs.RootCliArgs.positionalArgs
-			captain, err := cli.GetService(cmd)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			return errors.WithStack(captain.RemoveFlake(cmd.Context(), args))
-		},
-		DisableFlagParsing: true,
-	}
-
-	// removeQuarantineCmd is the "quarantine" sub-command of "remove".
-	removeQuarantineCmd := &cobra.Command{
-		Use:   "quarantine",
-		Short: "Quarantine a test in Captain",
-		Long: "'captain remove quarantine' can be used to remove a quarantine from a specific test. Effectively, this is " +
-			"the inverse of 'captain add quarantine'.",
-		PreRunE: initCLIService(&cliArgs, providers.Validate),
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := cliArgs.RootCliArgs.positionalArgs
-			captain, err := cli.GetService(cmd)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			return errors.WithStack(captain.RemoveQuarantine(cmd.Context(), args))
-		},
-		DisableFlagParsing: true,
-	}
-	removeCmd.AddCommand(removeFlakeCmd)
-	removeCmd.AddCommand(removeQuarantineCmd)
-	rootCmd.AddCommand(removeCmd)
 
 	if err := configurePartitionCmd(rootCmd, &cliArgs); err != nil {
 		fmt.Fprintln(os.Stderr, err)
