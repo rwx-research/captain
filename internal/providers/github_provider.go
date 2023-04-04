@@ -2,6 +2,7 @@ package providers
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -39,6 +40,10 @@ func (cfg GitHubEnv) MakeProvider() (Provider, error) {
 		HeadCommit struct {
 			Message string `json:"message"`
 		} `json:"head_commit"`
+		PullRequest struct {
+			Number int    `json:"number"`
+			Title  string `json:"title"`
+		} `json:"pull_request"`
 	}{}
 
 	file, err := os.Open(cfg.EventPath)
@@ -50,7 +55,12 @@ func (cfg GitHubEnv) MakeProvider() (Provider, error) {
 		}
 	}
 
-	return cfg.MakeProviderWithoutCommitMessageParsing(eventPayloadData.HeadCommit.Message)
+	commitMessage := eventPayloadData.HeadCommit.Message
+	if cfg.EventName == "pull_request" {
+		commitMessage = fmt.Sprintf("%s (#%d)", eventPayloadData.PullRequest.Title, eventPayloadData.PullRequest.Number)
+	}
+
+	return cfg.MakeProviderWithoutCommitMessageParsing(commitMessage)
 }
 
 // this function is only here to make the provider easier to test without writing the event file to disk
