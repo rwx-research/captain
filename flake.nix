@@ -3,7 +3,7 @@
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.nixpkgs.url =
-    "github:nixos/nixpkgs/nixos-unstable"; # Unstable is needed for Go 1.19
+    "github:nixos/nixpkgs/nixpkgs-unstable"; # Unstable is needed for Go 1.20
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
@@ -22,7 +22,7 @@
           packages = with pkgs;
             [
               (assertVersion "2.9.2" ginkgo)
-              (assertVersion "1.19.7" go_1_19)
+              (assertVersion "1.20.2" go)
               (assertVersion "1.52.2" golangci-lint)
               (assertVersion "1.14.0" mage)
             ];
