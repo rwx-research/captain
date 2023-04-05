@@ -44,10 +44,10 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							"captain-cli-functional-tests",
 							"fixtures/integration-tests/partition/x.rb",
 							"fixtures/integration-tests/partition/y.rb",
 							"fixtures/integration-tests/partition/z.rb",
-							"--suite-id", "captain-cli-functional-tests",
 							"--index", "0",
 							"--total", "2",
 						},
@@ -63,12 +63,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							"captain-cli-functional-tests",
+							"--index", "1",
+							"--total", "2",
 							"fixtures/integration-tests/partition/x.rb",
 							"fixtures/integration-tests/partition/y.rb",
 							"fixtures/integration-tests/partition/z.rb",
-							"--suite-id", "captain-cli-functional-tests",
-							"--index", "1",
-							"--total", "2",
 						},
 						env: getEnvWithoutAccessToken(),
 					})
@@ -90,22 +90,22 @@ var _ = Describe("OSS mode Integration Tests", func() {
 
 					suiteId = suiteUUID.String()
 
-					_ = runCaptain(captainArgs{
+					Expect(runCaptain(captainArgs{
 						args: []string{
 							"update", "results",
+							suiteId,
 							"fixtures/integration-tests/partition/rspec-partition.json",
-							"--suite-id", suiteId,
 						},
 						env: getEnvWithoutAccessToken(),
-					})
+					}).exitCode).To(Equal(0))
 				})
 
 				It("sets partition 1 correctly", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							suiteId,
 							"fixtures/integration-tests/partition/*_spec.rb",
-							"--suite-id", suiteId,
 							"--index", "0",
 							"--total", "2",
 						},
@@ -120,8 +120,8 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							suiteId,
 							"fixtures/integration-tests/partition/*_spec.rb",
-							"--suite-id", suiteId,
 							"--index", "1",
 							"--total", "2",
 						},
@@ -138,8 +138,8 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							"captain-cli-functional-tests",
 							"fixtures/integration-tests/**/*_spec.rb",
-							"--suite-id", "captain-cli-functional-tests",
 							"--index", "0",
 							"--total", "1",
 						},
@@ -157,7 +157,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
 						"run",
-						"--suite-id", "captain-cli-functional-tests",
+						"captain-cli-functional-tests",
 						"--test-results", "fixtures/integration-tests/does-not-exist.json",
 						"-c", "bash -c 'exit 123'",
 					},
@@ -174,7 +174,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
 						"run",
-						"--suite-id", "captain-cli-functional-tests",
+						"captain-cli-functional-tests",
 						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
 						"-c", "bash -c 'exit 123'",
 					},
@@ -189,7 +189,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
 						"run",
-						"--suite-id", "captain-cli-functional-tests",
+						"captain-cli-functional-tests",
 						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
 						"--", "bash", "-c", "exit 123",
 					},
@@ -204,7 +204,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
 						"run",
-						"--suite-id", "captain-cli-functional-tests",
+						"captain-cli-functional-tests",
 						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
 						"-c", "bash",
 						"--", "-c", "exit 123",
@@ -216,11 +216,11 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				Expect(result.exitCode).To(Equal(123))
 			})
 
-			It("accepts positional arguments", func() {
+			It("accepts --suite-id argument", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
 						"run",
-						"captain-cli-functional-tests",
+						"--suite-id", "captain-cli-functional-tests",
 						"--test-results", "fixtures/integration-tests/rspec-passed.json",
 						"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
 					},
@@ -235,7 +235,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-functional-tests",
+							"captain-cli-functional-tests",
 							"--test-results", "fixtures/integration-tests/rspec-passed.json",
 							"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
 						},
@@ -251,7 +251,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					cmd := captainCmd(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-functional-test",
+							"captain-cli-functional-test",
 							"--test-results", "fixtures/integration-tests/rspec-passed.json",
 							"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
 						},
@@ -291,7 +291,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-quarantine-test",
+							"captain-cli-quarantine-test",
 							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
 							"--retries", "1",
 							"--retry-command", `echo "{{ tests }}"`,
@@ -308,7 +308,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-functional-tests",
+							"captain-cli-functional-tests",
 							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix),
 							"--retries", "1",
 							"--retry-command", `echo "{{ tests }}"`,
@@ -341,7 +341,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-quarantine-test",
+							"captain-cli-quarantine-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 							"-c", "bash -c 'exit 2'",
 						},
@@ -355,7 +355,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-quarantine-test",
+							"captain-cli-quarantine-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
 							"-c", "bash -c 'exit 123'",
 						},
@@ -372,7 +372,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-abq-test",
+							"captain-cli-abq-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
@@ -390,7 +390,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-abq-test",
+							"captain-cli-abq-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
@@ -406,7 +406,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-abq-test",
+							"captain-cli-abq-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
@@ -424,7 +424,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-abq-test",
+							"captain-cli-abq-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
@@ -454,7 +454,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
 						"add", resource,
-						"--suite-id", suiteID,
+						suiteID,
 						"--file", "./x.rb",
 						"--description", "is flaky",
 					},
@@ -472,7 +472,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				result = runCaptain(captainArgs{
 					args: []string{
 						"remove", resource,
-						"--suite-id", suiteID,
+						suiteID,
 						"--file", "./x.rb",
 						"--description", "is flaky",
 					},

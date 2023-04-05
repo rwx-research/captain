@@ -58,9 +58,8 @@ func bindRootCmdFlags(cfg Config, rootCliArgs rootCliArgs) Config {
 	return cfg
 }
 
-func extractSuiteIDFromPositionalArgs(cmd *cobra.Command, rootCliArgs *rootCliArgs) error {
-	rootCliArgs.positionalArgs = cmd.Flags().Args()
-
+func extractSuiteIDFromPositionalArgs(rootCliArgs *rootCliArgs, args []string) error {
+	rootCliArgs.positionalArgs = args
 	if rootCliArgs.suiteID != "" {
 		return nil
 	}

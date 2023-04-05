@@ -149,7 +149,7 @@ func findInParentDir(fileName string) (string, error) {
 // InitConfig reads our configuration from the system.
 // Environment variables take precedence over a config file.
 // Flags take precedence over all other options.
-func InitConfig(cmd *cobra.Command, cliArgs *CliArgs) (cfg Config, err error) {
+func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 	if cliArgs.RootCliArgs.configFilePath == "" {
 		cliArgs.RootCliArgs.configFilePath, err = findInParentDir(filepath.Join(captainDirectory, configFileName))
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -187,10 +187,6 @@ func InitConfig(cmd *cobra.Command, cliArgs *CliArgs) (cfg Config, err error) {
 		return cfg, errors.Wrap(err, "unable to parse environment variables")
 	}
 
-	if err = extractSuiteIDFromPositionalArgs(cmd, &cliArgs.RootCliArgs); err != nil {
-		return cfg, err
-	}
-
 	if _, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; !ok {
 		if cfg.TestSuites == nil {
 			cfg.TestSuites = make(map[string]SuiteConfig)
@@ -201,7 +197,7 @@ func InitConfig(cmd *cobra.Command, cliArgs *CliArgs) (cfg Config, err error) {
 
 	cfg = bindRootCmdFlags(cfg, cliArgs.RootCliArgs)
 	cfg = bindFrameworkFlags(cfg, cliArgs.frameworkParams, cliArgs.RootCliArgs.suiteID)
-	cfg = bindRunCmdFlags(cfg, *cliArgs)
+	cfg = bindRunCmdFlags(cfg, cliArgs)
 
 	return cfg, nil
 }
