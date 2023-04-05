@@ -270,7 +270,6 @@ var _ = Describe("OSS mode Integration Tests", func() {
 			Context("retries", func() {
 				var _symlinkDestPath string
 				var _symlinkSrcPath string
-				var suiteID string
 
 				// retry tests delete test results between retries.
 				// this function ensures a symlink exists to the test results file
@@ -291,6 +290,20 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				})
 
 				It("succeeds when all failures quarantined", func() {
+					suiteID := randomSuiteId()
+
+					Expect(runCaptain(captainArgs{
+						args: []string{
+							"add", "quarantine",
+							suiteID,
+							"--file", "./x.rb",
+							"--description", "is flaky",
+						},
+						env: getEnvWithoutAccessToken(),
+					}).exitCode).To(Equal(0))
+
+					// quarantine the failure
+
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
