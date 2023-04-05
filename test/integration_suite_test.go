@@ -24,6 +24,13 @@ func TestCaptainBinary(t *testing.T) {
 	RunSpecs(t, "Integration Suite")
 }
 
+var _ = SynchronizedAfterSuite(
+	func() {}, // do nothing on all processes
+	func() { // on the first process, delete the captain dir
+		err := os.RemoveAll(".captain")
+		Expect(err).ToNot(HaveOccurred())
+	})
+
 // helpers
 type captainArgs struct {
 	args []string
