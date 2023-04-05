@@ -58,7 +58,8 @@ func bindRootCmdFlags(cfg Config, rootCliArgs rootCliArgs) Config {
 	return cfg
 }
 
-func extractSuiteIDFromPositionalArgs(rootCliArgs *rootCliArgs) error {
+func extractSuiteIDFromPositionalArgs(rootCliArgs *rootCliArgs, args []string) error {
+	rootCliArgs.positionalArgs = args
 	if rootCliArgs.suiteID != "" {
 		return nil
 	}
