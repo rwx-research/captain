@@ -35,7 +35,7 @@ type GitHubEnv struct {
 	Repository string `env:"GITHUB_REPOSITORY"`
 }
 
-type EventPayloadData struct {
+type GitHubEventPayloadData struct {
 	HeadCommit struct {
 		Message string `json:"message"`
 	} `json:"head_commit"`
@@ -46,7 +46,7 @@ type EventPayloadData struct {
 }
 
 func (cfg GitHubEnv) MakeProvider() (Provider, error) {
-	eventPayloadData := EventPayloadData{}
+	eventPayloadData := GitHubEventPayloadData{}
 
 	file, err := os.Open(cfg.EventPath)
 	if err != nil && !os.IsNotExist(err) {
@@ -61,7 +61,7 @@ func (cfg GitHubEnv) MakeProvider() (Provider, error) {
 }
 
 // this function is only here to make the provider easier to test without writing the event file to disk
-func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(eventPayloadData EventPayloadData) (Provider, error) {
+func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(payloadData GitHubEventPayloadData) (Provider, error) {
 	branchName := cfg.RefName
 	if cfg.EventName == "pull_request" {
 		branchName = cfg.HeadRef
@@ -72,21 +72,21 @@ func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(eventPayloadData Ev
 		attemptedBy = cfg.ExecutingActor
 	}
 
-	tags, validationError := githubTags(cfg, eventPayloadData)
+	tags, validationError := githubTags(cfg, payloadData)
 	if validationError != nil {
 		return Provider{}, validationError
 	}
 
-	commitMessage := eventPayloadData.HeadCommit.Message
+	commitMessage := payloadData.HeadCommit.Message
 	title := strings.Split(commitMessage, "\n")[0]
 	if title == "" {
-		title = fmt.Sprintf("%s (PR #%d)", eventPayloadData.PullRequest.Title, eventPayloadData.PullRequest.Number)
+		title = fmt.Sprintf("%s (PR #%d)", payloadData.PullRequest.Title, payloadData.PullRequest.Number)
 	}
 
 	provider := Provider{
 		AttemptedBy:   attemptedBy,
 		BranchName:    branchName,
-		CommitMessage: eventPayloadData.HeadCommit.Message,
+		CommitMessage: payloadData.HeadCommit.Message,
 		CommitSha:     cfg.CommitSha,
 		JobTags:       tags,
 		ProviderName:  "github",
@@ -96,7 +96,7 @@ func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(eventPayloadData Ev
 	return provider, nil
 }
 
-func githubTags(cfg GitHubEnv, eventPayloadData EventPayloadData) (map[string]any, error) {
+func githubTags(cfg GitHubEnv, eventPayloadData GitHubEventPayloadData) (map[string]any, error) {
 	err := func() error {
 		if cfg.ID == "" {
 			return errors.NewConfigurationError(

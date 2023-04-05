@@ -9,7 +9,7 @@ import (
 
 var _ = Describe("GitHubEnv.MakeProvider", func() {
 	var params providers.GitHubEnv
-	var eventPayloadData providers.EventPayloadData
+	var eventPayloadData providers.GitHubEventPayloadData
 
 	BeforeEach(func() {
 		params = providers.GitHubEnv{
@@ -30,7 +30,7 @@ var _ = Describe("GitHubEnv.MakeProvider", func() {
 			Repository: "rwx/captain-cli",
 			Name:       "some-job",
 		}
-		eventPayloadData = providers.EventPayloadData{}
+		eventPayloadData = providers.GitHubEventPayloadData{}
 		eventPayloadData.HeadCommit.Message = "fixed it\nyeah"
 		eventPayloadData.PullRequest.Number = 5
 		eventPayloadData.PullRequest.Title = "PR title"
@@ -92,7 +92,7 @@ var _ = Describe("GitHubEnv.MakeProvider", func() {
 
 var _ = Describe("GithubProvider.JobTags", func() {
 	It("constructs job tags", func() {
-		eventPayloadData := providers.EventPayloadData{}
+		eventPayloadData := providers.GitHubEventPayloadData{}
 		eventPayloadData.HeadCommit.Message = "fixed it\nyeah"
 		eventPayloadData.PullRequest.Number = 5
 		eventPayloadData.PullRequest.Title = "PR title"
