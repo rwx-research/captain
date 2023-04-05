@@ -90,14 +90,14 @@ var _ = Describe("OSS mode Integration Tests", func() {
 
 					suiteId = suiteUUID.String()
 
-					_ = runCaptain(captainArgs{
+					Expect(runCaptain(captainArgs{
 						args: []string{
 							"update", "results",
 							"fixtures/integration-tests/partition/rspec-partition.json",
 							"--suite-id", suiteId,
 						},
 						env: getEnvWithoutAccessToken(),
-					})
+					}).exitCode).To(Equal(0))
 				})
 
 				It("sets partition 1 correctly", func() {
