@@ -29,7 +29,7 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-quarantine-test",
+							"captain-cli-quarantine-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'exit 2'",
@@ -45,7 +45,7 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-quarantine-test",
+							"captain-cli-quarantine-test",
 							"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'exit 123'",
@@ -84,7 +84,7 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-quarantine-test",
+							"captain-cli-quarantine-test",
 							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
 							"--fail-on-upload-error",
 							"--retries", "1",
@@ -103,7 +103,7 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"--suite-id", "captain-cli-functional-tests",
+							"captain-cli-functional-tests",
 							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix),
 							"--fail-on-upload-error",
 							"--retries", "1",
@@ -125,7 +125,7 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
 						"quarantine",
-						"--suite-id", "captain-cli-quarantine-test",
+						"captain-cli-quarantine-test",
 						"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
 						"-c", "bash -c 'exit 2'",
 					},
@@ -140,7 +140,7 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
 						"quarantine",
-						"--suite-id", "captain-cli-quarantine-test",
+						"captain-cli-quarantine-test",
 						"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
 						"-c", "bash -c 'exit 123'",
 					},
@@ -158,10 +158,10 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							"captain-cli-functional-tests",
 							"fixtures/integration-tests/partition/x.rb",
 							"fixtures/integration-tests/partition/y.rb",
 							"fixtures/integration-tests/partition/z.rb",
-							"--suite-id", "captain-cli-functional-tests",
 							"--index", "0",
 							"--total", "2",
 						},
@@ -177,10 +177,10 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							"captain-cli-functional-tests",
 							"fixtures/integration-tests/partition/x.rb",
 							"fixtures/integration-tests/partition/y.rb",
 							"fixtures/integration-tests/partition/z.rb",
-							"--suite-id", "captain-cli-functional-tests",
 							"--index", "1",
 							"--total", "2",
 						},
@@ -202,8 +202,8 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							"captain-cli-functional-tests",
 							"fixtures/integration-tests/partition/*_spec.rb",
-							"--suite-id", "captain-cli-functional-tests",
 							"--index", "0",
 							"--total", "2",
 						},
@@ -219,8 +219,8 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"partition",
+							"captain-cli-functional-tests",
 							"fixtures/integration-tests/partition/*_spec.rb",
-							"--suite-id", "captain-cli-functional-tests",
 							"--index", "1",
 							"--total", "2",
 						},
@@ -240,7 +240,7 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 					args: []string{
 						"upload", "results",
 						"nonexistingfile.json",
-						"--suite-id", "captain-cli-functional-tests",
+						"captain-cli-functional-tests",
 					},
 					env: getEnvWithAccessToken(),
 				})
