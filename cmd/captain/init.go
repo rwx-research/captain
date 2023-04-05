@@ -68,7 +68,7 @@ func initCLIService(
 	return func(cmd *cobra.Command, args []string) error {
 		var apiClient backend.Client
 
-		cfg, err := InitConfig(cmd, cliArgs)
+		cfg, err := InitConfig(cmd, cliArgs, args)
 		if err != nil {
 			return errors.WithDecoration(err)
 		}
@@ -203,7 +203,7 @@ func initCLIService(
 
 func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		cfg, err := InitConfig(cmd, cliArgs)
+		cfg, err := InitConfig(cmd, cliArgs, args)
 		if err != nil {
 			return errors.WithStack(err)
 		}
