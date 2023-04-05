@@ -1,6 +1,10 @@
 package providers
 
-import "github.com/rwx-research/captain-cli/internal/errors"
+import (
+	"fmt"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
+)
 
 type CircleCIEnv struct {
 	Detected bool `env:"CIRCLECI"`
@@ -30,6 +34,8 @@ func (cfg CircleCIEnv) MakeProvider() (Provider, error) {
 		return Provider{}, validationError
 	}
 
+	title := fmt.Sprintf("%s (%s)", cfg.Job, cfg.BuildNum)
+
 	provider := Provider{
 		AttemptedBy:   cfg.Username,
 		BranchName:    cfg.Branch,
@@ -37,6 +43,7 @@ func (cfg CircleCIEnv) MakeProvider() (Provider, error) {
 		CommitSha:     cfg.Sha1,
 		JobTags:       tags,
 		ProviderName:  "circleci",
+		Title:         title,
 	}
 
 	return provider, nil

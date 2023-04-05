@@ -397,6 +397,15 @@ func addGenericProviderFlags(cmd *cobra.Command, destination *providers.GenericE
 			"if using a supported CI provider, this will be automatically set\n"+
 			"otherwise use this flag or set the environment variable CAPTAIN_BUILD_URL\n",
 	)
+
+	cmd.Flags().StringVar(
+		&destination.Title,
+		"title",
+		os.Getenv("CAPTAIN_TITLE"),
+		"a descriptive title for the test suite run, such as the commit message or build message\n"+
+			"if using a supported CI provider, this will be automatically set\n"+
+			"otherwise use this flag or set the environment variable CAPTAIN_TITLE\n",
+	)
 }
 
 func addShaFlag(cmd *cobra.Command, destination *string) {

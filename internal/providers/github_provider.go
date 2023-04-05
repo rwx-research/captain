@@ -35,16 +35,18 @@ type GitHubEnv struct {
 	Repository string `env:"GITHUB_REPOSITORY"`
 }
 
+type EventPayloadData struct {
+	HeadCommit struct {
+		Message string `json:"message"`
+	} `json:"head_commit"`
+	PullRequest struct {
+		Number int    `json:"number"`
+		Title  string `json:"title"`
+	} `json:"pull_request"`
+}
+
 func (cfg GitHubEnv) MakeProvider() (Provider, error) {
-	eventPayloadData := struct {
-		HeadCommit struct {
-			Message string `json:"message"`
-		} `json:"head_commit"`
-		PullRequest struct {
-			Number int    `json:"number"`
-			Title  string `json:"title"`
-		} `json:"pull_request"`
-	}{}
+	eventPayloadData := EventPayloadData{}
 
 	file, err := os.Open(cfg.EventPath)
 	if err != nil && !os.IsNotExist(err) {
@@ -55,16 +57,11 @@ func (cfg GitHubEnv) MakeProvider() (Provider, error) {
 		}
 	}
 
-	commitMessage := eventPayloadData.HeadCommit.Message
-	if cfg.EventName == "pull_request" {
-		commitMessage = fmt.Sprintf("%s (#%d)", eventPayloadData.PullRequest.Title, eventPayloadData.PullRequest.Number)
-	}
-
-	return cfg.MakeProviderWithoutCommitMessageParsing(commitMessage)
+	return cfg.MakeProviderWithoutCommitMessageParsing(eventPayloadData)
 }
 
 // this function is only here to make the provider easier to test without writing the event file to disk
-func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(message string) (Provider, error) {
+func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(eventPayloadData EventPayloadData) (Provider, error) {
 	branchName := cfg.RefName
 	if cfg.EventName == "pull_request" {
 		branchName = cfg.HeadRef
@@ -75,24 +72,31 @@ func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(message string) (Pr
 		attemptedBy = cfg.ExecutingActor
 	}
 
-	tags, validationError := githubTags(cfg)
+	tags, validationError := githubTags(cfg, eventPayloadData)
 	if validationError != nil {
 		return Provider{}, validationError
+	}
+
+	commitMessage := eventPayloadData.HeadCommit.Message
+	title := strings.Split(commitMessage, "\n")[0]
+	if title == "" {
+		title = fmt.Sprintf("%s (PR #%d)", eventPayloadData.PullRequest.Title, eventPayloadData.PullRequest.Number)
 	}
 
 	provider := Provider{
 		AttemptedBy:   attemptedBy,
 		BranchName:    branchName,
-		CommitMessage: message,
+		CommitMessage: eventPayloadData.HeadCommit.Message,
 		CommitSha:     cfg.CommitSha,
 		JobTags:       tags,
 		ProviderName:  "github",
+		Title:         title,
 	}
 
 	return provider, nil
 }
 
-func githubTags(cfg GitHubEnv) (map[string]any, error) {
+func githubTags(cfg GitHubEnv, eventPayloadData EventPayloadData) (map[string]any, error) {
 	err := func() error {
 		if cfg.ID == "" {
 			return errors.NewConfigurationError(
@@ -137,6 +141,8 @@ func githubTags(cfg GitHubEnv) (map[string]any, error) {
 		"github_repository_name": repo,
 		"github_account_owner":   strings.TrimSuffix(owner, "/"),
 		"github_job_name":        cfg.Name,
+		"github_pr_title":        eventPayloadData.PullRequest.Title,
+		"github_pr_number":       eventPayloadData.PullRequest.Number,
 	}
 
 	return tags, err

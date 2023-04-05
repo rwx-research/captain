@@ -37,6 +37,7 @@ var _ = Describe("CircleCiEnv.MakeProvider", func() {
 		Expect(provider.CommitSha).To(Equal("000bd5713d35f778fb51d2b0bf034e8fff5b60b1"))
 		Expect(provider.CommitMessage).To(Equal(""))
 		Expect(provider.ProviderName).To(Equal("circleci"))
+		Expect(provider.Title).To(Equal("build (18)"))
 	})
 
 	It("requires BuildNum", func() {

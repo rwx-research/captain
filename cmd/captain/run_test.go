@@ -52,6 +52,7 @@ var _ = Describe("AddFlags", func() {
 				Sha:           "1fc108cab0bb46083c6cdd50f8cd1deb5005e235",
 				CommitMessage: "Testing env vars -- the commit message",
 				BuildURL:      "https://jenkins.example.com/job/test/123/",
+				Title:         "Testing env vars -- the title",
 			}))
 		})
 	})
