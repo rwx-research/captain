@@ -268,6 +268,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 			Context("retries", func() {
 				var _symlinkDestPath string
 				var _symlinkSrcPath string
+				var suiteID string
 
 				// retry tests delete test results between retries.
 				// this function ensures a symlink exists to the test results file
@@ -291,7 +292,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
-							"captain-cli-quarantine-test",
+							suiteID,
 							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
 							"--retries", "1",
 							"--retry-command", `echo "{{ tests }}"`,
@@ -373,7 +374,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						args: []string{
 							"run",
 							"captain-cli-abq-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
 						},
@@ -391,7 +392,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						args: []string{
 							"run",
 							"captain-cli-abq-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'echo exit_code=$ABQ_SET_EXIT_CODE'",
 						},
@@ -407,7 +408,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						args: []string{
 							"run",
 							"captain-cli-abq-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
 						},
@@ -425,7 +426,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						args: []string{
 							"run",
 							"captain-cli-abq-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
 							"--fail-on-upload-error",
 							"-c", "bash -c 'echo state_file=$ABQ_STATE_FILE'",
 						},
