@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/rwx-research/captain-cli"
@@ -17,6 +16,15 @@ import (
 )
 
 var _ = Describe("OSS mode Integration Tests", func() {
+	randomSuiteId := func() string {
+		// create a random suite ID so that concurrent tests don't try to read / write from the same timings files
+		suiteUUID, err := uuid.NewRandom()
+		if err != nil {
+			Expect(err).ToNot(HaveOccurred())
+		}
+		return suiteUUID.String()
+	}
+
 	withAndWithoutInheritedEnv(func(getEnv envGenerator, prefix string) {
 		getEnvWithoutAccessToken := func() map[string]string {
 			// when env is inherited, RWX_ACCESS_TOKEN is present
@@ -82,13 +90,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 			Context("with timings", func() {
 				var suiteId string
 				BeforeEach(func() {
-					// create a random suite ID so that concurrent tests don't try to read / write from the same timings files
-					suiteUUID, err := uuid.NewRandom()
-					if err != nil {
-						Expect(err).ToNot(HaveOccurred())
-					}
-
-					suiteId = suiteUUID.String()
+					suiteId = randomSuiteId()
 
 					Expect(runCaptain(captainArgs{
 						args: []string{
@@ -338,34 +340,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 			})
 
 			Context("quarantining", func() {
-				It("succeeds when all failures quarantined", func() {
-					result := runCaptain(captainArgs{
-						args: []string{
-							"run",
-							"captain-cli-quarantine-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
-							"-c", "bash -c 'exit 2'",
-						},
-						env: getEnvWithoutAccessToken(),
-					})
-
-					Expect(result.exitCode).To(Equal(0))
-				})
-
-				It("fails & passes through exit code when not all failures quarantined", func() {
-					result := runCaptain(captainArgs{
-						args: []string{
-							"run",
-							"captain-cli-quarantine-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
-							"-c", "bash -c 'exit 123'",
-						},
-						env: getEnvWithoutAccessToken(),
-					})
-
-					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
-					Expect(result.exitCode).To(Equal(123))
-				})
+				// note these are tested as part of the add/remove quarantine tests
 			})
 
 			Context("with abq", func() {
@@ -439,55 +414,106 @@ var _ = Describe("OSS mode Integration Tests", func() {
 			})
 		})
 
-		DescribeTable("captain [add|remove]",
-			func(resource string) {
+		Describe("captain [add|remove]", func() {
+			actionBuilder := func(resource string, suiteID string) func(string) (captainResult, string) {
 				read := func(path string) string {
 					data, err := ioutil.ReadFile(path)
 					Expect(err).ToNot(HaveOccurred())
 					return string(data)
 				}
 
-				suiteUUID, err := uuid.NewRandom()
-				Expect(err).ToNot(HaveOccurred())
-				suiteID := suiteUUID.String()
+				return func(action string) (captainResult, string) {
+					result := runCaptain(captainArgs{
+						args: []string{
+							action, resource,
+							suiteID,
+							"--file", "./x.rb",
+							"--description", "is flaky",
+						},
+						env: getEnvWithoutAccessToken(),
+					})
 
-				By("adding")
-				result := runCaptain(captainArgs{
-					args: []string{
-						"add", resource,
-						suiteID,
-						"--file", "./x.rb",
-						"--description", "is flaky",
-					},
-					env: getEnvWithoutAccessToken(),
+					fileContents := read(fmt.Sprintf(".captain/%s/%ss.yaml", suiteID, resource))
+					return result, fileContents
+				}
+			}
+
+			Describe("quarantine", func() {
+				It("can add and remove quarantines", func() {
+					suiteID := randomSuiteId()
+
+					runCaptainQuarantines := func() captainResult {
+						return runCaptain(captainArgs{
+							args: []string{
+								"run",
+								suiteID,
+								"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+								"--retry-command", `echo "{{ tests }}"`,
+								"-c", "bash -c 'exit 123'",
+							},
+							env: getEnvWithoutAccessToken(),
+						})
+					}
+					By("before quarantining, tests should fail")
+
+					Expect(runCaptainQuarantines().exitCode).To(Equal(123))
+
+					action := actionBuilder("quarantine", suiteID)
+
+					By("adding a quarantine, tests should succeed")
+					addResult, quarantineFileContents := action("add")
+
+					Expect(addResult.exitCode).To(Equal(0))
+					Expect(quarantineFileContents).To(Equal("- file: ./x.rb\n" +
+						"  description: is flaky\n"))
+
+					Expect(runCaptainQuarantines().exitCode).To(Equal(0))
+
+					By("running with non-quarantined failures, tests should fail")
+
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-quarantine-test",
+							"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
+							"-c", "bash -c 'exit 123'",
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					Expect(result.exitCode).To(Equal(123))
+
+					By("removing the quarantine, tests should fail again")
+
+					removeResult, quarantineFileContents := action("remove")
+
+					Expect(removeResult.exitCode).To(Equal(0))
+					Expect(quarantineFileContents).To(Equal("[]\n"))
+
+					Expect(runCaptainQuarantines().exitCode).To(Equal(123))
 				})
-				Expect(result.exitCode).To(Equal(0))
+			})
 
-				lines := strings.Split(read(fmt.Sprintf(".captain/%s/%ss.yaml", suiteID, resource)), "\n")
-				Expect(lines).To(HaveLen(3))
-				Expect(lines[0]).To(Equal("- file: ./x.rb"))
-				Expect(lines[1]).To(Equal("  description: is flaky"))
-				Expect(lines[2]).To(Equal(""))
+			Describe("flake", func() {
+				It("can add and remove quarantines", func() {
+					action := actionBuilder("flake", randomSuiteId())
 
-				By("removing")
-				result = runCaptain(captainArgs{
-					args: []string{
-						"remove", resource,
-						suiteID,
-						"--file", "./x.rb",
-						"--description", "is flaky",
-					},
-					env: getEnvWithoutAccessToken(),
+					By("adding")
+					result, fileContents := action("add")
+
+					Expect(result.exitCode).To(Equal(0))
+					Expect(fileContents).To(Equal("- file: ./x.rb\n" +
+						"  description: is flaky\n"))
+
+					By("removing")
+
+					result, fileContents = action("remove")
+
+					Expect(result.exitCode).To(Equal(0))
+					Expect(fileContents).To(Equal("[]\n"))
 				})
-				Expect(result.exitCode).To(Equal(0))
-
-				lines = strings.Split(read(fmt.Sprintf(".captain/%s/%ss.yaml", suiteID, resource)), "\n")
-				Expect(lines).To(HaveLen(2))
-				Expect(lines[0]).To(Equal("[]"))
-				Expect(lines[1]).To(Equal(""))
-			},
-			Entry("for quarantines", "quarantine"),
-			Entry("for flakes", "flake"),
-		)
+			})
+		})
 	})
 })
