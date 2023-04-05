@@ -16,6 +16,7 @@ var _ = Describe("Validate", func() {
 			CommitSha:    "abc123",
 			JobTags:      map[string]any{},
 			ProviderName: "",
+			Title:        "some-title",
 		}
 	})
 
@@ -72,6 +73,11 @@ var _ = Describe("Validate", func() {
 			err := providers.Validate(provider)
 			Expect(err).To(BeNil())
 		})
+		It("is VALID if Title is empty", func() {
+			provider.Title = ""
+			err := providers.Validate(provider)
+			Expect(err).To(BeNil())
+		})
 	})
 })
 
@@ -83,6 +89,7 @@ var _ = Describe("providers.Merge", func() {
 		CommitMessage: "one commit message",
 		JobTags:       map[string]any{},
 		ProviderName:  "generic",
+		Title:         "some-title",
 	}
 
 	provider2 := providers.Provider{
@@ -92,6 +99,7 @@ var _ = Describe("providers.Merge", func() {
 		CommitMessage: "another commit message",
 		JobTags:       map[string]any{},
 		ProviderName:  "GitHub",
+		Title:         "another-title",
 	}
 
 	It("returns the second provider if the first is empty", func() {
@@ -111,6 +119,7 @@ var _ = Describe("providers.Merge", func() {
 		Expect(merged.BranchName).To(Equal(provider2.BranchName))
 		Expect(merged.CommitSha).To(Equal(provider2.CommitSha))
 		Expect(merged.CommitMessage).To(Equal(provider2.CommitMessage))
+		Expect(merged.Title).To(Equal(provider2.Title))
 	})
 })
 

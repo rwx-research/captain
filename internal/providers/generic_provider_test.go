@@ -15,6 +15,7 @@ var _ = Describe("GenericEnv.MakeProvider", func() {
 			Sha:           "abc123",
 			CommitMessage: "Testing env vars -- the commit message",
 			BuildURL:      "https://jenkins.example.com/job/test/123/",
+			Title:         "Some title",
 		}.MakeProvider()
 
 		Expect(provider.JobTags).To(Equal(map[string]any{"captain_build_url": "https://jenkins.example.com/job/test/123/"}))

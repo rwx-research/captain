@@ -1,6 +1,10 @@
 package providers
 
-import "github.com/rwx-research/captain-cli/internal/errors"
+import (
+	"strings"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
+)
 
 type BuildkiteEnv struct {
 	Detected bool `env:"BUILDKITE"`
@@ -39,6 +43,7 @@ func (cfg BuildkiteEnv) MakeProvider() (Provider, error) {
 		CommitSha:     cfg.Commit,
 		JobTags:       tags,
 		ProviderName:  "buildkite",
+		Title:         strings.Split(cfg.Message, "\n")[0],
 	}
 
 	return provider, nil

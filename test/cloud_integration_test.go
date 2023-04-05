@@ -194,9 +194,17 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 			})
 
 			Context("with timings", func() {
-				// to regenerate timings, edit rspec-partition.json and then run
-				// 1. CAPTAIN_HOST=staging.captain.build RWX_ACCESS_TOKEN=$RWX_ACCESS_TOKEN_STAGING captain upload results test/fixtures/integration-tests/partition/rspec-partition.json --suite-id captain-cli-functional-tests
-				// 2. change the CAPTAIN_SHA parameter to pull in the new timings
+				BeforeEach(func() {
+					// refresh timing information because they expire periodically
+					Expect(runCaptain(captainArgs{
+						args: []string{
+							"upload", "results",
+							"captain-cli-functional-tests",
+							"fixtures/integration-tests/partition/rspec-partition.json",
+						},
+						env: getEnvWithAccessToken(),
+					}).exitCode).To(Equal(0))
+				})
 
 				It("sets partition 1 correctly", func() {
 					result := runCaptain(captainArgs{

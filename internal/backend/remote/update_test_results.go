@@ -30,6 +30,7 @@ func (c Client) registerTestResults(
 		CommitSha           string            `json:"commit_sha"`
 		TestSuiteIdentifier string            `json:"test_suite_identifier"`
 		TestResultsFiles    []TestResultsFile `json:"test_results_files"`
+		Title               *string           `json:"title"`
 		JobTags             map[string]any    `json:"job_tags"`
 	}{
 		AttemptedBy:         c.Provider.AttemptedBy,
@@ -44,6 +45,11 @@ func (c Client) registerTestResults(
 	commitMessage := c.Provider.CommitMessage
 	if commitMessage != "" {
 		reqBody.CommitMessage = &commitMessage
+	}
+
+	title := c.Provider.Title
+	if title != "" {
+		reqBody.Title = &title
 	}
 
 	resp, err := c.postJSON(ctx, endpoint, reqBody)
