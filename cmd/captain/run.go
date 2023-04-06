@@ -324,7 +324,7 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 			suiteConfig.Output.Quiet = true
 		}
 
-		if cliArgs.reporters != nil {
+		if len(cliArgs.reporters) > 0 {
 			reporterConfig := make(map[string]string)
 
 			for _, r := range cliArgs.reporters {
