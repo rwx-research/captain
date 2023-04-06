@@ -15,6 +15,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
+	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
@@ -614,10 +615,24 @@ func (s Service) reportTestResults(
 	cfg RunConfig,
 	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
+	reportingConfiguration := reporting.Configuration{SuiteID: cfg.SuiteID}
+
+	if remoteClient, ok := s.API.(remote.Client); ok {
+		reportingConfiguration.CloudEnabled = true
+		reportingConfiguration.CloudHost = remoteClient.Host
+		reportingConfiguration.Provider = remoteClient.Provider
+	}
+
+	if _, ok := s.API.(local.Client); ok {
+		reportingConfiguration.CloudEnabled = false
+		reportingConfiguration.CloudHost = ""
+		reportingConfiguration.Provider = providers.Provider{}
+	}
+
 	for outputPath, writeReport := range cfg.Reporters {
 		file, err := s.FileSystem.Create(outputPath)
 		if err == nil {
-			err = writeReport(file, testResults, reporting.Configuration{})
+			err = writeReport(file, testResults, reportingConfiguration)
 		}
 		if err != nil {
 			s.Log.Warnf("Unable to write report to %s: %s", outputPath, err.Error())
@@ -625,7 +640,7 @@ func (s Service) reportTestResults(
 	}
 
 	if cfg.PrintSummary {
-		if err := reporting.WriteTextSummary(os.Stdout, testResults, reporting.Configuration{}); err != nil {
+		if err := reporting.WriteTextSummary(os.Stdout, testResults, reportingConfiguration); err != nil {
 			s.Log.Warnf("Unable to write text summary to stdout: %s", err.Error())
 		} else {
 			// Append an empty line to make output more readable
