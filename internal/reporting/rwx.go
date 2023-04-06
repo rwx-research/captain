@@ -8,7 +8,7 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-func WriteJSONSummary(file fs.File, testResults v1.TestResults) error {
+func WriteJSONSummary(file fs.File, testResults v1.TestResults, _ Configuration) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 

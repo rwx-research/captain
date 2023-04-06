@@ -10,7 +10,7 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-func WriteJUnitSummary(file fs.File, testResults v1.TestResults) error {
+func WriteJUnitSummary(file fs.File, testResults v1.TestResults, _ Configuration) error {
 	result := parsing.JUnitTestResults{
 		TestSuites: make([]parsing.JUnitTestSuite, 0),
 	}
