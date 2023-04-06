@@ -1,4 +1,6 @@
-# `TODO(kkt) suite-id` Summary
+# `some-suite-id` Summary
+
+[🔗 View in Captain Cloud](https://example.com/deep_link/test_suite_summaries/some-suite-id/some%2Fbranch/abcdef113131)
 
 6 tests, 1 flaky, 2 failed, 1 timed out, 1 skipped, 2 retries
 
@@ -32,7 +34,7 @@ file/path/three.rb:4</pre>
 <dl>
 <dd>Retried 2 times</dd>
 <dd>Defined at <code>some/path/to/file.rb</code></dd>
-
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb[4:5:6]'</code></dd>
 
 <dd>
 	<details>
@@ -51,7 +53,7 @@ file/path/three.rb:4</pre>
 <dl>
 
 <dd>Defined at <code>some/path/to/file.rb</code></dd>
-
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb[7:8:9]'</code></dd>
 
 </dl>
 </details>
@@ -64,7 +66,7 @@ file/path/three.rb:4</pre>
 <dl>
 
 
-
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb:12'</code></dd>
 
 </dl>
 </details>
