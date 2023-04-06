@@ -7,7 +7,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("GitHubEnv.MakeProvider", func() {
+var _ = Describe("GitHubEnv.makeProvider", func() {
+	// TODO: it'd be nice to have a fixture file with a real event payload. For now we test _most_ of the github provider
+	// with the MakeProviderWithoutCommitMessageParsing func which only depends on the GitHubEnv struct.
 	var params providers.GitHubEnv
 	var eventPayloadData providers.GitHubEventPayloadData
 
