@@ -53,7 +53,7 @@ const (
 )
 
 // TODO(kkt): need suite ID, commit sha, branch
-func WriteMarkdownSummary(file fs.File, testResults v1.TestResults) error {
+func WriteMarkdownSummary(file fs.File, testResults v1.TestResults, _ Configuration) error {
 	markdown := new(strings.Builder)
 	if _, err := markdown.WriteString(fmt.Sprintf("# `%v` Summary\n\n", "TODO(kkt) suite-id")); err != nil {
 		return errors.WithStack(err)

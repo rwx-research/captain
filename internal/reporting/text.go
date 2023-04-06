@@ -9,7 +9,7 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-func WriteTextSummary(file fs.File, testResults v1.TestResults) error {
+func WriteTextSummary(file fs.File, testResults v1.TestResults, _ Configuration) error {
 	statuses := make(map[v1.TestStatusKind][]string)
 	totalTests := testResults.Summary.Tests
 

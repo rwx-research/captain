@@ -617,7 +617,7 @@ func (s Service) reportTestResults(
 	for outputPath, writeReport := range cfg.Reporters {
 		file, err := s.FileSystem.Create(outputPath)
 		if err == nil {
-			err = writeReport(file, testResults)
+			err = writeReport(file, testResults, reporting.Configuration{})
 		}
 		if err != nil {
 			s.Log.Warnf("Unable to write report to %s: %s", outputPath, err.Error())
@@ -625,7 +625,7 @@ func (s Service) reportTestResults(
 	}
 
 	if cfg.PrintSummary {
-		if err := reporting.WriteTextSummary(os.Stdout, testResults); err != nil {
+		if err := reporting.WriteTextSummary(os.Stdout, testResults, reporting.Configuration{}); err != nil {
 			s.Log.Warnf("Unable to write text summary to stdout: %s", err.Error())
 		} else {
 			// Append an empty line to make output more readable

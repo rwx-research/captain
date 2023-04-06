@@ -80,7 +80,7 @@ var _ = Describe("Markdown Report", func() {
 	})
 
 	It("produces a readable summary", func() {
-		Expect(reporting.WriteMarkdownSummary(mockFile, testResults)).To(Succeed())
+		Expect(reporting.WriteMarkdownSummary(mockFile, testResults, reporting.Configuration{})).To(Succeed())
 		summary := mockFile.Builder.String()
 		cupaloy.SnapshotT(GinkgoT(), summary)
 	})
@@ -101,7 +101,11 @@ var _ = Describe("Markdown Report", func() {
 		}
 
 		Expect(
-			reporting.WriteMarkdownSummary(mockFile, *v1.NewTestResults(v1.RubyRSpecFramework, tests, nil)),
+			reporting.WriteMarkdownSummary(
+				mockFile,
+				*v1.NewTestResults(v1.RubyRSpecFramework, tests, nil),
+				reporting.Configuration{},
+			),
 		).To(Succeed())
 		summary := mockFile.Builder.String()
 		cupaloy.SnapshotT(GinkgoT(), summary)
