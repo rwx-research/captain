@@ -27,7 +27,7 @@ type CircleCIEnv struct {
 	RepositoryURL   string `env:"CIRCLE_REPOSITORY_URL"`
 }
 
-func (cfg CircleCIEnv) MakeProvider() (Provider, error) {
+func (cfg CircleCIEnv) makeProvider() (Provider, error) {
 	tags, validationError := circleciTags(cfg)
 
 	if validationError != nil {
