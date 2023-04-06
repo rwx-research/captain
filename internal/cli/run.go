@@ -615,7 +615,10 @@ func (s Service) reportTestResults(
 	cfg RunConfig,
 	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
-	reportingConfiguration := reporting.Configuration{SuiteID: cfg.SuiteID}
+	reportingConfiguration := reporting.Configuration{
+		SuiteID:              cfg.SuiteID,
+		RetryCommandTemplate: cfg.RetryCommandTemplate,
+	}
 
 	if remoteClient, ok := s.API.(remote.Client); ok {
 		reportingConfiguration.CloudEnabled = true

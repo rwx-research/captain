@@ -54,5 +54,9 @@ func (s GoGinkgoSubstitution) SubstitutionsFor(
 		}
 	}
 
-	return []map[string]string{{"tests": strings.Join(formattedTests, " ")}}, nil
+	if len(formattedTests) > 0 {
+		return []map[string]string{{"tests": strings.Join(formattedTests, " ")}}, nil
+	}
+
+	return []map[string]string{}, nil
 }

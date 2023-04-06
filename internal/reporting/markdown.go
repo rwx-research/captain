@@ -2,11 +2,13 @@ package reporting
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 	"text/template"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
+	"github.com/rwx-research/captain-cli/internal/targetedretries"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -52,11 +54,24 @@ const (
 `
 )
 
-// TODO(kkt): need suite ID, commit sha, branch
-func WriteMarkdownSummary(file fs.File, testResults v1.TestResults, _ Configuration) error {
+func WriteMarkdownSummary(file fs.File, testResults v1.TestResults, cfg Configuration) error {
 	markdown := new(strings.Builder)
-	if _, err := markdown.WriteString(fmt.Sprintf("# `%v` Summary\n\n", "TODO(kkt) suite-id")); err != nil {
+	if _, err := markdown.WriteString(fmt.Sprintf("# `%v` Summary\n\n", cfg.SuiteID)); err != nil {
 		return errors.WithStack(err)
+	}
+
+	if cfg.CloudEnabled {
+		if _, err := markdown.WriteString(
+			fmt.Sprintf(
+				"[🔗 View in Captain Cloud](https://%v/deep_link/test_suite_summaries/%v/%v/%v)\n\n",
+				cfg.CloudHost,
+				url.QueryEscape(cfg.SuiteID),
+				url.QueryEscape(cfg.Provider.BranchName),
+				url.QueryEscape(cfg.Provider.CommitSha),
+			),
+		); err != nil {
+			return errors.WithStack(err)
+		}
 	}
 
 	if err := writeMarkdownSummaryLine(markdown, testResults); err != nil {
@@ -64,7 +79,12 @@ func WriteMarkdownSummary(file fs.File, testResults v1.TestResults, _ Configurat
 	}
 
 	testsBySection := testsByMarkdownSection(testResults)
-	writersBySection := map[markdownTestSection]func(*strings.Builder, []v1.Test) (bool, error){
+	writersBySection := map[markdownTestSection]func(
+		*strings.Builder,
+		v1.Framework,
+		[]v1.Test,
+		Configuration,
+	) (bool, error){
 		flakySection:       writeMarkdownFlakySection,
 		failedSection:      writeMarkdownFailedSection,
 		timedOutSection:    writeMarkdownTimedOutSection,
@@ -81,7 +101,7 @@ func WriteMarkdownSummary(file fs.File, testResults v1.TestResults, _ Configurat
 	}
 
 	for _, section := range orderedSections {
-		shouldTruncate, err := writersBySection[section](markdown, testsBySection[section])
+		shouldTruncate, err := writersBySection[section](markdown, testResults.Framework, testsBySection[section], cfg)
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -215,10 +235,16 @@ func testsByMarkdownSection(testResults v1.TestResults) map[markdownTestSection]
 	return testsBySection
 }
 
-func writeMarkdownFlakySection(markdown *strings.Builder, tests []v1.Test) (bool, error) {
+func writeMarkdownFlakySection(
+	markdown *strings.Builder,
+	framework v1.Framework,
+	tests []v1.Test,
+	cfg Configuration,
+) (bool, error) {
 	return writeMarkdownSection(
 		markdown,
 		flakySection,
+		framework,
 		tests,
 		func(test v1.Test) *v1.TestStatus {
 			if test.Attempt.Status.PotentiallyFlaky() {
@@ -233,58 +259,89 @@ func writeMarkdownFlakySection(markdown *strings.Builder, tests []v1.Test) (bool
 
 			return nil
 		},
+		cfg,
 	)
 }
 
-func writeMarkdownFailedSection(markdown *strings.Builder, tests []v1.Test) (bool, error) {
+func writeMarkdownFailedSection(
+	markdown *strings.Builder,
+	framework v1.Framework,
+	tests []v1.Test,
+	cfg Configuration,
+) (bool, error) {
 	return writeMarkdownSection(
 		markdown,
 		failedSection,
+		framework,
 		tests,
 		func(test v1.Test) *v1.TestStatus {
 			return &test.Attempt.Status
 		},
+		cfg,
 	)
 }
 
-func writeMarkdownTimedOutSection(markdown *strings.Builder, tests []v1.Test) (bool, error) {
+func writeMarkdownTimedOutSection(
+	markdown *strings.Builder,
+	framework v1.Framework,
+	tests []v1.Test,
+	cfg Configuration,
+) (bool, error) {
 	return writeMarkdownSection(
 		markdown,
 		timedOutSection,
+		framework,
 		tests,
 		func(test v1.Test) *v1.TestStatus {
 			return &test.Attempt.Status
 		},
+		cfg,
 	)
 }
 
-func writeMarkdownQuarantinedSection(markdown *strings.Builder, tests []v1.Test) (bool, error) {
+func writeMarkdownQuarantinedSection(
+	markdown *strings.Builder,
+	framework v1.Framework,
+	tests []v1.Test,
+	cfg Configuration,
+) (bool, error) {
 	return writeMarkdownSection(
 		markdown,
 		timedOutSection,
+		framework,
 		tests,
 		func(test v1.Test) *v1.TestStatus {
 			return test.Attempt.Status.OriginalStatus
 		},
+		cfg,
 	)
 }
 
-func writeMarkdownCanceledSection(markdown *strings.Builder, tests []v1.Test) (bool, error) {
+func writeMarkdownCanceledSection(
+	markdown *strings.Builder,
+	framework v1.Framework,
+	tests []v1.Test,
+	cfg Configuration,
+) (bool, error) {
 	return writeMarkdownSection(
 		markdown,
 		timedOutSection,
+		framework,
 		tests,
 		func(test v1.Test) *v1.TestStatus {
 			return &test.Attempt.Status
 		},
+		cfg,
 	)
 }
 
 func writeMarkdownSection(
 	markdown *strings.Builder,
 	section markdownTestSection,
+	framework v1.Framework,
 	tests []v1.Test,
 	findFailedStatus func(v1.Test) *v1.TestStatus,
+	cfg Configuration,
 ) (bool, error) {
 	if len(tests) == 0 {
 		return false, nil
@@ -299,16 +356,31 @@ func writeMarkdownSection(
 		return false, errors.WithStack(err)
 	}
 
+	retryTemplate, substitution := retryTemplateAndSubstitutionFor(framework, cfg.RetryCommandTemplate)
+
 	for _, test := range tests {
 		location := ""
 		if test.Location != nil {
 			location = test.Location.String()
 		}
 
+		retryCommand := ""
+		if retryTemplate != nil && substitution != nil {
+			substitutions, _ := substitution.SubstitutionsFor(
+				*retryTemplate,
+				*v1.NewTestResults(framework, []v1.Test{test}, nil),
+				func(test v1.Test) bool { return true },
+			)
+
+			if len(substitutions) >= 1 {
+				retryCommand = retryTemplate.Substitute(substitutions[0])
+			}
+		}
 		failedStatus := findFailedStatus(test)
 		markdownTest := markdownTest{
 			Name:     test.Name,
 			Location: location,
+			Command:  retryCommand,
 			Retries:  len(test.PastAttempts),
 		}
 		if failedStatus != nil {
@@ -331,6 +403,53 @@ func writeMarkdownSection(
 	}
 
 	return false, nil
+}
+
+func retryTemplateAndSubstitutionFor(
+	framework v1.Framework,
+	retryCommandTemplate string,
+) (*targetedretries.CompiledTemplate, targetedretries.Substitution) {
+	// note we don't propagate any errors up here; if we're unable to generate
+	// the retry command, we should still provide the rest of the summary
+
+	substitution, ok := targetedretries.SubstitutionsByFramework[framework]
+	if !ok {
+		return nil, nil
+	}
+
+	var exampleTemplate *targetedretries.CompiledTemplate
+	if t, err := targetedretries.CompileTemplate(substitution.Example()); err == nil {
+		exampleTemplate = &t
+	}
+
+	var providedTemplate *targetedretries.CompiledTemplate
+	if retryCommandTemplate != "" {
+		if t, err := targetedretries.CompileTemplate(retryCommandTemplate); err == nil {
+			providedTemplate = &t
+		}
+	}
+
+	if exampleTemplate != nil {
+		if err := substitution.ValidateTemplate(*exampleTemplate); err != nil {
+			exampleTemplate = nil
+		}
+	}
+
+	if providedTemplate != nil {
+		if err := substitution.ValidateTemplate(*providedTemplate); err != nil {
+			providedTemplate = nil
+		}
+	}
+
+	if providedTemplate != nil {
+		return providedTemplate, substitution
+	}
+
+	if exampleTemplate != nil {
+		return exampleTemplate, substitution
+	}
+
+	return nil, nil
 }
 
 func pluralize(count int, singular string, plural string) string {
