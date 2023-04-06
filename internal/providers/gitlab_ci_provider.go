@@ -1,8 +1,6 @@
 package providers
 
 import (
-	"strings"
-
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -37,7 +35,7 @@ type GitLabEnv struct {
 	APIV4URL string `env:"CI_API_V4_URL"`
 }
 
-func (cfg GitLabEnv) MakeProvider() (Provider, error) {
+func (cfg GitLabEnv) makeProvider() (Provider, error) {
 	attemptedBy := cfg.UserLogin
 	if attemptedBy == "" {
 		// presumably if there's no attempted by, the build was triggered by pushing the commit / the commit author
@@ -56,7 +54,6 @@ func (cfg GitLabEnv) MakeProvider() (Provider, error) {
 		CommitSha:     cfg.CommitSHA,
 		JobTags:       tags,
 		ProviderName:  "gitlabci",
-		Title:         strings.Split(cfg.CommitMessage, "\n")[0],
 	}
 
 	return provider, nil

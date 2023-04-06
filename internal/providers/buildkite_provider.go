@@ -1,8 +1,6 @@
 package providers
 
 import (
-	"strings"
-
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -29,7 +27,7 @@ type BuildkiteEnv struct {
 	RetryCount       string `env:"BUILDKITE_RETRY_COUNT"`
 }
 
-func (cfg BuildkiteEnv) MakeProvider() (Provider, error) {
+func (cfg BuildkiteEnv) makeProvider() (Provider, error) {
 	tags, validationError := buildkiteTags(cfg)
 
 	if validationError != nil {
@@ -43,7 +41,6 @@ func (cfg BuildkiteEnv) MakeProvider() (Provider, error) {
 		CommitSha:     cfg.Commit,
 		JobTags:       tags,
 		ProviderName:  "buildkite",
-		Title:         strings.Split(cfg.Message, "\n")[0],
 	}
 
 	return provider, nil

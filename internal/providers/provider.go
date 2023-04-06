@@ -1,6 +1,10 @@
 package providers
 
-import "github.com/rwx-research/captain-cli/internal/errors"
+import (
+	"strings"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
+)
 
 type Env struct {
 	Buildkite BuildkiteEnv
@@ -99,7 +103,7 @@ func firstNonempty(strs ...string) string {
 	return ""
 }
 
-func (env Env) MakeProviderAdapter() (Provider, error) {
+func (env Env) MakeProvider() (Provider, error) {
 	// detect provider from environment if we can
 	wrapError := func(p Provider, err error) (Provider, error) {
 		return p, errors.Wrap(err, "error building detected provider")
@@ -107,13 +111,13 @@ func (env Env) MakeProviderAdapter() (Provider, error) {
 	detectedProvider, err := func() (Provider, error) {
 		switch {
 		case env.GitHub.Detected:
-			return wrapError(env.GitHub.MakeProvider())
+			return wrapError(env.GitHub.makeProvider())
 		case env.Buildkite.Detected:
-			return wrapError(env.Buildkite.MakeProvider())
+			return wrapError(env.Buildkite.makeProvider())
 		case env.CircleCI.Detected:
-			return wrapError(env.CircleCI.MakeProvider())
+			return wrapError(env.CircleCI.makeProvider())
 		case env.GitLab.Detected:
-			return wrapError(env.GitLab.MakeProvider())
+			return wrapError(env.GitLab.makeProvider())
 		}
 		return Provider{}, nil
 	}()
@@ -121,6 +125,12 @@ func (env Env) MakeProviderAdapter() (Provider, error) {
 		return Provider{}, err
 	}
 
+	mergedWithGeneric := Merge(detectedProvider, env.Generic.MakeProvider())
+
+	if mergedWithGeneric.Title == "" {
+		mergedWithGeneric.Title = strings.Split(mergedWithGeneric.CommitMessage, "\n")[0]
+	}
+
 	// merge the generic provider into the detected provider. The captain-specific flags & env vars take precedence.
-	return Merge(detectedProvider, env.Generic.MakeProvider()), nil
+	return mergedWithGeneric, nil
 }
