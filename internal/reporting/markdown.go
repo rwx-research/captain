@@ -29,9 +29,10 @@ type markdownTest struct {
 	Retries   int
 }
 
-const oneMB = 1000000
-const markdownResultsTruncated = "\n\nYour results have been truncated; markdown summarization has a 1MB limit."
-const markdownTestTemplate = `<details>
+const (
+	oneMB                    = 1000000
+	markdownResultsTruncated = "\n\nYour results have been truncated; markdown summarization has a 1MB limit."
+	markdownTestTemplate     = `<details>
 <summary><strong>{{ .Name }}</strong></summary>
 
 <dl>
@@ -49,6 +50,7 @@ const markdownTestTemplate = `<details>
 </dl>
 </details>
 `
+)
 
 // TODO(kkt): need suite ID, commit sha, branch
 func WriteMarkdownSummary(file fs.File, testResults v1.TestResults) error {
@@ -125,7 +127,7 @@ func writeMarkdownSummaryLine(markdown *strings.Builder, testResults v1.TestResu
 	flaky := 0
 	for _, test := range testResults.Tests {
 		if test.Flaky() {
-			flaky += 1
+			flaky++
 		}
 	}
 
@@ -321,10 +323,10 @@ func writeMarkdownSection(
 
 		if oneMB-markdown.Len()-testMarkdown.Len()-len(markdownResultsTruncated) <= 0 {
 			return true, nil
-		} else {
-			if _, err := markdown.WriteString(testMarkdown.String()); err != nil {
-				return false, errors.WithStack(err)
-			}
+		}
+
+		if _, err := markdown.WriteString(testMarkdown.String()); err != nil {
+			return false, errors.WithStack(err)
 		}
 	}
 

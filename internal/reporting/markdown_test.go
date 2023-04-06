@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/bradleyjkemp/cupaloy"
+
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
