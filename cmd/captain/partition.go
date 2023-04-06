@@ -45,8 +45,8 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		Long: "'captain partition' can be used to split up your test suite by test file, leveraging test file timings " +
 			"recorded in captain.",
 		Example: "" +
-			"  bundle exec rspec $(captain partition --suide-id your-project-rspec --index 0 --total 2 spec/**/*_spec.rb)\n" +
-			"  bundle exec rspec $(captain partition --suide-id your-project-rspec --index 1 --total 2 spec/**/*_spec.rb)",
+			"  bundle exec rspec $(captain partition your-project-rspec --index 0 --total 2 spec/**/*_spec.rb)\n" +
+			"  bundle exec rspec $(captain partition your-project-rspec --index 1 --total 2 spec/**/*_spec.rb)",
 		Args:                  cobra.MinimumNArgs(1),
 		DisableFlagsInUseLine: true,
 		PreRunE: initCLIService(cliArgs, func(p providers.Provider) error {
