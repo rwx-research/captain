@@ -85,11 +85,11 @@ func initCLIService(
 			logger = logging.NewDebugLogger()
 		}
 
-		providerAdapter, err := cfg.ProvidersEnv.MakeProvider()
+		provider, err := cfg.ProvidersEnv.MakeProvider()
 		if err != nil {
-			return errors.WithDecoration(errors.Wrap(err, "failed to construct provider adapter"))
+			return errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
 		}
-		err = providerValidator(providerAdapter)
+		err = providerValidator(provider)
 		if err != nil {
 			return errors.WithDecoration(err)
 		}
@@ -103,7 +103,7 @@ func initCLIService(
 				Insecure: cfg.Cloud.Insecure,
 				Log:      logger,
 				Token:    cfg.Secrets.APIToken,
-				Provider: providerAdapter,
+				Provider: provider,
 			})
 		} else {
 			var flakesFilePath, quarantinesFilePath, timingsFilePath string
