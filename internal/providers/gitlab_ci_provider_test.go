@@ -40,6 +40,7 @@ var _ = Describe("GitLabEnv.MakeProvider", func() {
 		Expect(provider.CommitSha).To(Equal("03d68a49ef1e131cf8942d5a07a0ff008ede6a1a"))
 		Expect(provider.CommitMessage).To(Equal("this is what I did\nand here are some details"))
 		Expect(provider.ProviderName).To(Equal("gitlabci"))
+		Expect(provider.Title).To(Equal("this is what I did"))
 	})
 
 	It("falls back to commit author if attempted by is not set", func() {
