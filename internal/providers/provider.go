@@ -128,7 +128,6 @@ func (env Env) MakeProvider() (Provider, error) {
 	mergedWithGeneric := Merge(detectedProvider, env.Generic.MakeProvider())
 
 	if mergedWithGeneric.Title == "" {
-		mergedWithGeneric.Title = "asdfjasdfj"
 		mergedWithGeneric.Title = strings.Split(mergedWithGeneric.CommitMessage, "\n")[0]
 	}
 
