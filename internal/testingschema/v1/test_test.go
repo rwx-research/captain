@@ -176,6 +176,76 @@ var _ = Describe("Test", func() {
 		})
 	})
 
+	Describe("Flaky", func() {
+		It("is false for a test that passed", func() {
+			test := v1.Test{Attempt: v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()}}
+			Expect(test.Flaky()).To(Equal(false))
+		})
+
+		It("is false for a test that failed", func() {
+			test := v1.Test{Attempt: v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)}}
+			Expect(test.Flaky()).To(Equal(false))
+		})
+
+		It("is false for a test that timed out", func() {
+			test := v1.Test{Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()}}
+			Expect(test.Flaky()).To(Equal(false))
+		})
+
+		It("is false for a test that was canceled", func() {
+			test := v1.Test{Attempt: v1.TestAttempt{Status: v1.NewCanceledTestStatus()}}
+			Expect(test.Flaky()).To(Equal(false))
+		})
+
+		It("is true for a test that failed then passed", func() {
+			test := v1.Test{
+				Attempt:      v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+				PastAttempts: []v1.TestAttempt{{Status: v1.NewFailedTestStatus(nil, nil, nil)}},
+			}
+			Expect(test.Flaky()).To(Equal(true))
+		})
+
+		It("is true for a test that passed then failed", func() {
+			test := v1.Test{
+				Attempt:      v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)},
+				PastAttempts: []v1.TestAttempt{{Status: v1.NewSuccessfulTestStatus()}},
+			}
+			Expect(test.Flaky()).To(Equal(true))
+		})
+
+		It("is true for a test that timed out and passed", func() {
+			test := v1.Test{
+				Attempt:      v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+				PastAttempts: []v1.TestAttempt{{Status: v1.NewSuccessfulTestStatus()}},
+			}
+			Expect(test.Flaky()).To(Equal(true))
+		})
+
+		It("is false for a test that was canceled and passed", func() {
+			test := v1.Test{
+				Attempt:      v1.TestAttempt{Status: v1.NewCanceledTestStatus()},
+				PastAttempts: []v1.TestAttempt{{Status: v1.NewSuccessfulTestStatus()}},
+			}
+			Expect(test.Flaky()).To(Equal(false))
+		})
+
+		It("is false for a test that was pended and failed", func() {
+			test := v1.Test{
+				Attempt:      v1.TestAttempt{Status: v1.NewPendedTestStatus(nil)},
+				PastAttempts: []v1.TestAttempt{{Status: v1.NewFailedTestStatus(nil, nil, nil)}},
+			}
+			Expect(test.Flaky()).To(Equal(false))
+		})
+
+		It("is false for a test that was pended and passed", func() {
+			test := v1.Test{
+				Attempt:      v1.TestAttempt{Status: v1.NewPendedTestStatus(nil)},
+				PastAttempts: []v1.TestAttempt{{Status: v1.NewSuccessfulTestStatus()}},
+			}
+			Expect(test.Flaky()).To(Equal(false))
+		})
+	})
+
 	Describe("Quarantine", func() {
 		It("quarantines a test that is not quarantined", func() {
 			originalStatus := v1.NewFailedTestStatus(nil, nil, nil)
