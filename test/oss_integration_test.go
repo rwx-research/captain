@@ -48,6 +48,49 @@ var _ = Describe("OSS mode Integration Tests", func() {
 
 		Describe("captain partition", func() {
 			Context("without timings", func() {
+				Context("with a delimiter", func() {
+					It("sets partition 1 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"partition",
+								"captain-cli-functional-tests",
+								"fixtures/integration-tests/partition/x.rb",
+								"fixtures/integration-tests/partition/y.rb",
+								"fixtures/integration-tests/partition/z.rb",
+								"--index", "0",
+								"--total", "2",
+								"--delimiter", ",",
+							},
+							env: getEnvWithoutAccessToken(),
+						})
+
+						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb,fixtures/integration-tests/partition/z.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+
+				It("sets partition 1 correctly when delimiter is set via env var", func() {
+						env := getEnvWithoutAccessToken()
+						env["CAPTAIN_DELIMITER"] = ","
+
+						result := runCaptain(captainArgs{
+							args: []string{
+								"partition",
+								"captain-cli-functional-tests",
+								"fixtures/integration-tests/partition/x.rb",
+								"fixtures/integration-tests/partition/y.rb",
+								"fixtures/integration-tests/partition/z.rb",
+								"--index", "0",
+								"--total", "2",
+							},
+							env: env,
+						})
+
+						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb,fixtures/integration-tests/partition/z.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+				})
 				It("sets partition 1 correctly", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
