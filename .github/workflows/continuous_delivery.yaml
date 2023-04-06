@@ -21,6 +21,8 @@ jobs:
       major-version: ${{ steps.tag.outputs.majorVersion }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_branch  }}
       - id: tag
         run: |
           fullVersion=$(cat version.go | grep "const Version" | awk '{print $4}' | sed 's/"//g')
@@ -54,6 +56,8 @@ jobs:
         arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_branch  }}
       - uses: cachix/install-nix-action@v18
         with:
           extra_nix_config: |
