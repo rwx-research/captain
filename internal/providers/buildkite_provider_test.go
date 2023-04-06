@@ -36,7 +36,6 @@ var _ = Describe("BuildkiteEnv.MakeProvider", func() {
 		Expect(provider.CommitSha).To(Equal("abc123"))
 		Expect(provider.CommitMessage).To(Equal("fixed it\nyeah"))
 		Expect(provider.ProviderName).To(Equal("buildkite"))
-		Expect(provider.Title).To(Equal("fixed it"))
 	})
 
 	It("requires build id", func() {

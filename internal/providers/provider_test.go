@@ -260,8 +260,9 @@ var _ = Describe("MakeProviderAdapter", func() {
 		})
 
 		Context("and with a generic provider", func() {
-			It("returns the merged provider", func() {
+			It("returns the merged provider with the title from the generic provider", func() {
 				env.Generic.Sha = "qrs789"
+				env.Generic.CommitMessage = "fixed it on Tuesday\nthis commit message annotated before writing to captain"
 				provider, err := env.MakeProviderAdapter()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(provider).To(Equal(
@@ -270,8 +271,8 @@ var _ = Describe("MakeProviderAdapter", func() {
 						CommitSha:     "qrs789",
 						BranchName:    "main",
 						AttemptedBy:   "foo@bar.com",
-						CommitMessage: "fixed it",
-						Title:         "fixed it",
+						CommitMessage: "fixed it on Tuesday\nthis commit message annotated before writing to captain",
+						Title:         "fixed it on Tuesday",
 						JobTags: map[string]any{
 							"buildkite_retry_count":        "0",
 							"buildkite_parallel_job_count": "2",

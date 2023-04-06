@@ -44,7 +44,6 @@ var _ = Describe("GitHubEnv.MakeProvider", func() {
 		Expect(provider.CommitSha).To(Equal("abc123"))
 		Expect(provider.CommitMessage).To(Equal("fixed it\nyeah"))
 		Expect(provider.ProviderName).To(Equal("github"))
-		Expect(provider.Title).To(Equal("fixed it"))
 	})
 
 	It("uses the PR info for the title when the commit message is missing", func() {

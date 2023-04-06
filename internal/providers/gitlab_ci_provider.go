@@ -1,8 +1,6 @@
 package providers
 
 import (
-	"strings"
-
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -56,7 +54,6 @@ func (cfg GitLabEnv) MakeProvider() (Provider, error) {
 		CommitSha:     cfg.CommitSHA,
 		JobTags:       tags,
 		ProviderName:  "gitlabci",
-		Title:         strings.Split(cfg.CommitMessage, "\n")[0],
 	}
 
 	return provider, nil

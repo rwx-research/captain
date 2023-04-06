@@ -78,15 +78,15 @@ func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(payloadData GitHubE
 	}
 
 	commitMessage := payloadData.HeadCommit.Message
-	title := strings.Split(commitMessage, "\n")[0]
-	if title == "" {
+	var title string
+	if commitMessage == "" {
 		title = fmt.Sprintf("%s (PR #%d)", payloadData.PullRequest.Title, payloadData.PullRequest.Number)
 	}
 
 	provider := Provider{
 		AttemptedBy:   attemptedBy,
 		BranchName:    branchName,
-		CommitMessage: payloadData.HeadCommit.Message,
+		CommitMessage: commitMessage,
 		CommitSha:     cfg.CommitSha,
 		JobTags:       tags,
 		ProviderName:  "github",
