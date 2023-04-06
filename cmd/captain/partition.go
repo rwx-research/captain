@@ -103,7 +103,8 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	}
 
 	partitionCmd.Flags().StringVar(&pArgs.delimiter, "delimiter", defaultDelimiter,
-		"the delimiter used to separate partitioned files."+"It can also be set using the env var CAPTAIN_DELIMITER.")
+		"the delimiter used to separate partitioned files.\n"+
+			"It can also be set using the env var CAPTAIN_DELIMITER.")
 
 	rootCmd.AddCommand(partitionCmd)
 	return nil
