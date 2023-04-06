@@ -1,21 +1,53 @@
 name: Continuous Delivery
-run-name: Upload CLI release to S3
+run-name: Publish Release Assets
 on:
   workflow_run:
     workflows:
-      - Release Requirements
+      - Continuous Integration
+    branches:
+      - 'releases/**'
     types:
       - completed
 
 jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: write
+    outputs:
+      full-version: ${{ steps.tag.outputs.fullVersion }}
+      major-version: ${{ steps.tag.outputs.majorVersion }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: tag
+        run: |
+          fullVersion=$(cat version.go | grep "const Version" | awk '{print $4}' | sed 's/"//g')
+          majorVersion=$(echo "$fullVersion" | awk -F '.' '{print $1}')
+          git tag $fullVersion
+          git push --tags origin $fullVersion
+          git tag --force $majorVersion
+          git push --tags --force origin $majorVersion
+          echo "fullVersion=$fullVersion" >> "$GITHUB_OUTPUT"
+          echo "majorVersion=$majorVersion" >> "$GITHUB_OUTPUT"
+      - uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          tag_name: ${{ steps.tag.outputs.fullVersion }}
+          name: "Captain ${{ steps.tag.outputs.fullVersion }}"
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.majorVersion }}
+          name: "Captain ${{ steps.tag.outputs.majorVersion }}"
   upload:
     name: Upload artifacts
     runs-on: ubuntu-latest
+    needs: release
     environment: Production
     permissions:
-      contents: read
+      contents: write
       id-token: write
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
         os: [linux, darwin, windows]
@@ -33,7 +65,9 @@ jobs:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
           role-duration-seconds: 900
-      - run: |
+      - id: build-unix
+        if: ${{ matrix.os != 'windows' }}
+        run: |
           version=$(nix develop --command go run ./cmd/captain --version)
           old_artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
           aws s3 cp ./captain "s3://terraform-20221109133415397600000001/$old_artifact_name"
@@ -48,12 +82,19 @@ jobs:
           fi
           new_artifact_name=$(echo "$version/${{ matrix.os }}/$new_arch/captain" | tr '[:upper:]' '[:lower:]')
           aws s3 cp ./captain "s3://terraform-20221109133415397600000001/$new_artifact_name"
+
+          github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch" | tr '[:upper:]' '[:lower:]')
+          mv captain $github_asset_name
+          gh release upload ${{ needs.release.outputs.full-version }} $github_asset_name
+          gh release upload --clobber ${{ needs.release.outputs.major-version }} $github_asset_name
         env:
+          GH_TOKEN: ${{ github.token }}
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
-        if: ${{ matrix.os != 'windows' }}
-      - run: |
+      - id: build-windows
+        if: ${{ matrix.os == 'windows' }}
+        run: |
           version=$(nix develop --command go run ./cmd/captain --version)
-          old_artifact_name=$(echo "captain-${{ matrix.os }}-${{ matrix.arch }}-$version" | tr '[:upper:]' '[:lower:]')
+          old_artifact_name=$(echo "captain-${{ matrix.os }}-$new_arch-$version" | tr '[:upper:]' '[:lower:]')
           aws s3 cp ./captain.exe "s3://terraform-20221109133415397600000001/$old_artifact_name"
 
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
@@ -66,9 +107,14 @@ jobs:
           fi
           new_artifact_name=$(echo "$version/${{ matrix.os }}/$new_arch/captain.exe" | tr '[:upper:]' '[:lower:]')
           aws s3 cp ./captain.exe "s3://terraform-20221109133415397600000001/$new_artifact_name"
+
+          github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch.exe" | tr '[:upper:]' '[:lower:]')
+          mv captain.exe $github_asset_name
+          gh release upload ${{ needs.release.outputs.full-version }} $github_asset_name
+          gh release upload --clobber ${{ needs.release.outputs.major-version }} $github_asset_name
         env:
+          GH_TOKEN: ${{ github.token }}
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
-        if: ${{ matrix.os == 'windows' }}
 
   deliver-binaries:
     name: Deliver binaries

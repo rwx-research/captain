@@ -1,7 +1,7 @@
 name: Release Requirements
 on:
-  release:
-    types: [published]
+  pull_request:
+    branches: ["releases/**"]
 jobs:
   check-version:
     name: Ensure version bump
