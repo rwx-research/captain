@@ -117,7 +117,7 @@ func (env Env) MakeProvider() (Provider, error) {
 		case env.CircleCI.Detected:
 			return wrapError(env.CircleCI.makeProvider())
 		case env.GitLab.Detected:
-			return wrapError(env.GitLab.MakeProvider())
+			return wrapError(env.GitLab.makeProvider())
 		}
 		return Provider{}, nil
 	}()
