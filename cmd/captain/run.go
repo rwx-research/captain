@@ -13,7 +13,6 @@ import (
 	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
 type CliArgs struct {
@@ -35,23 +34,6 @@ type CliArgs struct {
 	GenericProvider           providers.GenericEnv
 	frameworkParams           frameworkParams
 	RootCliArgs               rootCliArgs
-}
-
-var substitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
-	v1.DotNetxUnitFramework:          new(targetedretries.DotNetxUnitSubstitution),
-	v1.ElixirExUnitFramework:         new(targetedretries.ElixirExUnitSubstitution),
-	v1.GoGinkgoFramework:             new(targetedretries.GoGinkgoSubstitution),
-	v1.GoTestFramework:               new(targetedretries.GoTestSubstitution),
-	v1.JavaScriptCypressFramework:    new(targetedretries.JavaScriptCypressSubstitution),
-	v1.JavaScriptJestFramework:       new(targetedretries.JavaScriptJestSubstitution),
-	v1.JavaScriptMochaFramework:      new(targetedretries.JavaScriptMochaSubstitution),
-	v1.JavaScriptPlaywrightFramework: new(targetedretries.JavaScriptPlaywrightSubstitution),
-	v1.PHPUnitFramework:              new(targetedretries.PHPUnitSubstitution),
-	v1.PythonPytestFramework:         new(targetedretries.PythonPytestSubstitution),
-	v1.PythonUnitTestFramework:       new(targetedretries.PythonUnitTestSubstitution),
-	v1.RubyCucumberFramework:         new(targetedretries.RubyCucumberSubstitution),
-	v1.RubyMinitestFramework:         new(targetedretries.RubyMinitestSubstitution),
-	v1.RubyRSpecFramework:            new(targetedretries.RubyRSpecSubstitution),
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -121,7 +103,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 				Reporters:                 reporterFuncs,
 				Retries:                   retries,
 				RetryCommandTemplate:      retryCommand,
-				SubstitutionsByFramework:  substitutionsByFramework,
+				SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
 				SuiteID:                   cliArgs.RootCliArgs.suiteID,
 				TestResultsFileGlob:       testResultsPath,
 				UpdateStoredResults:       cliArgs.updateStoredResults,
@@ -247,9 +229,9 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		return errors.WithStack(err)
 	}
 
-	formattedSubstitutionExamples := make([]string, len(substitutionsByFramework))
+	formattedSubstitutionExamples := make([]string, len(targetedretries.SubstitutionsByFramework))
 	i := 0
-	for framework, substitution := range substitutionsByFramework {
+	for framework, substitution := range targetedretries.SubstitutionsByFramework {
 		formattedSubstitutionExamples[i] = fmt.Sprintf("  %v: --retry-command \"%v\"", framework, substitution.Example())
 		i++
 	}
