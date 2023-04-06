@@ -45,7 +45,7 @@ type GitHubEventPayloadData struct {
 	} `json:"pull_request"`
 }
 
-func (cfg GitHubEnv) MakeProvider() (Provider, error) {
+func (cfg GitHubEnv) makeProvider() (Provider, error) {
 	eventPayloadData := GitHubEventPayloadData{}
 
 	file, err := os.Open(cfg.EventPath)
