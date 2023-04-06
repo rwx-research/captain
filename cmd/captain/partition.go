@@ -97,7 +97,13 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	// it's a smell that we're using cliArgs here but I believe it's a major refactor to stop doing that.
 	addShaFlag(partitionCmd, &cliArgs.GenericProvider.Sha)
 
-	partitionCmd.Flags().StringVar(&pArgs.delimiter, "delimiter", " ", "the delimiter used to separate partitioned files")
+	defaultDelimiter := os.Getenv("CAPTAIN_DELIMITER")
+	if defaultDelimiter == "" {
+		defaultDelimiter = " "
+	}
+
+	partitionCmd.Flags().StringVar(&pArgs.delimiter, "delimiter", defaultDelimiter,
+		"the delimiter used to separate partitioned files."+"It can also be set using the env var CAPTAIN_DELIMITER.")
 
 	rootCmd.AddCommand(partitionCmd)
 	return nil
