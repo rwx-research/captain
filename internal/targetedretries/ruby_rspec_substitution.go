@@ -54,5 +54,9 @@ func (s RubyRSpecSubstitution) SubstitutionsFor(
 		}
 	}
 
-	return []map[string]string{{"tests": strings.Join(testIdentifiers, " ")}}, nil
+	if len(testIdentifiers) > 0 {
+		return []map[string]string{{"tests": strings.Join(testIdentifiers, " ")}}, nil
+	}
+
+	return []map[string]string{}, nil
 }
