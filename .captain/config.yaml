@@ -1,0 +1,6 @@
+test-suites:
+  captain-cli-ginkgo:
+    command: nix develop --command mage test
+    fail-on-upload-error: true
+    results:
+      path: report.xml

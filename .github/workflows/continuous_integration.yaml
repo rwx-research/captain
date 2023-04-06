@@ -14,16 +14,12 @@ jobs:
             keep-derivations = true
             keep-outputs = true
       - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
-      - run: |
-          REPORT=true ./captain run \
-            --suite-id="captain-cli-ginkgo" \
-            --test-results=report.xml \
-            --fail-on-upload-error \
-            -- nix develop --command mage test
+      - run: ./captain run captain-cli-ginkgo
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
           RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
           DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
+          REPORT: true
 
   lint:
     name: Lint
