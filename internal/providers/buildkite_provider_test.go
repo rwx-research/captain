@@ -17,7 +17,7 @@ var _ = Describe("BuildkiteEnv.MakeProvider", func() {
 			BuildID:           "1234",
 			RetryCount:        "0",
 			BuildURL:          "https://buildkit.com/builds/42",
-			Message:           "fixed it",
+			Message:           "fixed it\nyeah",
 			Commit:            "abc123",
 			JobID:             "build123",
 			Label:             "lint",
@@ -34,8 +34,9 @@ var _ = Describe("BuildkiteEnv.MakeProvider", func() {
 		Expect(provider.AttemptedBy).To(Equal("foo@bar.com"))
 		Expect(provider.BranchName).To(Equal("main"))
 		Expect(provider.CommitSha).To(Equal("abc123"))
-		Expect(provider.CommitMessage).To(Equal("fixed it"))
+		Expect(provider.CommitMessage).To(Equal("fixed it\nyeah"))
 		Expect(provider.ProviderName).To(Equal("buildkite"))
+		Expect(provider.Title).To(Equal("fixed it"))
 	})
 
 	It("requires build id", func() {

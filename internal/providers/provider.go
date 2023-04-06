@@ -17,6 +17,7 @@ type Provider struct {
 	CommitSha     string
 	JobTags       map[string]any
 	ProviderName  string
+	Title         string
 }
 
 func Validate(p Provider) error {
@@ -81,6 +82,7 @@ func Merge(into Provider, from Provider) Provider {
 		into.BranchName = firstNonempty(from.BranchName, into.BranchName)
 		into.CommitSha = firstNonempty(from.CommitSha, into.CommitSha)
 		into.CommitMessage = firstNonempty(from.CommitMessage, into.CommitMessage)
+		into.Title = firstNonempty(from.Title, into.Title)
 		return into
 	}
 	return from

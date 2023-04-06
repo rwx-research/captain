@@ -1,6 +1,10 @@
 package providers
 
-import "github.com/rwx-research/captain-cli/internal/errors"
+import (
+	"strings"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
+)
 
 type GitLabEnv struct {
 	// see https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
@@ -52,6 +56,7 @@ func (cfg GitLabEnv) MakeProvider() (Provider, error) {
 		CommitSha:     cfg.CommitSHA,
 		JobTags:       tags,
 		ProviderName:  "gitlabci",
+		Title:         strings.Split(cfg.CommitMessage, "\n")[0],
 	}
 
 	return provider, nil

@@ -11,6 +11,7 @@ type GenericEnv struct {
 	Sha           string
 	CommitMessage string
 	BuildURL      string
+	Title         string
 }
 
 func (cfg GenericEnv) MakeProvider() Provider {
@@ -21,6 +22,7 @@ func (cfg GenericEnv) MakeProvider() Provider {
 		CommitMessage: cfg.CommitMessage,
 		ProviderName:  "generic",
 		JobTags:       map[string]any{"captain_build_url": cfg.BuildURL},
+		Title:         cfg.Title,
 	}
 }
 
