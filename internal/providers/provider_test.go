@@ -123,7 +123,7 @@ var _ = Describe("providers.Merge", func() {
 	})
 })
 
-var _ = Describe("MakeProviderAdapter", func() {
+var _ = Describe("MakeProvider", func() {
 	var env providers.Env
 
 	BeforeEach(func() {
@@ -137,7 +137,7 @@ var _ = Describe("MakeProviderAdapter", func() {
 				env.Generic.Branch = "main"
 				env.Generic.Sha = "abc123"
 
-				provider, err := env.MakeProviderAdapter()
+				provider, err := env.MakeProvider()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(provider).To(Equal(
 					providers.Provider{
@@ -156,9 +156,9 @@ var _ = Describe("MakeProviderAdapter", func() {
 		Context("but with an invalid generic provider", func() {
 			It("returns the invalid generic provider", func() {
 				// different commands have different concepts of what a valid generic provider is
-				// so we can't validate that in MakeProviderAdapter
+				// so we can't validate that in MakeProvider
 				env.Generic.Who = "me"
-				provider, err := env.MakeProviderAdapter()
+				provider, err := env.MakeProvider()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(provider.AttemptedBy).To(Equal("me"))
 			})
@@ -166,7 +166,7 @@ var _ = Describe("MakeProviderAdapter", func() {
 
 		It("when title is set, uses the set title", func() {
 			env.Generic.Title = "foo"
-			provider, err := env.MakeProviderAdapter()
+			provider, err := env.MakeProvider()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(provider.Title).To(Equal("foo"))
 			Expect(provider.CommitMessage).To(Equal(""))
@@ -178,14 +178,14 @@ var _ = Describe("MakeProviderAdapter", func() {
 			})
 
 			It("when title is unset, sets title to the commit message", func() {
-				provider, err := env.MakeProviderAdapter()
+				provider, err := env.MakeProvider()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(provider.Title).To(Equal("fixed it"))
 				Expect(provider.CommitMessage).To(Equal("fixed it"))
 			})
 			It("when title is set, uses the set title", func() {
 				env.Generic.Title = "didn't fix it yet"
-				provider, err := env.MakeProviderAdapter()
+				provider, err := env.MakeProvider()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(provider.Title).To(Equal("didn't fix it yet"))
 				Expect(provider.CommitMessage).To(Equal("fixed it"))
@@ -198,14 +198,14 @@ var _ = Describe("MakeProviderAdapter", func() {
 			})
 
 			It("when title is unset, sets title to the first line of the commit message", func() {
-				provider, err := env.MakeProviderAdapter()
+				provider, err := env.MakeProvider()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(provider.Title).To(Equal("fixed it"))
 				Expect(provider.CommitMessage).To(Equal("fixed it\nit was tricky!"))
 			})
 			It("when title is set, uses the set title", func() {
 				env.Generic.Title = "didn't fix it yet"
-				provider, err := env.MakeProviderAdapter()
+				provider, err := env.MakeProvider()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(provider.Title).To(Equal("didn't fix it yet"))
 				Expect(provider.CommitMessage).To(Equal("fixed it\nit was tricky!"))
@@ -233,7 +233,7 @@ var _ = Describe("MakeProviderAdapter", func() {
 			}
 		})
 		It("returns provider info", func() {
-			provider, err := env.MakeProviderAdapter()
+			provider, err := env.MakeProvider()
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(provider).To(Equal(
@@ -263,7 +263,7 @@ var _ = Describe("MakeProviderAdapter", func() {
 			It("returns the merged provider with the title from the generic provider", func() {
 				env.Generic.Sha = "qrs789"
 				env.Generic.CommitMessage = "fixed it on Tuesday\nthis commit message annotated before writing to captain"
-				provider, err := env.MakeProviderAdapter()
+				provider, err := env.MakeProvider()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(provider).To(Equal(
 					providers.Provider{
@@ -309,7 +309,7 @@ var _ = Describe("MakeProviderAdapter", func() {
 			}
 		})
 		It("is invalid", func() {
-			provider, _ := env.MakeProviderAdapter()
+			provider, _ := env.MakeProvider()
 			err := providers.Validate(provider)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Missing branch name"))
@@ -318,7 +318,7 @@ var _ = Describe("MakeProviderAdapter", func() {
 		Context("and with a generic provider that will be valid after merge", func() {
 			It("returns the merged provider", func() {
 				env.Generic.Branch = "main"
-				provider, _ := env.MakeProviderAdapter()
+				provider, _ := env.MakeProvider()
 				err := providers.Validate(provider)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(provider.BranchName).To(Equal("main"))

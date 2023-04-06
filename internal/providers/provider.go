@@ -103,7 +103,7 @@ func firstNonempty(strs ...string) string {
 	return ""
 }
 
-func (env Env) MakeProviderAdapter() (Provider, error) {
+func (env Env) MakeProvider() (Provider, error) {
 	// detect provider from environment if we can
 	wrapError := func(p Provider, err error) (Provider, error) {
 		return p, errors.Wrap(err, "error building detected provider")

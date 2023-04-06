@@ -85,7 +85,7 @@ func initCLIService(
 			logger = logging.NewDebugLogger()
 		}
 
-		providerAdapter, err := cfg.ProvidersEnv.MakeProviderAdapter()
+		providerAdapter, err := cfg.ProvidersEnv.MakeProvider()
 		if err != nil {
 			return errors.WithDecoration(errors.Wrap(err, "failed to construct provider adapter"))
 		}
