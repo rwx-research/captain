@@ -158,8 +158,57 @@ var _ = Describe("MakeProviderAdapter", func() {
 				// different commands have different concepts of what a valid generic provider is
 				// so we can't validate that in MakeProviderAdapter
 				env.Generic.Who = "me"
-				_, err := env.MakeProviderAdapter()
+				provider, err := env.MakeProviderAdapter()
 				Expect(err).ToNot(HaveOccurred())
+				Expect(provider.AttemptedBy).To(Equal("me"))
+			})
+		})
+
+		It("when title is set, uses the set title", func() {
+			env.Generic.Title = "foo"
+			provider, err := env.MakeProviderAdapter()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(provider.Title).To(Equal("foo"))
+			Expect(provider.CommitMessage).To(Equal(""))
+		})
+
+		Context("When commit message has a single line", func() {
+			BeforeEach(func() {
+				env.Generic.CommitMessage = "fixed it"
+			})
+
+			It("when title is unset, sets title to the commit message", func() {
+				provider, err := env.MakeProviderAdapter()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(provider.Title).To(Equal("fixed it"))
+				Expect(provider.CommitMessage).To(Equal("fixed it"))
+			})
+			It("when title is set, uses the set title", func() {
+				env.Generic.Title = "didn't fix it yet"
+				provider, err := env.MakeProviderAdapter()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(provider.Title).To(Equal("didn't fix it yet"))
+				Expect(provider.CommitMessage).To(Equal("fixed it"))
+			})
+		})
+
+		Context("When commit message has a multiple lines line", func() {
+			BeforeEach(func() {
+				env.Generic.CommitMessage = "fixed it\nit was tricky!"
+			})
+
+			It("when title is unset, sets title to the first line of the commit message", func() {
+				provider, err := env.MakeProviderAdapter()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(provider.Title).To(Equal("fixed it"))
+				Expect(provider.CommitMessage).To(Equal("fixed it\nit was tricky!"))
+			})
+			It("when title is set, uses the set title", func() {
+				env.Generic.Title = "didn't fix it yet"
+				provider, err := env.MakeProviderAdapter()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(provider.Title).To(Equal("didn't fix it yet"))
+				Expect(provider.CommitMessage).To(Equal("fixed it\nit was tricky!"))
 			})
 		})
 	})

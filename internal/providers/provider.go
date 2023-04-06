@@ -1,6 +1,10 @@
 package providers
 
-import "github.com/rwx-research/captain-cli/internal/errors"
+import (
+	"strings"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
+)
 
 type Env struct {
 	Buildkite BuildkiteEnv
@@ -121,6 +125,13 @@ func (env Env) MakeProviderAdapter() (Provider, error) {
 		return Provider{}, err
 	}
 
+	mergedWithGeneric := Merge(detectedProvider, env.Generic.MakeProvider())
+
+	if mergedWithGeneric.Title == "" {
+		mergedWithGeneric.Title = "asdfjasdfj"
+		mergedWithGeneric.Title = strings.Split(mergedWithGeneric.CommitMessage, "\n")[0]
+	}
+
 	// merge the generic provider into the detected provider. The captain-specific flags & env vars take precedence.
-	return Merge(detectedProvider, env.Generic.MakeProvider()), nil
+	return mergedWithGeneric, nil
 }
