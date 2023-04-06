@@ -139,10 +139,17 @@ var _ = Describe("MakeProviderAdapter", func() {
 
 				provider, err := env.MakeProviderAdapter()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(provider.ProviderName).To(Equal("generic"))
-				Expect(provider.CommitSha).To(Equal("abc123"))
-				Expect(provider.BranchName).To(Equal("main"))
-				Expect(provider.AttemptedBy).To(Equal("me"))
+				Expect(provider).To(Equal(
+					providers.Provider{
+						ProviderName:  "generic",
+						CommitSha:     "abc123",
+						BranchName:    "main",
+						AttemptedBy:   "me",
+						CommitMessage: "",
+						Title:         "",
+						JobTags:       map[string]any{"captain_build_url": ""},
+					},
+				))
 			})
 		})
 
@@ -178,11 +185,29 @@ var _ = Describe("MakeProviderAdapter", func() {
 		})
 		It("returns provider info", func() {
 			provider, err := env.MakeProviderAdapter()
+
 			Expect(err).NotTo(HaveOccurred())
-			Expect(provider.ProviderName).To(Equal("buildkite"))
-			Expect(provider.CommitSha).To(Equal("abc123"))
-			Expect(provider.BranchName).To(Equal("main"))
-			Expect(provider.AttemptedBy).To(Equal("foo@bar.com"))
+			Expect(provider).To(Equal(
+				providers.Provider{
+					ProviderName:  "buildkite",
+					CommitSha:     "abc123",
+					BranchName:    "main",
+					AttemptedBy:   "foo@bar.com",
+					CommitMessage: "fixed it",
+					Title:         "fixed it",
+					JobTags: map[string]any{
+						"buildkite_retry_count":        "0",
+						"buildkite_parallel_job_count": "2",
+						"buildkite_build_id":           "1234",
+						"buildkite_build_url":          "https://buildkit.com/builds/42",
+						"buildkite_job_id":             "build123",
+						"buildkite_label":              "lint",
+						"buildkite_repo":               "git@github.com/rwx-research/captain-cli",
+						"buildkite_organization_slug":  "rwx",
+						"buildkite_parallel_job":       "0",
+					},
+				},
+			))
 		})
 
 		Context("and with a generic provider", func() {
@@ -190,10 +215,27 @@ var _ = Describe("MakeProviderAdapter", func() {
 				env.Generic.Sha = "qrs789"
 				provider, err := env.MakeProviderAdapter()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(provider.ProviderName).To(Equal("buildkite"))
-				Expect(provider.CommitSha).To(Equal("qrs789"))
-				Expect(provider.BranchName).To(Equal("main"))
-				Expect(provider.AttemptedBy).To(Equal("foo@bar.com"))
+				Expect(provider).To(Equal(
+					providers.Provider{
+						ProviderName:  "buildkite",
+						CommitSha:     "qrs789",
+						BranchName:    "main",
+						AttemptedBy:   "foo@bar.com",
+						CommitMessage: "fixed it",
+						Title:         "fixed it",
+						JobTags: map[string]any{
+							"buildkite_retry_count":        "0",
+							"buildkite_parallel_job_count": "2",
+							"buildkite_build_id":           "1234",
+							"buildkite_build_url":          "https://buildkit.com/builds/42",
+							"buildkite_job_id":             "build123",
+							"buildkite_label":              "lint",
+							"buildkite_repo":               "git@github.com/rwx-research/captain-cli",
+							"buildkite_organization_slug":  "rwx",
+							"buildkite_parallel_job":       "0",
+						},
+					},
+				))
 			})
 		})
 	})
