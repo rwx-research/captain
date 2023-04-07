@@ -39,10 +39,24 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 						reporterFuncs[path] = reporting.WriteJSONSummary
 					case "junit-xml":
 						reporterFuncs[path] = reporting.WriteJUnitSummary
+					case "markdown-summary":
+						reporterFuncs[path] = reporting.WriteMarkdownSummary
+					case "github-step-summary":
+						stepSummaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
+						if stepSummaryPath == "" {
+							return errors.WithDecoration(errors.NewConfigurationError(
+								"'github-step-summary' reporter misconfigured",
+								"The 'github-step-summary' reporter can only run within a GitHub Actions job where the "+
+									"'GITHUB_STEP_SUMMARY' environment variable is set.",
+								"",
+							))
+						}
+
+						reporterFuncs[stepSummaryPath] = reporting.WriteMarkdownSummary
 					default:
 						return errors.WithDecoration(errors.NewConfigurationError(
 							fmt.Sprintf("Unknown reporter %q", name),
-							"Available reporters are 'rwx-v1-json' and 'junit-xml'.",
+							"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
 							"",
 						))
 					}
@@ -118,8 +132,8 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 		&cliArgs.reporters,
 		"reporter",
 		[]string{},
-		"one or more `type=output_path` pairs to enable different reporting options. "+
-			"Available reporter types are `rwx-v1-json` and `junit-xml ",
+		"one or more `type=output_path` pairs to enable different reporting options.\n"+
+			"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
 	)
 
 	quarantineCmd.Flags().BoolVar(
