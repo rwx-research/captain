@@ -15,13 +15,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("JUnitParser", func() {
+var _ = Describe("JUnitTestsuitesParser", func() {
 	Describe("Parse", func() {
-		It("parses the sample file", func() {
+		It("parses the sample testsuites file", func() {
 			fixture, err := os.Open("../../test/fixtures/junit.xml")
 			Expect(err).ToNot(HaveOccurred())
 
-			testResults, err := parsing.JUnitParser{}.Parse(fixture)
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
 
 			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
@@ -29,8 +29,18 @@ var _ = Describe("JUnitParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("does not parse the sample testsuite file", func() {
+			fixture, err := os.Open("../../test/fixtures/junit-no-testsuites-element.xml")
+			Expect(err).NotTo(HaveOccurred())
+
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(fixture)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Unable to parse test results as XML"))
+			Expect(testResults).To(BeNil())
+		})
+
 		It("errors on malformed XML", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(`<abc`))
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(`<abc`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to parse test results as XML"))
 			Expect(testResults).To(BeNil())
@@ -40,16 +50,16 @@ var _ = Describe("JUnitParser", func() {
 			var testResults *v1.TestResults
 			var err error
 
-			testResults, err = parsing.JUnitParser{}.Parse(strings.NewReader(`<foo></foo>`))
+			testResults, err = parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(`<foo></foo>`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to parse test results as XML"))
 			Expect(testResults).To(BeNil())
 
-			testResults, err = parsing.JUnitParser{}.Parse(strings.NewReader(`<testsuites></testsuites>`))
+			testResults, err = parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(`<testsuites></testsuites>`))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(testResults).NotTo(BeNil())
 
-			testResults, err = parsing.JUnitParser{}.Parse(
+			testResults, err = parsing.JUnitTestsuitesParser{}.Parse(
 				strings.NewReader(`<testsuites><testsuite></testsuite></testsuites>`),
 			)
 			Expect(err).To(HaveOccurred())
@@ -60,7 +70,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("extracts the file from a test case", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -84,7 +94,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("parses the duration as seconds", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -106,7 +116,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("parses failures with inner CDATA", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -140,7 +150,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("parses failures with inner chardata", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -174,7 +184,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("parses errors with inner CDATA", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -208,7 +218,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("parses errors with inner chardata", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -242,7 +252,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("parses skipped tests with messages", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -266,7 +276,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("calculates the correct name when the classname contains the name", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -282,7 +292,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("calculates the correct name when the name contains the classname", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -298,7 +308,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("calculates the correct name when the name is the same as classname", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">
@@ -314,7 +324,7 @@ var _ = Describe("JUnitParser", func() {
 		})
 
 		It("calculates the correct name when the name is entirely different from the classname", func() {
-			testResults, err := parsing.JUnitParser{}.Parse(strings.NewReader(
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
 				`
 					<testsuites>
 						<testsuite tests="1">

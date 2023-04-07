@@ -53,7 +53,8 @@ var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]pars
 
 var genericParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.RWXParser),
-	new(parsing.JUnitParser),
+	new(parsing.JUnitTestsuitesParser),
+	new(parsing.JUnitTestsuiteParser),
 }
 
 var invalidSuiteIDRegexp = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
