@@ -132,8 +132,8 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 		&cliArgs.reporters,
 		"reporter",
 		[]string{},
-		"one or more `type=output_path` pairs to enable different reporting options. "+
-			"Available reporter types are `rwx-v1-json` and `junit-xml ",
+		"one or more `type=output_path` pairs to enable different reporting options.\n"+
+			"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
 	)
 
 	quarantineCmd.Flags().BoolVar(
