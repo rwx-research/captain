@@ -326,6 +326,9 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 
 		if len(cliArgs.reporters) > 0 {
 			reporterConfig := suiteConfig.Output.Reporters
+			if reporterConfig == nil {
+				reporterConfig = make(map[string]string)
+			}
 
 			for _, r := range cliArgs.reporters {
 				name, path, _ := strings.Cut(r, "=")
