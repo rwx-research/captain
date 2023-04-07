@@ -2,7 +2,6 @@ package reporting
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 	"text/template"
 
@@ -65,9 +64,9 @@ func WriteMarkdownSummary(file fs.File, testResults v1.TestResults, cfg Configur
 			fmt.Sprintf(
 				"[🔗 View in Captain Cloud](https://%v/deep_link/test_suite_summaries/%v/%v/%v)\n\n",
 				cfg.CloudHost,
-				url.QueryEscape(cfg.SuiteID),
-				url.QueryEscape(cfg.Provider.BranchName),
-				url.QueryEscape(cfg.Provider.CommitSha),
+				cfg.SuiteID,
+				cfg.Provider.BranchName,
+				cfg.Provider.CommitSha,
 			),
 		); err != nil {
 			return errors.WithStack(err)
