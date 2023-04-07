@@ -1,0 +1,689 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "other",
+    "kind": "other"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 72,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 3,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 2,
+    "successful": 67,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "reporting::test_dot_reporter::breaks_lines_with_many_dots",
+      "attempt": {
+        "durationInNanoseconds": 352000000,
+        "status": {
+          "kind": "failed",
+          "message": "Failed because of some assertion",
+          "exception": "failure",
+          "backtrace": [
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "reporting::test_dot_reporter::dot_line_limit_fits_on_one_line",
+      "attempt": {
+        "durationInNanoseconds": 380000000,
+        "status": {
+          "kind": "failed",
+          "message": "Some error occurred",
+          "exception": "error",
+          "backtrace": [
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "reporting::test_dot_reporter::flush_buffer_when_test_results_done",
+      "attempt": {
+        "durationInNanoseconds": 353000000,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_dot_reporter::formats_results_as_dots_with_summary",
+      "attempt": {
+        "durationInNanoseconds": 325000000,
+        "status": {
+          "kind": "failed",
+          "message": "Multiple",
+          "exception": "failure",
+          "backtrace": [
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "reporting::test_dot_reporter::one_newline_before_summaries_line_limit_reached",
+      "attempt": {
+        "durationInNanoseconds": 345000000,
+        "status": {
+          "kind": "skipped",
+          "message": "For some reason"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_dot_reporter::one_newline_before_summaries_line_limit_not_reached",
+      "attempt": {
+        "durationInNanoseconds": 381000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_dot_reporter::write_on_result",
+      "attempt": {
+        "durationInNanoseconds": 279000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_line_reporter::flush_buffer_when_test_results_done",
+      "attempt": {
+        "durationInNanoseconds": 291000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_line_reporter::formats_results_as_lines",
+      "attempt": {
+        "durationInNanoseconds": 295000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_line_reporter::write_on_result",
+      "attempt": {
+        "durationInNanoseconds": 253000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_reporter_kind::parse_dot_reporter",
+      "attempt": {
+        "durationInNanoseconds": 298000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_reporter_kind::parse_junit_reporter_eq_no_suffix_to_default",
+      "attempt": {
+        "durationInNanoseconds": 318000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_reporter_kind::parse_junit_reporter_eq_no_suffix_with_spaces_to_default",
+      "attempt": {
+        "durationInNanoseconds": 254000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_reporter_kind::parse_junit_reporter_eq_with_suffix_to_absolute_path",
+      "attempt": {
+        "durationInNanoseconds": 274000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_reporter_kind::parse_junit_reporter_eq_with_suffix_to_relative_path",
+      "attempt": {
+        "durationInNanoseconds": 267000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_reporter_kind::parse_junit_reporter_no_eq_to_default",
+      "attempt": {
+        "durationInNanoseconds": 277000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_reporter_kind::parse_line_reporter",
+      "attempt": {
+        "durationInNanoseconds": 257000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "reporting::test_reporter_kind::parse_unknown_reporter",
+      "attempt": {
+        "durationInNanoseconds": 250000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::validate_multiple_args",
+      "attempt": {
+        "durationInNanoseconds": 247000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::validate_one_test_arg",
+      "attempt": {
+        "durationInNanoseconds": 253000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::validate_test_args_empty",
+      "attempt": {
+        "durationInNanoseconds": 261000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "healthcheck_queue_failure",
+      "attempt": {
+        "durationInNanoseconds": 264000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "healthcheck_queue_success",
+      "attempt": {
+        "durationInNanoseconds": 291000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue_open_servers_on_specified_ports",
+      "attempt": {
+        "durationInNanoseconds": 281000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test_validate_protocol_version_message::protocol_version_message_incompatible",
+      "attempt": {
+        "durationInNanoseconds": 242000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test_validate_protocol_version_message::protocol_version_message_recv_wrong_message",
+      "attempt": {
+        "durationInNanoseconds": 251000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test_validate_protocol_version_message::protocol_version_message_tunnel_dropped",
+      "attempt": {
+        "durationInNanoseconds": 240000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test_validate_protocol_version_message::protocol_version_message_tunnel_timeout",
+      "attempt": {
+        "durationInNanoseconds": 347000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test_validate_protocol_version_message::recv_and_validate_protocol_version_message",
+      "attempt": {
+        "durationInNanoseconds": 214000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::error_with_empty_output_prints_empty_output",
+      "attempt": {
+        "durationInNanoseconds": 319000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::extend_appends_tests",
+      "attempt": {
+        "durationInNanoseconds": 315000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::failure_with_empty_output_prints_empty_output",
+      "attempt": {
+        "durationInNanoseconds": 295000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::generates_junit_xml_for_all_statuses",
+      "attempt": {
+        "durationInNanoseconds": 300000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_exact_millis",
+      "attempt": {
+        "durationInNanoseconds": 302000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_exact_minutes",
+      "attempt": {
+        "durationInNanoseconds": 296000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_exact_minutes_leftover_seconds_and_millis",
+      "attempt": {
+        "durationInNanoseconds": 311000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_exact_seconds",
+      "attempt": {
+        "durationInNanoseconds": 315000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_exact_seconds_leftover_millis",
+      "attempt": {
+        "durationInNanoseconds": 313000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_line_error",
+      "attempt": {
+        "durationInNanoseconds": 315000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_line_failure",
+      "attempt": {
+        "durationInNanoseconds": 295000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_line_pending",
+      "attempt": {
+        "durationInNanoseconds": 297000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_line_skipped",
+      "attempt": {
+        "durationInNanoseconds": 293000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_line_success",
+      "attempt": {
+        "durationInNanoseconds": 295000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_summary_error",
+      "attempt": {
+        "durationInNanoseconds": 305000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_summary_failure",
+      "attempt": {
+        "durationInNanoseconds": 314000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_summary_multiline",
+      "attempt": {
+        "durationInNanoseconds": 304000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_summary_no_output",
+      "attempt": {
+        "durationInNanoseconds": 299000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_summary_pending",
+      "attempt": {
+        "durationInNanoseconds": 291000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_summary_skipped",
+      "attempt": {
+        "durationInNanoseconds": 288000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "test::format_summary_success",
+      "attempt": {
+        "durationInNanoseconds": 299000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "procspawn_test_helper",
+      "attempt": {
+        "durationInNanoseconds": 246000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::bad_message_doesnt_take_down_work_scheduling_server",
+      "attempt": {
+        "durationInNanoseconds": 303000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::bad_message_doesnt_take_down_server",
+      "attempt": {
+        "durationInNanoseconds": 345000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::client_disconnect_then_connect_gets_buffered_results",
+      "attempt": {
+        "durationInNanoseconds": 320000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::invoker_reconnection_fails_never_invoked",
+      "attempt": {
+        "durationInNanoseconds": 309000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::invoker_reconnection_succeeds",
+      "attempt": {
+        "durationInNanoseconds": 231000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::multiple_invokers",
+      "attempt": {
+        "durationInNanoseconds": 288000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::multiple_jobs_complete",
+      "attempt": {
+        "durationInNanoseconds": 289000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::queue_server_healthcheck",
+      "attempt": {
+        "durationInNanoseconds": 240000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "net_protocol::test::error_reads_that_are_too_large",
+      "attempt": {
+        "durationInNanoseconds": 261000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "queue::test::work_server_healthcheck",
+      "attempt": {
+        "durationInNanoseconds": 310000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "net_protocol::test::error_reads_that_are_too_large_async",
+      "attempt": {
+        "durationInNanoseconds": 332000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "negotiate::test::queue_and_workers_lifecycle",
+      "attempt": {
+        "durationInNanoseconds": 323000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "procspawn_test_helper",
+      "attempt": {
+        "durationInNanoseconds": 309000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "negotiate::test::queue_negotiator_healthcheck",
+      "attempt": {
+        "durationInNanoseconds": 346000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "workers::test::test_1_worker_1_echo",
+      "attempt": {
+        "durationInNanoseconds": 298000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "workers::test::bad_message_doesnt_take_down_queue_negotiator_server",
+      "attempt": {
+        "durationInNanoseconds": 354000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "workers::test::test_1_worker_2_echos",
+      "attempt": {
+        "durationInNanoseconds": 311000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "workers::test::test_2_workers_1_echo",
+      "attempt": {
+        "durationInNanoseconds": 318000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "workers::test::test_2_workers_2_echos",
+      "attempt": {
+        "durationInNanoseconds": 293000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "workers::test::test_2_workers_8_echos",
+      "attempt": {
+        "durationInNanoseconds": 371000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "workers::test::work_in_constant_context",
+      "attempt": {
+        "durationInNanoseconds": 269000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    }
+  ]
+}

@@ -65,5 +65,9 @@ func (s DotNetxUnitSubstitution) SubstitutionsFor(
 		testsSeen[formattedTest] = struct{}{}
 	}
 
-	return []map[string]string{{"filter": strings.Join(tests, " | ")}}, nil
+	if len(tests) > 0 {
+		return []map[string]string{{"filter": strings.Join(tests, " | ")}}, nil
+	}
+
+	return []map[string]string{}, nil
 }

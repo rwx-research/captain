@@ -92,7 +92,11 @@ func (s RubyMinitestSubstitution) allTestsSubstitutions(
 		}
 	}
 
-	return []map[string]string{{"tests": strings.Join(tests, " ")}}, nil
+	if len(tests) > 0 {
+		return []map[string]string{{"tests": strings.Join(tests, " ")}}, nil
+	}
+
+	return []map[string]string{}, nil
 }
 
 func (s RubyMinitestSubstitution) singleTestSubstitutions(

@@ -60,5 +60,9 @@ func (s RubyCucumberSubstitution) SubstitutionsFor(
 		}
 	}
 
-	return []map[string]string{{"examples": strings.Join(examples, " ")}}, nil
+	if len(examples) > 0 {
+		return []map[string]string{{"examples": strings.Join(examples, " ")}}, nil
+	}
+
+	return []map[string]string{}, nil
 }
