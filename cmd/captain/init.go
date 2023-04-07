@@ -53,7 +53,8 @@ var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]pars
 
 var genericParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.RWXParser),
-	new(parsing.JUnitParser),
+	new(parsing.JUnitTestsuitesParser),
+	new(parsing.JUnitTestsuiteParser),
 }
 
 var invalidSuiteIDRegexp = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
@@ -85,11 +86,11 @@ func initCLIService(
 			logger = logging.NewDebugLogger()
 		}
 
-		providerAdapter, err := cfg.ProvidersEnv.MakeProviderAdapter()
+		provider, err := cfg.ProvidersEnv.MakeProvider()
 		if err != nil {
-			return errors.WithDecoration(errors.Wrap(err, "failed to construct provider adapter"))
+			return errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
 		}
-		err = providerValidator(providerAdapter)
+		err = providerValidator(provider)
 		if err != nil {
 			return errors.WithDecoration(err)
 		}
@@ -103,7 +104,7 @@ func initCLIService(
 				Insecure: cfg.Cloud.Insecure,
 				Log:      logger,
 				Token:    cfg.Secrets.APIToken,
-				Provider: providerAdapter,
+				Provider: provider,
 			})
 		} else {
 			var flakesFilePath, quarantinesFilePath, timingsFilePath string

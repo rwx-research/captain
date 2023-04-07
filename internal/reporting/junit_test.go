@@ -57,7 +57,7 @@ var _ = Describe("JUnit Report", func() {
 	It("produces a parsable JUnit file", func() {
 		var result parsing.JUnitTestResults
 
-		Expect(reporting.WriteJUnitSummary(mockFile, testResults)).To(Succeed())
+		Expect(reporting.WriteJUnitSummary(mockFile, testResults, reporting.Configuration{})).To(Succeed())
 		Expect(xml.Unmarshal([]byte(mockFile.Builder.String()), &result)).To(Succeed())
 		Expect(result.TestSuites).To(HaveLen(1))
 

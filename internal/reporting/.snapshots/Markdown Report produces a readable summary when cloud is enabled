@@ -1,0 +1,73 @@
+# `some-suite-id` Summary
+
+[🔗 View in Captain Cloud](https://example.com/deep_link/test_suite_summaries/some-suite-id/some/branch/abcdef113131)
+
+6 tests, 1 flaky, 2 failed, 1 timed out, 1 skipped, 2 retries
+
+## 🔁 Flaky
+
+<details>
+<summary><strong>flaky test</strong></summary>
+
+<dl>
+<dd>Retried 1 time</dd>
+<dd>Defined at <code>some/path/to/file.rb:15</code></dd>
+
+
+<dd>
+	<details>
+		<summary><code>expected true to equal false</code></summary> <br />
+		<pre>file/path/one.rb:4
+file/path/two.rb:4
+file/path/three.rb:4</pre>
+	</details>
+</dd>
+
+</dl>
+</details>
+
+## ❌ Failed
+
+<details>
+<summary><strong>failed test</strong></summary>
+
+<dl>
+<dd>Retried 2 times</dd>
+<dd>Defined at <code>some/path/to/file.rb</code></dd>
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb[4:5:6]'</code></dd>
+
+<dd>
+	<details>
+		<summary><code>expected true to equal false</code></summary> <br />
+		<pre>file/path/one.rb:4
+file/path/two.rb:4
+file/path/three.rb:4</pre>
+	</details>
+</dd>
+
+</dl>
+</details>
+<details>
+<summary><strong>other failed test</strong></summary>
+
+<dl>
+
+<dd>Defined at <code>some/path/to/file.rb</code></dd>
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb[7:8:9]'</code></dd>
+
+</dl>
+</details>
+
+## ⏳ Timed Out
+
+<details>
+<summary><strong>timed out test</strong></summary>
+
+<dl>
+
+
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb:12'</code></dd>
+
+</dl>
+</details>
+

@@ -64,7 +64,7 @@ var _ = Describe("Text Report", func() {
 	})
 
 	It("produces a readable summary", func() {
-		Expect(reporting.WriteTextSummary(mockFile, testResults)).To(Succeed())
+		Expect(reporting.WriteTextSummary(mockFile, testResults, reporting.Configuration{})).To(Succeed())
 		summary := mockFile.Builder.String()
 
 		Expect(summary).To(ContainSubstring("total of 4 tests"))

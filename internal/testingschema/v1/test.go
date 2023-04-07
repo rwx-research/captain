@@ -119,6 +119,34 @@ func (t Test) Quarantine() Test {
 	return t
 }
 
+func (t Test) Flaky() bool {
+	if len(t.PastAttempts) == 0 {
+		return false
+	}
+
+	sawSuccess := false
+	sawPotentiallyFlaky := false
+
+	if t.Attempt.Status.Kind == TestStatusSuccessful {
+		sawSuccess = true
+	}
+	if t.Attempt.Status.PotentiallyFlaky() {
+		sawPotentiallyFlaky = true
+	}
+
+	for _, attempt := range t.PastAttempts {
+		if attempt.Status.Kind == TestStatusSuccessful {
+			sawSuccess = true
+		}
+
+		if attempt.Status.PotentiallyFlaky() {
+			sawPotentiallyFlaky = true
+		}
+	}
+
+	return sawSuccess && sawPotentiallyFlaky
+}
+
 func (t Test) Tag(key string, value any) Test {
 	if t.Attempt.Meta == nil {
 		t.Attempt.Meta = map[string]any{}
