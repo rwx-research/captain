@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/acarl005/stripansi"
+
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"

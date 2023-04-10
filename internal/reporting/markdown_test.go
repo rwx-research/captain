@@ -35,7 +35,8 @@ var _ = Describe("Markdown Report", func() {
 		id8 := "./spec/foo/bar.rb:14"
 		id9 := "./spec/foo/bar.rb:15"
 		message := "expected true to equal false"
-		messageWithAnsi := `[31mFailure/Error: [0m[32mexpect[0m(thanos).to eq([31m[1;31m"[0m[31minevitable[1;31m"[0m[31m[0m)[0m
+		messageWithAnsi := `[31mFailure/Error: [0m[32mexpect[0m(thanos).to ` +
+			`eq([31m[1;31m"[0m[31minevitable[1;31m"[0m[31m[0m)[0m
 [31m[0m
 [31m  expected: "inevitable"[0m
 [31m       got: "evitable"[0m
