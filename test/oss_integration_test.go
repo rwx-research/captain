@@ -298,12 +298,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					},
 				}
 
-				withCaptainConfig(cfg, tmp, func() {
+				withCaptainConfig(cfg, tmp, func(configPath string) {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-functional-tests",
-							"--config-file", filepath.Join(tmp, ".captain/config.yaml"),
+							"--config-file", configPath,
 						},
 						env: getEnvWithoutAccessToken(),
 					})
@@ -362,12 +362,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					},
 				}
 
-				withCaptainConfig(cfg, tmp, func() {
+				withCaptainConfig(cfg, tmp, func(configPath string) {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-functional-tests",
-							"--config-file", filepath.Join(tmp, ".captain/config.yaml"),
+							"--config-file", configPath,
 						},
 						env: getEnvWithoutAccessToken(),
 					})
@@ -426,12 +426,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					},
 				}
 
-				withCaptainConfig(cfg, tmp, func() {
+				withCaptainConfig(cfg, tmp, func(configPath string) {
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-functional-tests",
-							"--config-file", filepath.Join(tmp, ".captain/config.yaml"),
+							"--config-file", configPath,
 						},
 						env: getEnvWithoutAccessToken(),
 					})

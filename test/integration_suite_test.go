@@ -198,7 +198,7 @@ type envGenerator func() map[string]string
 
 type sharedTestGen func(envGenerator, string)
 
-func withCaptainConfig(cfg cli.ConfigFile, rootDir string, body func()) {
+func withCaptainConfig(cfg cli.ConfigFile, rootDir string, body func(configPath string)) {
 	// TODO set RootDir on the config file once we get that merged
 	configPath := filepath.Join(rootDir, ".captain/config.yaml")
 
@@ -216,5 +216,5 @@ func withCaptainConfig(cfg cli.ConfigFile, rootDir string, body func()) {
 		Expect(err).NotTo(HaveOccurred())
 	}()
 
-	body()
+	body(configPath)
 }
