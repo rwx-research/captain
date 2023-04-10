@@ -7,3 +7,11 @@ test-suites:
         github-step-summary:
     results:
       path: report.xml
+  backwards-compatibility:
+    command: nix develop --command mage integrationTestsFromTag
+    fail-on-upload-error: true
+    output:
+      reporters:
+        github-step-summary:
+    results:
+      path: report.xml
