@@ -44,12 +44,7 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 					case "github-step-summary":
 						stepSummaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
 						if stepSummaryPath == "" {
-							return errors.WithDecoration(errors.NewConfigurationError(
-								"'github-step-summary' reporter misconfigured",
-								"The 'github-step-summary' reporter can only run within a GitHub Actions job where the "+
-									"'GITHUB_STEP_SUMMARY' environment variable is set.",
-								"",
-							))
+							continue
 						}
 
 						reporterFuncs[stepSummaryPath] = reporting.WriteMarkdownSummary
