@@ -11,9 +11,21 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
+	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
+
+// Config is the internal representation of the configuration.
+type Config struct {
+	cli.ConfigFile
+
+	ProvidersEnv providers.Env
+
+	Secrets struct {
+		APIToken string `env:"RWX_ACCESS_TOKEN"`
+	}
+}
 
 type contextKey string
 
@@ -52,57 +64,6 @@ const (
 	quarantinesFileName = "quarantines.yaml"
 	timingsFileName     = "timings.yaml"
 )
-
-// Config is the internal representation of the configuration.
-type Config struct {
-	ConfigFile
-
-	ProvidersEnv providers.Env
-
-	Secrets struct {
-		APIToken string `env:"RWX_ACCESS_TOKEN"`
-	}
-}
-
-// configFile holds all options that can be set over the config file
-type ConfigFile struct {
-	Cloud struct {
-		APIHost  string `yaml:"api-host" env:"CAPTAIN_HOST"`
-		Disabled bool
-		Insecure bool
-	}
-	Flags  map[string]any
-	Output struct {
-		Debug bool
-	}
-	TestSuites map[string]SuiteConfig `yaml:"test-suites"`
-}
-
-// SuiteConfig holds options that can be customized per suite
-type SuiteConfig struct {
-	Command           string
-	FailOnUploadError bool `yaml:"fail-on-upload-error"`
-	Output            struct {
-		PrintSummary bool `yaml:"print-summary"`
-		Reporters    map[string]string
-		Quiet        bool
-	}
-	Results struct {
-		Framework string
-		Language  string
-		Path      string
-	}
-	Retries struct {
-		Attempts                  int
-		Command                   string
-		FailFast                  bool `yaml:"fail-fast"`
-		FlakyAttempts             int  `yaml:"flaky-attempts"`
-		MaxTests                  string
-		PostRetryCommands         []string `yaml:"post-retry-commands"`
-		PreRetryCommands          []string `yaml:"pre-retry-commands"`
-		IntermediateArtifactsPath string   `yaml:"intermediate-artifacts-path"`
-	}
-}
 
 // findInParentDir starts at the current working directory and walk up to the root, trying
 // to find the specified fileName
@@ -189,10 +150,10 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 
 	if _, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; !ok {
 		if cfg.TestSuites == nil {
-			cfg.TestSuites = make(map[string]SuiteConfig)
+			cfg.TestSuites = make(map[string]cli.SuiteConfig)
 		}
 
-		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = SuiteConfig{}
+		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = cli.SuiteConfig{}
 	}
 
 	cfg = bindRootCmdFlags(cfg, cliArgs.RootCliArgs)
