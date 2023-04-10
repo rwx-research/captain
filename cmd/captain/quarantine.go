@@ -32,6 +32,12 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 			if err != nil {
 				return errors.WithStack(err)
 			}
+
+			captain, err := cli.GetService(cmd)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
 			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 				for name, path := range suiteConfig.Output.Reporters {
 					switch name {
@@ -44,6 +50,10 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 					case "github-step-summary":
 						stepSummaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
 						if stepSummaryPath == "" {
+							captain.Log.Debug(
+								"Skipping configuration of the 'github-step-summary' reporter " +
+									"(the 'GITHUB_STEP_SUMMARY' environment variable is not set).",
+							)
 							continue
 						}
 
@@ -80,10 +90,6 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 				UploadResults:     false,
 			}
 
-			captain, err := cli.GetService(cmd)
-			if err != nil {
-				return errors.WithStack(err)
-			}
 			err = captain.RunSuite(cmd.Context(), runConfig)
 			if _, ok := errors.AsConfigurationError(err); !ok {
 				cmd.SilenceUsage = true
