@@ -16,7 +16,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/cli"
 )
 
-var _ = Describe("OSS mode Integration Tests", func() {
+var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", func() {
 	randomSuiteId := func() string {
 		// create a random suite ID so that concurrent tests don't try to read / write from the same timings files
 		suiteUUID, err := uuid.NewRandom()
@@ -33,6 +33,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 			delete(env, "RWX_ACCESS_TOKEN")
 			return env
 		}
+
 		Describe("captain --version", func() {
 			It("renders the version I expect", func() {
 				result := runCaptain(captainArgs{
@@ -41,9 +42,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				})
 
 				Expect(result.exitCode).To(Equal(0))
-				Expect(result.stdout).To(Equal(captain.Version))
 				Expect(result.stdout).To(MatchRegexp(`^v\d+\.\d+\.\d+-?`))
-				Expect(result.stderr).To(BeEmpty())
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stdout).To(Equal(captain.Version))
+					Expect(result.stderr).To(BeEmpty())
+				})
 			})
 		})
 

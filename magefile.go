@@ -33,7 +33,6 @@ func All(ctx context.Context) error {
 		Lint,
 		LintFix,
 		LegacyTestSuiteTags,
-		IntegrationTestsFromTag,
 	}
 
 	for _, t := range targets {
@@ -102,6 +101,16 @@ func UnitTest(ctx context.Context) error {
 // Test executes the test-suite for the Captain-CLI.
 func IntegrationTest(ctx context.Context) error {
 	mg.Deps(Build)
+
+	// if LEGACY_VERSION_TO_TEST is set, checkout that version and then run integration tests
+	// perhaps in the future we'll archive the test binaries but for now we just checkout the rev.
+	if os.Getenv("LEGACY_VERSION_TO_TEST") != "" {
+		err := sh.RunV("git", "checkout", os.Getenv("LEGACY_VERSION_TO_TEST"))
+		if err != nil {
+			return err
+		}
+	}
+
 	return (makeTestTask("-tags", "integration", "./test/"))(ctx)
 }
 
@@ -191,20 +200,4 @@ func hasChangesIn(prevVersion semver.Version, version semver.Version, folder str
 	}
 
 	return false, err
-}
-
-func IntegrationTestsFromTag(ctx context.Context) error {
-	tag := os.Getenv("TAG")
-	if tag == "" {
-		return fmt.Errorf("TAG env var is not set, please set it to the tag you want to test")
-	}
-	mg.Deps(Build)
-
-	err := exec.Command("git", "checkout", tag, "--", "./test/").Run()
-	if err != nil {
-		return err
-	}
-
-	// run integration tests
-	return (makeTestTask("-tags", "integration", "./test/"))(ctx)
 }

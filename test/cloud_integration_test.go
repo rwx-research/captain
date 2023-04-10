@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Cloud Mode Integration Tests", func() {
+var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests", func() {
 	BeforeEach(func() {
 		Expect(os.Getenv("RWX_ACCESS_TOKEN_STAGING")).ToNot(BeEmpty(), "These integration tests require a valid RWX_ACCESS_TOKEN_STAGING")
 	})

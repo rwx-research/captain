@@ -53,11 +53,11 @@ jobs:
       - run: nix develop --command go mod tidy
       - run: git diff-index --quiet HEAD
 
-  which-tags-to-test:
+  which-versions-to-test:
     name: Determine which tags to test for backwards compatibility
     runs-on: ubuntu-latest
     outputs:
-      tags: ${{ steps.output-tags.outputs.tags }}
+      versions: ${{ steps.output-tags.outputs.versions }}
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
@@ -67,16 +67,17 @@ jobs:
             keep-outputs = true
       - run: |
           git fetch --tags
-          echo "tags=$(nix develop --command mage legacyTestSuiteTags)" >> "$GITHUB_OUTPUT"
+          echo "versions=$(nix develop --command mage legacyTestSuiteTags)" >> "$GITHUB_OUTPUT"
         id: output-tags
 
   backwards-compatibility-tests:
     name: Backwards compatibility tests
-    needs: which-tags-to-test
+    needs: which-versions-to-test
+    if: ${{ needs.which-versions-to-test.outputs.versions != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tag: ${{ fromJSON(needs.which-tags-to-test.outputs.tags) }}
+        legacy_version: ${{ fromJSON(needs.which-tags-to-test.outputs.versions) }}
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
@@ -84,10 +85,10 @@ jobs:
           extra_nix_config: |
             keep-derivations = true
             keep-outputs = true
-      - name: Run legacy tests against version ${{ matrix.tag }}
+      - name: Run legacy tests against version ${{ matrix.legacy_version }}
         run: nix develop --command mage integrationTestsFromTag
         env:
-          tag: ${{ matrix.tag }}
+          LEGACY_VERSION_TO_TEST: ${{ matrix.legacy_version }}
           REPORT: true
           CGO_ENABLED: 0
           LDFLAGS: -w -s

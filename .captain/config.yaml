@@ -8,7 +8,7 @@ test-suites:
     results:
       path: report.xml
   backwards-compatibility:
-    command: nix develop --command mage integrationTestsFromTag
+    command: nix develop --command mage integrationTest
     fail-on-upload-error: true
     output:
       reporters:

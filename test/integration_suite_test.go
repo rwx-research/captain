@@ -218,3 +218,30 @@ func withCaptainConfig(cfg cli.ConfigFile, rootDir string, body func(configPath 
 
 	body(configPath)
 }
+
+// Integration tests are run to ensure that captain behaves as expected as well as to ensure background compatibility
+// They're here to ensure
+// - old CLI args should work
+// - old ENV vars should work
+// - old config files should work
+// Some guidelines for writing them:
+// - avoid asserting on STDERR
+// - assertions should be as lenient as possible (e.g. avoid asserting on exact values when it's unnecessary to guarantee compatibility)
+//
+// If you want to write tighter assertions that you expect to break slightly future versions, wrap those assertions
+// (or the whole tests) in `withoutBackwardsCompatibility`
+func withoutBackwardsCompatibility(incompatibleClosure func()) {
+	if os.Getenv("LEGACY_VERSION_TO_TEST") == "" {
+		incompatibleClosure()
+	}
+}
+
+// we add a prefix to top level describes to allow quarantining (disabling) of legacy tests that become invalid / are subject to a breaking change
+func versionedPrefixForQuarantining() string {
+	version := os.Getenv("LEGACY_VERSION_TO_TEST")
+	if os.Getenv("LEGACY_VERSION_TO_TEST") == "" {
+		return ""
+	} else {
+		return version + ": "
+	}
+}
