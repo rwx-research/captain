@@ -1,6 +1,6 @@
 # `some-suite-id` Summary
 
-6 tests, 1 flaky, 2 failed, 1 timed out, 1 skipped, 2 retries
+9 tests, 1 flaky, 3 failed, 1 timed out, 1 quarantined, 1 canceled, 1 skipped, 2 retries
 
 ## 🔁 Flaky
 
@@ -13,12 +13,16 @@
 
 
 <dd>
-	<details>
-		<summary><code>expected true to equal false</code></summary> <br />
-		<pre>file/path/one.rb:4
+<details>
+<summary>Failure Details</summary><br />
+
+<pre>expected true to equal false
+
+file/path/one.rb:4
 file/path/two.rb:4
 file/path/three.rb:4</pre>
-	</details>
+
+</details>
 </dd>
 
 </dl>
@@ -35,23 +39,62 @@ file/path/three.rb:4</pre>
 <dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb[4:5:6]'</code></dd>
 
 <dd>
-	<details>
-		<summary><code>expected true to equal false</code></summary> <br />
-		<pre>file/path/one.rb:4
+<details>
+<summary>Failure Details</summary><br />
+
+<pre>expected true to equal false
+
+file/path/one.rb:4
 file/path/two.rb:4
 file/path/three.rb:4</pre>
-	</details>
+
+</details>
 </dd>
 
 </dl>
 </details>
 <details>
-<summary><strong>other failed test</strong></summary>
+<summary><strong>failed test backtrace only</strong></summary>
 
 <dl>
 
 <dd>Defined at <code>some/path/to/file.rb</code></dd>
 <dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb[7:8:9]'</code></dd>
+
+<dd>
+<details>
+<summary>Failure Details</summary><br />
+
+<pre>file/path/one.rb:4
+file/path/two.rb:4
+file/path/three.rb:4</pre>
+
+</details>
+</dd>
+
+</dl>
+</details>
+<details>
+<summary><strong>failed test message only w/ ansi</strong></summary>
+
+<dl>
+
+
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb:15'</code></dd>
+
+<dd>
+<details>
+<summary>Failure Details</summary><br />
+
+<pre>Failure/Error: expect(thanos).to eq("inevitable")
+
+  expected: "inevitable"
+       got: "evitable"
+
+  (compared using ==)</pre>
+
+</details>
+</dd>
 
 </dl>
 </details>
@@ -65,6 +108,32 @@ file/path/three.rb:4</pre>
 
 
 <dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb:12'</code></dd>
+
+</dl>
+</details>
+
+## 🏥 Quarantined
+
+<details>
+<summary><strong>quarantined test</strong></summary>
+
+<dl>
+
+
+
+
+</dl>
+</details>
+
+## 🚫 Canceled
+
+<details>
+<summary><strong>canceled test</strong></summary>
+
+<dl>
+
+
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb:14'</code></dd>
 
 </dl>
 </details>
