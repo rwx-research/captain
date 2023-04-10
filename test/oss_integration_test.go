@@ -283,7 +283,10 @@ var _ = Describe("OSS mode Integration Tests", func() {
 
 				os.Remove(filepath.Join(tmp, "markdown.md"))
 
+				workingDir, err := os.Getwd()
+				Expect(err).NotTo(HaveOccurred())
 				cfg := cli.ConfigFile{
+					RootDir: workingDir,
 					TestSuites: map[string]cli.SuiteConfig{
 						"captain-cli-functional-tests": {
 							Command:           "bash -c 'exit 123'",
@@ -347,7 +350,10 @@ var _ = Describe("OSS mode Integration Tests", func() {
 
 				os.Remove(filepath.Join(tmp, "rwx-v1.json"))
 
+				workingDir, err := os.Getwd()
+				Expect(err).NotTo(HaveOccurred())
 				cfg := cli.ConfigFile{
+					RootDir: workingDir,
 					TestSuites: map[string]cli.SuiteConfig{
 						"captain-cli-functional-tests": {
 							Command:           "bash -c 'exit 123'",
@@ -411,7 +417,10 @@ var _ = Describe("OSS mode Integration Tests", func() {
 
 				os.Remove(filepath.Join(tmp, "junit.xml"))
 
+				workingDir, err := os.Getwd()
+				Expect(err).NotTo(HaveOccurred())
 				cfg := cli.ConfigFile{
+					RootDir: workingDir,
 					TestSuites: map[string]cli.SuiteConfig{
 						"captain-cli-functional-tests": {
 							Command:           "bash -c 'exit 123'",

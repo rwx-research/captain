@@ -11,6 +11,7 @@ type ConfigFile struct {
 	Output struct {
 		Debug bool
 	}
+	RootDir    string                 `yaml:"root-dir" env:"CAPTAIN_ROOT_DIR"`
 	TestSuites map[string]SuiteConfig `yaml:"test-suites"`
 }
 

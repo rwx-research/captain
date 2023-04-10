@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/caarlos0/env/v7"
 	"github.com/spf13/cobra"
@@ -156,9 +157,64 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = cli.SuiteConfig{}
 	}
 
+	cfg = detectRootDir(cfg, cliArgs.RootCliArgs)
+	cfg = applyRootDirToConfigFile(cfg)
+
+	// These must come after the root dir and applying the root dir to the config file.
+	// The root dir only affects relative paths in the config file.
 	cfg = bindRootCmdFlags(cfg, cliArgs.RootCliArgs)
 	cfg = bindFrameworkFlags(cfg, cliArgs.frameworkParams, cliArgs.RootCliArgs.suiteID)
 	cfg = bindRunCmdFlags(cfg, cliArgs)
 
 	return cfg, nil
+}
+
+// Detects the root-dir relative to the config file path.
+// If the config file is found within a .captain subdirectory, the root-dir
+// is detected to be the directory containing the .captain directory.
+// Otherwise, the root-dir is "" which, in effect, acts as the working dir.
+func detectRootDir(cfg Config, rootCliArgs rootCliArgs) Config {
+	if rootCliArgs.rootDir != "" {
+		cfg.RootDir = rootCliArgs.rootDir
+		return cfg
+	}
+
+	if cfg.RootDir != "" {
+		return cfg
+	}
+
+	if !strings.HasSuffix(rootCliArgs.configFilePath, filepath.Join(captainDirectory, configFileName)) {
+		// Leave it as "" to use the working dir
+		return cfg
+	}
+
+	detectedRootDir := strings.TrimSuffix(rootCliArgs.configFilePath, filepath.Join(captainDirectory, configFileName))
+	cfg.RootDir = filepath.Clean(detectedRootDir)
+	return cfg
+}
+
+func applyRootDirToConfigFile(cfg Config) Config {
+	for suiteID, suiteConfig := range cfg.TestSuites {
+		for reporter, path := range suiteConfig.Output.Reporters {
+			if !filepath.IsAbs(path) {
+				suiteConfig.Output.Reporters[reporter] = filepath.Join(cfg.RootDir, path)
+			}
+		}
+
+		if suiteConfig.Results.Path != "" && !filepath.IsAbs(suiteConfig.Results.Path) {
+			suiteConfig.Results.Path = filepath.Join(cfg.RootDir, suiteConfig.Results.Path)
+		}
+
+		if suiteConfig.Retries.IntermediateArtifactsPath != "" &&
+			!filepath.IsAbs(suiteConfig.Retries.IntermediateArtifactsPath) {
+			suiteConfig.Retries.IntermediateArtifactsPath = filepath.Join(
+				cfg.RootDir,
+				suiteConfig.Retries.IntermediateArtifactsPath,
+			)
+		}
+
+		cfg.TestSuites[suiteID] = suiteConfig
+	}
+
+	return cfg
 }

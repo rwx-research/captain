@@ -14,6 +14,7 @@ type rootCliArgs struct {
 	githubJobName   string
 	githubJobMatrix string
 	insecure        bool
+	rootDir         string
 	suiteID         string
 	positionalArgs  []string
 }
@@ -21,6 +22,9 @@ type rootCliArgs struct {
 func ConfigureRootCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	rootCmd.
 		PersistentFlags().StringVar(&cliArgs.RootCliArgs.configFilePath, "config-file", "", "the config file for captain")
+
+	rootCmd.
+		PersistentFlags().StringVar(&cliArgs.RootCliArgs.rootDir, "root-dir", "", "the root directory")
 
 	suiteIDFromEnv := os.Getenv("CAPTAIN_SUITE_ID")
 	rootCmd.
