@@ -13,6 +13,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/rwx-research/captain-cli/internal/cli"
 )
 
 var _ = Describe("OSS mode Integration Tests", func() {
@@ -69,7 +70,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						Expect(result.exitCode).To(Equal(0))
 					})
 
-				It("sets partition 1 correctly when delimiter is set via env var", func() {
+					It("sets partition 1 correctly when delimiter is set via env var", func() {
 						env := getEnvWithoutAccessToken()
 						env["CAPTAIN_DELIMITER"] = ","
 
@@ -91,6 +92,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						Expect(result.exitCode).To(Equal(0))
 					})
 				})
+
 				It("sets partition 1 correctly", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
@@ -273,6 +275,198 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				})
 
 				Expect(result.exitCode).To(Equal(0))
+			})
+
+			It("produces markdown-summary reports via config file", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "markdown.md"))
+
+				cfg := cli.ConfigFile{
+					TestSuites: map[string]cli.SuiteConfig{
+						"captain-cli-functional-tests": {
+							Command:           "bash -c 'exit 123'",
+							FailOnUploadError: true,
+							Output: cli.SuiteConfigOutput{
+								Reporters: map[string]string{"markdown-summary": filepath.Join(tmp, "markdown.md")},
+							},
+							Results: cli.SuiteConfigResults{
+								Path: "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+							},
+						},
+					},
+				}
+
+				withCaptainConfig(cfg, tmp, func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-functional-tests",
+							"--config-file", filepath.Join(tmp, ".captain/config.yaml"),
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					_, err = os.Stat(filepath.Join(tmp, "markdown.md"))
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					Expect(result.exitCode).To(Equal(123))
+				})
+			})
+
+			It("produces markdown-summary reports via CLI flag", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "markdown.md"))
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"captain-cli-functional-tests",
+						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+						"--fail-on-upload-error",
+						"--reporter", fmt.Sprintf("markdown-summary=%v", filepath.Join(tmp, "markdown.md")),
+						"-c", "bash -c 'exit 123'",
+					},
+					env: getEnvWithoutAccessToken(),
+				})
+
+				_, err = os.Stat(filepath.Join(tmp, "markdown.md"))
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				Expect(result.exitCode).To(Equal(123))
+			})
+
+			It("produces rwx-v1-json reports via config file", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "rwx-v1.json"))
+
+				cfg := cli.ConfigFile{
+					TestSuites: map[string]cli.SuiteConfig{
+						"captain-cli-functional-tests": {
+							Command:           "bash -c 'exit 123'",
+							FailOnUploadError: true,
+							Output: cli.SuiteConfigOutput{
+								Reporters: map[string]string{"rwx-v1-json": filepath.Join(tmp, "rwx-v1.json")},
+							},
+							Results: cli.SuiteConfigResults{
+								Path: "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+							},
+						},
+					},
+				}
+
+				withCaptainConfig(cfg, tmp, func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-functional-tests",
+							"--config-file", filepath.Join(tmp, ".captain/config.yaml"),
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					_, err = os.Stat(filepath.Join(tmp, "rwx-v1.json"))
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					Expect(result.exitCode).To(Equal(123))
+				})
+			})
+
+			It("produces rwx-v1-json reports via CLI flag", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "rwx-v1.json"))
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"captain-cli-functional-tests",
+						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+						"--fail-on-upload-error",
+						"--reporter", fmt.Sprintf("rwx-v1-json=%v", filepath.Join(tmp, "rwx-v1.json")),
+						"-c", "bash -c 'exit 123'",
+					},
+					env: getEnvWithoutAccessToken(),
+				})
+
+				_, err = os.Stat(filepath.Join(tmp, "rwx-v1.json"))
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				Expect(result.exitCode).To(Equal(123))
+			})
+
+			It("produces junit-xml reports via config file", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "junit.xml"))
+
+				cfg := cli.ConfigFile{
+					TestSuites: map[string]cli.SuiteConfig{
+						"captain-cli-functional-tests": {
+							Command:           "bash -c 'exit 123'",
+							FailOnUploadError: true,
+							Output: cli.SuiteConfigOutput{
+								Reporters: map[string]string{"junit-xml": filepath.Join(tmp, "junit.xml")},
+							},
+							Results: cli.SuiteConfigResults{
+								Path: "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+							},
+						},
+					},
+				}
+
+				withCaptainConfig(cfg, tmp, func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-functional-tests",
+							"--config-file", filepath.Join(tmp, ".captain/config.yaml"),
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					_, err = os.Stat(filepath.Join(tmp, "junit.xml"))
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					Expect(result.exitCode).To(Equal(123))
+				})
+			})
+
+			It("produces junit-xml reports via CLI flag", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "junit.xml"))
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"captain-cli-functional-tests",
+						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+						"--fail-on-upload-error",
+						"--reporter", fmt.Sprintf("junit-xml=%v", filepath.Join(tmp, "junit.xml")),
+						"-c", "bash -c 'exit 123'",
+					},
+					env: getEnvWithoutAccessToken(),
+				})
+
+				_, err = os.Stat(filepath.Join(tmp, "junit.xml"))
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				Expect(result.exitCode).To(Equal(123))
 			})
 
 			Context("command output passthrough", func() {
