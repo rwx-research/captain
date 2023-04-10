@@ -1,6 +1,6 @@
 # `some-suite-id` Summary
 
-6 tests, 1 flaky, 2 failed, 1 timed out, 1 skipped, 2 retries
+8 tests, 1 flaky, 2 failed, 1 timed out, 1 quarantined, 1 canceled, 1 skipped, 2 retries
 
 ## 🔁 Flaky
 
@@ -65,6 +65,32 @@ file/path/three.rb:4</pre>
 
 
 <dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb:12'</code></dd>
+
+</dl>
+</details>
+
+## 🏥 Quarantined
+
+<details>
+<summary><strong>quarantined test</strong></summary>
+
+<dl>
+
+
+
+
+</dl>
+</details>
+
+## 🚫 Canceled
+
+<details>
+<summary><strong>canceled test</strong></summary>
+
+<dl>
+
+
+<dd>Retry with <code>bundle exec rspec './spec/foo/bar.rb:14'</code></dd>
 
 </dl>
 </details>

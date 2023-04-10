@@ -31,6 +31,8 @@ var _ = Describe("Markdown Report", func() {
 		id4 := "./spec/foo/bar.rb:12"
 		id5 := "./spec/foo/bar.rb:11"
 		id6 := "./spec/foo/bar.rb:12"
+		id7 := "./spec/foo/bar.rb:13"
+		id8 := "./spec/foo/bar.rb:14"
 		message := "expected true to equal false"
 		fifteen := 15
 		testResults = *v1.NewTestResults(
@@ -87,6 +89,16 @@ var _ = Describe("Markdown Report", func() {
 					ID:      &id6,
 					Name:    "timed out test",
 					Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+				},
+				{
+					ID:      &id7,
+					Name:    "quarantined test",
+					Attempt: v1.TestAttempt{Status: v1.NewQuarantinedTestStatus(v1.NewTimedOutTestStatus())},
+				},
+				{
+					ID:      &id8,
+					Name:    "canceled test",
+					Attempt: v1.TestAttempt{Status: v1.NewCanceledTestStatus()},
 				},
 			},
 			nil,

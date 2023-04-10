@@ -306,7 +306,7 @@ func writeMarkdownQuarantinedSection(
 ) (bool, error) {
 	return writeMarkdownSection(
 		markdown,
-		timedOutSection,
+		quarantinedSection,
 		framework,
 		tests,
 		func(test v1.Test) *v1.TestStatus {
@@ -324,7 +324,7 @@ func writeMarkdownCanceledSection(
 ) (bool, error) {
 	return writeMarkdownSection(
 		markdown,
-		timedOutSection,
+		canceledSection,
 		framework,
 		tests,
 		func(test v1.Test) *v1.TestStatus {
