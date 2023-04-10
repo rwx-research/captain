@@ -5,6 +5,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/acarl005/stripansi"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
@@ -389,8 +390,11 @@ func writeMarkdownSection(
 			Retries:  len(test.PastAttempts),
 		}
 		if failedStatus != nil {
-			markdownTest.Message = failedStatus.Message
-			markdownTest.Backtrace = strings.Join(failedStatus.Backtrace, "\n")
+			markdownTest.Backtrace = stripansi.Strip(strings.Join(failedStatus.Backtrace, "\n"))
+			if failedStatus.Message != nil {
+				strippedMessage := stripansi.Strip(*failedStatus.Message)
+				markdownTest.Message = &strippedMessage
+			}
 		}
 
 		testMarkdown := new(strings.Builder)

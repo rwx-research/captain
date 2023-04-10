@@ -75,7 +75,7 @@ file/path/three.rb:4</pre>
 </dl>
 </details>
 <details>
-<summary><strong>failed test message only</strong></summary>
+<summary><strong>failed test message only w/ ansi</strong></summary>
 
 <dl>
 
@@ -86,7 +86,12 @@ file/path/three.rb:4</pre>
 <details>
 <summary>Failure Details</summary><br />
 
-<pre>expected true to equal false</pre>
+<pre>Failure/Error: expect(thanos).to eq("inevitable")
+
+  expected: "inevitable"
+       got: "evitable"
+
+  (compared using ==)</pre>
 
 </details>
 </dd>

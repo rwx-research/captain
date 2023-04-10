@@ -35,6 +35,12 @@ var _ = Describe("Markdown Report", func() {
 		id8 := "./spec/foo/bar.rb:14"
 		id9 := "./spec/foo/bar.rb:15"
 		message := "expected true to equal false"
+		messageWithAnsi := `[31mFailure/Error: [0m[32mexpect[0m(thanos).to eq([31m[1;31m"[0m[31minevitable[1;31m"[0m[31m[0m)[0m
+[31m[0m
+[31m  expected: "inevitable"[0m
+[31m       got: "evitable"[0m
+[31m[0m
+[31m  (compared using ==)[0m`
 		fifteen := 15
 		testResults = *v1.NewTestResults(
 			v1.RubyRSpecFramework,
@@ -109,10 +115,10 @@ var _ = Describe("Markdown Report", func() {
 				},
 				{
 					ID:   &id9,
-					Name: "failed test message only",
+					Name: "failed test message only w/ ansi",
 					Attempt: v1.TestAttempt{
 						Status: v1.NewFailedTestStatus(
-							&message,
+							&messageWithAnsi,
 							nil,
 							nil,
 						),
