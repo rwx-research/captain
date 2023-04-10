@@ -40,12 +40,18 @@ const (
 {{ if .Retries }}<dd>Retried {{ .Retries}} time{{ if ne .Retries 1 }}s{{end}}</dd>{{ end }}
 {{ if .Location }}<dd>Defined at <code>{{ .Location }}</code></dd>{{ end }}
 {{ if .Command }}<dd>Retry with <code>{{ .Command }}</code></dd>{{ end }}
-{{ if .Message }}
+{{ if or .Message .Backtrace }}
 <dd>
-	<details>
-		<summary><code>{{ .Message }}</code></summary> <br />
-		{{ if .Backtrace }}<pre>{{ .Backtrace}}</pre>{{ end }}
-	</details>
+<details>
+<summary>Failure Details</summary><br />
+{{ if and .Message .Backtrace }}
+<pre>{{ .Message}}
+
+{{ .Backtrace }}</pre>
+{{ else }}
+<pre>{{ or .Message .Backtrace }}</pre>
+{{ end }}
+</details>
 </dd>
 {{ end }}
 </dl>

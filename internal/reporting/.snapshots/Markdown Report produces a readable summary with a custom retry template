@@ -1,6 +1,6 @@
 # `some-suite-id` Summary
 
-8 tests, 1 flaky, 2 failed, 1 timed out, 1 quarantined, 1 canceled, 1 skipped, 2 retries
+9 tests, 1 flaky, 3 failed, 1 timed out, 1 quarantined, 1 canceled, 1 skipped, 2 retries
 
 ## 🔁 Flaky
 
@@ -13,12 +13,16 @@
 
 
 <dd>
-	<details>
-		<summary><code>expected true to equal false</code></summary> <br />
-		<pre>file/path/one.rb:4
+<details>
+<summary>Failure Details</summary><br />
+
+<pre>expected true to equal false
+
+file/path/one.rb:4
 file/path/two.rb:4
 file/path/three.rb:4</pre>
-	</details>
+
+</details>
 </dd>
 
 </dl>
@@ -35,23 +39,57 @@ file/path/three.rb:4</pre>
 <dd>Retry with <code>bin/rspec './spec/foo/bar.rb[4:5:6]'</code></dd>
 
 <dd>
-	<details>
-		<summary><code>expected true to equal false</code></summary> <br />
-		<pre>file/path/one.rb:4
+<details>
+<summary>Failure Details</summary><br />
+
+<pre>expected true to equal false
+
+file/path/one.rb:4
 file/path/two.rb:4
 file/path/three.rb:4</pre>
-	</details>
+
+</details>
 </dd>
 
 </dl>
 </details>
 <details>
-<summary><strong>other failed test</strong></summary>
+<summary><strong>failed test backtrace only</strong></summary>
 
 <dl>
 
 <dd>Defined at <code>some/path/to/file.rb</code></dd>
 <dd>Retry with <code>bin/rspec './spec/foo/bar.rb[7:8:9]'</code></dd>
+
+<dd>
+<details>
+<summary>Failure Details</summary><br />
+
+<pre>file/path/one.rb:4
+file/path/two.rb:4
+file/path/three.rb:4</pre>
+
+</details>
+</dd>
+
+</dl>
+</details>
+<details>
+<summary><strong>failed test message only</strong></summary>
+
+<dl>
+
+
+<dd>Retry with <code>bin/rspec './spec/foo/bar.rb:15'</code></dd>
+
+<dd>
+<details>
+<summary>Failure Details</summary><br />
+
+<pre>expected true to equal false</pre>
+
+</details>
+</dd>
 
 </dl>
 </details>

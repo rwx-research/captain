@@ -33,6 +33,7 @@ var _ = Describe("Markdown Report", func() {
 		id6 := "./spec/foo/bar.rb:12"
 		id7 := "./spec/foo/bar.rb:13"
 		id8 := "./spec/foo/bar.rb:14"
+		id9 := "./spec/foo/bar.rb:15"
 		message := "expected true to equal false"
 		fifteen := 15
 		testResults = *v1.NewTestResults(
@@ -61,9 +62,15 @@ var _ = Describe("Markdown Report", func() {
 				},
 				{
 					ID:       &id3,
-					Name:     "other failed test",
+					Name:     "failed test backtrace only",
 					Location: &v1.Location{File: "some/path/to/file.rb"},
-					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(
+							nil,
+							nil,
+							[]string{"file/path/one.rb:4", "file/path/two.rb:4", "file/path/three.rb:4"},
+						),
+					},
 				},
 				{
 					ID:       &id4,
@@ -99,6 +106,17 @@ var _ = Describe("Markdown Report", func() {
 					ID:      &id8,
 					Name:    "canceled test",
 					Attempt: v1.TestAttempt{Status: v1.NewCanceledTestStatus()},
+				},
+				{
+					ID:   &id9,
+					Name: "failed test message only",
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(
+							&message,
+							nil,
+							nil,
+						),
+					},
 				},
 			},
 			nil,
