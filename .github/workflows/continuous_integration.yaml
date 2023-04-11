@@ -13,7 +13,10 @@ jobs:
           extra_nix_config: |
             keep-derivations = true
             keep-outputs = true
-      - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
+      - run: nix develop --command mage
+        env:
+          CGO_ENABLED: 0
+          LDFLAGS: -w -s
       - run: ./captain run captain-cli-ginkgo
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
@@ -85,13 +88,21 @@ jobs:
           extra_nix_config: |
             keep-derivations = true
             keep-outputs = true
-      - name: Run legacy tests against version ${{ matrix.legacy_version }}
-        run: nix develop --command mage integrationTestsFromTag
+
+      - name: build captain
+        run: nix develop --command mage
         env:
-          LEGACY_VERSION_TO_TEST: ${{ matrix.legacy_version }}
-          REPORT: true
           CGO_ENABLED: 0
           LDFLAGS: -w -s
+      - name: checkout old version
+        run: |
+          git fetch --tags
+          git checkout ${{ matrix.legacy_version }}
+      - name: run integration tests from ${{ matrix.legacy_version }}
+        run: ./captain run backwards-compatibility
+        env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
           RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
           DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
+          REPORT: true
+          LEGACY_VERSION_TO_TEST: ${{ matrix.legacy_version }}

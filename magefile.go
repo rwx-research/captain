@@ -100,15 +100,11 @@ func UnitTest(ctx context.Context) error {
 
 // Test executes the test-suite for the Captain-CLI.
 func IntegrationTest(ctx context.Context) error {
-	mg.Deps(Build)
-
-	// if LEGACY_VERSION_TO_TEST is set, checkout that version and then run integration tests
-	// perhaps in the future we'll archive the test binaries but for now we just checkout the rev.
-	if os.Getenv("LEGACY_VERSION_TO_TEST") != "" {
-		err := sh.RunV("git", "checkout", os.Getenv("LEGACY_VERSION_TO_TEST"))
-		if err != nil {
-			return err
-		}
+	if os.Getenv("LEGACY_VERSION_TO_TEST") == "" {
+		// only build captain if we're running tests against the latest captain version
+		// so that we can build against the active, branch, then run integration tests from a previous commit against that
+		// binary
+		mg.Deps(Build)
 	}
 
 	return (makeTestTask("-tags", "integration", "./test/"))(ctx)
