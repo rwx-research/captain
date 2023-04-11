@@ -5,7 +5,7 @@ on:
     workflows:
       - Continuous Integration
     branches:
-      - 'releases/**'
+      - "releases/**"
     types:
       - completed
 
@@ -25,12 +25,12 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch  }}
       - id: tag
         run: |
-          fullVersion=$(cat version.go | grep "const Version" | awk '{print $4}' | sed 's/"//g')
+          fullVersion=$(grep "const Version" < version.go | awk '{print $4}' | sed 's/"//g')
           majorVersion=$(echo "$fullVersion" | awk -F '.' '{print $1}')
-          git tag $fullVersion
-          git push --tags origin $fullVersion
-          git tag --force $majorVersion
-          git push --tags --force origin $majorVersion
+          git tag "$fullVersion"
+          git push --tags origin "$fullVersion"
+          git tag --force "$majorVersion"
+          git push --tags --force origin "$majorVersion"
           echo "fullVersion=$fullVersion" >> "$GITHUB_OUTPUT"
           echo "majorVersion=$majorVersion" >> "$GITHUB_OUTPUT"
       - uses: softprops/action-gh-release@v1
@@ -88,9 +88,9 @@ jobs:
           aws s3 cp ./captain "s3://terraform-20221109133415397600000001/$new_artifact_name"
 
           github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch" | tr '[:upper:]' '[:lower:]')
-          mv captain $github_asset_name
-          gh release upload ${{ needs.release.outputs.full-version }} $github_asset_name
-          gh release upload --clobber ${{ needs.release.outputs.major-version }} $github_asset_name
+          mv captain "$github_asset_name"
+          gh release upload ${{ needs.release.outputs.full-version }} "$github_asset_name"
+          gh release upload --clobber ${{ needs.release.outputs.major-version }} "$github_asset_name"
         env:
           GH_TOKEN: ${{ github.token }}
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
@@ -113,9 +113,9 @@ jobs:
           aws s3 cp ./captain.exe "s3://terraform-20221109133415397600000001/$new_artifact_name"
 
           github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch.exe" | tr '[:upper:]' '[:lower:]')
-          mv captain.exe $github_asset_name
-          gh release upload ${{ needs.release.outputs.full-version }} $github_asset_name
-          gh release upload --clobber ${{ needs.release.outputs.major-version }} $github_asset_name
+          mv captain.exe "$github_asset_name"
+          gh release upload ${{ needs.release.outputs.full-version }} "$github_asset_name"
+          gh release upload --clobber ${{ needs.release.outputs.major-version }} "$github_asset_name"
         env:
           GH_TOKEN: ${{ github.token }}
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
@@ -138,19 +138,23 @@ jobs:
         run: |
           objects=$(aws s3api list-objects --bucket terraform-20221109133415397600000001 --query 'Contents[].Key' --output=json | jq -r '.[]')
 
-          echo "objects<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$objects" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          {
+          echo "objects<<EOF";
+          echo "$objects";
+          echo "EOF";
+          } >> "$GITHUB_OUTPUT"
       # Note: when removing support for the old version paths, update this to look at the new version paths
       - id: find-versions
         run: |
           versions=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep "[-]v" | sed 's/.*-v/v/' | sed '/-/!{s/$/_/}' | sort -ruV | sed 's/_$//' | grep -v "^v1$")
-          allVersions=$(printf "%s\n" $versions | jq --raw-input | jq --slurp)
-          latestV1=$(printf "%s\n" $versions | grep -v "-" | grep "v1" | head -n 1)
+          allVersions=$(printf "%s\n" "$versions" | jq --raw-input | jq --slurp)
+          latestV1=$(printf "%s\n" "$versions" | grep -v "-" | grep "v1" | head -n 1)
 
-          echo "allVersions<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$allVersions" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          {
+          echo "allVersions<<EOF";
+          echo "$allVersions";
+          echo "EOF";
+          } >> "$GITHUB_OUTPUT"
 
           echo "latestV1=$latestV1" >> "$GITHUB_OUTPUT"
       - id: release-versions
@@ -167,7 +171,7 @@ jobs:
           latestOldV1Binaries=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep -E '^captain-[^-]+-[^-]+-${{ steps.find-versions.outputs.latestV1 }}$')
           for binary in $latestOldV1Binaries
           do
-            aliasedBinary=$(echo "$binary" | sed "s/${{ steps.find-versions.outputs.latestV1 }}/v1/g")
+            aliasedBinary="${binary//$steps.find-versions.outputs.latestV1/v1}"
             echo "Uploading $binary to $aliasedBinary"
             aws s3 cp "s3://terraform-20221109133415397600000001/$binary" "s3://terraform-20221109133415397600000001/$aliasedBinary"
             paths="$paths \"/$aliasedBinary\""
@@ -176,7 +180,7 @@ jobs:
           latestNewV1Binaries=$(echo "${{ steps.list-bucket.outputs.objects }}" | grep -E '^${{ steps.find-versions.outputs.latestV1 }}/[^/]+/[^/]+/captain(\.exe)?$')
           for binary in $latestNewV1Binaries
           do
-            aliasedBinary=$(echo "$binary" | sed "s/${{ steps.find-versions.outputs.latestV1 }}/v1/g")
+            aliasedBinary="${binary//$steps.find-versions.outputs.latestV1/v1}"
             echo "Uploading $binary to $aliasedBinary"
             aws s3 cp "s3://terraform-20221109133415397600000001/$binary" "s3://terraform-20221109133415397600000001/$aliasedBinary"
             paths="$paths \"/$aliasedBinary\""
