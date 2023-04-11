@@ -7,21 +7,21 @@ jobs:
     name: Ensure version bump
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: cachix/install-nix-action@v18
-      with:
-        extra_nix_config: |
-          keep-derivations = true
-          keep-outputs = true
-    - run: |
-        newVersion=$(cat version.go | grep "const Version" | awk '{print $4}' | sed 's/"//g')
-        oldVersion=$(curl -s https://releases.captain.build/versions.json | jq -r ".captain.versions[]" | grep -v "-" | head -n 1)
-        if [[ "$newVersion" == "$oldVersion" ]]; then
-          echo "Version number was not changed"
-          exit 1
-        fi
-        latestVersion=$(echo "$newVersion $oldVersion" | sed 's/\ /\n/' | sort -rV | head -n 1)
-        if [[ "$latestVersion" != "$newVersion" ]]; then
-          echo "Version number was not increased"
-          exit 1
-        fi
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            keep-derivations = true
+            keep-outputs = true
+      - run: |
+          newVersion=$(grep "const Version" < version.go | awk '{print $4}' | sed 's/"//g')
+          oldVersion=$(curl -s https://releases.captain.build/versions.json | jq -r ".captain.versions[]" | grep -v "-" | head -n 1)
+          if [[ "$newVersion" == "$oldVersion" ]]; then
+            echo "Version number was not changed"
+            exit 1
+          fi
+          latestVersion=$(echo "$newVersion $oldVersion" | sed 's/\ /\n/' | sort -rV | head -n 1)
+          if [[ "$latestVersion" != "$newVersion" ]]; then
+            echo "Version number was not increased"
+            exit 1
+          fi
