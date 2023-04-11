@@ -1,78 +1,25 @@
-# Captain
+# <img src="https://www.rwx.com/captain.svg" height="60" alt="captain">
 
-Captain is an open source CLI that supercharges testing capabilities across 15
-different testing frameworks. Use for faster and more reliable tests, and
-happier and more productive engineers.
+:globe_with_meridians: [captain.build](https://captain.build) &ensp;
+:bird: [@rwx_research](https://twitter.com/rwx_research) &ensp;
+:speech_balloon: [discord](https://discord.gg/h4ha5Cue7j) &ensp;
+:books: [documentation](https://www.rwx.com/docs/captain)
 
-## Installation
+Captain is an open source CLI that can:
+- detect and quarantine flaky tests
+- automatically retry failed tests
+- partition files for parallel execution
+- generate comprehensive test failure summaries
 
-You can download the latest release from the
-[Releases page](https://github.com/rwx-research/captain-cli/releases) in this
-repository.
+See the [announcement blog post](https://www.rwx.com/blog/captain-1-10-generally-available-open-source-release)
+and [documentation](https://www.rwx.com/docs/captain) to learn more.
 
-Alternatively, if you have [Go](https://go.dev) installed, you can build the CLI
-from source by cloning this repository and executing `go run ./tools/mage`.
+## Getting Started
 
-## Usage
-
-`captain --help` prints out an overview of the available commands. For more
-detailed information, visit our documentation at
-[https://www.rwx.com/docs/](https://www.rwx.com/docs/captain/cli-reference)
-
-```
-Usage:
-  captain [command]
-
-Available Commands:
-  add         Adds a resource to captain
-  partition   Partitions a test suite using historical file timings recorded by Captain
-  quarantine  Execute a test-suite and modify its exit code based on quarantined tests
-  remove      Removes a resource from captain
-  run         Execute a build- or test-suite
-  update      Updates a specific resource in captain
-
-Flags:
-      --config-file string   the config file for captain
-  -h, --help                 help for captain
-  -q, --quiet                disables most default output
-      --suite-id string      the id of the test suite
-  -v, --version              version for captain
-
-Use "captain [command] --help" for more information about a command.
-```
-
-## Config file
-
-We recommend placing a 
-[config file](https://www.rwx.com/docs/captain/cli-configuration/config-yaml)
-for captain at `.captain/config.yaml`. The file is optional, but it avoids
-needing to pass a lot of flags with each invocation.
-
-An example config file looks like this:
-
-```yaml
-cloud:
-  disabled: true
-test-suites:
-  your-suite:
-    command: bundle exec rspec
-    output:
-      reporters:
-        rwx-v1-json: ./tmp/rwx.json
-    results:
-      language: Ruby
-      framework: RSpec
-      path: ./tmp/rspec.json
-```
-
-## Cloud mode
-
-By default, Captain will work fully offline and stores test metadata in it's
-`.captain` directory.
-
-However, you can also use this CLI in conjunction with our Cloud offering at
-[https://www.rwx.com](https://www.rwx.com/captain) for in-depth analytics of
-your test suite over time, flaky test detection, and more.
+The Captain CLI is easy to integrate into a build process running on any CI platform.
+See the [documentation on getting started](https://www.rwx.com/docs/captain).
+We’re happy to help with any integrations. Say hello on [Discord](https://discord.gg/h4ha5Cue7j)
+or reach out at [hello@rwx.com](mailto:hello@rwx.com)
 
 ## Contributing
 
