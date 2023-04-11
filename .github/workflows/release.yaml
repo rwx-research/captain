@@ -127,8 +127,6 @@ jobs:
             nix develop --command mage
       - if: ${{ matrix.os != 'windows' }}
         run: |
-          version="${{ needs.extract-version-details.outputs.full-version }}"
-
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             new_arch="x86_64"
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
@@ -139,12 +137,10 @@ jobs:
           fi
 
           github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch" | tr '[:upper:]' '[:lower:]')
-          mv captain $github_asset_name
-          gh release upload ${{ needs.extract-version-details.outputs.full-version }} $github_asset_name --clobber
+          mv captain "$github_asset_name"
+          gh release upload ${{ needs.extract-version-details.outputs.full-version }} "$github_asset_name" --clobber
       - if: ${{ matrix.os == 'windows' }}
         run: |
-          version="${{ needs.extract-version-details.outputs.full-version }}"
-
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             new_arch="x86_64"
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
@@ -155,8 +151,8 @@ jobs:
           fi
 
           github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch.exe" | tr '[:upper:]' '[:lower:]')
-          mv captain.exe $github_asset_name
-          gh release upload ${{ needs.extract-version-details.outputs.full-version }} $github_asset_name --clobber
+          mv captain.exe "$github_asset_name"
+          gh release upload ${{ needs.extract-version-details.outputs.full-version }} "$github_asset_name" --clobber
 
   obtain-approval:
     runs-on: ubuntu-latest
