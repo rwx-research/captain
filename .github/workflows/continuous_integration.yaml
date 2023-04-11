@@ -97,7 +97,7 @@ jobs:
       - name: checkout old version
         run: |
           git fetch --tags
-          git checkout ${{ matrix.legacy_version }}
+          git checkout ${{ matrix.legacy_version }} -- ./test
       - name: run integration tests from ${{ matrix.legacy_version }}
         run: ./captain run captain-cli-backwards-compatibility
         env:

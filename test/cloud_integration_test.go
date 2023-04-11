@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests", func() {
+var _ = Describe("Cloud Mode Integration Tests", func() {
 	BeforeEach(func() {
 		Expect(os.Getenv("RWX_ACCESS_TOKEN_STAGING")).ToNot(BeEmpty(), "These integration tests require a valid RWX_ACCESS_TOKEN_STAGING")
 	})
@@ -23,7 +23,6 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 			env["RWX_ACCESS_TOKEN"] = os.Getenv("RWX_ACCESS_TOKEN_STAGING")
 			return env
 		}
-
 		Describe("captain run", func() {
 			Context("quarantining", func() {
 				It("succeeds when all failures quarantined", func() {
@@ -38,10 +37,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						env: getEnvWithAccessToken(),
 					})
 
-					withoutBackwardsCompatibility(func() {
-						// stderr may start showing deprecation warnings
-						Expect(result.stderr).To(BeEmpty())
-					})
+					Expect(result.stderr).To(BeEmpty())
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -57,9 +53,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						env: getEnvWithAccessToken(),
 					})
 
-					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
-					})
+					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 					Expect(result.exitCode).To(Equal(123))
 				})
 			})
@@ -100,9 +94,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						env: getEnvWithAccessToken(),
 					})
 
-					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
-					})
+					Expect(result.stderr).To(BeEmpty())
 					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(0))
 				})
@@ -121,9 +113,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						env: getEnvWithAccessToken(),
 					})
 
-					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
-					})
+					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(123))
 				})
@@ -142,9 +132,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					env: getEnvWithAccessToken(),
 				})
 
-				withoutBackwardsCompatibility(func() {
-					Expect(result.stderr).To(BeEmpty())
-				})
+				Expect(result.stderr).To(BeEmpty())
 				Expect(result.exitCode).To(Equal(0))
 			})
 
@@ -159,9 +147,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					env: getEnvWithAccessToken(),
 				})
 
-				withoutBackwardsCompatibility(func() {
-					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
-				})
+				Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
 			})
 		})
@@ -182,9 +168,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						env: getEnvWithAccessToken(),
 					})
 
-					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
-					})
+					Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
 					Expect(result.exitCode).To(Equal(0))
 				})
@@ -203,9 +187,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						env: getEnvWithAccessToken(),
 					})
 
-					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
-					})
+					Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/y.rb"))
 					Expect(result.exitCode).To(Equal(0))
 				})
@@ -236,9 +218,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						env: getEnvWithAccessToken(),
 					})
 
-					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
-					})
+					Expect(result.stderr).To(BeEmpty())
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
 					Expect(result.exitCode).To(Equal(0))
 				})
@@ -255,9 +235,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						env: getEnvWithAccessToken(),
 					})
 
-					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
-					})
+					Expect(result.stderr).To(BeEmpty())
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
 					Expect(result.exitCode).To(Equal(0))
 				})
@@ -275,10 +253,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					env: getEnvWithAccessToken(),
 				})
 
-				withoutBackwardsCompatibility(func() {
-					Expect(result.stderr).To(BeEmpty())
-					Expect(result.stdout).To(BeEmpty())
-				})
+				Expect(result.stderr).To(BeEmpty())
+				Expect(result.stdout).To(BeEmpty())
 				Expect(result.exitCode).To(Equal(0))
 			})
 		})
