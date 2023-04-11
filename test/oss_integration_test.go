@@ -10,10 +10,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rwx-research/captain-cli"
+	"github.com/rwx-research/captain-cli/internal/cli"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/rwx-research/captain-cli/internal/cli"
 )
 
 var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", func() {
@@ -69,9 +69,12 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 							env: getEnvWithoutAccessToken(),
 						})
 
-						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb,fixtures/integration-tests/partition/z.rb"))
 						Expect(result.exitCode).To(Equal(0))
+
+						withoutBackwardsCompatibility(func() {
+							Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						})
 					})
 
 					It("sets partition 1 correctly when delimiter is set via env var", func() {
@@ -91,9 +94,12 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 							env: env,
 						})
 
-						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb,fixtures/integration-tests/partition/z.rb"))
 						Expect(result.exitCode).To(Equal(0))
+
+						withoutBackwardsCompatibility(func() {
+							Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						})
 					})
 				})
 
@@ -111,9 +117,12 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
 					Expect(result.exitCode).To(Equal(0))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+					})
 				})
 
 				It("sets partition 2 correctly", func() {
@@ -130,9 +139,12 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/y.rb"))
 					Expect(result.exitCode).To(Equal(0))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+					})
 				})
 			})
 
@@ -214,11 +226,12 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 					},
 					env: getEnvWithoutAccessToken(),
 				})
-
-				// Stderr being empty isn't ideal. See: https://github.com/rwx-research/captain-cli/issues/243
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
-				Expect(result.stdout).To(BeEmpty())
 				Expect(result.exitCode).To(Equal(123))
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					Expect(result.stdout).To(BeEmpty())
+				})
 			})
 
 			It("fails & passes through exit code on failure", func() {
@@ -232,8 +245,11 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 					env: getEnvWithoutAccessToken(),
 				})
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			It("allows using the -- command specification", func() {
@@ -247,8 +263,10 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 					env: getEnvWithoutAccessToken(),
 				})
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			It("allows combining the --command specification with the -- specification", func() {
@@ -263,8 +281,10 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 					env: getEnvWithoutAccessToken(),
 				})
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			It("accepts --suite-id argument", func() {
