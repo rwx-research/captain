@@ -1,5 +1,8 @@
 name: Release
-run-name: ${{ format('Release {0} Captain at {1}', inputs.kind, inputs.sha) }}
+run-name: Release ${{ inputs.kind }} Captain at ${{ inputs.sha }}
+
+concurrency:
+  group: release-captain-${{ inputs.kind }}
 
 on:
   workflow_dispatch:
