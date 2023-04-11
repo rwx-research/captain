@@ -17,7 +17,10 @@ jobs:
           CGO_ENABLED=0 \
             LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
             nix develop --command mage
-      - run: ./captain run captain-cli-ginkgo
+      - run: |
+          CGO_ENABLED=0 \
+            LDFLAGS="-X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
+            ./captain run captain-cli-ginkgo
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
           RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
@@ -99,7 +102,10 @@ jobs:
           git fetch --tags
           git checkout ${{ matrix.legacy_version }} -- ./test
       - name: run integration tests from ${{ matrix.legacy_version }}
-        run: ./captain run captain-cli-backwards-compatibility
+        run: |
+          CGO_ENABLED=0 \
+            LDFLAGS="-X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
+            ./captain run captain-cli-backwards-compatibility
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
           RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging

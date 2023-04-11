@@ -41,7 +41,6 @@ var _ = Describe("OSS mode Integration Tests", func() {
 
 				Expect(result.exitCode).To(Equal(0))
 				Expect(result.stdout).To(Equal(captain.Version))
-				Expect(result.stdout).To(MatchRegexp(`^v\d+\.\d+\.\d+$`))
 				Expect(result.stderr).To(BeEmpty())
 			})
 		})
@@ -69,7 +68,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						Expect(result.exitCode).To(Equal(0))
 					})
 
-				It("sets partition 1 correctly when delimiter is set via env var", func() {
+					It("sets partition 1 correctly when delimiter is set via env var", func() {
 						env := getEnvWithoutAccessToken()
 						env["CAPTAIN_DELIMITER"] = ","
 
