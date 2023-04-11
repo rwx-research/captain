@@ -100,7 +100,6 @@ jobs:
     needs:
       - extract-version-details
       - draft-full-version-release
-    environment: release-binaries
     permissions:
       contents: write
       id-token: write
@@ -204,3 +203,71 @@ jobs:
         run: |
           gh release download ${{ needs.extract-version-details.outputs.full-version }}
           gh release upload ${{ needs.extract-version-details.outputs.aliased-version }} captain-* --clobber
+
+  update-cloudfront:
+    runs-on: ubuntu-latest
+    environment: Production
+    needs:
+      - extract-version-details
+      - publish-release
+    permissions:
+      id-token: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
+          role-duration-seconds: 900
+      - name: Download the binaries
+        run: gh release download ${{ needs.extract-version-details.outputs.full-version }}
+      - name: Upload the binaries to S3 and invalidate cloudfront
+        run: |
+          updatedPaths=""
+
+          for binary in captain-*
+          do
+            cleanedBinary=${binary//.exe/}
+            os=$(echo "$cleanedBinary" | cut -d '-' -f 2)
+            arch=$(echo "$cleanedBinary" | cut -d '-' -f 3)
+            version="${{ needs.extract-version-details.outputs.full-version }}"
+
+            if [[ "$arch" == "x86_64" ]]; then
+              oldArch="amd64"
+            elif [[ "$arch" == "aarch64" ]]; then
+              oldArch="arm64"
+            else
+              echo "unmapped arch: $arch"
+              exit 1
+            fi
+
+            if [[ "$os" == "windows" ]]; then
+              extension=".exe"
+            fi
+
+            oldPath="captain-$os-$oldArch-$version"
+            aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$oldPath"
+            newPath="$version/$os/$arch/captain$extension"
+            aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$newPath"
+
+            if [[ "${{ needs.extract-version-details.outputs.aliased-version }}" != "" ]]; then
+              aliasedOldPath=${oldPath//$version/${{ needs.extract-version-details.outputs.aliased-version }}}
+              aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$aliasedOldPath"
+
+              aliasedNewPath=${newPath//$version/${{ needs.extract-version-details.outputs.aliased-version }}}
+              aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$aliasedNewPath"
+
+              if [[ "$updatedPaths" == "" ]]; then
+                # shellcheck disable=SC2089
+                updatedPaths="\"/$aliasedOldPath\" \"/$aliasedNewPath\""
+              else
+                updatedPaths="$updatedPaths \"/$aliasedOldPath\" \"/$aliasedNewPath\""
+              fi
+            fi
+          done
+
+          if [[ "$updatedPaths" != "" ]]; then
+            # shellcheck disable=SC2086,SC2090
+            aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths $updatedPaths
+          fi
