@@ -9,15 +9,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 
-	"gopkg.in/yaml.v3"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/test/helpers"
 )
 
@@ -197,24 +193,3 @@ func withAndWithoutInheritedEnv(sharedTests sharedTestGen) {
 type envGenerator func() map[string]string
 
 type sharedTestGen func(envGenerator, string)
-
-func withCaptainConfig(cfg cli.ConfigFile, rootDir string, body func(configPath string)) {
-	// TODO set RootDir on the config file once we get that merged
-	configPath := filepath.Join(rootDir, ".captain/config.yaml")
-
-	err := os.MkdirAll(filepath.Dir(configPath), 0o750)
-	Expect(err).NotTo(HaveOccurred())
-
-	configFile, err := os.Create(configPath)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = yaml.NewEncoder(configFile).Encode(cfg)
-	Expect(err).NotTo(HaveOccurred())
-
-	defer func() {
-		err := os.Remove(configPath)
-		Expect(err).NotTo(HaveOccurred())
-	}()
-
-	body(configPath)
-}

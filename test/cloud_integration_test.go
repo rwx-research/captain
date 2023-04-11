@@ -23,7 +23,6 @@ var _ = Describe("Cloud Mode Integration Tests", func() {
 			env["RWX_ACCESS_TOKEN"] = os.Getenv("RWX_ACCESS_TOKEN_STAGING")
 			return env
 		}
-
 		Describe("captain run", func() {
 			Context("quarantining", func() {
 				It("succeeds when all failures quarantined", func() {

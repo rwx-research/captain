@@ -13,7 +13,10 @@ jobs:
           extra_nix_config: |
             keep-derivations = true
             keep-outputs = true
-      - run: CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage
+      - run: nix develop --command mage
+        env:
+          CGO_ENABLED: 0
+          LDFLAGS: -w -s
       - run: ./captain run captain-cli-ginkgo
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
@@ -52,3 +55,54 @@ jobs:
             keep-outputs = true
       - run: nix develop --command go mod tidy
       - run: git diff-index --quiet HEAD
+
+  which-versions-to-test:
+    name: Determine which tags to test for backwards compatibility
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.output-tags.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            keep-derivations = true
+            keep-outputs = true
+      - run: |
+          git fetch --tags
+          echo "versions=$(nix develop --command mage legacyTestSuiteTags)" >> "$GITHUB_OUTPUT"
+        id: output-tags
+
+  backwards-compatibility-tests:
+    name: Backwards compatibility tests
+    needs: which-versions-to-test
+    if: ${{ needs.which-versions-to-test.outputs.versions != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        legacy_version: ${{ fromJSON(needs.which-versions-to-test.outputs.versions) }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            keep-derivations = true
+            keep-outputs = true
+
+      - name: build captain
+        run: nix develop --command mage
+        env:
+          CGO_ENABLED: 0
+          LDFLAGS: -w -s
+      - name: checkout old version
+        run: |
+          git fetch --tags
+          git checkout ${{ matrix.legacy_version }} -- ./test
+      - name: run integration tests from ${{ matrix.legacy_version }}
+        run: ./captain run captain-cli-backwards-compatibility
+        env:
+          RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
+          RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
+          DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
+          REPORT: true
+          LEGACY_VERSION_TO_TEST: ${{ matrix.legacy_version }}

@@ -7,3 +7,11 @@ test-suites:
         github-step-summary:
     results:
       path: report.xml
+  captain-cli-backwards-compatibility:
+    command: nix develop --command mage integrationTest
+    fail-on-upload-error: true
+    output:
+      reporters:
+        github-step-summary:
+    results:
+      path: report.xml

@@ -5,9 +5,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
+	"sort"
+	"strings"
 
+	"github.com/blang/semver/v4"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 )
@@ -27,6 +32,7 @@ func All(ctx context.Context) error {
 		IntegrationTest,
 		Lint,
 		LintFix,
+		LegacyTestSuiteTags,
 	}
 
 	for _, t := range targets {
@@ -36,6 +42,9 @@ func All(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func init() {
 }
 
 // Build builds the Captain CLI
@@ -91,7 +100,13 @@ func UnitTest(ctx context.Context) error {
 
 // Test executes the test-suite for the Captain-CLI.
 func IntegrationTest(ctx context.Context) error {
-	mg.Deps(Build)
+	if os.Getenv("LEGACY_VERSION_TO_TEST") == "" {
+		// only build captain if we're running tests against the latest captain version
+		// so that we can build against the active, branch, then run integration tests from a previous commit against that
+		// binary
+		mg.Deps(Build)
+	}
+
 	return (makeTestTask("-tags", "integration", "./test/"))(ctx)
 }
 
@@ -108,4 +123,82 @@ func makeTestTask(args ...string) func(ctx context.Context) error {
 
 		return sh.RunV("ginkgo", append([]string{"-p"}, args...)...)
 	}
+}
+
+// this prints out a json-formatted list of tags where the ./test directory has changed
+func LegacyTestSuiteTags(ctx context.Context) error {
+	tagsWithChanges, err := findTagsWithChangesInTest()
+	if err != nil {
+		return err
+	}
+
+	output, err := json.Marshal(tagsWithChanges)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(output))
+	return nil
+}
+
+// this prints out a json-formatted list of tags where the ./test directory has changed
+func findTagsWithChangesInTest() ([]string, error) {
+	out, err := exec.Command("git", "tag", "--sort=version:refname").Output()
+	if err != nil {
+		return nil, err
+	}
+
+	// versions AFTER this will be included in tags to test
+	oneBeforeMinimumVersion := semver.Version{Major: 1, Minor: 10, Patch: 1}
+
+	var versionTags []semver.Version
+
+	for _, tag := range strings.Split(string(out), "\n") {
+		tagVersion, err := semver.ParseTolerant(tag)
+		// ignore error, filter out version < 1.9.5
+		if err == nil &&
+			len(tagVersion.Pre) == 0 && // not pre-release
+			tagVersion.GTE(oneBeforeMinimumVersion) {
+
+			versionTags = append(versionTags, tagVersion)
+		}
+	}
+
+	// sort by version
+	sort.Sort(semver.Versions(versionTags))
+
+	// keep tags where there has been a change in ./test
+	tagsWithChanges := []string{}
+
+	for i := 0; i < len(versionTags)-1; i++ {
+		prevVersion := versionTags[i]
+		version := versionTags[i+1]
+		hasChanges, err := hasChangesIn(prevVersion, version, "./test")
+		if err != nil {
+			return nil, err
+		}
+
+		if hasChanges {
+			tagsWithChanges = append(tagsWithChanges, toTag(version))
+		}
+	}
+
+	return tagsWithChanges, nil
+}
+
+func toTag(tag semver.Version) string {
+	return fmt.Sprintf("v%s", tag.String())
+}
+
+func hasChangesIn(prevVersion semver.Version, version semver.Version, folder string) (bool, error) {
+	err := exec.Command("git", "diff", "--quiet", toTag(prevVersion), toTag(version), "--", folder).Run()
+	if err == nil {
+		return false, nil
+	}
+
+	if _, ok := err.(*exec.ExitError); ok {
+		return true, nil
+	}
+
+	return false, err
 }

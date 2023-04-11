@@ -20,6 +20,7 @@ require github.com/mileusna/useragent v1.2.1
 
 require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
+	github.com/blang/semver/v4 v4.0.0
 	github.com/mitchellh/go-wordwrap v1.0.1
 )
 
@@ -27,12 +28,12 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
 	golang.org/x/tools v0.7.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 
 require (
 	github.com/caarlos0/env/v7 v7.1.0
 	github.com/kr/pretty v0.3.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )
 
 require (
