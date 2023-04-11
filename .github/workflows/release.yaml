@@ -2,7 +2,7 @@ name: Release
 run-name: Release ${{ inputs.kind }} Captain at ${{ inputs.sha }}
 
 concurrency:
-  group: release-captain-${{ inputs.kind }}
+  group: release-captain-${{ github.event.inputs.kind }}
 
 on:
   workflow_dispatch:
@@ -210,6 +210,7 @@ jobs:
   update-cloudfront:
     runs-on: ubuntu-latest
     environment: Production
+    if: ${{ always() && needs.extract-version-details.result == 'success' && needs.publish-release.result == 'success' }}
     needs:
       - extract-version-details
       - publish-release
@@ -223,6 +224,9 @@ jobs:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
           role-duration-seconds: 900
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.extract-version-details.outputs.full-version }}
       - name: Download the binaries
         run: gh release download ${{ needs.extract-version-details.outputs.full-version }}
       - name: Upload the binaries to S3 and invalidate cloudfront
