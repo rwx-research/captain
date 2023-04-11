@@ -156,7 +156,10 @@ func findTagsWithChangesInTest() ([]string, error) {
 	for _, tag := range strings.Split(string(out), "\n") {
 		tagVersion, err := semver.ParseTolerant(tag)
 		// ignore error, filter out version < 1.9.5
-		if err == nil && tagVersion.GTE(oneBeforeMinimumVersion) {
+		if err == nil &&
+			len(tagVersion.Pre) == 0 && // not pre-release
+			tagVersion.GTE(oneBeforeMinimumVersion) {
+
 			versionTags = append(versionTags, tagVersion)
 		}
 	}
