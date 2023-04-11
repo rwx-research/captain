@@ -99,7 +99,7 @@ jobs:
           git fetch --tags
           git checkout ${{ matrix.legacy_version }}
       - name: run integration tests from ${{ matrix.legacy_version }}
-        run: ./captain run backwards-compatibility
+        run: ./captain run captain-cli-backwards-compatibility
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
           RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
