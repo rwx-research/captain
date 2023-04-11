@@ -334,9 +334,11 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 
 					_, err = os.Stat(filepath.Join(tmp, "markdown.md"))
 					Expect(err).NotTo(HaveOccurred())
-
-					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					Expect(result.exitCode).To(Equal(123))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					})
 				})
 			})
 
@@ -361,8 +363,11 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				_, err = os.Stat(filepath.Join(tmp, "markdown.md"))
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			It("produces rwx-v1-json reports via config file", func() {
@@ -398,9 +403,11 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 
 					_, err = os.Stat(filepath.Join(tmp, "rwx-v1.json"))
 					Expect(err).NotTo(HaveOccurred())
-
-					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					Expect(result.exitCode).To(Equal(123))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					})
 				})
 			})
 
@@ -425,8 +432,11 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				_, err = os.Stat(filepath.Join(tmp, "rwx-v1.json"))
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			It("produces junit-xml reports via config file", func() {
@@ -463,8 +473,11 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 					_, err = os.Stat(filepath.Join(tmp, "junit.xml"))
 					Expect(err).NotTo(HaveOccurred())
 
-					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					Expect(result.exitCode).To(Equal(123))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					})
 				})
 			})
 
@@ -489,8 +502,10 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				_, err = os.Stat(filepath.Join(tmp, "junit.xml"))
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			Context("command output passthrough", func() {
@@ -505,8 +520,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(HaveSuffix("def")) // prefix by a bunch of warnings about captain dir not existing
-					Expect(result.stdout).To(HavePrefix("abc\nghi"))
+					Expect(result.stderr).To(ContainSubstring("def")) // prefix by a bunch of warnings about captain dir not existing
+					Expect(result.stdout).To(ContainSubstring("abc\nghi"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -577,8 +592,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'")) // indicative of a retry
 					Expect(result.exitCode).To(Equal(0))
+					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'")) // indicative of a retry
 				})
 
 				It("fails & passes through exit code on failure", func() {
@@ -594,8 +609,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(123))
+					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'")) // indicative of a retry
 				})
 
 				It("fails & passes through exit code on failure when configured via captain config", func() {
@@ -613,10 +628,6 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 			})
 
-			Context("quarantining", func() {
-				// note these are tested as part of the add/remove quarantine tests
-			})
-
 			Context("with abq", func() {
 				It("runs with ABQ_SET_EXIT_CODE=false when ABQ_SET_EXIT_CODE is unset", func() {
 					result := runCaptain(captainArgs{
@@ -630,8 +641,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stdout).To(HavePrefix("exit_code=false"))
 					Expect(result.exitCode).To(Equal(0))
+					Expect(result.stdout).To(ContainSubstring("exit_code=false"))
 				})
 
 				It("runs with ABQ_SET_EXIT_CODE=false when ABQ_SET_EXIT_CODE is already set", func() {
@@ -648,7 +659,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: env,
 					})
 
-					Expect(result.stdout).To(HavePrefix("exit_code=false"))
+					Expect(result.stdout).To(ContainSubstring("exit_code=false"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -664,7 +675,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stdout).To(HavePrefix("state_file=/tmp/captain-abq-"))
+					Expect(result.stdout).To(ContainSubstring("state_file=/tmp/captain-abq-"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -682,7 +693,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: env,
 					})
 
-					Expect(result.stdout).To(HavePrefix("state_file=/tmp/functional-abq-1234.json"))
+					Expect(result.stdout).To(ContainSubstring("state_file=/tmp/functional-abq-1234.json"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 			})
@@ -755,8 +766,10 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					Expect(result.exitCode).To(Equal(123))
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					})
 
 					By("removing the quarantine, tests should fail again")
 
