@@ -16,9 +16,9 @@ jobs:
             keep-derivations = true
             keep-outputs = true
       - run: |
-          CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command mage build
+          CGO_ENABLED=0 LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" nix develop --command mage build
           cp ./captain /tmp/captain
-          CGO_ENABLED=0 LDFLAGS="-w -s" nix develop --command ginkgo build --tags integration ./test/
+          CGO_ENABLED=0 LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" nix develop --command ginkgo build --tags integration ./test/
           cp ./test/test.test /tmp/test
 
       - name: Install Buildkite agent
