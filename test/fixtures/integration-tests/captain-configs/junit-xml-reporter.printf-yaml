@@ -1,0 +1,29 @@
+cloud:
+  api-host: ""
+  disabled: false
+  insecure: false
+flags: {}
+output:
+  debug: false
+test-suites:
+  captain-cli-functional-tests:
+    command: bash -c 'exit 123'
+    fail-on-upload-error: true
+    output:
+      print-summary: false
+      reporters:
+        junit-xml: %s
+      quiet: false
+    results:
+      framework: ""
+      language: ""
+      path: fixtures/integration-tests/rspec-failed-not-quarantined.json
+    retries:
+      attempts: 0
+      command: ""
+      fail-fast: false
+      flaky-attempts: 0
+      maxtests: ""
+      post-retry-commands: []
+      pre-retry-commands: []
+      intermediate-artifacts-path: ""

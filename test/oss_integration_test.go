@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rwx-research/captain-cli"
-	"github.com/rwx-research/captain-cli/internal/cli"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -216,6 +215,11 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 		})
 
 		Describe("captain run", func() {
+			loadCaptainConfig := func(path string, substitution string) string {
+				data, err := os.ReadFile(path)
+				Expect(err).ToNot(HaveOccurred())
+				return fmt.Sprintf(string(data), substitution)
+			}
 			It("fails & passes through exit code on failure when results files is missing", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
@@ -305,22 +309,10 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				tmp, err := os.MkdirTemp("", "*")
 				Expect(err).NotTo(HaveOccurred())
 
-				os.Remove(filepath.Join(tmp, "markdown.md"))
+				outputPath := filepath.Join(tmp, "markdown.md")
+				os.Remove(outputPath)
 
-				cfg := cli.ConfigFile{
-					TestSuites: map[string]cli.SuiteConfig{
-						"captain-cli-functional-tests": {
-							Command:           "bash -c 'exit 123'",
-							FailOnUploadError: true,
-							Output: cli.SuiteConfigOutput{
-								Reporters: map[string]string{"markdown-summary": filepath.Join(tmp, "markdown.md")},
-							},
-							Results: cli.SuiteConfigResults{
-								Path: "fixtures/integration-tests/rspec-failed-not-quarantined.json",
-							},
-						},
-					},
-				}
+				cfg := loadCaptainConfig("fixtures/integration-tests/captain-configs/markdown-summary-reporter.printf-yaml", outputPath)
 
 				withCaptainConfig(cfg, tmp, func(configPath string) {
 					result := runCaptain(captainArgs{
@@ -332,7 +324,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					_, err = os.Stat(filepath.Join(tmp, "markdown.md"))
+					_, err = os.Stat(outputPath)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(result.exitCode).To(Equal(123))
 
@@ -374,22 +366,10 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				tmp, err := os.MkdirTemp("", "*")
 				Expect(err).NotTo(HaveOccurred())
 
-				os.Remove(filepath.Join(tmp, "rwx-v1.json"))
+				outputPath := filepath.Join(tmp, "rwx-v1.json")
+				os.Remove(outputPath)
 
-				cfg := cli.ConfigFile{
-					TestSuites: map[string]cli.SuiteConfig{
-						"captain-cli-functional-tests": {
-							Command:           "bash -c 'exit 123'",
-							FailOnUploadError: true,
-							Output: cli.SuiteConfigOutput{
-								Reporters: map[string]string{"rwx-v1-json": filepath.Join(tmp, "rwx-v1.json")},
-							},
-							Results: cli.SuiteConfigResults{
-								Path: "fixtures/integration-tests/rspec-failed-not-quarantined.json",
-							},
-						},
-					},
-				}
+				cfg := loadCaptainConfig("fixtures/integration-tests/captain-configs/rwx-v1-json-reporter.printf-yaml", outputPath)
 
 				withCaptainConfig(cfg, tmp, func(configPath string) {
 					result := runCaptain(captainArgs{
@@ -401,7 +381,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					_, err = os.Stat(filepath.Join(tmp, "rwx-v1.json"))
+					_, err = os.Stat(outputPath)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(result.exitCode).To(Equal(123))
 
@@ -443,22 +423,10 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				tmp, err := os.MkdirTemp("", "*")
 				Expect(err).NotTo(HaveOccurred())
 
-				os.Remove(filepath.Join(tmp, "junit.xml"))
+				outputPath := filepath.Join(tmp, "junit.xml")
+				os.Remove(outputPath)
 
-				cfg := cli.ConfigFile{
-					TestSuites: map[string]cli.SuiteConfig{
-						"captain-cli-functional-tests": {
-							Command:           "bash -c 'exit 123'",
-							FailOnUploadError: true,
-							Output: cli.SuiteConfigOutput{
-								Reporters: map[string]string{"junit-xml": filepath.Join(tmp, "junit.xml")},
-							},
-							Results: cli.SuiteConfigResults{
-								Path: "fixtures/integration-tests/rspec-failed-not-quarantined.json",
-							},
-						},
-					},
-				}
+				cfg := loadCaptainConfig("fixtures/integration-tests/captain-configs/junit-xml-reporter.printf-yaml", outputPath)
 
 				withCaptainConfig(cfg, tmp, func(configPath string) {
 					result := runCaptain(captainArgs{
@@ -470,7 +438,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						env: getEnvWithoutAccessToken(),
 					})
 
-					_, err = os.Stat(filepath.Join(tmp, "junit.xml"))
+					_, err = os.Stat(outputPath)
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(result.exitCode).To(Equal(123))
