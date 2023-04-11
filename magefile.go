@@ -53,6 +53,16 @@ func Build(ctx context.Context) error {
 
 	if ldflags := os.Getenv("LDFLAGS"); ldflags != "" {
 		args = append([]string{"-ldflags", ldflags}, args...)
+	} else {
+		sha, err := exec.Command("git", "rev-parse", "HEAD").Output()
+		if err != nil {
+			return err
+		}
+
+		args = append(
+			[]string{"-ldflags", fmt.Sprintf("-X github.com/rwx-research/captain-cli.Version=testing-%v", string(sha))},
+			args...,
+		)
 	}
 
 	if cgo_enabled := os.Getenv("CGO_ENABLED"); cgo_enabled == "0" {

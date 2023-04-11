@@ -13,10 +13,10 @@ jobs:
           extra_nix_config: |
             keep-derivations = true
             keep-outputs = true
-      - run: nix develop --command mage
-        env:
-          CGO_ENABLED: 0
-          LDFLAGS: -w -s
+      - run: |
+          CGO_ENABLED=0 \
+            LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
+            nix develop --command mage
       - run: ./captain run captain-cli-ginkgo
         env:
           RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
@@ -90,10 +90,10 @@ jobs:
             keep-outputs = true
 
       - name: build captain
-        run: nix develop --command mage
-        env:
-          CGO_ENABLED: 0
-          LDFLAGS: -w -s
+        run: |
+          CGO_ENABLED=0 \
+            LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
+            nix develop --command mage
       - name: checkout old version
         run: |
           git fetch --tags

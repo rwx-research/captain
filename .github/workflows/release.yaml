@@ -121,10 +121,10 @@ jobs:
             keep-outputs = true
       - run: |
           GOOS=${{ matrix.os }} \
-          GOARCH=${{ matrix.arch }} \
-          CGO_ENABLED=0 \
-          LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=${{ needs.extract-version-details.outputs.full-version }}" \
-          nix develop --command mage
+            GOARCH=${{ matrix.arch }} \
+            CGO_ENABLED=0 \
+            LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=${{ needs.extract-version-details.outputs.full-version }}" \
+            nix develop --command mage
       - if: ${{ matrix.os != 'windows' }}
         run: |
           version="${{ needs.extract-version-details.outputs.full-version }}"
