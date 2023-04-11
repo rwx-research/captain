@@ -129,6 +129,7 @@ func makeTestTask(args ...string) func(ctx context.Context) error {
 	}
 }
 
+// this prints out a json-formatted list of tags where the ./test directory has changed
 func LegacyTestSuiteTags(ctx context.Context) error {
 	tagsWithChanges, err := findTagsWithChangesInTest()
 	if err != nil {
