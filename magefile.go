@@ -148,14 +148,15 @@ func findTagsWithChangesInTest() ([]string, error) {
 		return nil, err
 	}
 
-	minimumVersion := semver.Version{Major: 1, Minor: 9, Patch: 4}
+	// versions AFTER this will be included in tags to test
+	oneBeforeMinimumVersion := semver.Version{Major: 1, Minor: 10, Patch: 1}
 
 	var versionTags []semver.Version
 
 	for _, tag := range strings.Split(string(out), "\n") {
 		tagVersion, err := semver.ParseTolerant(tag)
 		// ignore error, filter out version < 1.9.5
-		if err == nil && tagVersion.GTE(minimumVersion) {
+		if err == nil && tagVersion.GTE(oneBeforeMinimumVersion) {
 			versionTags = append(versionTags, tagVersion)
 		}
 	}
