@@ -48,9 +48,11 @@ func All(ctx context.Context) error {
 func Build(ctx context.Context) error {
 	args := []string{"./cmd/captain"}
 
-	if ldflags := os.Getenv("LDFLAGS"); ldflags != "" {
-		args = append([]string{"-ldflags", ldflags}, args...)
+	ldflags, err := getLdflags()
+	if err != nil {
+		return err
 	}
+	args = append([]string{"-ldflags", ldflags}, args...)
 
 	if cgo_enabled := os.Getenv("CGO_ENABLED"); cgo_enabled == "0" {
 		args = append([]string{"-a"}, args...)
@@ -109,6 +111,12 @@ func IntegrationTest(ctx context.Context) error {
 
 func makeTestTask(args ...string) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
+		ldflags, err := getLdflags()
+		if err != nil {
+			return err
+		}
+		args = append([]string{"-ldflags", ldflags}, args...)
+
 		if report := os.Getenv("REPORT"); report != "" {
 			return sh.RunV("ginkgo", append([]string{"-p", "--junit-report=report.xml"}, args...)...)
 		}
@@ -194,4 +202,17 @@ func hasChangesIn(prevVersion semver.Version, version semver.Version, folder str
 	}
 
 	return false, err
+}
+
+func getLdflags() (string, error) {
+	if ldflags := os.Getenv("LDFLAGS"); ldflags != "" {
+		return ldflags, nil
+	}
+
+	sha, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("-X github.com/rwx-research/captain-cli.Version=testing-%v", string(sha)), nil
 }

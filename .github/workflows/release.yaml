@@ -1,0 +1,273 @@
+name: Release
+run-name: Release ${{ inputs.kind }} Captain at ${{ inputs.sha }}
+
+concurrency:
+  group: release-captain-${{ github.event.inputs.kind }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit SHA'
+        required: true
+        type: string
+      kind:
+        description: 'Release'
+        required: true
+        type: choice
+        default: production
+        options:
+          - production
+          - unstable
+          - testing
+      version:
+        description: 'Version (only for production releases)'
+        required: false
+        type: string
+
+jobs:
+  verify-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ inputs.kind != 'production' && inputs.kind != 'unstable' && inputs.kind != 'testing' }}
+        run: exit 1
+      - run: echo "${{ inputs.sha }}" | grep -E '^[0-9a-f]{40}$' || (echo "Sha is not formatted as 40 hex digits" && false)
+      - if: ${{ inputs.kind == 'production' }}
+        run: echo "${{ inputs.version }}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || (echo "Version number is not formatted as vX.X.X" && false)
+
+  extract-version-details:
+    runs-on: ubuntu-latest
+    needs: verify-inputs
+    outputs:
+      # production: "vX.X.X"
+      # unstable: "unstable-SHA"
+      # testing: "testing-SHA"
+      full-version: ${{ steps.production.outputs.full-version || steps.unstable.outputs.full-version || steps.testing.outputs.full-version }}
+
+      # production: "vX"
+      # unstable: "unstable"
+      # testing: ""
+      aliased-version: ${{ steps.production.outputs.aliased-version || steps.unstable.outputs.aliased-version || steps.testing.outputs.aliased-version }}
+    steps:
+      - id: production
+        if: ${{ inputs.kind == 'production' }}
+        run: |
+          fullVersion="${{ inputs.version }}"
+          aliasedVersion=$(echo "${{ inputs.version }}" | sed -E 's/\.[0-9]+\.[0-9]+$//g')
+
+          echo "full-version=$fullVersion" >> "$GITHUB_OUTPUT"
+          echo "aliased-version=$aliasedVersion" >> "$GITHUB_OUTPUT"
+      - id: unstable
+        if: ${{ inputs.kind == 'unstable' }}
+        run: |
+          fullVersion="unstable-${{ inputs.sha }}"
+          aliasedVersion="unstable"
+
+          echo "full-version=$fullVersion" >> "$GITHUB_OUTPUT"
+          echo "aliased-version=$aliasedVersion" >> "$GITHUB_OUTPUT"
+      - id: testing
+        if: ${{ inputs.kind == 'testing' }}
+        run: |
+          fullVersion="testing-${{ inputs.sha }}"
+          aliasedVersion=""
+
+          echo "full-version=$fullVersion" >> "$GITHUB_OUTPUT"
+          echo "aliased-version=$aliasedVersion" >> "$GITHUB_OUTPUT"
+
+  draft-full-version-release:
+    runs-on: ubuntu-latest
+    needs: extract-version-details
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.sha }}
+      - name: Ensure this release has not been published
+        run: gh release view ${{ needs.extract-version-details.outputs.full-version }} --json isDraft | jq -e '.isDraft == true'
+      - name: Push full version tags
+        run: |
+          git tag --force ${{ needs.extract-version-details.outputs.full-version }}
+          git push --force origin ${{ needs.extract-version-details.outputs.full-version }}
+      - name: Create the full version release if it doesn't exist
+        run: |
+          gh release view ${{ needs.extract-version-details.outputs.full-version }} || \
+            gh release create ${{ needs.extract-version-details.outputs.full-version }} \
+            --draft \
+            --prerelease=${{ inputs.kind != 'production' }} \
+            --generate-notes \
+            --title "Captain ${{ needs.extract-version-details.outputs.full-version }}"
+
+  build-and-upload-binaries:
+    runs-on: ubuntu-latest
+    needs:
+      - extract-version-details
+      - draft-full-version-release
+    permissions:
+      contents: write
+      id-token: write
+    strategy:
+      matrix:
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64]
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.extract-version-details.outputs.full-version }}
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            keep-derivations = true
+            keep-outputs = true
+      - run: |
+          GOOS=${{ matrix.os }} \
+            GOARCH=${{ matrix.arch }} \
+            CGO_ENABLED=0 \
+            LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=${{ needs.extract-version-details.outputs.full-version }}" \
+            nix develop --command mage
+      - run: |
+          if [[ "${{ matrix.arch }}" == "amd64" ]]; then
+            new_arch="x86_64"
+          elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            new_arch="aarch64"
+          else
+            echo "unmapped arch: ${{ matrix.arch }}"
+            exit 1
+          fi
+
+          if [[ "${{ matrix.os }}" == "windows" ]]; then
+            extension=".exe"
+          fi
+
+          github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch$extension" | tr '[:upper:]' '[:lower:]')
+          mv "captain$extension" "$github_asset_name"
+          gh release upload ${{ needs.extract-version-details.outputs.full-version }} "$github_asset_name" --clobber
+
+  obtain-approval:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.kind == 'production' }}
+    needs:
+      - build-and-upload-binaries
+    environment: release-approval
+    steps:
+      - run: exit 0
+
+  publish-release:
+    runs-on: ubuntu-latest
+    if: ${{ always() && (needs.obtain-approval.result == 'success' || needs.obtain-approval.result == 'skipped') }}
+    needs:
+      - extract-version-details
+      - obtain-approval
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.extract-version-details.outputs.full-version }}
+      - name: Publish the full version release
+        run: |
+          gh release edit ${{ needs.extract-version-details.outputs.full-version }} \
+            --draft=false \
+            --latest=${{ inputs.kind == 'production' }}
+      - name: Push the aliased tags
+        if: ${{ needs.extract-version-details.outputs.aliased-version != '' }}
+        run: |
+          git tag --force ${{ needs.extract-version-details.outputs.aliased-version }}
+          git push --force origin ${{ needs.extract-version-details.outputs.aliased-version }}
+      - name: Create the aliased release if it doesn't exist
+        if: ${{ needs.extract-version-details.outputs.aliased-version != '' }}
+        run: |
+          gh release view ${{ needs.extract-version-details.outputs.aliased-version }} || \
+            gh release create ${{ needs.extract-version-details.outputs.aliased-version }} \
+            --notes "The Captain ${{ needs.extract-version-details.outputs.aliased-version }} release and tag exist to provide an easy way to download the latest ${{ needs.extract-version-details.outputs.aliased-version }}.x.x release of Captain. For example, you can always download the latest Linux x86 ${{ needs.extract-version-details.outputs.aliased-version }} release at this URL: https://github.com/rwx-research/captain/releases/download/${{ needs.extract-version-details.outputs.aliased-version }}/captain-linux-x86_64. (Look at the assets attached to this release to find the other available downloads.) This release and its assets are updated whenever a new ${{ needs.extract-version-details.outputs.aliased-version }}.x.x version of Captain is released." \
+            --title "Captain ${{ needs.extract-version-details.outputs.aliased-version }}"
+      - name: Push the assets from the full version release to the aliased release
+        if: ${{ needs.extract-version-details.outputs.aliased-version != '' }}
+        run: |
+          gh release download ${{ needs.extract-version-details.outputs.full-version }}
+          gh release upload ${{ needs.extract-version-details.outputs.aliased-version }} captain-* --clobber
+
+  update-cloudfront:
+    runs-on: ubuntu-latest
+    environment: Production
+    # This bit is required due to a GitHub oddity. The publish-release step depends on the obtain-approval
+    # step which is conditionally skipped. The publish-release step has to jump through some hoops to ensure
+    # it runs when the obtain-approval step is skipped, but for some reason subsequent steps still remain
+    # skipped even if only depending on steps that did end up running.
+    if: ${{ always() && needs.extract-version-details.result == 'success' && needs.publish-release.result == 'success' }}
+    needs:
+      - extract-version-details
+      - publish-release
+    permissions:
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
+          role-duration-seconds: 900
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.extract-version-details.outputs.full-version }}
+      - name: Download the binaries
+        run: gh release download ${{ needs.extract-version-details.outputs.full-version }}
+      - name: Upload the binaries to S3 and invalidate cloudfront
+        run: |
+          updatedPaths=""
+
+          for binary in captain-*
+          do
+            cleanedBinary=${binary//.exe/}
+            os=$(echo "$cleanedBinary" | cut -d '-' -f 2)
+            arch=$(echo "$cleanedBinary" | cut -d '-' -f 3)
+            version="${{ needs.extract-version-details.outputs.full-version }}"
+
+            if [[ "$arch" == "x86_64" ]]; then
+              oldArch="amd64"
+            elif [[ "$arch" == "aarch64" ]]; then
+              oldArch="arm64"
+            else
+              echo "unmapped arch: $arch"
+              exit 1
+            fi
+
+            if [[ "$os" == "windows" ]]; then
+              extension=".exe"
+            fi
+
+            # the old format does not include the extension intentionally
+            oldPath="captain-$os-$oldArch-$version"
+            aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$oldPath"
+            newPath="$version/$os/$arch/captain$extension"
+            aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$newPath"
+
+            if [[ "${{ needs.extract-version-details.outputs.aliased-version }}" != "" ]]; then
+              aliasedOldPath=${oldPath//$version/${{ needs.extract-version-details.outputs.aliased-version }}}
+              aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$aliasedOldPath"
+
+              aliasedNewPath=${newPath//$version/${{ needs.extract-version-details.outputs.aliased-version }}}
+              aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$aliasedNewPath"
+
+              if [[ "$updatedPaths" == "" ]]; then
+                # shellcheck disable=SC2089
+                updatedPaths="\"/$aliasedOldPath\" \"/$aliasedNewPath\""
+              else
+                updatedPaths="$updatedPaths \"/$aliasedOldPath\" \"/$aliasedNewPath\""
+              fi
+            fi
+          done
+
+          if [[ "$updatedPaths" != "" ]]; then
+            # shellcheck disable=SC2086,SC2090
+            aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths $updatedPaths
+          fi

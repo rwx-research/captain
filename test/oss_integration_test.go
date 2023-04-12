@@ -41,8 +41,6 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(result.exitCode).To(Equal(0))
-				Expect(result.stdout).To(MatchRegexp(`^v\d+\.\d+\.\d+-?`))
-
 				withoutBackwardsCompatibility(func() {
 					Expect(result.stdout).To(Equal(captain.Version))
 					Expect(result.stderr).To(BeEmpty())
