@@ -160,9 +160,8 @@ jobs:
       - name: Sign & Notarize Apple Release
         if: ${{ matrix.os == 'darwin' }}
         run: |
-          binary_name="apple-codesign-0.22.0-${{ matrix.new_arch }}-apple-darwin.tar.gz"
-          gh release download --repo indygreg/apple-platform-rs apple-codesign/0.22.0 --pattern "$binary_name"
-          tar xzvf $binary_name --strip-components=1
+          curl -fsSLO https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F0.22.0/apple-codesign-0.22.0-aarch64-unknown-linux-musl.tar.gz
+          tar xzvf apple-codesign-0.22.0-aarch64-unknown-linux-musl.tar.gz --strip-components=1
 
           echo "$RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT" > rwx-developer-id-application-cert.pem
           # first we sign the binary. This happens locally.
