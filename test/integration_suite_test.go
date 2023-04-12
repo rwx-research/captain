@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -193,3 +194,48 @@ func withAndWithoutInheritedEnv(sharedTests sharedTestGen) {
 type envGenerator func() map[string]string
 
 type sharedTestGen func(envGenerator, string)
+
+func withCaptainConfig(cfg string, rootDir string, body func(configPath string)) {
+	// TODO set RootDir on the config file once we get that merged
+	configPath := filepath.Join(rootDir, ".captain/config.yaml")
+
+	err := os.MkdirAll(filepath.Dir(configPath), 0o750)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = os.WriteFile(configPath, []byte(cfg), 0o600)
+	Expect(err).NotTo(HaveOccurred())
+
+	defer func() {
+		err := os.Remove(configPath)
+		Expect(err).NotTo(HaveOccurred())
+	}()
+
+	body(configPath)
+}
+
+// Integration tests are run to ensure that captain behaves as expected as well as to ensure background compatibility
+// They're here to ensure
+// - old CLI args should work
+// - old ENV vars should work
+// - old config files should work
+// Some guidelines for writing them:
+// - avoid asserting on STDERR
+// - assertions should be as lenient as possible (e.g. avoid asserting on exact values when it's unnecessary to guarantee compatibility)
+//
+// If you want to write tighter assertions that you expect to break slightly future versions, wrap those assertions
+// (or the whole tests) in `withoutBackwardsCompatibility`
+func withoutBackwardsCompatibility(incompatibleClosure func()) {
+	if os.Getenv("LEGACY_VERSION_TO_TEST") == "" {
+		incompatibleClosure()
+	}
+}
+
+// we add a prefix to top level describes to allow quarantining (disabling) of legacy tests that become invalid / are subject to a breaking change
+func versionedPrefixForQuarantining() string {
+	version := os.Getenv("LEGACY_VERSION_TO_TEST")
+	if os.Getenv("LEGACY_VERSION_TO_TEST") == "" {
+		return ""
+	} else {
+		return version + ": "
+	}
+}
