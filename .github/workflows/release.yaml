@@ -39,7 +39,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: verify-inputs
     outputs:
+      # production: "vX.X.X"
+      # unstable: "unstable-SHA"
+      # testing: "testing-SHA"
       full-version: ${{ steps.production.outputs.full-version || steps.unstable.outputs.full-version || steps.testing.outputs.full-version }}
+
+      # production: "vX"
+      # unstable: "unstable"
+      # testing: ""
       aliased-version: ${{ steps.production.outputs.aliased-version || steps.unstable.outputs.aliased-version || steps.testing.outputs.aliased-version }}
     steps:
       - id: production
@@ -84,19 +91,15 @@ jobs:
       - name: Push full version tags
         run: |
           git tag --force ${{ needs.extract-version-details.outputs.full-version }}
-          git push --tags --force origin ${{ needs.extract-version-details.outputs.full-version }}
-      - id: create-full-version-release
-        continue-on-error: true
-        name: Create the full version release
+          git push --force origin ${{ needs.extract-version-details.outputs.full-version }}
+      - name: Create the full version release if it doesn't exist
         run: |
-          gh release create ${{ needs.extract-version-details.outputs.full-version }} \
+          gh release view ${{ needs.extract-version-details.outputs.full-version }} || \
+            gh release create ${{ needs.extract-version-details.outputs.full-version }} \
             --draft \
             --prerelease=${{ inputs.kind != 'production' }} \
             --generate-notes \
             --title "Captain ${{ needs.extract-version-details.outputs.full-version }}"
-      - name: Update the release if it already exists
-        if: ${{ steps.create-full-version-release.outcome == 'failure' }}
-        run: gh release edit ${{ needs.extract-version-details.outputs.full-version }} --tag ${{ needs.extract-version-details.outputs.full-version }}
 
   build-and-upload-binaries:
     runs-on: ubuntu-latest
@@ -127,8 +130,7 @@ jobs:
             CGO_ENABLED=0 \
             LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=${{ needs.extract-version-details.outputs.full-version }}" \
             nix develop --command mage
-      - if: ${{ matrix.os != 'windows' }}
-        run: |
+      - run: |
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             new_arch="x86_64"
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
@@ -138,22 +140,12 @@ jobs:
             exit 1
           fi
 
-          github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch" | tr '[:upper:]' '[:lower:]')
-          mv captain "$github_asset_name"
-          gh release upload ${{ needs.extract-version-details.outputs.full-version }} "$github_asset_name" --clobber
-      - if: ${{ matrix.os == 'windows' }}
-        run: |
-          if [[ "${{ matrix.arch }}" == "amd64" ]]; then
-            new_arch="x86_64"
-          elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            new_arch="aarch64"
-          else
-            echo "unmapped arch: ${{ matrix.arch }}"
-            exit 1
+          if [[ "${{ matrix.os }}" == "windows" ]]; then
+            extension=".exe"
           fi
 
-          github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch.exe" | tr '[:upper:]' '[:lower:]')
-          mv captain.exe "$github_asset_name"
+          github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch$extension" | tr '[:upper:]' '[:lower:]')
+          mv "captain$extension" "$github_asset_name"
           gh release upload ${{ needs.extract-version-details.outputs.full-version }} "$github_asset_name" --clobber
 
   obtain-approval:
@@ -189,16 +181,12 @@ jobs:
         if: ${{ needs.extract-version-details.outputs.aliased-version != '' }}
         run: |
           git tag --force ${{ needs.extract-version-details.outputs.aliased-version }}
-          git push --tags --force origin ${{ needs.extract-version-details.outputs.aliased-version }}
-      - id: edit-aliased-version-release
-        name: Update the aliased release if it already exists
+          git push --force origin ${{ needs.extract-version-details.outputs.aliased-version }}
+      - name: Create the aliased release if it doesn't exist
         if: ${{ needs.extract-version-details.outputs.aliased-version != '' }}
-        continue-on-error: true
-        run: gh release edit ${{ needs.extract-version-details.outputs.aliased-version }} --tag ${{ needs.extract-version-details.outputs.aliased-version }}
-      - name: Create the aliased release otherwise
-        if: ${{ steps.edit-aliased-version-release.outcome == 'failure' && needs.extract-version-details.outputs.aliased-version != ''}}
         run: |
-          gh release create ${{ needs.extract-version-details.outputs.aliased-version }} \
+          gh release view ${{ needs.extract-version-details.outputs.aliased-version }} || \
+            gh release create ${{ needs.extract-version-details.outputs.aliased-version }} \
             --notes "The Captain ${{ needs.extract-version-details.outputs.aliased-version }} release and tag exist to provide an easy way to download the latest ${{ needs.extract-version-details.outputs.aliased-version }}.x.x release of Captain. For example, you can always download the latest Linux x86 ${{ needs.extract-version-details.outputs.aliased-version }} release at this URL: https://github.com/rwx-research/captain/releases/download/${{ needs.extract-version-details.outputs.aliased-version }}/captain-linux-x86_64. (Look at the assets attached to this release to find the other available downloads.) This release and its assets are updated whenever a new ${{ needs.extract-version-details.outputs.aliased-version }}.x.x version of Captain is released." \
             --title "Captain ${{ needs.extract-version-details.outputs.aliased-version }}"
       - name: Push the assets from the full version release to the aliased release
@@ -210,12 +198,16 @@ jobs:
   update-cloudfront:
     runs-on: ubuntu-latest
     environment: Production
+    # This bit is required due to a GitHub oddity. The publish-release step depends on the obtain-approval
+    # step which is conditionally skipped. The publish-release step has to jump through some hoops to ensure
+    # it runs when the obtain-approval step is skipped, but for some reason subsequent steps still remain
+    # skipped even if only depending on steps that did end up running.
     if: ${{ always() && needs.extract-version-details.result == 'success' && needs.publish-release.result == 'success' }}
     needs:
       - extract-version-details
       - publish-release
     permissions:
-      id-token: read
+      id-token: write
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -253,6 +245,7 @@ jobs:
               extension=".exe"
             fi
 
+            # the old format does not include the extension intentionally
             oldPath="captain-$os-$oldArch-$version"
             aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$oldPath"
             newPath="$version/$os/$arch/captain$extension"
