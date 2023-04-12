@@ -277,9 +277,9 @@ jobs:
 
               if [[ "$updatedPaths" == "" ]]; then
                 # shellcheck disable=SC2089
-                updatedPaths="\"/$aliasedOldPath\" \"/$aliasedNewPath\""
+                updatedPaths="/$aliasedOldPath /$aliasedNewPath"
               else
-                updatedPaths="$updatedPaths \"/$aliasedOldPath\" \"/$aliasedNewPath\""
+                updatedPaths="$updatedPaths /$aliasedOldPath /$aliasedNewPath"
               fi
             fi
           done
