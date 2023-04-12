@@ -168,17 +168,17 @@ jobs:
   obtain-approval:
     runs-on: ubuntu-latest
     if: ${{ inputs.kind == 'production' }}
-    needs:
-      - build-and-upload-binaries
+    needs: build-and-upload-binaries
     environment: release-approval
     steps:
       - run: exit 0
 
   publish-release:
     runs-on: ubuntu-latest
-    if: ${{ always() && (needs.obtain-approval.result == 'success' || needs.obtain-approval.result == 'skipped') }}
+    if: ${{ always() && needs.build-and-upload-binaries.result == 'success' && (needs.obtain-approval.result == 'success' || needs.obtain-approval.result == 'skipped') }}
     needs:
       - extract-version-details
+      - build-and-upload-binaries
       - obtain-approval
     permissions:
       contents: write
