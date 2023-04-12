@@ -24,6 +24,23 @@ on:
         description: 'Version (only for production releases)'
         required: false
         type: string
+  workflow_call:
+    inputs:
+      sha:
+        description: 'Commit SHA'
+        required: true
+        type: string
+      kind:
+        description: 'Release'
+        required: true
+        type: string
+      version:
+        description: 'Version (only for production releases)'
+        required: false
+        type: string
+    secrets:
+      CLOUDFRONT_DISTRIBUTION_ID:
+        required: true
 
 jobs:
   verify-inputs:

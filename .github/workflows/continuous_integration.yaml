@@ -27,6 +27,16 @@ jobs:
           DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
           REPORT: true
 
+  unstable-release:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/release.yaml
+    needs: build-and-test
+    with:
+      sha: ${{ github.sha }}
+      kind: unstable
+      version:
+    secrets: inherit
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
