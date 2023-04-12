@@ -86,18 +86,19 @@ func initCLIService(
 			logger = logging.NewDebugLogger()
 		}
 
-		provider, err := cfg.ProvidersEnv.MakeProvider()
-		if err != nil {
-			return errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
-		}
-		err = providerValidator(provider)
-		if err != nil {
-			return errors.WithDecoration(err)
-		}
-
 		suiteID := cliArgs.RootCliArgs.suiteID
 
 		if cfg.Secrets.APIToken != "" && !cfg.Cloud.Disabled {
+			var provider providers.Provider
+			provider, err = cfg.ProvidersEnv.MakeProvider()
+			if err != nil {
+				return errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
+			}
+			err = providerValidator(provider)
+			if err != nil {
+				return errors.WithDecoration(err)
+			}
+
 			apiClient, err = remote.NewClient(remote.ClientConfig{
 				Debug:    cfg.Output.Debug,
 				Host:     cfg.Cloud.APIHost,
