@@ -8,11 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       sha:
-        description: 'Commit SHA'
+        description: "Commit SHA"
         required: true
         type: string
       kind:
-        description: 'Release'
+        description: "Release"
         required: true
         type: choice
         default: production
@@ -21,25 +21,29 @@ on:
           - unstable
           - testing
       version:
-        description: 'Version (only for production releases)'
+        description: "Version (only for production releases)"
         required: false
         type: string
   workflow_call:
     inputs:
       sha:
-        description: 'Commit SHA'
+        description: "Commit SHA"
         required: true
         type: string
       kind:
-        description: 'Release'
+        description: "Release"
         required: true
         type: string
       version:
-        description: 'Version (only for production releases)'
+        description: "Version (only for production releases)"
         required: false
         type: string
     secrets:
       CLOUDFRONT_DISTRIBUTION_ID:
+        required: true
+      RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT:
+        required: true
+      RWX_APPLE_APP_STORE_CONNECT_API_KEY:
         required: true
 
 jobs:
@@ -130,6 +134,11 @@ jobs:
       matrix:
         os: [linux, darwin, windows]
         arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            new_arch: x86_64
+          - arch: arm64
+            new_arch: aarch64
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -148,22 +157,32 @@ jobs:
             CGO_ENABLED=0 \
             LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=${{ needs.extract-version-details.outputs.full-version }}" \
             nix develop --command mage
+      - name: Sign & Notarize Apple Release
+        if: ${{ matrix.os == 'darwin' }}
+        run: |
+          binary_name="apple-codesign-0.22.0-${{ matrix.new_arch }}-apple-darwin.tar.gz"
+          gh release download --repo indygreg/apple-platform-rs apple-codesign/0.22.0 --pattern "$binary_name"
+          tar xzvf $binary_name --strip-components=1
+
+          echo "$RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT" > rwx-developer-id-application-cert.pem
+          # first we sign the binary. This happens locally.
+          ./rcodesign sign --pem-source rwx-developer-id-application-cert.pem --code-signature-flags runtime "./captain"
+          # notarizing requires certain container formats, that's why we zip
+          zip -r captain.zip "./captain"
+          echo "$RWX_APPLE_APP_STORE_CONNECT_API_KEY" > rwx-apple-app-store-connect-api-key.json
+          ./rcodesign notary-submit --wait --api-key-path rwx-apple-app-store-connect-api-key.json captain.zip
+        env:
+          CODESIGN_VERSION: 0.22.0
+          RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT: ${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT }}
+          RWX_APPLE_APP_STORE_CONNECT_API_KEY: ${{ secrets.RWX_APPLE_APP_STORE_CONNECT_API_KEY }}
+
       - name: upload captain to github release
         run: |
-          if [[ "${{ matrix.arch }}" == "amd64" ]]; then
-            new_arch="x86_64"
-          elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            new_arch="aarch64"
-          else
-            echo "unmapped arch: ${{ matrix.arch }}"
-            exit 1
-          fi
-
           if [[ "${{ matrix.os }}" == "windows" ]]; then
             extension=".exe"
           fi
 
-          github_asset_name=$(echo "captain-${{ matrix.os }}-$new_arch$extension" | tr '[:upper:]' '[:lower:]')
+          github_asset_name=$(echo "captain-${{ matrix.os }}-${{ matrix.new_arch }}$extension" | tr '[:upper:]' '[:lower:]')
           mv "captain$extension" "$github_asset_name"
           gh release upload ${{ needs.extract-version-details.outputs.full-version }} "$github_asset_name" --clobber
 
