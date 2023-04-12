@@ -204,6 +204,7 @@ jobs:
         run: |
           gh release view ${{ needs.extract-version-details.outputs.aliased-version }} || \
             gh release create ${{ needs.extract-version-details.outputs.aliased-version }} \
+            --latest=false \
             --notes "The Captain ${{ needs.extract-version-details.outputs.aliased-version }} release and tag exist to provide an easy way to download the latest ${{ needs.extract-version-details.outputs.aliased-version }}.x.x release of Captain. For example, you can always download the latest Linux x86 ${{ needs.extract-version-details.outputs.aliased-version }} release at this URL: https://github.com/rwx-research/captain/releases/download/${{ needs.extract-version-details.outputs.aliased-version }}/captain-linux-x86_64. (Look at the assets attached to this release to find the other available downloads.) This release and its assets are updated whenever a new ${{ needs.extract-version-details.outputs.aliased-version }}.x.x version of Captain is released." \
             --title "Captain ${{ needs.extract-version-details.outputs.aliased-version }}"
       - name: Push the assets from the full version release to the aliased release
@@ -277,9 +278,9 @@ jobs:
 
               if [[ "$updatedPaths" == "" ]]; then
                 # shellcheck disable=SC2089
-                updatedPaths="\"/$aliasedOldPath\" \"/$aliasedNewPath\""
+                updatedPaths="/$aliasedOldPath /$aliasedNewPath"
               else
-                updatedPaths="$updatedPaths \"/$aliasedOldPath\" \"/$aliasedNewPath\""
+                updatedPaths="$updatedPaths /$aliasedOldPath /$aliasedNewPath"
               fi
             fi
           done
