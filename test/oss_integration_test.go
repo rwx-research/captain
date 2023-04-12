@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("OSS mode Integration Tests", func() {
+var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", func() {
 	randomSuiteId := func() string {
 		// create a random suite ID so that concurrent tests don't try to read / write from the same timings files
 		suiteUUID, err := uuid.NewRandom()
@@ -32,6 +32,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 			delete(env, "RWX_ACCESS_TOKEN")
 			return env
 		}
+
 		Describe("captain --version", func() {
 			It("renders the version I expect", func() {
 				result := runCaptain(captainArgs{
@@ -40,8 +41,10 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				})
 
 				Expect(result.exitCode).To(Equal(0))
-				Expect(result.stdout).To(Equal(captain.Version))
-				Expect(result.stderr).To(BeEmpty())
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stdout).To(Equal(captain.Version))
+					Expect(result.stderr).To(BeEmpty())
+				})
 			})
 		})
 
@@ -63,9 +66,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 							env: getEnvWithoutAccessToken(),
 						})
 
-						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb,fixtures/integration-tests/partition/z.rb"))
 						Expect(result.exitCode).To(Equal(0))
+
+						withoutBackwardsCompatibility(func() {
+							Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						})
 					})
 
 					It("sets partition 1 correctly when delimiter is set via env var", func() {
@@ -85,11 +91,15 @@ var _ = Describe("OSS mode Integration Tests", func() {
 							env: env,
 						})
 
-						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 						Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb,fixtures/integration-tests/partition/z.rb"))
 						Expect(result.exitCode).To(Equal(0))
+
+						withoutBackwardsCompatibility(func() {
+							Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						})
 					})
 				})
+
 				It("sets partition 1 correctly", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
@@ -104,9 +114,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
 					Expect(result.exitCode).To(Equal(0))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+					})
 				})
 
 				It("sets partition 2 correctly", func() {
@@ -123,9 +136,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/y.rb"))
 					Expect(result.exitCode).To(Equal(0))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+					})
 				})
 			})
 
@@ -197,6 +213,11 @@ var _ = Describe("OSS mode Integration Tests", func() {
 		})
 
 		Describe("captain run", func() {
+			loadCaptainConfig := func(path string, substitution string) string {
+				data, err := os.ReadFile(path)
+				Expect(err).ToNot(HaveOccurred())
+				return fmt.Sprintf(string(data), substitution)
+			}
 			It("fails & passes through exit code on failure when results files is missing", func() {
 				result := runCaptain(captainArgs{
 					args: []string{
@@ -207,11 +228,12 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					},
 					env: getEnvWithoutAccessToken(),
 				})
-
-				// Stderr being empty isn't ideal. See: https://github.com/rwx-research/captain-cli/issues/243
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
-				Expect(result.stdout).To(BeEmpty())
 				Expect(result.exitCode).To(Equal(123))
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					Expect(result.stdout).To(BeEmpty())
+				})
 			})
 
 			It("fails & passes through exit code on failure", func() {
@@ -225,8 +247,11 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					env: getEnvWithoutAccessToken(),
 				})
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			It("allows using the -- command specification", func() {
@@ -240,8 +265,10 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					env: getEnvWithoutAccessToken(),
 				})
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			It("allows combining the --command specification with the -- specification", func() {
@@ -256,8 +283,10 @@ var _ = Describe("OSS mode Integration Tests", func() {
 					env: getEnvWithoutAccessToken(),
 				})
 
-				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				Expect(result.exitCode).To(Equal(123))
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
 			})
 
 			It("accepts --suite-id argument", func() {
@@ -274,6 +303,177 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				Expect(result.exitCode).To(Equal(0))
 			})
 
+			It("produces markdown-summary reports via config file", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				outputPath := filepath.Join(tmp, "markdown.md")
+				os.Remove(outputPath)
+
+				cfg := loadCaptainConfig("fixtures/integration-tests/captain-configs/markdown-summary-reporter.printf-yaml", outputPath)
+
+				withCaptainConfig(cfg, tmp, func(configPath string) {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-functional-tests",
+							"--config-file", configPath,
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					_, err = os.Stat(outputPath)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(result.exitCode).To(Equal(123))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					})
+				})
+			})
+
+			It("produces markdown-summary reports via CLI flag", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "markdown.md"))
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"captain-cli-functional-tests",
+						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+						"--fail-on-upload-error",
+						"--reporter", fmt.Sprintf("markdown-summary=%v", filepath.Join(tmp, "markdown.md")),
+						"-c", "bash -c 'exit 123'",
+					},
+					env: getEnvWithoutAccessToken(),
+				})
+
+				_, err = os.Stat(filepath.Join(tmp, "markdown.md"))
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(result.exitCode).To(Equal(123))
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
+			})
+
+			It("produces rwx-v1-json reports via config file", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				outputPath := filepath.Join(tmp, "rwx-v1.json")
+				os.Remove(outputPath)
+
+				cfg := loadCaptainConfig("fixtures/integration-tests/captain-configs/rwx-v1-json-reporter.printf-yaml", outputPath)
+
+				withCaptainConfig(cfg, tmp, func(configPath string) {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-functional-tests",
+							"--config-file", configPath,
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					_, err = os.Stat(outputPath)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(result.exitCode).To(Equal(123))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					})
+				})
+			})
+
+			It("produces rwx-v1-json reports via CLI flag", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "rwx-v1.json"))
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"captain-cli-functional-tests",
+						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+						"--fail-on-upload-error",
+						"--reporter", fmt.Sprintf("rwx-v1-json=%v", filepath.Join(tmp, "rwx-v1.json")),
+						"-c", "bash -c 'exit 123'",
+					},
+					env: getEnvWithoutAccessToken(),
+				})
+
+				_, err = os.Stat(filepath.Join(tmp, "rwx-v1.json"))
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(result.exitCode).To(Equal(123))
+
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
+			})
+
+			It("produces junit-xml reports via config file", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				outputPath := filepath.Join(tmp, "junit.xml")
+				os.Remove(outputPath)
+
+				cfg := loadCaptainConfig("fixtures/integration-tests/captain-configs/junit-xml-reporter.printf-yaml", outputPath)
+
+				withCaptainConfig(cfg, tmp, func(configPath string) {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-functional-tests",
+							"--config-file", configPath,
+						},
+						env: getEnvWithoutAccessToken(),
+					})
+
+					_, err = os.Stat(outputPath)
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(result.exitCode).To(Equal(123))
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					})
+				})
+			})
+
+			It("produces junit-xml reports via CLI flag", func() {
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				os.Remove(filepath.Join(tmp, "junit.xml"))
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"captain-cli-functional-tests",
+						"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+						"--fail-on-upload-error",
+						"--reporter", fmt.Sprintf("junit-xml=%v", filepath.Join(tmp, "junit.xml")),
+						"-c", "bash -c 'exit 123'",
+					},
+					env: getEnvWithoutAccessToken(),
+				})
+
+				_, err = os.Stat(filepath.Join(tmp, "junit.xml"))
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(result.exitCode).To(Equal(123))
+				withoutBackwardsCompatibility(func() {
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				})
+			})
+
 			Context("command output passthrough", func() {
 				It("passes through output of test command", func() {
 					result := runCaptain(captainArgs{
@@ -286,8 +486,8 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(HaveSuffix("def")) // prefix by a bunch of warnings about captain dir not existing
-					Expect(result.stdout).To(HavePrefix("abc\nghi"))
+					Expect(result.stderr).To(ContainSubstring("def")) // prefix by a bunch of warnings about captain dir not existing
+					Expect(result.stdout).To(ContainSubstring("abc\nghi"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -358,8 +558,8 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'")) // indicative of a retry
 					Expect(result.exitCode).To(Equal(0))
+					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'")) // indicative of a retry
 				})
 
 				It("fails & passes through exit code on failure", func() {
@@ -375,8 +575,8 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(123))
+					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'")) // indicative of a retry
 				})
 
 				It("fails & passes through exit code on failure when configured via captain config", func() {
@@ -394,10 +594,6 @@ var _ = Describe("OSS mode Integration Tests", func() {
 				})
 			})
 
-			Context("quarantining", func() {
-				// note these are tested as part of the add/remove quarantine tests
-			})
-
 			Context("with abq", func() {
 				It("runs with ABQ_SET_EXIT_CODE=false when ABQ_SET_EXIT_CODE is unset", func() {
 					result := runCaptain(captainArgs{
@@ -411,8 +607,8 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stdout).To(HavePrefix("exit_code=false"))
 					Expect(result.exitCode).To(Equal(0))
+					Expect(result.stdout).To(ContainSubstring("exit_code=false"))
 				})
 
 				It("runs with ABQ_SET_EXIT_CODE=false when ABQ_SET_EXIT_CODE is already set", func() {
@@ -429,7 +625,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: env,
 					})
 
-					Expect(result.stdout).To(HavePrefix("exit_code=false"))
+					Expect(result.stdout).To(ContainSubstring("exit_code=false"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -445,7 +641,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stdout).To(HavePrefix("state_file=/tmp/captain-abq-"))
+					Expect(result.stdout).To(ContainSubstring("state_file=/tmp/captain-abq-"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 
@@ -463,7 +659,7 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: env,
 					})
 
-					Expect(result.stdout).To(HavePrefix("state_file=/tmp/functional-abq-1234.json"))
+					Expect(result.stdout).To(ContainSubstring("state_file=/tmp/functional-abq-1234.json"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 			})
@@ -536,8 +732,10 @@ var _ = Describe("OSS mode Integration Tests", func() {
 						env: getEnvWithoutAccessToken(),
 					})
 
-					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					Expect(result.exitCode).To(Equal(123))
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+					})
 
 					By("removing the quarantine, tests should fail again")
 

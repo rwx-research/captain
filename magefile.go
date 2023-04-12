@@ -44,9 +44,6 @@ func All(ctx context.Context) error {
 	return nil
 }
 
-func init() {
-}
-
 // Build builds the Captain CLI
 func Build(ctx context.Context) error {
 	args := []string{"./cmd/captain"}
@@ -156,17 +153,13 @@ func findTagsWithChangesInTest() ([]string, error) {
 		return nil, err
 	}
 
-	// versions AFTER this will be included in tags to test
-	oneBeforeMinimumVersion := semver.Version{Major: 1, Minor: 10, Patch: 1}
-
 	var versionTags []semver.Version
 
 	for _, tag := range strings.Split(string(out), "\n") {
 		tagVersion, err := semver.ParseTolerant(tag)
-		// ignore error, filter out version < 1.9.5
-		if err == nil &&
-			len(tagVersion.Pre) == 0 && // not pre-release
-			tagVersion.GTE(oneBeforeMinimumVersion) {
+		if err == nil && // only include the tag if it parses...
+			len(tagVersion.Pre) == 0 && // and is not pre-release...
+			tagVersion.GTE(semver.Version{Major: 1, Minor: 10, Patch: 1}) { // and is >= 1.10.1 (backwards compatibility tests start after 1.10.2. We include 1.10.1 for a baseline but never include it in the output)
 
 			versionTags = append(versionTags, tagVersion)
 		}
