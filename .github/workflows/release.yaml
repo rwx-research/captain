@@ -248,6 +248,7 @@ jobs:
       - extract-version-details
       - publish-release
     permissions:
+      contents: write
       id-token: write
     env:
       GH_TOKEN: ${{ github.token }}
