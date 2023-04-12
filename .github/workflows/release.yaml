@@ -141,13 +141,15 @@ jobs:
           extra_nix_config: |
             keep-derivations = true
             keep-outputs = true
-      - run: |
+      - name: build captain
+        run: |
           GOOS=${{ matrix.os }} \
             GOARCH=${{ matrix.arch }} \
             CGO_ENABLED=0 \
             LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=${{ needs.extract-version-details.outputs.full-version }}" \
             nix develop --command mage
-      - run: |
+      - name: upload captain to github release
+        run: |
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             new_arch="x86_64"
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
