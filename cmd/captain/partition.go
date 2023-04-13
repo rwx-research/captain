@@ -125,11 +125,6 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		return err
 	}
 	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", defaultPartitionTotal, "the total number of partitions")
-	// if !ok || defaultPartitionTotal < 1 {
-	// 	if err := partitionCmd.MarkFlagRequired("total"); err != nil {
-	// 		return errors.WithStack(err)
-	// 	}
-	// }
 
 	// it's a smell that we're using cliArgs here but I believe it's a major refactor to stop doing that.
 	addShaFlag(partitionCmd, &cliArgs.GenericProvider.Sha)
