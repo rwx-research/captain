@@ -187,6 +187,12 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 			})
 
 			Context("with provider-provided node total & index", func() {
+				var env map[string]string
+
+				BeforeEach(func() {
+					env = helpers.ReadEnvFromFile(".env.buildkite")
+				})
+
 				It("sets partition 2 correctly", func() {
 					result := runCaptain(captainArgs{
 						args: []string{
@@ -194,10 +200,43 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 							suiteId,
 							"fixtures/integration-tests/partition/*_spec.rb",
 						},
-						env: helpers.ReadEnvFromFile(".env.buildkite"),
+						env: env,
 					})
 
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
+					Expect(result.exitCode).To(Equal(0))
+				})
+
+				It("prefers flag --index 0 to provider-sourced index 1", func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"partition",
+							suiteId,
+							"fixtures/integration-tests/partition/*_spec.rb",
+							"--index", "0",
+						},
+						env: env,
+					})
+
+					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
+					Expect(result.exitCode).To(Equal(0))
+				})
+
+				It("prefers env var CAPTAIN_PARTITION_INDEX 0 to provider-sourced index 1", func() {
+					env["CAPTAIN_PARTITION_INDEX"] = "0"
+
+					env := helpers.ReadEnvFromFile(".env.buildkite")
+					result := runCaptain(captainArgs{
+						args: []string{
+							"partition",
+							suiteId,
+							"fixtures/integration-tests/partition/*_spec.rb",
+							"--index", "0",
+						},
+						env: env,
+					})
+
+					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
 					Expect(result.exitCode).To(Equal(0))
 				})
 			})
