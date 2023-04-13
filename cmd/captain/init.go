@@ -207,7 +207,6 @@ func makeAPIClient(
 		}))
 	}
 
-	var flakesFilePath, quarantinesFilePath, timingsFilePath string
 	if suiteID == "" {
 		return nil, errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
 	}
@@ -242,7 +241,7 @@ func makeAPIClient(
 		)
 	}
 
-	quarantinesFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, quarantinesFileName))
+	quarantinesFilePath, err := findInParentDir(filepath.Join(captainDirectory, suiteID, quarantinesFileName))
 	if err != nil {
 		quarantinesFilePath = filepath.Join(captainDirectory, suiteID, quarantinesFileName)
 		logger.Warnf(
@@ -251,7 +250,7 @@ func makeAPIClient(
 		)
 	}
 
-	timingsFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, timingsFileName))
+	timingsFilePath, err := findInParentDir(filepath.Join(captainDirectory, suiteID, timingsFileName))
 	if err != nil {
 		timingsFilePath = filepath.Join(captainDirectory, suiteID, timingsFileName)
 		logger.Warnf(
