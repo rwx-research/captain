@@ -10,6 +10,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/partition"
 	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
@@ -264,7 +265,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		&cliArgs.partitionTotal,
 		"partition-total",
 		-1,
-		"The desired number ofpartitions. Any empty partitions will result in a noop.",
+		"The desired number of partitions. Any empty partitions will result in a noop.",
 	)
 
 	runCmd.Flags().StringVar(
@@ -278,15 +279,19 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		&cliArgs.partitionGlobs,
 		"partition-globs",
 		[]string{},
-		"globs used to identify the test files you wish to partition",
+		"Filepath globs used to identify the test files you wish to partition",
 	)
 
 	runCmd.Flags().StringVar(
 		&cliArgs.partitionCommandTemplate,
 		"partition-command",
 		"",
-		"the command that will be run to execute a subset of your tests while partitioning "+
-			"(required if --partition-index or --partition-total is passed)",
+		fmt.Sprintf(
+			"The command that will be run to execute a subset of your tests while partitioning "+
+				"(required if --partition-index or --partition-total is passed)"+
+				"Examples:\n  Custom: --partition-command \"%v\"",
+			partition.DelimiterSubstitution{}.Example(),
+		),
 	)
 
 	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",
