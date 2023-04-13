@@ -19,6 +19,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -72,7 +73,7 @@ func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 		substitutions := make(map[string]string)
 		substitutions["testFiles"] = strings.Join(partitionedTestFilePaths, partitionConfig.Delimiter) // TODO: Validation
 
-		compiledTemplate, err := targetedretries.CompileTemplate(cfg.PartitionCommandTemplate)
+		compiledTemplate, err := templating.CompileTemplate(cfg.PartitionCommandTemplate)
 		if err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
@@ -352,7 +353,7 @@ func (s Service) attemptRetries(
 		return originalTestResults, false, errors.NewInternalError("No test results detected")
 	}
 
-	compiledTemplate, err := targetedretries.CompileTemplate(cfg.RetryCommandTemplate)
+	compiledTemplate, err := templating.CompileTemplate(cfg.RetryCommandTemplate)
 	if err != nil {
 		return originalTestResults, false, errors.WithStack(err)
 	}

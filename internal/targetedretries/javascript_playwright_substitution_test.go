@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -57,7 +58,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -68,7 +69,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("npx playwright test")
+			compiledTemplate, compileErr := templating.CompileTemplate("npx playwright test")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -77,7 +78,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 
 		It("is invalid for a template with too few placeholders", func() {
 			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx playwright test '{{ file }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -88,7 +89,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 
 		It("is invalid for a template with additional placeholders", func() {
 			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}' {{ foo }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -99,7 +100,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 
 		It("is invalid for a template with incorrect placeholders", func() {
 			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx playwright test '{{ wat }}' --project '{{ who }}' --grep '{{ foo }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -110,7 +111,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 
 		It("is valid for a template with the file, project, and grep placeholders", func() {
 			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -122,7 +123,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns tests grouped by file and project", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -216,7 +217,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())

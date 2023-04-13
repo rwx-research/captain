@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.PythonUnitTestSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -49,7 +50,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.PythonUnitTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -60,7 +61,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.PythonUnitTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("unittest")
+			compiledTemplate, compileErr := templating.CompileTemplate("unittest")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -69,7 +70,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 
 		It("is invalid for a template with too many placeholders", func() {
 			substitution := targetedretries.PythonUnitTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("unittest {{ file }} {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("unittest {{ file }} {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -78,7 +79,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 
 		It("is invalid for a template without a tests placeholder", func() {
 			substitution := targetedretries.PythonUnitTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("unittest {{ file }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("unittest {{ file }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -87,7 +88,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 
 		It("is valid for a template with only a tests placeholder", func() {
 			substitution := targetedretries.PythonUnitTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("unittest {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("unittest {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -97,7 +98,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns the shell escaped test identifiers", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("unittest {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("unittest {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			name1 := "SomeClass.some_method"
@@ -134,7 +135,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("unittest {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("unittest {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			name1 := "SomeClass.some_method"

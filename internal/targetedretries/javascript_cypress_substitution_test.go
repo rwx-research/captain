@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.JavaScriptCypressSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -53,7 +54,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.JavaScriptCypressSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -64,7 +65,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.JavaScriptCypressSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("npx cypress run")
+			compiledTemplate, compileErr := templating.CompileTemplate("npx cypress run")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -73,7 +74,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 
 		It("is invalid for a template with additional placeholders", func() {
 			substitution := targetedretries.JavaScriptCypressSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx cypress run --spec '{{ spec }}' --env {{ grep }} {{ foo }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -84,7 +85,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 
 		It("is invalid for a template with incorrect placeholders", func() {
 			substitution := targetedretries.JavaScriptCypressSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx cypress run --spec '{{ wat }}' --env {{ foo }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -95,7 +96,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 
 		It("is invalid for a template without the spec placeholder", func() {
 			substitution := targetedretries.JavaScriptCypressSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx cypress run --env {{ grep }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -106,7 +107,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 
 		It("is valid for a template with only the spec placeholder", func() {
 			substitution := targetedretries.JavaScriptCypressSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx cypress run --spec '{{ spec }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -117,7 +118,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 
 		It("is valid for a template with the spec and grep placeholders", func() {
 			substitution := targetedretries.JavaScriptCypressSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx cypress run --spec '{{ spec }}' --env {{ grep }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -129,7 +130,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns tests grouped by spec", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx cypress run --spec '{{ spec }}' --env {{ grep }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -201,7 +202,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx cypress run --spec '{{ spec }}' --env {{ grep }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())

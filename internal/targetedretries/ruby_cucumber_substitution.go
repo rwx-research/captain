@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s RubyCucumberSubstitution) Example() string {
 	return "bundle exec cucumber {{ examples }}"
 }
 
-func (s RubyCucumberSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s RubyCucumberSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -41,7 +42,7 @@ func (s RubyCucumberSubstitution) ValidateTemplate(compiledTemplate CompiledTemp
 }
 
 func (s RubyCucumberSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {

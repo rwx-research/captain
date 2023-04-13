@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.DotNetxUnitSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -49,7 +50,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.DotNetxUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -60,7 +61,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.DotNetxUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("dotnet test --filter")
+			compiledTemplate, compileErr := templating.CompileTemplate("dotnet test --filter")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -69,7 +70,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 
 		It("is invalid for a template with too many placeholders", func() {
 			substitution := targetedretries.DotNetxUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("dotnet test --filter '{{ filter }}' {{ other }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("dotnet test --filter '{{ filter }}' {{ other }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -78,7 +79,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 
 		It("is invalid for a template without a filter placeholder", func() {
 			substitution := targetedretries.DotNetxUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("dotnet test --filter '{{ other }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("dotnet test --filter '{{ other }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -87,7 +88,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 
 		It("is valid for a template with only a filter placeholder", func() {
 			substitution := targetedretries.DotNetxUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("dotnet test --filter '{{ filter }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("dotnet test --filter '{{ filter }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -97,7 +98,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns the unique test type.method", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("dotnet test --filter '{{ filter }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("dotnet test --filter '{{ filter }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			type1 := "type1"
@@ -175,7 +176,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("dotnet test --filter '{{ filter }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("dotnet test --filter '{{ filter }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			type1 := "type1"

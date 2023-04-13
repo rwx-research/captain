@@ -6,6 +6,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -17,7 +18,7 @@ func (s JSONSubstitution) Example() string {
 	return "bin/your-script {{ jsonFilePath }}"
 }
 
-func (s JSONSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s JSONSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -44,7 +45,7 @@ func (s JSONSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) er
 }
 
 func (s JSONSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(test v1.Test) bool,
 ) ([]map[string]string, error) {

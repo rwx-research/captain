@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s JavaScriptPlaywrightSubstitution) Example() string {
 	return "npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'"
 }
 
-func (s JavaScriptPlaywrightSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s JavaScriptPlaywrightSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -47,7 +48,7 @@ func (s JavaScriptPlaywrightSubstitution) ValidateTemplate(compiledTemplate Comp
 }
 
 func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {

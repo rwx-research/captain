@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s RubyRSpecSubstitution) Example() string {
 	return "bundle exec rspec {{ tests }}"
 }
 
-func (s RubyRSpecSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s RubyRSpecSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -39,7 +40,7 @@ func (s RubyRSpecSubstitution) ValidateTemplate(compiledTemplate CompiledTemplat
 }
 
 func (s RubyRSpecSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(test v1.Test) bool,
 ) ([]map[string]string, error) {

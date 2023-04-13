@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.PHPUnitSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -53,7 +54,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.PHPUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -64,7 +65,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.PHPUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("vendor/bin/phpunit")
+			compiledTemplate, compileErr := templating.CompileTemplate("vendor/bin/phpunit")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -73,7 +74,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 
 		It("is invalid for a template with too few placeholders", func() {
 			substitution := targetedretries.PHPUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"vendor/bin/phpunit '{{ file }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -84,7 +85,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 
 		It("is invalid for a template with additional placeholders", func() {
 			substitution := targetedretries.PHPUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"vendor/bin/phpunit --filter '{{ filter }}' '{{ file }}' {{ foo }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -95,7 +96,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 
 		It("is invalid for a template with incorrect placeholders", func() {
 			substitution := targetedretries.PHPUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"vendor/bin/phpunit --filter '{{ foo }}' '{{ bar }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -106,7 +107,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 
 		It("is valid for a template with the file and grep placeholders", func() {
 			substitution := targetedretries.PHPUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"vendor/bin/phpunit --filter '{{ filter }}' '{{ file }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -118,7 +119,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns a substitution per file/test", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"vendor/bin/phpunit '{{ file }}' --grep '{{ grep }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -195,7 +196,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"vendor/bin/phpunit '{{ file }}' --grep '{{ grep }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())

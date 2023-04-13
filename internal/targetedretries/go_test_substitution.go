@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s GoTestSubstitution) Example() string {
 	return "go test '{{ package }}' -run '{{ run }}'"
 }
 
-func (s GoTestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s GoTestSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -42,7 +43,7 @@ func (s GoTestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) 
 }
 
 func (s GoTestSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {

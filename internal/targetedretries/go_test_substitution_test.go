@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("GoTestSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.GoTestSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -53,7 +54,7 @@ var _ = Describe("GoTestSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.GoTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -64,7 +65,7 @@ var _ = Describe("GoTestSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.GoTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -73,7 +74,7 @@ var _ = Describe("GoTestSubstitution", func() {
 
 		It("is invalid for a template with too few placeholders", func() {
 			substitution := targetedretries.GoTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ package }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test '{{ package }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -82,7 +83,7 @@ var _ = Describe("GoTestSubstitution", func() {
 
 		It("is invalid for a template with additional placeholders", func() {
 			substitution := targetedretries.GoTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ package }}' -run '{{ run }}' {{ foo }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test '{{ package }}' -run '{{ run }}' {{ foo }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -91,7 +92,7 @@ var _ = Describe("GoTestSubstitution", func() {
 
 		It("is invalid for a template with incorrect placeholders", func() {
 			substitution := targetedretries.GoTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ what }}' -run '{{ other }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test '{{ what }}' -run '{{ other }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -100,7 +101,7 @@ var _ = Describe("GoTestSubstitution", func() {
 
 		It("is valid for a template with the package and run placeholders", func() {
 			substitution := targetedretries.GoTestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -110,7 +111,7 @@ var _ = Describe("GoTestSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns tests grouped by package", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			package1 := "package1"
@@ -192,7 +193,7 @@ var _ = Describe("GoTestSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			package1 := "package1"
@@ -270,7 +271,7 @@ var _ = Describe("GoTestSubstitution", func() {
 		})
 
 		It("regex escapes the test name and shell escapes the package", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			package1 := "package1 with ' embedded"
@@ -304,7 +305,7 @@ var _ = Describe("GoTestSubstitution", func() {
 		})
 
 		It("adds entire table tests one time when it sees them", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("go test '{{ package }}' -run '{{ run }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			package1 := "package1"
