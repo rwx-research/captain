@@ -162,7 +162,7 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 	cfg = bindRunCmdFlags(cfg, cliArgs)
 
 	if err = setConfigContext(cmd, cfg); err != nil {
-		return cfg, errors.WithDecoration(err)
+		return cfg, errors.WithStack(err)
 	}
 
 	return cfg, nil

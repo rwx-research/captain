@@ -267,6 +267,42 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 			Expect(err).ToNot(HaveOccurred())
 			return fmt.Sprintf(string(data), substitution)
 		}
+		It("fails if suite id is empty string", func() {
+			result := runCaptain(captainArgs{
+				args: []string{
+					"run",
+					"--suite-id", "",
+					"--test-results", "fixtures/integration-tests/rspec-passed.json",
+					"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
+				},
+				env: make(map[string]string),
+			})
+
+			Expect(result.exitCode).ToNot(Equal(0))
+
+			withoutBackwardsCompatibility(func() {
+				Expect(result.stderr).To(ContainSubstring("Error: required flag \"suite-id\" not set"))
+			})
+		})
+
+		It("fails if suite id is invalid", func() {
+			result := runCaptain(captainArgs{
+				args: []string{
+					"run",
+					"--suite-id", "invalid-chars!./",
+					"--test-results", "fixtures/integration-tests/rspec-passed.json",
+					"-c", "bash -c 'echo abc; echo def 1>&2; echo ghi'",
+				},
+				env: make(map[string]string),
+			})
+
+			Expect(result.exitCode).ToNot(Equal(0))
+
+			withoutBackwardsCompatibility(func() {
+				Expect(result.stderr).To(ContainSubstring("A suite ID can only contain alphanumeric characters, `_` and `-`."))
+			})
+		})
+
 		It("fails & passes through exit code on failure when results files is missing", func() {
 			result := runCaptain(captainArgs{
 				args: []string{

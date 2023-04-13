@@ -84,74 +84,17 @@ func initCLIService(
 func initCliServiceWithConfig(
 	cmd *cobra.Command, cfg Config, suiteID string, providerValidator func(providers.Provider) error,
 ) error {
-	if suiteID == "" {
-		return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
-	}
-
-	if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
-		return errors.NewConfigurationError(
-			"Invalid suite-id",
-			"A suite ID can only contain alphanumeric characters, `_` and `-`.",
-			"Please make sure that the ID doesn't contain any special characters.",
-		)
-	}
-
-	logger := logging.NewProductionLogger()
-	if cfg.Output.Debug {
-		logger = logging.NewDebugLogger()
-	}
-
-	apiClient, err := makeAPIClient(cfg, providerValidator, logger, suiteID)
-	if err != nil {
-		return errors.WithDecoration(errors.Wrap(err, "unable to create API client"))
-	}
-
-	var frameworkKind, frameworkLanguage string
-	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-		frameworkKind = suiteConfig.Results.Framework
-		frameworkLanguage = suiteConfig.Results.Language
-	}
-
-	parseConfig := parsing.Config{
-		ProvidedFrameworkKind:     frameworkKind,
-		ProvidedFrameworkLanguage: frameworkLanguage,
-		MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-		FrameworkParsers:          frameworkParsers,
-		GenericParsers:            genericParsers,
-		Logger:                    logger,
-	}
-
-	if err := parseConfig.Validate(); err != nil {
-		return errors.WithDecoration(errors.Wrap(err, "invalid parser config"))
-	}
-
-	captain := cli.Service{
-		API:         apiClient,
-		Log:         logger,
-		FileSystem:  fs.Local{},
-		TaskRunner:  exec.Local{},
-		ParseConfig: parseConfig,
-	}
-
-	if err := cli.SetService(cmd, captain); err != nil {
-		return errors.WithStack(err)
-	}
-
-	return nil
-}
-
-// unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running
-// `captain parse`, but not for any other operation.
-// It is considered unsafe since the captain CLI service might still expect a configured API at one point.
-
-func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) error {
-	return func(cmd *cobra.Command, args []string) error {
-		if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
-			return err
+	err := func() error {
+		if suiteID == "" {
+			return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
 		}
-		cfg, err := InitConfig(cmd, *cliArgs)
-		if err != nil {
-			return errors.WithStack(err)
+
+		if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
+			return errors.NewConfigurationError(
+				"Invalid suite-id",
+				"A suite ID can only contain alphanumeric characters, `_` and `-`.",
+				"Please make sure that the ID doesn't contain any special characters.",
+			)
 		}
 
 		logger := logging.NewProductionLogger()
@@ -159,8 +102,13 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 			logger = logging.NewDebugLogger()
 		}
 
+		apiClient, err := makeAPIClient(cfg, providerValidator, logger, suiteID)
+		if err != nil {
+			return errors.Wrap(err, "unable to create API client")
+		}
+
 		var frameworkKind, frameworkLanguage string
-		if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
+		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
 			frameworkKind = suiteConfig.Results.Framework
 			frameworkLanguage = suiteConfig.Results.Language
 		}
@@ -173,19 +121,83 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 			GenericParsers:            genericParsers,
 			Logger:                    logger,
 		}
+
 		if err := parseConfig.Validate(); err != nil {
 			return errors.Wrap(err, "invalid parser config")
 		}
 
 		captain := cli.Service{
+			API:         apiClient,
 			Log:         logger,
 			FileSystem:  fs.Local{},
+			TaskRunner:  exec.Local{},
 			ParseConfig: parseConfig,
 		}
+
 		if err := cli.SetService(cmd, captain); err != nil {
 			return errors.WithStack(err)
 		}
 
+		return nil
+	}()
+	if err != nil {
+		return errors.WithDecoration(err)
+	}
+	return nil
+}
+
+// unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running
+// `captain parse`, but not for any other operation.
+// It is considered unsafe since the captain CLI service might still expect a configured API at one point.
+
+func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		err := func() error {
+			if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
+				return err
+			}
+			cfg, err := InitConfig(cmd, *cliArgs)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			logger := logging.NewProductionLogger()
+			if cfg.Output.Debug {
+				logger = logging.NewDebugLogger()
+			}
+
+			var frameworkKind, frameworkLanguage string
+			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
+				frameworkKind = suiteConfig.Results.Framework
+				frameworkLanguage = suiteConfig.Results.Language
+			}
+
+			parseConfig := parsing.Config{
+				ProvidedFrameworkKind:     frameworkKind,
+				ProvidedFrameworkLanguage: frameworkLanguage,
+				MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+				FrameworkParsers:          frameworkParsers,
+				GenericParsers:            genericParsers,
+				Logger:                    logger,
+			}
+			if err := parseConfig.Validate(); err != nil {
+				return errors.Wrap(err, "invalid parser config")
+			}
+
+			captain := cli.Service{
+				Log:         logger,
+				FileSystem:  fs.Local{},
+				ParseConfig: parseConfig,
+			}
+			if err := cli.SetService(cmd, captain); err != nil {
+				return errors.WithStack(err)
+			}
+
+			return nil
+		}()
+		if err != nil {
+			return errors.WithDecoration(err)
+		}
 		return nil
 	}
 }
@@ -194,16 +206,16 @@ func makeAPIClient(
 	cfg Config, providerValidator func(providers.Provider) error, logger *zap.SugaredLogger, suiteID string,
 ) (backend.Client, error) {
 	wrapError := func(a backend.Client, b error) (backend.Client, error) {
-		return a, errors.WithDecoration(b)
+		return a, errors.WithStack(b)
 	}
 	if cfg.Secrets.APIToken != "" && !cfg.Cloud.Disabled {
 		provider, err := cfg.ProvidersEnv.MakeProvider()
 		if err != nil {
-			return nil, errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
+			return nil, errors.Wrap(err, "failed to construct provider")
 		}
 		err = providerValidator(provider)
 		if err != nil {
-			return nil, errors.WithDecoration(err)
+			return nil, err
 		}
 
 		return wrapError(remote.NewClient(remote.ClientConfig{
