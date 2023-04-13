@@ -13,6 +13,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/backend/local"
 	"github.com/rwx-research/captain-cli/internal/backend/remote"
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/providers"
@@ -20,6 +21,94 @@ import (
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
+
+type RunCommand interface {
+	CommandArgs() ([]string, error)
+}
+
+type StaticRunCommand struct {
+	command string
+	args    []string
+	isNoop  bool
+}
+
+func (c StaticRunCommand) CommandArgs() ([]string, error) {
+	commandArgs := make([]string, 0)
+
+	if c.command != "" {
+		parsedCommand, err := shellwords.Parse(c.command)
+		if err != nil {
+			return commandArgs, errors.Wrapf(err, "Unable to parse %q into shell arguments", c.command)
+		}
+		commandArgs = append(commandArgs, parsedCommand...)
+	}
+
+	if len(c.args) > 0 {
+		commandArgs = append(commandArgs, c.args...)
+	}
+
+	if len(commandArgs) == 0 {
+		return commandArgs, errors.NewInputError("No command was provided")
+	}
+
+	return commandArgs, nil
+}
+
+func (c StaticRunCommand) IsNoop() bool {
+	return false
+}
+
+type TemplatedRunCommand struct {
+	commandTemplate string
+	substitutions   map[string]string
+	args            []string
+	isNoop          bool
+}
+
+func (c TemplatedRunCommand) CommandArgs() ([]string, error) {
+	commandArgs := make([]string, 0)
+	compiledTemplate, err := targetedretries.CompileTemplate(c.commandTemplate)
+
+	if err != nil {
+		return commandArgs, errors.WithStack(err)
+	}
+
+	hydratedCommand := compiledTemplate.Substitute(c.substitutions)
+	command := StaticRunCommand{command: hydratedCommand, args: c.args, isNoop: c.isNoop}
+
+	return command.CommandArgs()
+}
+
+func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) RunCommand {
+	if cfg.IsRunningPartition() {
+		partitionConfig := PartitionConfig{
+			SuiteID:       cfg.SuiteID,
+			TestFilePaths: cfg.PartitionGlob,
+			Delimiter:     cfg.PartitionDelimeter,
+			PartitionNodes: config.PartitionNodes{
+				Total: cfg.PartitionTotal,
+				Index: cfg.PartitionIndex,
+			},
+		}
+
+		testPartition, err := s.CalculatePartition(ctx, partitionConfig)
+		if err != nil {
+			// TODO: Handle me
+		}
+		substitutions := make(map[string]string)
+		substitutions["testFiles"] = strings.Join(testPartition.TestFilePaths, partitionConfig.Delimiter) // TODO: Validation
+		isNoop := len(testPartition.TestFilePaths) == 0
+
+		return TemplatedRunCommand{
+			commandTemplate: cfg.PartitionCommandTemplate,
+			substitutions:   substitutions,
+			args:            cfg.Args,
+			isNoop:          isNoop,
+		}
+	}
+
+	return StaticRunCommand{command: cfg.Command, args: cfg.Args, isNoop: false}
+}
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
 func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
@@ -56,22 +145,10 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 	}
 
-	commandArgs := make([]string, 0)
-
-	if cfg.Command != "" {
-		parsedCommand, err := shellwords.Parse(cfg.Command)
-		if err != nil {
-			return errors.Wrapf(err, "Unable to parse %q into shell arguments", cfg.Command)
-		}
-		commandArgs = append(commandArgs, parsedCommand...)
-	}
-
-	if len(cfg.Args) > 0 {
-		commandArgs = append(commandArgs, cfg.Args...)
-	}
-
-	if len(commandArgs) == 0 {
-		return errors.NewInputError("No command was provided")
+	runCommand := s.MakeRunCommand(ctx, cfg)
+	commandArgs, err := runCommand.CommandArgs()
+	if err != nil {
+		return errors.Wrapf(err, "Failed to assemble run command")
 	}
 
 	// Run sub-command

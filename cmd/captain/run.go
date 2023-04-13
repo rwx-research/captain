@@ -34,6 +34,11 @@ type CliArgs struct {
 	GenericProvider           providers.GenericEnv
 	frameworkParams           frameworkParams
 	RootCliArgs               rootCliArgs
+	partitionIndex            int
+	partitionTotal            int
+	partitionDelimeter        string
+	partitionCommandTemplate  string
+	partitionGlob             []string
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -47,10 +52,10 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			err := func() error {
 				args := cliArgs.RootCliArgs.positionalArgs
-				var postRetryCommands, preRetryCommands []string
+				var postRetryCommands, preRetryCommands, partitionGlob []string
 				var failOnUploadError, failFast, printSummary, quiet bool
 				var flakyRetries, retries int
-				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
+				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests, partitionCommand, partitionDelimeter string
 
 				reporterFuncs := make(map[string]cli.Reporter)
 
@@ -106,6 +111,9 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					retryCommand = suiteConfig.Retries.Command
 					intermediateArtifactsPath = suiteConfig.Retries.IntermediateArtifactsPath
 					testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
+					partitionCommand = suiteConfig.Partition.Command
+					partitionGlob = suiteConfig.Partition.Glob
+					partitionDelimeter = suiteConfig.Partition.Delimiter
 				}
 
 				runConfig := cli.RunConfig{
@@ -128,6 +136,11 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					TestResultsFileGlob:       testResultsPath,
 					UpdateStoredResults:       cliArgs.updateStoredResults,
 					UploadResults:             true,
+					PartitionCommandTemplate:  partitionCommand,
+					PartitionDelimeter:        partitionDelimeter,
+					PartitionIndex:            cliArgs.partitionIndex,
+					PartitionTotal:            cliArgs.partitionTotal,
+					PartitionGlob:             partitionGlob,
 				}
 
 				err = captain.RunSuite(cmd.Context(), runConfig)
@@ -237,6 +250,41 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"in this situation, we know the tests overall will fail so we can stop retrying to save compute. similarly "+
 			"if you only set --flaky-retries 1, we can stop retrying if any non-flaky tests fail because we won't retry "+
 			"them)",
+	)
+
+	runCmd.Flags().IntVar(
+		&cliArgs.partitionIndex,
+		"partition-index",
+		-1,
+		"The 0-indexed index of a particular partition",
+	)
+
+	runCmd.Flags().IntVar(
+		&cliArgs.partitionTotal,
+		"partition-total",
+		-1,
+		"The desired number ofpartitions. Any empty partitions will result in a noop.",
+	)
+
+	runCmd.Flags().StringVar(
+		&cliArgs.partitionDelimeter,
+		"partition-delimiter",
+		" ",
+		"The delimiter used to separate partitioned files.",
+	)
+
+	runCmd.Flags().StringArrayVar(
+		&cliArgs.partitionGlob,
+		"partition-glob",
+		[]string{},
+		"TODO",
+	)
+
+	runCmd.Flags().StringVar(
+		&cliArgs.partitionCommandTemplate,
+		"partition-command",
+		"",
+		"TODO",
 	)
 
 	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",

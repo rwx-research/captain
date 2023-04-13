@@ -32,6 +32,11 @@ type RunConfig struct {
 	SubstitutionsByFramework  map[v1.Framework]targetedretries.Substitution
 	UpdateStoredResults       bool
 	UploadResults             bool
+	PartitionIndex            int
+	PartitionTotal            int
+	PartitionGlob             []string
+	PartitionDelimeter        string
+	PartitionCommandTemplate  string
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(
@@ -58,6 +63,25 @@ func (rc RunConfig) Validate() error {
 			),
 			"It is expected that this option is either set to a positive integer or to a percentage of the total "+
 				"tests to retry. Percentages can be fractional.",
+		)
+	}
+
+	if rc.PartitionCommandTemplate != "" && (rc.IsRunningPartition()) {
+		return errors.NewConfigurationError(
+			"Missing partition command",
+			"You seem to be passing partition specific options, but there is no partition command template configured.",
+			"The partition command template can be set using the --partition-command flag. Alternatively, you can "+
+				"use the Captain configuration file to permanently set a partition command template for a "+
+				"given test suite.",
+		)
+	}
+
+	if len(rc.PartitionGlob) == 0 && (rc.IsRunningPartition()) {
+		return errors.NewConfigurationError(
+			"Missing partition glob configuration",
+			"You seem to be passing partition specific options, but have not provided glob(s) of where to locate your test files.",
+			"The partition glob can be set using the --partition-glob flag. Alternatively, you can "+
+				"use the Captain configuration file to permanently set partition globs for a given test suite.",
 		)
 	}
 
@@ -114,6 +138,10 @@ func (rc RunConfig) MaxTestsToRetryPercentage() (*float64, error) {
 	}
 
 	return &percentage, nil
+}
+
+func (rc RunConfig) IsRunningPartition() bool {
+	return rc.PartitionIndex == -1 || rc.PartitionTotal == -1
 }
 
 type PartitionConfig struct {

@@ -13,20 +13,28 @@ import (
 
 // Partition splits a glob of test filepaths using decreasing first fit backed by a timing manifest from captain.
 func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
+	activePartition, err := s.CalculatePartition(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	s.Log.Infoln(strings.Join(activePartition.TestFilePaths, cfg.Delimiter))
+	return nil
+}
+
+func (s Service) CalculatePartition(ctx context.Context, cfg PartitionConfig) (testing.TestPartition, error) {
 	err := cfg.Validate()
 	if err != nil {
-		return errors.WithStack(err)
+		return testing.TestPartition{}, errors.WithStack(err)
 	}
 	fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
 	if err != nil {
-		return errors.WithStack(err)
+		return testing.TestPartition{}, errors.WithStack(err)
 	}
 
 	testFilePaths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
 	if err != nil {
-		return errors.NewSystemError("unable to expand filepath glob: %s", err)
+		return testing.TestPartition{}, errors.NewSystemError("unable to expand filepath glob: %s", err)
 	}
-
 	// Compare expanded client file paths w/ expanded server file paths
 	// taking care to always use the client path and sort by duration desc
 	fileTimingMatches := make([]testing.FileTimingMatch, 0)
@@ -113,10 +121,7 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 		s.Log.Debugf("%s: Assigned '%s' using round robin strategy", partition, testFilepath)
 	}
 
-	activePartition := partitions[cfg.PartitionNodes.Index]
-	s.Log.Infoln(strings.Join(activePartition.TestFilePaths, cfg.Delimiter))
-
-	return nil
+	return partitions[cfg.PartitionNodes.Index], nil
 }
 
 func partitionWithFirstFit(
