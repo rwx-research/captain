@@ -410,6 +410,14 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 			suiteConfig.Partition.Delimiter = cliArgs.partitionDelimeter
 		}
 
+		if cliArgs.partitionCommandTemplate != "" {
+			suiteConfig.Partition.Command = cliArgs.partitionCommandTemplate
+		}
+
+		if len(cliArgs.partitionGlobs) > 0 {
+			suiteConfig.Partition.Globs = cliArgs.partitionGlobs
+		}
+
 		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suiteConfig
 
 		cfg.ProvidersEnv.Generic = providers.MergeGeneric(cfg.ProvidersEnv.Generic, cliArgs.GenericProvider)

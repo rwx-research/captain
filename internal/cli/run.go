@@ -13,7 +13,6 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/backend/local"
 	"github.com/rwx-research/captain-cli/internal/backend/remote"
-	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/providers"
@@ -22,79 +21,6 @@ import (
 	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
-
-type RunCommand struct {
-	command          string
-	args             []string
-	shortCircuit     bool
-	shortCircuitInfo string
-}
-
-func (c RunCommand) CommandArgs() ([]string, error) {
-	commandArgs := make([]string, 0)
-
-	if c.command != "" {
-		parsedCommand, err := shellwords.Parse(c.command)
-		if err != nil {
-			return commandArgs, errors.Wrapf(err, "Unable to parse %q into shell arguments", c.command)
-		}
-		commandArgs = append(commandArgs, parsedCommand...)
-	}
-
-	if len(c.args) > 0 {
-		commandArgs = append(commandArgs, c.args...)
-	}
-
-	if len(commandArgs) == 0 {
-		return commandArgs, errors.NewInputError("No command was provided")
-	}
-
-	return commandArgs, nil
-}
-
-func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand, error) {
-	if cfg.IsRunningPartition() {
-		partitionConfig := PartitionConfig{
-			SuiteID:       cfg.SuiteID,
-			TestFilePaths: cfg.PartitionGlobs,
-			Delimiter:     cfg.PartitionDelimeter,
-			PartitionNodes: config.PartitionNodes{
-				Total: cfg.PartitionTotal,
-				Index: cfg.PartitionIndex,
-			},
-		}
-
-		partitionResult, err := s.CalculatePartition(ctx, partitionConfig)
-		if err != nil {
-			return RunCommand{}, errors.WithStack(err)
-		}
-
-		partitionedTestFilePaths := partitionResult.partition.TestFilePaths
-		substitutions := make(map[string]string)
-		substitutions["testFiles"] = strings.Join(partitionedTestFilePaths, partitionConfig.Delimiter) // TODO: Validation
-
-		compiledTemplate, err := templating.CompileTemplate(cfg.PartitionCommandTemplate)
-		if err != nil {
-			return RunCommand{}, errors.WithStack(err)
-		}
-		command := compiledTemplate.Substitute(substitutions)
-
-		if len(partitionedTestFilePaths) == 0 {
-			infoMessage := fmt.Sprintf(
-				"Partition %v contained no test files. %d/%d partitions were utilized. We recommend you set --partition-total no more than %d",
-				partitionConfig.PartitionNodes,
-				partitionResult.utilizedPartitionCount,
-				partitionConfig.PartitionNodes.Total,
-				partitionResult.utilizedPartitionCount,
-			)
-			return RunCommand{command: command, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
-		}
-
-		return RunCommand{command: command, shortCircuit: false}, nil
-	}
-
-	return RunCommand{command: cfg.Command, args: cfg.Args, shortCircuit: false}, nil
-}
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
 func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {

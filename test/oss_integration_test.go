@@ -768,7 +768,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult0.exitCode).To(Equal(0))
-				Expect(partitionResult0.stdout).To(Equal("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+				Expect(partitionResult0.stdout).To(Equal("test 'fixtures/integration-tests/partition/a_spec.rb' 'fixtures/integration-tests/partition/c_spec.rb' 'fixtures/integration-tests/partition/x.rb' 'fixtures/integration-tests/partition/z.rb'"))
 
 				partitionResult1 := runCaptain(captainArgs{
 					args: []string{
@@ -785,7 +785,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult1.exitCode).To(Equal(0))
-				Expect(partitionResult1.stdout).To(Equal("test fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/d_spec.rb fixtures/integration-tests/partition/y.rb"))
+				Expect(partitionResult1.stdout).To(Equal("test 'fixtures/integration-tests/partition/b_spec.rb' 'fixtures/integration-tests/partition/d_spec.rb' 'fixtures/integration-tests/partition/y.rb'"))
 			})
 		})
 
@@ -806,7 +806,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult0.exitCode).To(Equal(0))
-				Expect(partitionResult0.stdout).To(Equal("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+				Expect(partitionResult0.stdout).To(Equal("test 'fixtures/integration-tests/partition/a_spec.rb' 'fixtures/integration-tests/partition/c_spec.rb' 'fixtures/integration-tests/partition/x.rb' 'fixtures/integration-tests/partition/z.rb'"))
 
 				partitionResult1 := runCaptain(captainArgs{
 					args: []string{
@@ -823,7 +823,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult1.exitCode).To(Equal(0))
-				Expect(partitionResult1.stdout).To(Equal("test fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/d_spec.rb fixtures/integration-tests/partition/y.rb"))
+				Expect(partitionResult1.stdout).To(Equal("test 'fixtures/integration-tests/partition/b_spec.rb' 'fixtures/integration-tests/partition/d_spec.rb' 'fixtures/integration-tests/partition/y.rb'"))
 			})
 		})
 
@@ -844,7 +844,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult0.exitCode).To(Equal(0))
-				Expect(partitionResult0.stdout).To(Equal("test fixtures/integration-tests/partition/a_spec.rb -hi- fixtures/integration-tests/partition/c_spec.rb -hi- fixtures/integration-tests/partition/x.rb -hi- fixtures/integration-tests/partition/z.rb"))
+				Expect(partitionResult0.stdout).To(Equal("test 'fixtures/integration-tests/partition/a_spec.rb' -hi- 'fixtures/integration-tests/partition/c_spec.rb' -hi- 'fixtures/integration-tests/partition/x.rb' -hi- 'fixtures/integration-tests/partition/z.rb'"))
 			})
 		})
 
