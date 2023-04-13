@@ -1,6 +1,7 @@
 package providers_test
 
 import (
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/providers"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -238,12 +239,13 @@ var _ = Describe("MakeProvider", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(provider).To(Equal(
 				providers.Provider{
-					ProviderName:  "buildkite",
-					CommitSha:     "abc123",
-					BranchName:    "main",
-					AttemptedBy:   "foo@bar.com",
-					CommitMessage: "fixed it",
-					Title:         "fixed it",
+					ProviderName:   "buildkite",
+					CommitSha:      "abc123",
+					BranchName:     "main",
+					AttemptedBy:    "foo@bar.com",
+					CommitMessage:  "fixed it",
+					Title:          "fixed it",
+					PartitionNodes: config.PartitionNodes{Index: 0, Total: 2},
 					JobTags: map[string]any{
 						"buildkite_retry_count":        "0",
 						"buildkite_parallel_job_count": "2",
@@ -267,12 +269,13 @@ var _ = Describe("MakeProvider", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(provider).To(Equal(
 					providers.Provider{
-						ProviderName:  "buildkite",
-						CommitSha:     "qrs789",
-						BranchName:    "main",
-						AttemptedBy:   "foo@bar.com",
-						CommitMessage: "fixed it on Tuesday\nthis commit message annotated before writing to captain",
-						Title:         "fixed it on Tuesday",
+						ProviderName:   "buildkite",
+						CommitSha:      "qrs789",
+						BranchName:     "main",
+						AttemptedBy:    "foo@bar.com",
+						CommitMessage:  "fixed it on Tuesday\nthis commit message annotated before writing to captain",
+						Title:          "fixed it on Tuesday",
+						PartitionNodes: config.PartitionNodes{Total: 2, Index: 0},
 						JobTags: map[string]any{
 							"buildkite_retry_count":        "0",
 							"buildkite_parallel_job_count": "2",

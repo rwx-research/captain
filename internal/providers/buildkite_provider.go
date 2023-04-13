@@ -1,6 +1,9 @@
 package providers
 
 import (
+	"strconv"
+
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -34,6 +37,16 @@ func (cfg BuildkiteEnv) makeProvider() (Provider, error) {
 		return Provider{}, validationError
 	}
 
+	index, err := strconv.Atoi(cfg.ParallelJob)
+	if err != nil {
+		index = -1
+	}
+
+	total, err := strconv.Atoi(cfg.ParallelJobCount)
+	if err != nil {
+		total = -1
+	}
+
 	provider := Provider{
 		AttemptedBy:   cfg.BuildCreatorEmail,
 		BranchName:    cfg.Branch,
@@ -41,6 +54,10 @@ func (cfg BuildkiteEnv) makeProvider() (Provider, error) {
 		CommitSha:     cfg.Commit,
 		JobTags:       tags,
 		ProviderName:  "buildkite",
+		PartitionNodes: config.PartitionNodes{
+			Index: index,
+			Total: total,
+		},
 	}
 
 	return provider, nil
