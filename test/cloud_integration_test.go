@@ -269,8 +269,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				result := runCaptain(captainArgs{
 					args: []string{
 						"upload", "results",
-						"nonexistingfile.json",
 						"captain-cli-functional-tests",
+						"nonexistingfile.json",
 					},
 					env: getEnvWithAccessToken(),
 				})
