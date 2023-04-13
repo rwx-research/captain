@@ -7,12 +7,13 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/rwx-research/captain-cli/internal/cli"
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
 )
 
 type partitionArgs struct {
-	nodes     cli.PartitionNodes
+	nodes     config.PartitionNodes
 	delimiter string
 }
 

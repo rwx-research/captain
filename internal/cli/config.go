@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
@@ -115,16 +116,11 @@ func (rc RunConfig) MaxTestsToRetryPercentage() (*float64, error) {
 	return &percentage, nil
 }
 
-type PartitionNodes struct {
-	Total int
-	Index int
-}
-
 type PartitionConfig struct {
 	SuiteID        string
 	TestFilePaths  []string
 	Delimiter      string
-	PartitionNodes PartitionNodes
+	PartitionNodes config.PartitionNodes
 }
 
 func (pc PartitionConfig) Validate() error {
