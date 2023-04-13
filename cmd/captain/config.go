@@ -47,7 +47,8 @@ func getConfig(cmd *cobra.Command) (Config, error) {
 	return cfg, nil
 }
 
-func setConfig(cmd *cobra.Command, cfg Config) error {
+// adds config to cmd's context
+func setConfigContext(cmd *cobra.Command, cfg Config) error {
 	if _, err := getConfig(cmd); err == nil {
 		return errors.NewInternalError("Tried to set config on the command but it was already set. This should never happen!")
 	}

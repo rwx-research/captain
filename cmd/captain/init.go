@@ -77,7 +77,7 @@ func initCLIService(
 			return errors.WithDecoration(err)
 		}
 
-		if err = setConfig(cmd, cfg); err != nil {
+		if err = setConfigContext(cmd, cfg); err != nil {
 			return errors.WithDecoration(err)
 		}
 
@@ -216,7 +216,7 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 			return errors.WithStack(err)
 		}
 
-		if err := setConfig(cmd, cfg); err != nil {
+		if err := setConfigContext(cmd, cfg); err != nil {
 			return errors.WithStack(err)
 		}
 
