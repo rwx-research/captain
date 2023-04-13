@@ -55,7 +55,7 @@ func (s ElixirExUnitSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testLinesByFile[file]; !ok {
 			testLinesByFile[file] = make([]string, 0)
 		}

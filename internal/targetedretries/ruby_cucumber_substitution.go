@@ -51,7 +51,7 @@ func (s RubyCucumberSubstitution) SubstitutionsFor(
 
 	for _, test := range testResults.Tests {
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
-			example := ShellEscape(test.Attempt.Meta["elementStart"].(string))
+			example := templating.ShellEscape(test.Attempt.Meta["elementStart"].(string))
 			if _, ok := examplesSeen[example]; ok {
 				continue
 			}

@@ -62,7 +62,7 @@ func (s JavaScriptJestSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFile[file]; !ok {
 			testsSeenByFile[file] = map[string]struct{}{}
 		}
@@ -70,7 +70,7 @@ func (s JavaScriptJestSubstitution) SubstitutionsFor(
 			testsByFile[file] = make([]string, 0)
 		}
 
-		formattedName := ShellEscape(RegexpEscape(strings.Join(test.Lineage, " ")))
+		formattedName := templating.ShellEscape(templating.RegexpEscape(strings.Join(test.Lineage, " ")))
 		if _, ok := testsSeenByFile[file][formattedName]; ok {
 			continue
 		}

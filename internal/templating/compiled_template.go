@@ -60,10 +60,10 @@ func (ct CompiledTemplate) Keywords() []string {
 	return keywords
 }
 
-func (ct CompiledTemplate) Substitute(substitutions map[string]string) string {
+func (ct CompiledTemplate) Substitute(substitutionLookup map[string]string) string {
 	substituted := ct.Template
 	for placeholder, keyword := range ct.PlaceholderToKeyword {
-		substituted = strings.Replace(substituted, placeholder, substitutions[keyword], 1)
+		substituted = strings.Replace(substituted, placeholder, substitutionLookup[keyword], 1)
 	}
 	return substituted
 }

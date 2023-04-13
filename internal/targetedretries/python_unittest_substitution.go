@@ -50,7 +50,7 @@ func (s PythonUnitTestSubstitution) SubstitutionsFor(
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			testIdentifiers = append(
 				testIdentifiers,
-				fmt.Sprintf("'%v'", ShellEscape(test.Name)),
+				fmt.Sprintf("'%v'", templating.ShellEscape(test.Name)),
 			)
 		}
 	}

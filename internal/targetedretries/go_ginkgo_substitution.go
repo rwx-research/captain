@@ -50,7 +50,7 @@ func (s GoGinkgoSubstitution) SubstitutionsFor(
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			formattedTests = append(
 				formattedTests,
-				fmt.Sprintf("--focus-file '%v:%v'", ShellEscape(test.Location.File), *test.Location.Line),
+				fmt.Sprintf("--focus-file '%v:%v'", templating.ShellEscape(test.Location.File), *test.Location.Line),
 			)
 		}
 	}

@@ -59,7 +59,7 @@ func (s JavaScriptMochaSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFile[file]; !ok {
 			testsSeenByFile[file] = map[string]struct{}{}
 		}
@@ -67,7 +67,7 @@ func (s JavaScriptMochaSubstitution) SubstitutionsFor(
 			testsByFile[file] = make([]string, 0)
 		}
 
-		formattedName := ShellEscape(RegexpEscape(test.Name))
+		formattedName := templating.ShellEscape(templating.RegexpEscape(test.Name))
 		if _, ok := testsSeenByFile[file][formattedName]; ok {
 			continue
 		}

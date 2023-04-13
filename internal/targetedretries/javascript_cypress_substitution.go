@@ -72,7 +72,7 @@ func (s JavaScriptCypressSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		spec := ShellEscape(test.Location.File)
+		spec := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenBySpec[spec]; !ok {
 			testsSeenBySpec[spec] = map[string]struct{}{}
 		}
@@ -80,7 +80,7 @@ func (s JavaScriptCypressSubstitution) SubstitutionsFor(
 			testsBySpec[spec] = make([]string, 0)
 		}
 
-		name := ShellEscape(test.Name)
+		name := templating.ShellEscape(test.Name)
 		if _, ok := testsSeenBySpec[spec][name]; ok {
 			continue
 		}

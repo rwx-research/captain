@@ -58,7 +58,7 @@ func (s GoTestSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		testPackage := ShellEscape(test.Attempt.Meta["package"].(string))
+		testPackage := templating.ShellEscape(test.Attempt.Meta["package"].(string))
 		testName := test.Name
 		if strings.Contains(testName, "/") {
 			// Table tests cannot be run individually, so run them all
@@ -72,7 +72,7 @@ func (s GoTestSubstitution) SubstitutionsFor(
 			testsByPackage[testPackage] = make([]string, 0)
 		}
 
-		formattedTest := RegexpEscape(testName)
+		formattedTest := templating.RegexpEscape(testName)
 		if _, ok := testsSeenByPackage[testPackage][formattedTest]; ok {
 			continue
 		}

@@ -1,4 +1,4 @@
-package targetedretries
+package templating
 
 import (
 	"regexp"

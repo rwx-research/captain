@@ -63,8 +63,8 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		project := ShellEscape(test.Attempt.Meta["project"].(string))
-		file := ShellEscape(test.Location.File)
+		project := templating.ShellEscape(test.Attempt.Meta["project"].(string))
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFileByProject[project]; !ok {
 			testsSeenByFileByProject[project] = map[string]map[string]struct{}{}
 		}
@@ -78,7 +78,7 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			testsByFileByProject[project][file] = make([]string, 0)
 		}
 
-		formattedName := ShellEscape(RegexpEscape(test.Name))
+		formattedName := templating.ShellEscape(templating.RegexpEscape(test.Name))
 		if _, ok := testsSeenByFileByProject[project][file][formattedName]; ok {
 			continue
 		}

@@ -88,7 +88,7 @@ func (s RubyMinitestSubstitution) allTestsSubstitutions(
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			tests = append(
 				tests,
-				fmt.Sprintf("'%v:%v'", ShellEscape(test.Location.File), *test.Location.Line),
+				fmt.Sprintf("'%v:%v'", templating.ShellEscape(test.Location.File), *test.Location.Line),
 			)
 		}
 	}
@@ -114,12 +114,12 @@ func (s RubyMinitestSubstitution) singleTestSubstitutions(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFile[file]; !ok {
 			testsSeenByFile[file] = map[string]struct{}{}
 		}
 
-		methodName := ShellEscape(test.Lineage[len(test.Lineage)-1])
+		methodName := templating.ShellEscape(test.Lineage[len(test.Lineage)-1])
 		if _, ok := testsSeenByFile[file][methodName]; ok {
 			continue
 		}
