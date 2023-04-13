@@ -76,10 +76,6 @@ func initCLIService(
 			return errors.WithDecoration(err)
 		}
 
-		if err = setConfigContext(cmd, cfg); err != nil {
-			return errors.WithDecoration(err)
-		}
-
 		logger := logging.NewProductionLogger()
 		if cfg.Output.Debug {
 			logger = logging.NewDebugLogger()
@@ -149,10 +145,6 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 		}
 		cfg, err := InitConfig(cmd, *cliArgs)
 		if err != nil {
-			return errors.WithStack(err)
-		}
-
-		if err := setConfigContext(cmd, cfg); err != nil {
 			return errors.WithStack(err)
 		}
 
