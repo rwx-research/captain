@@ -55,7 +55,8 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 				var postRetryCommands, preRetryCommands, partitionGlobs []string
 				var failOnUploadError, failFast, printSummary, quiet bool
 				var flakyRetries, retries int
-				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests, partitionCommand, partitionDelimeter string
+				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
+				var partitionCommand, partitionDelimeter string
 
 				reporterFuncs := make(map[string]cli.Reporter)
 

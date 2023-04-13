@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mattn/go-shellwords"
+
 	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/partition"
@@ -58,34 +59,37 @@ func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 		if err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
-
 		partitionedTestFilePaths := partitionResult.partition.TestFilePaths
 
+		// compile template
 		compiledTemplate, err := templating.CompileTemplate(cfg.PartitionCommandTemplate)
 		if err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
 
+		// validate template
 		substitution := partition.DelimiterSubstitution{Delimiter: partitionConfig.Delimiter}
 		if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
 
+		// substitute template keywords with values
 		substitutionValueLookup, err := substitution.SubstitutionLookupFor(compiledTemplate, partitionedTestFilePaths)
 		if err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
-
 		command := compiledTemplate.Substitute(substitutionValueLookup)
 
 		if len(partitionedTestFilePaths) == 0 {
 			infoMessage := fmt.Sprintf(
-				"Partition %v contained no test files. %d/%d partitions were utilized. We recommend you set --partition-total no more than %d",
+				"Partition %v contained no test files. %d/%d partitions were utilized. "+
+					"We recommend you set --partition-total no more than %d",
 				partitionConfig.PartitionNodes,
 				partitionResult.utilizedPartitionCount,
 				partitionConfig.PartitionNodes.Total,
 				partitionResult.utilizedPartitionCount,
 			)
+			// short circuit to avoid running the entire test suite in a single partition (e.g empty partition)
 			return RunCommand{command: command, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
 		}
 

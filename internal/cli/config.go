@@ -79,8 +79,8 @@ func (rc RunConfig) Validate() error {
 	if len(rc.PartitionGlobs) == 0 && (rc.IsRunningPartition()) {
 		return errors.NewConfigurationError(
 			"Missing partition glob configuration",
-			"You seem to be passing partition specific options, but have not provided glob(s) of where to locate your test files.",
-			"The partition globs can be set using the --partition-globs flag. Alternatively, you can "+
+			"You seem to be passing partition specific options, but have not provided glob(s) of where to locate your ",
+			"test files. The partition globs can be set using the --partition-globs flag. Alternatively, you can "+
 				"use the Captain configuration file to permanently set partition globs for a given test suite.",
 		)
 	}
