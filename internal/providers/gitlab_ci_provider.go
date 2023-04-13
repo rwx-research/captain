@@ -1,6 +1,9 @@
 package providers
 
 import (
+	"strconv"
+
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -47,13 +50,24 @@ func (cfg GitLabEnv) makeProvider() (Provider, error) {
 		return Provider{}, validationError
 	}
 
+	index, err := strconv.Atoi(cfg.NodeIndex)
+	if err != nil {
+		index = 0
+	}
+
+	total, err := strconv.Atoi(cfg.NodeTotal)
+	if err != nil {
+		total = -1
+	}
+
 	provider := Provider{
-		AttemptedBy:   attemptedBy,
-		BranchName:    cfg.CommitBranch,
-		CommitMessage: cfg.CommitMessage,
-		CommitSha:     cfg.CommitSHA,
-		JobTags:       tags,
-		ProviderName:  "gitlabci",
+		AttemptedBy:    attemptedBy,
+		BranchName:     cfg.CommitBranch,
+		CommitMessage:  cfg.CommitMessage,
+		CommitSha:      cfg.CommitSHA,
+		JobTags:        tags,
+		ProviderName:   "gitlabci",
+		PartitionNodes: config.PartitionNodes{Index: index - 1, Total: total}, // gitlab indexes from 1
 	}
 
 	return provider, nil
