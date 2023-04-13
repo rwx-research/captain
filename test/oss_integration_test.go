@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rwx-research/captain-cli"
+	"github.com/rwx-research/captain-cli/test/helpers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -183,6 +184,22 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 
 				Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
 				Expect(result.exitCode).To(Equal(0))
+			})
+
+			Context("with provider-provided node total & index", func() {
+				It("sets partition 2 correctly", func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"partition",
+							suiteId,
+							"fixtures/integration-tests/partition/*_spec.rb",
+						},
+						env: helpers.ReadEnvFromFile(".env.buildkite"),
+					})
+
+					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
+					Expect(result.exitCode).To(Equal(0))
+				})
 			})
 		})
 

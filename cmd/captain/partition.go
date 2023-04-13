@@ -19,19 +19,20 @@ type partitionArgs struct {
 
 func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	var pArgs partitionArgs
-	getEnvAsInt := func(name string) (int, bool, error) {
+	// returns a negative value if the environmental variable is not set
+	getEnvAsInt := func(name string) (int, error) {
 		value := os.Getenv(name)
 		if value == "" {
-			return 0, false, nil
+			return -1, nil
 		}
 
 		i, err := strconv.Atoi(value)
 		if err != nil {
-			return 0, false,
+			return -1,
 				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", name, value)
 		}
 
-		return i, true, nil
+		return i, nil
 	}
 
 	partitionCmd := &cobra.Command{
@@ -45,16 +46,55 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 			"  bundle exec rspec $(captain partition your-project-rspec --index 1 --total 2 spec/**/*_spec.rb)",
 		Args:                  cobra.MinimumNArgs(1),
 		DisableFlagsInUseLine: true,
-		PreRunE: initCLIService(cliArgs, func(p providers.Provider) error {
-			if p.CommitSha == "" {
-				return errors.NewConfigurationError(
-					"Missing commit SHA",
-					"Captain requires a commit SHA in order to track test runs correctly.",
-					"You can specify the SHA by using the --sha flag or the CAPTAIN_SHA environment variable",
-				)
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
+				return err
 			}
-			return nil
-		}),
+
+			cfg, err := InitConfig(cmd, *cliArgs)
+			if err != nil {
+				return errors.WithDecoration(err)
+			}
+
+			provider, err := cfg.ProvidersEnv.MakeProvider()
+			if err != nil {
+				return errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
+			}
+
+			if pArgs.nodes.Index < 0 {
+				if provider.PartitionNodes.Index < 0 {
+					return errors.NewConfigurationError(
+						"Partition index invalid.",
+						"Partition index must be 0 or greater.",
+						"You can set the partition index by using the --index flag or the CAPTAIN_PARTITION_INDEX environment variable.",
+					)
+				}
+				pArgs.nodes.Index = provider.PartitionNodes.Index
+			}
+
+			if pArgs.nodes.Total < 0 {
+				if provider.PartitionNodes.Total < 1 {
+					return errors.NewConfigurationError(
+						"Partition total invalid.",
+						"Partition total must be 1 or greater.",
+						"You can set the partition index by using the --total flag or the CAPTAIN_PARTITION_TOTAL environment variable.",
+					)
+				}
+				pArgs.nodes.Total = provider.PartitionNodes.Total
+			}
+
+			return initCliServiceWithConfig(cmd, cfg, cliArgs.RootCliArgs.suiteID, func(p providers.Provider) error {
+				if p.CommitSha == "" {
+					return errors.NewConfigurationError(
+						"Missing commit SHA",
+						"Captain requires a commit SHA in order to track test runs correctly.",
+						"You can specify the SHA by using the --sha flag or the CAPTAIN_SHA environment variable",
+					)
+				}
+				return nil
+			})
+		},
+
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			args := cliArgs.RootCliArgs.positionalArgs
 			captain, err := cli.GetService(cmd)
@@ -71,7 +111,7 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		},
 	}
 
-	defaultPartitionIndex, gotDefaultFromEnv, err := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
+	defaultPartitionIndex, err := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
 	if err != nil {
 		return err
 	}
@@ -80,22 +120,16 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		&pArgs.nodes.Index, "index", defaultPartitionIndex, "the 0-indexed index of a particular partition",
 	)
 
-	if !gotDefaultFromEnv {
-		if err := partitionCmd.MarkFlagRequired("index"); err != nil {
-			return errors.WithStack(err)
-		}
-	}
-
-	defaultPartitionTotal, ok, err := getEnvAsInt("CAPTAIN_PARTITION_TOTAL")
+	defaultPartitionTotal, err := getEnvAsInt("CAPTAIN_PARTITION_TOTAL")
 	if err != nil {
 		return err
 	}
 	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", defaultPartitionTotal, "the total number of partitions")
-	if !ok || defaultPartitionTotal < 1 {
-		if err := partitionCmd.MarkFlagRequired("total"); err != nil {
-			return errors.WithStack(err)
-		}
-	}
+	// if !ok || defaultPartitionTotal < 1 {
+	// 	if err := partitionCmd.MarkFlagRequired("total"); err != nil {
+	// 		return errors.WithStack(err)
+	// 	}
+	// }
 
 	// it's a smell that we're using cliArgs here but I believe it's a major refactor to stop doing that.
 	addShaFlag(partitionCmd, &cliArgs.GenericProvider.Sha)

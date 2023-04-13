@@ -71,67 +71,71 @@ func initCLIService(
 		if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
 			return err
 		}
+
 		cfg, err := InitConfig(cmd, *cliArgs)
 		if err != nil {
 			return errors.WithDecoration(err)
 		}
 
-		logger := logging.NewProductionLogger()
-		if cfg.Output.Debug {
-			logger = logging.NewDebugLogger()
-		}
-
-		suiteID := cliArgs.RootCliArgs.suiteID
-		if suiteID == "" {
-			return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
-		}
-
-		if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
-			return errors.NewConfigurationError(
-				"Invalid suite-id",
-				"A suite ID can only contain alphanumeric characters, `_` and `-`.",
-				"Please make sure that the ID doesn't contain any special characters.",
-			)
-		}
-
-		apiClient, err := makeAPIClient(cfg, providerValidator, logger, suiteID)
-		if err != nil {
-			return errors.WithDecoration(errors.Wrap(err, "unable to create API client"))
-		}
-
-		var frameworkKind, frameworkLanguage string
-		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-			frameworkKind = suiteConfig.Results.Framework
-			frameworkLanguage = suiteConfig.Results.Language
-		}
-
-		parseConfig := parsing.Config{
-			ProvidedFrameworkKind:     frameworkKind,
-			ProvidedFrameworkLanguage: frameworkLanguage,
-			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-			FrameworkParsers:          frameworkParsers,
-			GenericParsers:            genericParsers,
-			Logger:                    logger,
-		}
-
-		if err := parseConfig.Validate(); err != nil {
-			return errors.WithDecoration(errors.Wrap(err, "invalid parser config"))
-		}
-
-		captain := cli.Service{
-			API:         apiClient,
-			Log:         logger,
-			FileSystem:  fs.Local{},
-			TaskRunner:  exec.Local{},
-			ParseConfig: parseConfig,
-		}
-
-		if err := cli.SetService(cmd, captain); err != nil {
-			return errors.WithStack(err)
-		}
-
-		return nil
+		return initCliServiceWithConfig(cmd, cfg, cliArgs.RootCliArgs.suiteID, providerValidator)
 	}
+}
+
+func initCliServiceWithConfig(cmd *cobra.Command, cfg Config, suiteID string, providerValidator func(providers.Provider) error) error {
+	if suiteID == "" {
+		return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
+	}
+
+	if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
+		return errors.NewConfigurationError(
+			"Invalid suite-id",
+			"A suite ID can only contain alphanumeric characters, `_` and `-`.",
+			"Please make sure that the ID doesn't contain any special characters.",
+		)
+	}
+
+	logger := logging.NewProductionLogger()
+	if cfg.Output.Debug {
+		logger = logging.NewDebugLogger()
+	}
+
+	apiClient, err := makeAPIClient(cfg, providerValidator, logger, suiteID)
+	if err != nil {
+		return errors.WithDecoration(errors.Wrap(err, "unable to create API client"))
+	}
+
+	var frameworkKind, frameworkLanguage string
+	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+		frameworkKind = suiteConfig.Results.Framework
+		frameworkLanguage = suiteConfig.Results.Language
+	}
+
+	parseConfig := parsing.Config{
+		ProvidedFrameworkKind:     frameworkKind,
+		ProvidedFrameworkLanguage: frameworkLanguage,
+		MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+		FrameworkParsers:          frameworkParsers,
+		GenericParsers:            genericParsers,
+		Logger:                    logger,
+	}
+
+	if err := parseConfig.Validate(); err != nil {
+		return errors.WithDecoration(errors.Wrap(err, "invalid parser config"))
+	}
+
+	captain := cli.Service{
+		API:         apiClient,
+		Log:         logger,
+		FileSystem:  fs.Local{},
+		TaskRunner:  exec.Local{},
+		ParseConfig: parseConfig,
+	}
+
+	if err := cli.SetService(cmd, captain); err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }
 
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running
