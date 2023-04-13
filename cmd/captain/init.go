@@ -81,7 +81,9 @@ func initCLIService(
 	}
 }
 
-func initCliServiceWithConfig(cmd *cobra.Command, cfg Config, suiteID string, providerValidator func(providers.Provider) error) error {
+func initCliServiceWithConfig(
+	cmd *cobra.Command, cfg Config, suiteID string, providerValidator func(providers.Provider) error,
+) error {
 	if suiteID == "" {
 		return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
 	}
