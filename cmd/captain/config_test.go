@@ -20,9 +20,11 @@ var _ = Describe("InitConfig", func() {
 	BeforeEach(func() {
 		cliArgs = main.CliArgs{}
 		cmd = &cobra.Command{
-			Use: "mycli",
-			Run: func(cmd *cobra.Command, args []string) {}, // do nothing
+			Use:                "mycli",
+			Run:                func(cmd *cobra.Command, args []string) {}, // do nothing
+			DisableFlagParsing: true,                                       // without this we can't call Execute()
 		}
+		Expect(cmd.Execute()).ToNot(HaveOccurred()) // before Execute, cmd.Context() is nil
 		helpers.UnsetCIEnv()
 		os.Setenv("CAPTAIN_SUITE_ID", "some-suite")
 		err := captain.ConfigureRootCmd(cmd, &cliArgs)

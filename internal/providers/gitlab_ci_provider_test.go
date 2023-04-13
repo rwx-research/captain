@@ -1,6 +1,7 @@
 package providers_test
 
 import (
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/providers"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -41,6 +42,7 @@ var _ = Describe("GitLabEnv.MakeProvider", func() {
 		Expect(provider.CommitMessage).To(Equal("this is what I did\nand here are some details"))
 		Expect(provider.ProviderName).To(Equal("gitlabci"))
 		Expect(provider.Title).To(Equal("this is what I did"))
+		Expect(provider.PartitionNodes).To(Equal(config.PartitionNodes{Index: 0, Total: 2}))
 	})
 
 	It("falls back to commit author if attempted by is not set", func() {
@@ -101,8 +103,9 @@ var _ = Describe("GitLabEnv.MakeProvider", func() {
 
 	It("doesn't requires NodeIndex", func() {
 		env.GitLab.NodeIndex = ""
-		_, err := env.MakeProvider()
+		provider, err := env.MakeProvider()
 		Expect(err).ToNot(HaveOccurred())
+		Expect(provider.PartitionNodes.Index).To(Equal(-1))
 	})
 
 	It("requires NodeTotal", func() {

@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/backend/local"
@@ -67,139 +68,76 @@ func initCLIService(
 	providerValidator func(providers.Provider) error,
 ) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		var apiClient backend.Client
-
 		if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
 			return err
 		}
+
 		cfg, err := InitConfig(cmd, *cliArgs)
 		if err != nil {
 			return errors.WithDecoration(err)
 		}
 
-		if err = setConfig(cmd, cfg); err != nil {
-			return errors.WithDecoration(err)
-		}
-
-		logger := logging.NewProductionLogger()
-		if cfg.Output.Debug {
-			logger = logging.NewDebugLogger()
-		}
-
-		suiteID := cliArgs.RootCliArgs.suiteID
-
-		if cfg.Secrets.APIToken != "" && !cfg.Cloud.Disabled {
-			var provider providers.Provider
-			provider, err = cfg.ProvidersEnv.MakeProvider()
-			if err != nil {
-				return errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
-			}
-			err = providerValidator(provider)
-			if err != nil {
-				return errors.WithDecoration(err)
-			}
-
-			apiClient, err = remote.NewClient(remote.ClientConfig{
-				Debug:    cfg.Output.Debug,
-				Host:     cfg.Cloud.APIHost,
-				Insecure: cfg.Cloud.Insecure,
-				Log:      logger,
-				Token:    cfg.Secrets.APIToken,
-				Provider: provider,
-			})
-		} else {
-			var flakesFilePath, quarantinesFilePath, timingsFilePath string
-			if suiteID == "" {
-				return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
-			}
-
-			if !cfg.Cloud.Disabled {
-				logger.Warnf("Unable to find RWX_ACCESS_TOKEN in the environment. Captain will default to OSS mode.")
-				logger.Warnf("You can silence this warning by setting the following in the config file:")
-				logger.Warnf("")
-				logger.Warnf("cloud:")
-				logger.Warnf("  disabled: true")
-				logger.Warnf("")
-			}
-			if cfg.Secrets.APIToken != "" {
-				logger.Warnf("Captain detected an RWX_ACCESS_TOKEN in your environment, however Cloud mode was disabled.")
-				logger.Warnf("To start using Captain Cloud, please remove the 'cloud.disabled' setting in the config file.")
-			}
-
-			if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
-				return errors.NewConfigurationError(
-					"Invalid suite-id",
-					"A suite ID can only contain alphanumeric characters, `_` and `-`.",
-					"Please make sure that the ID doesn't contain any special characters.",
-				)
-			}
-
-			flakesFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, flakesFileName))
-			if err != nil {
-				flakesFilePath = filepath.Join(captainDirectory, suiteID, flakesFileName)
-				logger.Warnf(
-					"Unable to find existing flakes.yaml file for suite %q. Captain will create a new one at %q",
-					suiteID, flakesFilePath,
-				)
-			}
-
-			quarantinesFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, quarantinesFileName))
-			if err != nil {
-				quarantinesFilePath = filepath.Join(captainDirectory, suiteID, quarantinesFileName)
-				logger.Warnf(
-					"Unable to find existing quarantines.yaml for suite %q file. Captain will create a new one at %q",
-					suiteID, quarantinesFilePath,
-				)
-			}
-
-			timingsFilePath, err = findInParentDir(filepath.Join(captainDirectory, suiteID, timingsFileName))
-			if err != nil {
-				timingsFilePath = filepath.Join(captainDirectory, suiteID, timingsFileName)
-				logger.Warnf(
-					"Unable to find existing timings.yaml file. Captain will create a new one at %q",
-					timingsFilePath,
-				)
-			}
-
-			apiClient, err = local.NewClient(fs.Local{}, flakesFilePath, quarantinesFilePath, timingsFilePath)
-		}
-		if err != nil {
-			return errors.WithDecoration(errors.Wrap(err, "unable to create API client"))
-		}
-
-		var frameworkKind, frameworkLanguage string
-		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-			frameworkKind = suiteConfig.Results.Framework
-			frameworkLanguage = suiteConfig.Results.Language
-		}
-
-		parseConfig := parsing.Config{
-			ProvidedFrameworkKind:     frameworkKind,
-			ProvidedFrameworkLanguage: frameworkLanguage,
-			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-			FrameworkParsers:          frameworkParsers,
-			GenericParsers:            genericParsers,
-			Logger:                    logger,
-		}
-
-		if err := parseConfig.Validate(); err != nil {
-			return errors.WithDecoration(errors.Wrap(err, "invalid parser config"))
-		}
-
-		captain := cli.Service{
-			API:         apiClient,
-			Log:         logger,
-			FileSystem:  fs.Local{},
-			TaskRunner:  exec.Local{},
-			ParseConfig: parseConfig,
-		}
-
-		if err := cli.SetService(cmd, captain); err != nil {
-			return errors.WithStack(err)
-		}
-
-		return nil
+		return initCliServiceWithConfig(cmd, cfg, cliArgs.RootCliArgs.suiteID, providerValidator)
 	}
+}
+
+func initCliServiceWithConfig(
+	cmd *cobra.Command, cfg Config, suiteID string, providerValidator func(providers.Provider) error,
+) error {
+	if suiteID == "" {
+		return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
+	}
+
+	if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
+		return errors.NewConfigurationError(
+			"Invalid suite-id",
+			"A suite ID can only contain alphanumeric characters, `_` and `-`.",
+			"Please make sure that the ID doesn't contain any special characters.",
+		)
+	}
+
+	logger := logging.NewProductionLogger()
+	if cfg.Output.Debug {
+		logger = logging.NewDebugLogger()
+	}
+
+	apiClient, err := makeAPIClient(cfg, providerValidator, logger, suiteID)
+	if err != nil {
+		return errors.WithDecoration(errors.Wrap(err, "unable to create API client"))
+	}
+
+	var frameworkKind, frameworkLanguage string
+	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+		frameworkKind = suiteConfig.Results.Framework
+		frameworkLanguage = suiteConfig.Results.Language
+	}
+
+	parseConfig := parsing.Config{
+		ProvidedFrameworkKind:     frameworkKind,
+		ProvidedFrameworkLanguage: frameworkLanguage,
+		MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+		FrameworkParsers:          frameworkParsers,
+		GenericParsers:            genericParsers,
+		Logger:                    logger,
+	}
+
+	if err := parseConfig.Validate(); err != nil {
+		return errors.WithDecoration(errors.Wrap(err, "invalid parser config"))
+	}
+
+	captain := cli.Service{
+		API:         apiClient,
+		Log:         logger,
+		FileSystem:  fs.Local{},
+		TaskRunner:  exec.Local{},
+		ParseConfig: parseConfig,
+	}
+
+	if err := cli.SetService(cmd, captain); err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }
 
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running
@@ -213,10 +151,6 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 		}
 		cfg, err := InitConfig(cmd, *cliArgs)
 		if err != nil {
-			return errors.WithStack(err)
-		}
-
-		if err := setConfig(cmd, cfg); err != nil {
 			return errors.WithStack(err)
 		}
 
@@ -254,4 +188,74 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 
 		return nil
 	}
+}
+
+func makeAPIClient(
+	cfg Config, providerValidator func(providers.Provider) error, logger *zap.SugaredLogger, suiteID string,
+) (backend.Client, error) {
+	wrapError := func(a backend.Client, b error) (backend.Client, error) {
+		return a, errors.WithDecoration(b)
+	}
+	if cfg.Secrets.APIToken != "" && !cfg.Cloud.Disabled {
+		provider, err := cfg.ProvidersEnv.MakeProvider()
+		if err != nil {
+			return nil, errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
+		}
+		err = providerValidator(provider)
+		if err != nil {
+			return nil, errors.WithDecoration(err)
+		}
+
+		return wrapError(remote.NewClient(remote.ClientConfig{
+			Debug:    cfg.Output.Debug,
+			Host:     cfg.Cloud.APIHost,
+			Insecure: cfg.Cloud.Insecure,
+			Log:      logger,
+			Token:    cfg.Secrets.APIToken,
+			Provider: provider,
+		}))
+	}
+
+	if !cfg.Cloud.Disabled {
+		logger.Warnf("Unable to find RWX_ACCESS_TOKEN in the environment. Captain will default to OSS mode.")
+		logger.Warnf("You can silence this warning by setting the following in the config file:")
+		logger.Warnf("")
+		logger.Warnf("cloud:")
+		logger.Warnf("  disabled: true")
+		logger.Warnf("")
+	}
+
+	if cfg.Secrets.APIToken != "" {
+		logger.Warnf("Captain detected an RWX_ACCESS_TOKEN in your environment, however Cloud mode was disabled.")
+		logger.Warnf("To start using Captain Cloud, please remove the 'cloud.disabled' setting in the config file.")
+	}
+
+	flakesFilePath, err := findInParentDir(filepath.Join(captainDirectory, suiteID, flakesFileName))
+	if err != nil {
+		flakesFilePath = filepath.Join(captainDirectory, suiteID, flakesFileName)
+		logger.Warnf(
+			"Unable to find existing flakes.yaml file for suite %q. Captain will create a new one at %q",
+			suiteID, flakesFilePath,
+		)
+	}
+
+	quarantinesFilePath, err := findInParentDir(filepath.Join(captainDirectory, suiteID, quarantinesFileName))
+	if err != nil {
+		quarantinesFilePath = filepath.Join(captainDirectory, suiteID, quarantinesFileName)
+		logger.Warnf(
+			"Unable to find existing quarantines.yaml for suite %q file. Captain will create a new one at %q",
+			suiteID, quarantinesFilePath,
+		)
+	}
+
+	timingsFilePath, err := findInParentDir(filepath.Join(captainDirectory, suiteID, timingsFileName))
+	if err != nil {
+		timingsFilePath = filepath.Join(captainDirectory, suiteID, timingsFileName)
+		logger.Warnf(
+			"Unable to find existing timings.yaml file. Captain will create a new one at %q",
+			timingsFilePath,
+		)
+	}
+
+	return wrapError(local.NewClient(fs.Local{}, flakesFilePath, quarantinesFilePath, timingsFilePath))
 }

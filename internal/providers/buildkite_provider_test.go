@@ -1,6 +1,7 @@
 package providers_test
 
 import (
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/providers"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -40,6 +41,7 @@ var _ = Describe("BuildkiteEnv.makeProvider", func() {
 		Expect(provider.CommitMessage).To(Equal("fixed it\nyeah"))
 		Expect(provider.ProviderName).To(Equal("buildkite"))
 		Expect(provider.Title).To(Equal("fixed it"))
+		Expect(provider.PartitionNodes).To(Equal(config.PartitionNodes{Index: 0, Total: 2}))
 	})
 
 	It("requires build id", func() {
@@ -89,6 +91,20 @@ var _ = Describe("BuildkiteEnv.makeProvider", func() {
 		_, err := env.MakeProvider()
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring("Missing repository"))
+	})
+
+	It("doesn't require node index", func() {
+		env.Buildkite.ParallelJob = ""
+		provider, err := env.MakeProvider()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(provider.PartitionNodes.Index).To(Equal(-1))
+	})
+
+	It("doesn't require node total", func() {
+		env.Buildkite.ParallelJobCount = ""
+		provider, err := env.MakeProvider()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(provider.PartitionNodes.Total).To(Equal(-1))
 	})
 })
 

@@ -2,7 +2,9 @@ package providers
 
 import (
 	"fmt"
+	"strconv"
 
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -36,6 +38,16 @@ func (cfg CircleCIEnv) makeProvider() (Provider, error) {
 
 	title := fmt.Sprintf("%s (%s)", cfg.Job, cfg.BuildNum)
 
+	index, err := strconv.Atoi(cfg.NodeIndex)
+	if err != nil {
+		index = -1
+	}
+
+	total, err := strconv.Atoi(cfg.NodeTotal)
+	if err != nil {
+		total = -1
+	}
+
 	provider := Provider{
 		AttemptedBy:   cfg.Username,
 		BranchName:    cfg.Branch,
@@ -44,6 +56,10 @@ func (cfg CircleCIEnv) makeProvider() (Provider, error) {
 		JobTags:       tags,
 		ProviderName:  "circleci",
 		Title:         title,
+		PartitionNodes: config.PartitionNodes{
+			Index: index,
+			Total: total,
+		},
 	}
 
 	return provider, nil

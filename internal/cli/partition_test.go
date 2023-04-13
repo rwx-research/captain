@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap/zaptest/observer"
 
 	"github.com/rwx-research/captain-cli/internal/cli"
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/parsing"
@@ -22,7 +23,7 @@ import (
 func cfgWithArgs(index int, total int, args []string, delimiter string) cli.PartitionConfig {
 	return cli.PartitionConfig{
 		TestFilePaths: args,
-		PartitionNodes: cli.PartitionNodes{
+		PartitionNodes: config.PartitionNodes{
 			Index: index,
 			Total: total,
 		},

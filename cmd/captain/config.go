@@ -47,7 +47,8 @@ func getConfig(cmd *cobra.Command) (Config, error) {
 	return cfg, nil
 }
 
-func setConfig(cmd *cobra.Command, cfg Config) error {
+// adds config to cmd's context
+func setConfigContext(cmd *cobra.Command, cfg Config) error {
 	if _, err := getConfig(cmd); err == nil {
 		return errors.NewInternalError("Tried to set config on the command but it was already set. This should never happen!")
 	}
@@ -159,6 +160,10 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 	cfg = bindRootCmdFlags(cfg, cliArgs.RootCliArgs)
 	cfg = bindFrameworkFlags(cfg, cliArgs.frameworkParams, cliArgs.RootCliArgs.suiteID)
 	cfg = bindRunCmdFlags(cfg, cliArgs)
+
+	if err = setConfigContext(cmd, cfg); err != nil {
+		return cfg, errors.WithDecoration(err)
+	}
 
 	return cfg, nil
 }

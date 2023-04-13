@@ -3,6 +3,7 @@ package providers
 import (
 	"strings"
 
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -15,13 +16,14 @@ type Env struct {
 }
 
 type Provider struct {
-	AttemptedBy   string
-	BranchName    string
-	CommitMessage string
-	CommitSha     string
-	JobTags       map[string]any
-	ProviderName  string
-	Title         string
+	AttemptedBy    string
+	BranchName     string
+	CommitMessage  string
+	CommitSha      string
+	JobTags        map[string]any
+	ProviderName   string
+	Title          string
+	PartitionNodes config.PartitionNodes
 }
 
 func Validate(p Provider) error {
