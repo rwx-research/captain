@@ -152,46 +152,52 @@ func initCliServiceWithConfig(
 
 func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
-			return err
-		}
-		cfg, err := InitConfig(cmd, *cliArgs)
+		err := func() error {
+			if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
+				return err
+			}
+			cfg, err := InitConfig(cmd, *cliArgs)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			logger := logging.NewProductionLogger()
+			if cfg.Output.Debug {
+				logger = logging.NewDebugLogger()
+			}
+
+			var frameworkKind, frameworkLanguage string
+			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
+				frameworkKind = suiteConfig.Results.Framework
+				frameworkLanguage = suiteConfig.Results.Language
+			}
+
+			parseConfig := parsing.Config{
+				ProvidedFrameworkKind:     frameworkKind,
+				ProvidedFrameworkLanguage: frameworkLanguage,
+				MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+				FrameworkParsers:          frameworkParsers,
+				GenericParsers:            genericParsers,
+				Logger:                    logger,
+			}
+			if err := parseConfig.Validate(); err != nil {
+				return errors.Wrap(err, "invalid parser config")
+			}
+
+			captain := cli.Service{
+				Log:         logger,
+				FileSystem:  fs.Local{},
+				ParseConfig: parseConfig,
+			}
+			if err := cli.SetService(cmd, captain); err != nil {
+				return errors.WithStack(err)
+			}
+
+			return nil
+		}()
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.WithDecoration(err)
 		}
-
-		logger := logging.NewProductionLogger()
-		if cfg.Output.Debug {
-			logger = logging.NewDebugLogger()
-		}
-
-		var frameworkKind, frameworkLanguage string
-		if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
-			frameworkKind = suiteConfig.Results.Framework
-			frameworkLanguage = suiteConfig.Results.Language
-		}
-
-		parseConfig := parsing.Config{
-			ProvidedFrameworkKind:     frameworkKind,
-			ProvidedFrameworkLanguage: frameworkLanguage,
-			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-			FrameworkParsers:          frameworkParsers,
-			GenericParsers:            genericParsers,
-			Logger:                    logger,
-		}
-		if err := parseConfig.Validate(); err != nil {
-			return errors.Wrap(err, "invalid parser config")
-		}
-
-		captain := cli.Service{
-			Log:         logger,
-			FileSystem:  fs.Local{},
-			ParseConfig: parseConfig,
-		}
-		if err := cli.SetService(cmd, captain); err != nil {
-			return errors.WithStack(err)
-		}
-
 		return nil
 	}
 }

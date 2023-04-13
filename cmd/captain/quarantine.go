@@ -21,81 +21,87 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 		Example: `  captain quarantine --suite-id "example" --test-results "./tmp/rspec.json" -c "bundle exec rake"`,
 		PreRunE: initCLIService(cliArgs, providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := cliArgs.RootCliArgs.positionalArgs
+			err := func() error {
+				args := cliArgs.RootCliArgs.positionalArgs
 
-			var printSummary, quiet bool
-			var testResultsPath, command string
+				var printSummary, quiet bool
+				var testResultsPath, command string
 
-			reporterFuncs := make(map[string]cli.Reporter)
+				reporterFuncs := make(map[string]cli.Reporter)
 
-			cfg, err := getConfig(cmd)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-
-			captain, err := cli.GetService(cmd)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-
-			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
-				for name, path := range suiteConfig.Output.Reporters {
-					switch name {
-					case "rwx-v1-json":
-						reporterFuncs[path] = reporting.WriteJSONSummary
-					case "junit-xml":
-						reporterFuncs[path] = reporting.WriteJUnitSummary
-					case "markdown-summary":
-						reporterFuncs[path] = reporting.WriteMarkdownSummary
-					case "github-step-summary":
-						stepSummaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
-						if stepSummaryPath == "" {
-							captain.Log.Debug(
-								"Skipping configuration of the 'github-step-summary' reporter " +
-									"(the 'GITHUB_STEP_SUMMARY' environment variable is not set).",
-							)
-							continue
-						}
-
-						reporterFuncs[stepSummaryPath] = reporting.WriteMarkdownSummary
-					default:
-						return errors.WithDecoration(errors.NewConfigurationError(
-							fmt.Sprintf("Unknown reporter %q", name),
-							"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
-							"",
-						))
-					}
+				cfg, err := getConfig(cmd)
+				if err != nil {
+					return errors.WithStack(err)
 				}
 
-				command = suiteConfig.Command
-				printSummary = suiteConfig.Output.PrintSummary
-				testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
-				quiet = suiteConfig.Output.Quiet
+				captain, err := cli.GetService(cmd)
+				if err != nil {
+					return errors.WithStack(err)
+				}
+
+				if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
+					for name, path := range suiteConfig.Output.Reporters {
+						switch name {
+						case "rwx-v1-json":
+							reporterFuncs[path] = reporting.WriteJSONSummary
+						case "junit-xml":
+							reporterFuncs[path] = reporting.WriteJUnitSummary
+						case "markdown-summary":
+							reporterFuncs[path] = reporting.WriteMarkdownSummary
+						case "github-step-summary":
+							stepSummaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
+							if stepSummaryPath == "" {
+								captain.Log.Debug(
+									"Skipping configuration of the 'github-step-summary' reporter " +
+										"(the 'GITHUB_STEP_SUMMARY' environment variable is not set).",
+								)
+								continue
+							}
+
+							reporterFuncs[stepSummaryPath] = reporting.WriteMarkdownSummary
+						default:
+							return errors.NewConfigurationError(
+								fmt.Sprintf("Unknown reporter %q", name),
+								"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
+								"",
+							)
+						}
+					}
+
+					command = suiteConfig.Command
+					printSummary = suiteConfig.Output.PrintSummary
+					testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
+					quiet = suiteConfig.Output.Quiet
+				}
+
+				runConfig := cli.RunConfig{
+					Args:                args,
+					Command:             command,
+					PrintSummary:        printSummary,
+					Quiet:               quiet,
+					Reporters:           reporterFuncs,
+					SuiteID:             cliArgs.RootCliArgs.suiteID,
+					TestResultsFileGlob: testResultsPath,
+					UpdateStoredResults: cliArgs.updateStoredResults,
+
+					FailOnUploadError: false,
+					FailRetriesFast:   false,
+					FlakyRetries:      0,
+					Retries:           0,
+					UploadResults:     false,
+				}
+
+				err = captain.RunSuite(cmd.Context(), runConfig)
+				if _, ok := errors.AsConfigurationError(err); !ok {
+					cmd.SilenceUsage = true
+				}
+
+				return errors.WithStack(err)
+			}()
+			if err != nil {
+				return errors.WithDecoration(err)
 			}
-
-			runConfig := cli.RunConfig{
-				Args:                args,
-				Command:             command,
-				PrintSummary:        printSummary,
-				Quiet:               quiet,
-				Reporters:           reporterFuncs,
-				SuiteID:             cliArgs.RootCliArgs.suiteID,
-				TestResultsFileGlob: testResultsPath,
-				UpdateStoredResults: cliArgs.updateStoredResults,
-
-				FailOnUploadError: false,
-				FailRetriesFast:   false,
-				FlakyRetries:      0,
-				Retries:           0,
-				UploadResults:     false,
-			}
-
-			err = captain.RunSuite(cmd.Context(), runConfig)
-			if _, ok := errors.AsConfigurationError(err); !ok {
-				cmd.SilenceUsage = true
-			}
-
-			return errors.WithDecoration(err)
+			return nil
 		},
 	}
 

@@ -47,52 +47,58 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		Args:                  cobra.MinimumNArgs(1),
 		DisableFlagsInUseLine: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
-				return err
-			}
+			err := func() error {
+				if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
+					return err
+				}
 
-			cfg, err := InitConfig(cmd, *cliArgs)
+				cfg, err := InitConfig(cmd, *cliArgs)
+				if err != nil {
+					return err
+				}
+
+				provider, err := cfg.ProvidersEnv.MakeProvider()
+				if err != nil {
+					return errors.Wrap(err, "failed to construct provider")
+				}
+
+				if pArgs.nodes.Index < 0 {
+					if provider.PartitionNodes.Index < 0 {
+						return errors.NewConfigurationError(
+							"Partition index invalid.",
+							"Partition index must be 0 or greater.",
+							"You can set the partition index by using the --index flag or the CAPTAIN_PARTITION_INDEX environment variable.",
+						)
+					}
+					pArgs.nodes.Index = provider.PartitionNodes.Index
+				}
+
+				if pArgs.nodes.Total < 0 {
+					if provider.PartitionNodes.Total < 1 {
+						return errors.NewConfigurationError(
+							"Partition total invalid.",
+							"Partition total must be 1 or greater.",
+							"You can set the partition index by using the --total flag or the CAPTAIN_PARTITION_TOTAL environment variable.",
+						)
+					}
+					pArgs.nodes.Total = provider.PartitionNodes.Total
+				}
+
+				return initCliServiceWithConfig(cmd, cfg, cliArgs.RootCliArgs.suiteID, func(p providers.Provider) error {
+					if p.CommitSha == "" {
+						return errors.NewConfigurationError(
+							"Missing commit SHA",
+							"Captain requires a commit SHA in order to track test runs correctly.",
+							"You can specify the SHA by using the --sha flag or the CAPTAIN_SHA environment variable",
+						)
+					}
+					return nil
+				})
+			}()
 			if err != nil {
 				return errors.WithDecoration(err)
 			}
-
-			provider, err := cfg.ProvidersEnv.MakeProvider()
-			if err != nil {
-				return errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
-			}
-
-			if pArgs.nodes.Index < 0 {
-				if provider.PartitionNodes.Index < 0 {
-					return errors.NewConfigurationError(
-						"Partition index invalid.",
-						"Partition index must be 0 or greater.",
-						"You can set the partition index by using the --index flag or the CAPTAIN_PARTITION_INDEX environment variable.",
-					)
-				}
-				pArgs.nodes.Index = provider.PartitionNodes.Index
-			}
-
-			if pArgs.nodes.Total < 0 {
-				if provider.PartitionNodes.Total < 1 {
-					return errors.NewConfigurationError(
-						"Partition total invalid.",
-						"Partition total must be 1 or greater.",
-						"You can set the partition index by using the --total flag or the CAPTAIN_PARTITION_TOTAL environment variable.",
-					)
-				}
-				pArgs.nodes.Total = provider.PartitionNodes.Total
-			}
-
-			return initCliServiceWithConfig(cmd, cfg, cliArgs.RootCliArgs.suiteID, func(p providers.Provider) error {
-				if p.CommitSha == "" {
-					return errors.NewConfigurationError(
-						"Missing commit SHA",
-						"Captain requires a commit SHA in order to track test runs correctly.",
-						"You can specify the SHA by using the --sha flag or the CAPTAIN_SHA environment variable",
-					)
-				}
-				return nil
-			})
+			return nil
 		},
 
 		RunE: func(cmd *cobra.Command, _ []string) error {

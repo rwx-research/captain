@@ -45,96 +45,102 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 			`  captain run --suite-id="your-project-jest" --test-results "jest-result.json" -c jest`,
 		PreRunE: initCLIService(cliArgs, providers.Validate),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			args := cliArgs.RootCliArgs.positionalArgs
-			var postRetryCommands, preRetryCommands []string
-			var failOnUploadError, failFast, printSummary, quiet bool
-			var flakyRetries, retries int
-			var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
+			err := func() error {
+				args := cliArgs.RootCliArgs.positionalArgs
+				var postRetryCommands, preRetryCommands []string
+				var failOnUploadError, failFast, printSummary, quiet bool
+				var flakyRetries, retries int
+				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
 
-			reporterFuncs := make(map[string]cli.Reporter)
+				reporterFuncs := make(map[string]cli.Reporter)
 
-			cfg, err := getConfig(cmd)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-
-			captain, err := cli.GetService(cmd)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-
-			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
-				for name, path := range suiteConfig.Output.Reporters {
-					switch name {
-					case "rwx-v1-json":
-						reporterFuncs[path] = reporting.WriteJSONSummary
-					case "junit-xml":
-						reporterFuncs[path] = reporting.WriteJUnitSummary
-					case "markdown-summary":
-						reporterFuncs[path] = reporting.WriteMarkdownSummary
-					case "github-step-summary":
-						stepSummaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
-						if stepSummaryPath == "" {
-							captain.Log.Debug(
-								"Skipping configuration of the 'github-step-summary' reporter " +
-									"(the 'GITHUB_STEP_SUMMARY' environment variable is not set).",
-							)
-							continue
-						}
-
-						reporterFuncs[stepSummaryPath] = reporting.WriteMarkdownSummary
-					default:
-						return errors.WithDecoration(errors.NewConfigurationError(
-							fmt.Sprintf("Unknown reporter %q", name),
-							"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
-							"",
-						))
-					}
+				cfg, err := getConfig(cmd)
+				if err != nil {
+					return errors.WithStack(err)
 				}
 
-				command = suiteConfig.Command
-				failOnUploadError = suiteConfig.FailOnUploadError
-				failFast = suiteConfig.Retries.FailFast
-				flakyRetries = suiteConfig.Retries.FlakyAttempts
-				maxTests = suiteConfig.Retries.MaxTests
-				postRetryCommands = suiteConfig.Retries.PostRetryCommands
-				preRetryCommands = suiteConfig.Retries.PreRetryCommands
-				printSummary = suiteConfig.Output.PrintSummary
-				quiet = suiteConfig.Output.Quiet
-				retries = suiteConfig.Retries.Attempts
-				retryCommand = suiteConfig.Retries.Command
-				intermediateArtifactsPath = suiteConfig.Retries.IntermediateArtifactsPath
-				testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
-			}
+				captain, err := cli.GetService(cmd)
+				if err != nil {
+					return errors.WithStack(err)
+				}
 
-			runConfig := cli.RunConfig{
-				Args:                      args,
-				Command:                   command,
-				FailOnUploadError:         failOnUploadError,
-				FailRetriesFast:           failFast,
-				FlakyRetries:              flakyRetries,
-				IntermediateArtifactsPath: intermediateArtifactsPath,
-				MaxTestsToRetry:           maxTests,
-				PostRetryCommands:         postRetryCommands,
-				PreRetryCommands:          preRetryCommands,
-				PrintSummary:              printSummary,
-				Quiet:                     quiet,
-				Reporters:                 reporterFuncs,
-				Retries:                   retries,
-				RetryCommandTemplate:      retryCommand,
-				SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
-				SuiteID:                   cliArgs.RootCliArgs.suiteID,
-				TestResultsFileGlob:       testResultsPath,
-				UpdateStoredResults:       cliArgs.updateStoredResults,
-				UploadResults:             true,
-			}
+				if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
+					for name, path := range suiteConfig.Output.Reporters {
+						switch name {
+						case "rwx-v1-json":
+							reporterFuncs[path] = reporting.WriteJSONSummary
+						case "junit-xml":
+							reporterFuncs[path] = reporting.WriteJUnitSummary
+						case "markdown-summary":
+							reporterFuncs[path] = reporting.WriteMarkdownSummary
+						case "github-step-summary":
+							stepSummaryPath := os.Getenv("GITHUB_STEP_SUMMARY")
+							if stepSummaryPath == "" {
+								captain.Log.Debug(
+									"Skipping configuration of the 'github-step-summary' reporter " +
+										"(the 'GITHUB_STEP_SUMMARY' environment variable is not set).",
+								)
+								continue
+							}
 
-			err = captain.RunSuite(cmd.Context(), runConfig)
-			if _, ok := errors.AsConfigurationError(err); !ok {
-				cmd.SilenceUsage = true
-			}
+							reporterFuncs[stepSummaryPath] = reporting.WriteMarkdownSummary
+						default:
+							return errors.NewConfigurationError(
+								fmt.Sprintf("Unknown reporter %q", name),
+								"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
+								"",
+							)
+						}
+					}
 
-			return errors.WithDecoration(err)
+					command = suiteConfig.Command
+					failOnUploadError = suiteConfig.FailOnUploadError
+					failFast = suiteConfig.Retries.FailFast
+					flakyRetries = suiteConfig.Retries.FlakyAttempts
+					maxTests = suiteConfig.Retries.MaxTests
+					postRetryCommands = suiteConfig.Retries.PostRetryCommands
+					preRetryCommands = suiteConfig.Retries.PreRetryCommands
+					printSummary = suiteConfig.Output.PrintSummary
+					quiet = suiteConfig.Output.Quiet
+					retries = suiteConfig.Retries.Attempts
+					retryCommand = suiteConfig.Retries.Command
+					intermediateArtifactsPath = suiteConfig.Retries.IntermediateArtifactsPath
+					testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
+				}
+
+				runConfig := cli.RunConfig{
+					Args:                      args,
+					Command:                   command,
+					FailOnUploadError:         failOnUploadError,
+					FailRetriesFast:           failFast,
+					FlakyRetries:              flakyRetries,
+					IntermediateArtifactsPath: intermediateArtifactsPath,
+					MaxTestsToRetry:           maxTests,
+					PostRetryCommands:         postRetryCommands,
+					PreRetryCommands:          preRetryCommands,
+					PrintSummary:              printSummary,
+					Quiet:                     quiet,
+					Reporters:                 reporterFuncs,
+					Retries:                   retries,
+					RetryCommandTemplate:      retryCommand,
+					SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
+					SuiteID:                   cliArgs.RootCliArgs.suiteID,
+					TestResultsFileGlob:       testResultsPath,
+					UpdateStoredResults:       cliArgs.updateStoredResults,
+					UploadResults:             true,
+				}
+
+				err = captain.RunSuite(cmd.Context(), runConfig)
+				if _, ok := errors.AsConfigurationError(err); !ok {
+					cmd.SilenceUsage = true
+				}
+
+				return errors.WithStack(err)
+			}()
+			if err != nil {
+				return errors.WithDecoration(err)
+			}
+			return nil
 		},
 	}
 }
