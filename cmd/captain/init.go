@@ -84,59 +84,65 @@ func initCLIService(
 func initCliServiceWithConfig(
 	cmd *cobra.Command, cfg Config, suiteID string, providerValidator func(providers.Provider) error,
 ) error {
-	if suiteID == "" {
-		return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
-	}
+	err := func() error {
+		if suiteID == "" {
+			return errors.NewConfigurationError("Invalid suite-id", "The suite ID is empty.", "")
+		}
 
-	if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
-		return errors.NewConfigurationError(
-			"Invalid suite-id",
-			"A suite ID can only contain alphanumeric characters, `_` and `-`.",
-			"Please make sure that the ID doesn't contain any special characters.",
-		)
-	}
+		if invalidSuiteIDRegexp.Match([]byte(suiteID)) {
+			return errors.NewConfigurationError(
+				"Invalid suite-id",
+				"A suite ID can only contain alphanumeric characters, `_` and `-`.",
+				"Please make sure that the ID doesn't contain any special characters.",
+			)
+		}
 
-	logger := logging.NewProductionLogger()
-	if cfg.Output.Debug {
-		logger = logging.NewDebugLogger()
-	}
+		logger := logging.NewProductionLogger()
+		if cfg.Output.Debug {
+			logger = logging.NewDebugLogger()
+		}
 
-	apiClient, err := makeAPIClient(cfg, providerValidator, logger, suiteID)
+		apiClient, err := makeAPIClient(cfg, providerValidator, logger, suiteID)
+		if err != nil {
+			return errors.Wrap(err, "unable to create API client")
+		}
+
+		var frameworkKind, frameworkLanguage string
+		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
+			frameworkKind = suiteConfig.Results.Framework
+			frameworkLanguage = suiteConfig.Results.Language
+		}
+
+		parseConfig := parsing.Config{
+			ProvidedFrameworkKind:     frameworkKind,
+			ProvidedFrameworkLanguage: frameworkLanguage,
+			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+			FrameworkParsers:          frameworkParsers,
+			GenericParsers:            genericParsers,
+			Logger:                    logger,
+		}
+
+		if err := parseConfig.Validate(); err != nil {
+			return errors.Wrap(err, "invalid parser config")
+		}
+
+		captain := cli.Service{
+			API:         apiClient,
+			Log:         logger,
+			FileSystem:  fs.Local{},
+			TaskRunner:  exec.Local{},
+			ParseConfig: parseConfig,
+		}
+
+		if err := cli.SetService(cmd, captain); err != nil {
+			return errors.WithStack(err)
+		}
+
+		return nil
+	}()
 	if err != nil {
-		return errors.WithDecoration(errors.Wrap(err, "unable to create API client"))
+		return errors.WithDecoration(err)
 	}
-
-	var frameworkKind, frameworkLanguage string
-	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-		frameworkKind = suiteConfig.Results.Framework
-		frameworkLanguage = suiteConfig.Results.Language
-	}
-
-	parseConfig := parsing.Config{
-		ProvidedFrameworkKind:     frameworkKind,
-		ProvidedFrameworkLanguage: frameworkLanguage,
-		MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-		FrameworkParsers:          frameworkParsers,
-		GenericParsers:            genericParsers,
-		Logger:                    logger,
-	}
-
-	if err := parseConfig.Validate(); err != nil {
-		return errors.WithDecoration(errors.Wrap(err, "invalid parser config"))
-	}
-
-	captain := cli.Service{
-		API:         apiClient,
-		Log:         logger,
-		FileSystem:  fs.Local{},
-		TaskRunner:  exec.Local{},
-		ParseConfig: parseConfig,
-	}
-
-	if err := cli.SetService(cmd, captain); err != nil {
-		return errors.WithStack(err)
-	}
-
 	return nil
 }
 
@@ -194,16 +200,16 @@ func makeAPIClient(
 	cfg Config, providerValidator func(providers.Provider) error, logger *zap.SugaredLogger, suiteID string,
 ) (backend.Client, error) {
 	wrapError := func(a backend.Client, b error) (backend.Client, error) {
-		return a, errors.WithDecoration(b)
+		return a, errors.WithStack(b)
 	}
 	if cfg.Secrets.APIToken != "" && !cfg.Cloud.Disabled {
 		provider, err := cfg.ProvidersEnv.MakeProvider()
 		if err != nil {
-			return nil, errors.WithDecoration(errors.Wrap(err, "failed to construct provider"))
+			return nil, errors.Wrap(err, "failed to construct provider")
 		}
 		err = providerValidator(provider)
 		if err != nil {
-			return nil, errors.WithDecoration(err)
+			return nil, err
 		}
 
 		return wrapError(remote.NewClient(remote.ClientConfig{
