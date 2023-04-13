@@ -13,27 +13,27 @@ import (
 
 // Partition splits a glob of test filepaths using decreasing first fit backed by a timing manifest from captain.
 func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
-	activePartition, err := s.CalculatePartition(ctx, cfg)
+	partitionResult, err := s.CalculatePartition(ctx, cfg)
 	if err != nil {
 		return err
 	}
-	s.Log.Infoln(strings.Join(activePartition.TestFilePaths, cfg.Delimiter))
+	s.Log.Infoln(strings.Join(partitionResult.partition.TestFilePaths, cfg.Delimiter))
 	return nil
 }
 
-func (s Service) CalculatePartition(ctx context.Context, cfg PartitionConfig) (testing.TestPartition, error) {
+func (s Service) CalculatePartition(ctx context.Context, cfg PartitionConfig) (PartitionResult, error) {
 	err := cfg.Validate()
 	if err != nil {
-		return testing.TestPartition{}, errors.WithStack(err)
+		return PartitionResult{}, errors.WithStack(err)
 	}
 	fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
 	if err != nil {
-		return testing.TestPartition{}, errors.WithStack(err)
+		return PartitionResult{}, errors.WithStack(err)
 	}
 
 	testFilePaths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
 	if err != nil {
-		return testing.TestPartition{}, errors.NewSystemError("unable to expand filepath glob: %s", err)
+		return PartitionResult{}, errors.NewSystemError("unable to expand filepath glob: %s", err)
 	}
 	// Compare expanded client file paths w/ expanded server file paths
 	// taking care to always use the client path and sort by duration desc
@@ -79,7 +79,7 @@ func (s Service) CalculatePartition(ctx context.Context, cfg PartitionConfig) (t
 	})
 
 	if len(fileTimingMatches) == 0 {
-		s.Log.Errorln("No test file timings were matched. Using naive round-robin strategy.")
+		s.Log.Warnln("No test file timings were matched. Using naive round-robin strategy.")
 	}
 
 	partitions := make([]testing.TestPartition, 0)
@@ -121,7 +121,10 @@ func (s Service) CalculatePartition(ctx context.Context, cfg PartitionConfig) (t
 		s.Log.Debugf("%s: Assigned '%s' using round robin strategy", partition, testFilepath)
 	}
 
-	return partitions[cfg.PartitionNodes.Index], nil
+	return PartitionResult{
+		partition:              partitions[cfg.PartitionNodes.Index],
+		utilizedPartitionCount: utilizedPartitionCount(partitions),
+	}, nil
 }
 
 func partitionWithFirstFit(
@@ -145,4 +148,19 @@ func partitionWithMostRemainingCapacity(partitions []testing.TestPartition) test
 		}
 	}
 	return result
+}
+
+func utilizedPartitionCount(partitions []testing.TestPartition) int {
+	count := 0
+	for _, partition := range partitions {
+		if len(partition.TestFilePaths) != 0 {
+			count++
+		}
+	}
+	return count
+}
+
+type PartitionResult struct {
+	partition              testing.TestPartition
+	utilizedPartitionCount int
 }

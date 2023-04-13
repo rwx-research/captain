@@ -191,7 +191,7 @@ var _ = Describe("Partition", func() {
 			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
-			for _, log := range recordedLogs.FilterLevelExact(zap.ErrorLevel).All() {
+			for _, log := range recordedLogs.FilterLevelExact(zap.WarnLevel).All() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(

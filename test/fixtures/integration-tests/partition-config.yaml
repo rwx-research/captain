@@ -60,6 +60,18 @@ test-suites:
   #     attempts: 2
   #     command: echo "{{ tests }}"
   oss-run-with-partition:
+    command: bash -c 'echo "default run" && exit 123'
+    fail-on-upload-error: true
+    results:
+      language: Ruby
+      framework: RSpec
+      path: ./fixtures/integration-tests/rspec-passed.json
+    partition:
+      command: echo "test {{ testFiles }}"
+      globs:
+      - ./fixtures/integration-tests/partition/*.rb
+
+  oss-run-with-partition-with-multiple-globs:
     command: bash -c 'exit 123'
     fail-on-upload-error: true
     results:
@@ -67,6 +79,21 @@ test-suites:
       framework: RSpec
       path: ./fixtures/integration-tests/rspec-passed.json
     partition:
-      command: echo "{{ testFiles }}"
+      command: echo "test {{ testFiles }}"
       globs:
+      - ./fixtures/integration-tests/partition/*_spec.rb
+      - ./fixtures/integration-tests/partition/*.rb
+
+  oss-run-with-partition-with-custom-delimiter:
+    command: bash -c 'exit 123'
+    fail-on-upload-error: true
+    results:
+      language: Ruby
+      framework: RSpec
+      path: ./fixtures/integration-tests/rspec-passed.json
+    partition:
+      command: echo "test {{ testFiles }}"
+      delimiter: " -hi- "
+      globs:
+      - ./fixtures/integration-tests/partition/*_spec.rb
       - ./fixtures/integration-tests/partition/*.rb

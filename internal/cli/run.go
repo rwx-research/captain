@@ -22,17 +22,14 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-type RunCommand interface {
-	CommandArgs() ([]string, error)
+type RunCommand struct {
+	command          string
+	args             []string
+	shortCircuit     bool
+	shortCircuitInfo string
 }
 
-type StaticRunCommand struct {
-	command string
-	args    []string
-	isNoop  bool
-}
-
-func (c StaticRunCommand) CommandArgs() ([]string, error) {
+func (c RunCommand) CommandArgs() ([]string, error) {
 	commandArgs := make([]string, 0)
 
 	if c.command != "" {
@@ -54,31 +51,6 @@ func (c StaticRunCommand) CommandArgs() ([]string, error) {
 	return commandArgs, nil
 }
 
-func (c StaticRunCommand) IsNoop() bool {
-	return false
-}
-
-type TemplatedRunCommand struct {
-	commandTemplate string
-	substitutions   map[string]string
-	args            []string
-	isNoop          bool
-}
-
-func (c TemplatedRunCommand) CommandArgs() ([]string, error) {
-	commandArgs := make([]string, 0)
-	compiledTemplate, err := targetedretries.CompileTemplate(c.commandTemplate)
-
-	if err != nil {
-		return commandArgs, errors.WithStack(err)
-	}
-
-	hydratedCommand := compiledTemplate.Substitute(c.substitutions)
-	command := StaticRunCommand{command: hydratedCommand, args: c.args, isNoop: c.isNoop}
-
-	return command.CommandArgs()
-}
-
 func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand, error) {
 	if cfg.IsRunningPartition() {
 		partitionConfig := PartitionConfig{
@@ -91,23 +63,36 @@ func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 			},
 		}
 
-		testPartition, err := s.CalculatePartition(ctx, partitionConfig)
+		partitionResult, err := s.CalculatePartition(ctx, partitionConfig)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return RunCommand{}, errors.WithStack(err)
 		}
-		substitutions := make(map[string]string)
-		substitutions["testFiles"] = strings.Join(testPartition.TestFilePaths, partitionConfig.Delimiter) // TODO: Validation
-		isNoop := len(testPartition.TestFilePaths) == 0
 
-		return TemplatedRunCommand{
-			commandTemplate: cfg.PartitionCommandTemplate,
-			substitutions:   substitutions,
-			args:            cfg.Args,
-			isNoop:          isNoop,
-		}, nil
+		partitionedTestFilePaths := partitionResult.partition.TestFilePaths
+		substitutions := make(map[string]string)
+		substitutions["testFiles"] = strings.Join(partitionedTestFilePaths, partitionConfig.Delimiter) // TODO: Validation
+
+		compiledTemplate, err := targetedretries.CompileTemplate(cfg.PartitionCommandTemplate)
+		if err != nil {
+			return RunCommand{}, errors.WithStack(err)
+		}
+		command := compiledTemplate.Substitute(substitutions)
+
+		if len(partitionedTestFilePaths) == 0 {
+			infoMessage := fmt.Sprintf(
+				"Partition %v contained no test files. %d/%d partitions were utilized. We recommend you set --partition-total no more than %d",
+				partitionConfig.PartitionNodes,
+				partitionResult.utilizedPartitionCount,
+				partitionConfig.PartitionNodes.Total,
+				partitionResult.utilizedPartitionCount,
+			)
+			return RunCommand{command: command, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
+		}
+
+		return RunCommand{command: command, shortCircuit: false}, nil
 	}
 
-	return StaticRunCommand{command: cfg.Command, args: cfg.Args, isNoop: false}, nil
+	return RunCommand{command: cfg.Command, args: cfg.Args, shortCircuit: false}, nil
 }
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
@@ -149,9 +134,16 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	if err != nil {
 		return errors.Wrapf(err, "Failed to assemble run command")
 	}
+
+	// Short circuit and print warning info (e.g attempting to run an empty partition)
+	if runCommand.shortCircuit {
+		s.Log.Warnf(runCommand.shortCircuitInfo)
+		os.Exit(0)
+	}
+
 	commandArgs, err := runCommand.CommandArgs()
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrapf(err, "Failed to assemble run command args")
 	}
 
 	// Run sub-command
