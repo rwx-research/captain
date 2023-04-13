@@ -750,6 +750,27 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 		})
 	})
 
+	Describe("captain run with partition config", func() {
+		FIt("works", func() {
+			result := runCaptain(captainArgs{
+				args: []string{
+					"run",
+					"oss-run-with-partition",
+					"--config-file",
+					"fixtures/integration-tests/partition-config.yaml",
+					"--partition-index",
+					"0",
+					"--partition-total",
+					"2",
+				},
+				env: make(map[string]string),
+			})
+
+			Expect(result.exitCode).To(Equal(0))
+			Expect(result.stdout).To(ContainSubstring("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+		})
+	})
+
 	Describe("captain [add|remove]", func() {
 		actionBuilder := func(resource string, suiteID string) func(string) (captainResult, string) {
 			read := func(path string) string {

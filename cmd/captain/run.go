@@ -406,6 +406,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 			suiteConfig.Retries.IntermediateArtifactsPath = cliArgs.intermediateArtifactsPath
 		}
 
+		if suiteConfig.Partition.Delimiter == "" {
+			suiteConfig.Partition.Delimiter = cliArgs.partitionDelimeter
+		}
+
 		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suiteConfig
 
 		cfg.ProvidersEnv.Generic = providers.MergeGeneric(cfg.ProvidersEnv.Generic, cliArgs.GenericProvider)

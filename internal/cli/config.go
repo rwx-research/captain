@@ -66,7 +66,7 @@ func (rc RunConfig) Validate() error {
 		)
 	}
 
-	if rc.PartitionCommandTemplate != "" && (rc.IsRunningPartition()) {
+	if rc.PartitionCommandTemplate == "" && rc.IsRunningPartition() {
 		return errors.NewConfigurationError(
 			"Missing partition command",
 			"You seem to be passing partition specific options, but there is no partition command template configured.",
@@ -141,7 +141,8 @@ func (rc RunConfig) MaxTestsToRetryPercentage() (*float64, error) {
 }
 
 func (rc RunConfig) IsRunningPartition() bool {
-	return rc.PartitionIndex == -1 || rc.PartitionTotal == -1
+	// TODO: Should we have a bit somewhere that indicates provider defaulted?
+	return rc.PartitionCommandTemplate != "" && (rc.PartitionIndex != -1 || rc.PartitionTotal != -1)
 }
 
 type PartitionConfig struct {
