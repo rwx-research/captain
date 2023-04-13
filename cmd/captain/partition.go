@@ -33,11 +33,6 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		return i, true, nil
 	}
 
-	defaultPartitionIndex, gotDefaultFromEnv, err := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
-	if err != nil {
-		return err
-	}
-
 	partitionCmd := &cobra.Command{
 		Use: "partition [--help] [--config-file=<path>] [--delimiter=<delim>] [--sha=<sha>] --suite-id=<suite> --index=<i> " +
 			"--total=<total> <args>",
@@ -74,9 +69,16 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 			return errors.WithStack(err)
 		},
 	}
+
+	defaultPartitionIndex, gotDefaultFromEnv, err := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
+	if err != nil {
+		return err
+	}
+
 	partitionCmd.Flags().IntVar(
 		&pArgs.nodes.Index, "index", defaultPartitionIndex, "the 0-indexed index of a particular partition",
 	)
+
 	if !gotDefaultFromEnv {
 		if err := partitionCmd.MarkFlagRequired("index"); err != nil {
 			return errors.WithStack(err)
