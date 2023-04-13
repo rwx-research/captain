@@ -34,7 +34,7 @@ type RunConfig struct {
 	UploadResults             bool
 	PartitionIndex            int
 	PartitionTotal            int
-	PartitionGlob             []string
+	PartitionGlobs            []string
 	PartitionDelimeter        string
 	PartitionCommandTemplate  string
 }
@@ -76,11 +76,11 @@ func (rc RunConfig) Validate() error {
 		)
 	}
 
-	if len(rc.PartitionGlob) == 0 && (rc.IsRunningPartition()) {
+	if len(rc.PartitionGlobs) == 0 && (rc.IsRunningPartition()) {
 		return errors.NewConfigurationError(
 			"Missing partition glob configuration",
 			"You seem to be passing partition specific options, but have not provided glob(s) of where to locate your test files.",
-			"The partition glob can be set using the --partition-glob flag. Alternatively, you can "+
+			"The partition globs can be set using the --partition-globs flag. Alternatively, you can "+
 				"use the Captain configuration file to permanently set partition globs for a given test suite.",
 		)
 	}

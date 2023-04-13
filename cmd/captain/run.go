@@ -38,7 +38,7 @@ type CliArgs struct {
 	partitionTotal            int
 	partitionDelimeter        string
 	partitionCommandTemplate  string
-	partitionGlob             []string
+	partitionGlobs            []string
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -52,7 +52,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			err := func() error {
 				args := cliArgs.RootCliArgs.positionalArgs
-				var postRetryCommands, preRetryCommands, partitionGlob []string
+				var postRetryCommands, preRetryCommands, partitionGlobs []string
 				var failOnUploadError, failFast, printSummary, quiet bool
 				var flakyRetries, retries int
 				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests, partitionCommand, partitionDelimeter string
@@ -112,7 +112,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					intermediateArtifactsPath = suiteConfig.Retries.IntermediateArtifactsPath
 					testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
 					partitionCommand = suiteConfig.Partition.Command
-					partitionGlob = suiteConfig.Partition.Glob
+					partitionGlobs = suiteConfig.Partition.Globs
 					partitionDelimeter = suiteConfig.Partition.Delimiter
 				}
 
@@ -140,7 +140,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					PartitionDelimeter:        partitionDelimeter,
 					PartitionIndex:            cliArgs.partitionIndex,
 					PartitionTotal:            cliArgs.partitionTotal,
-					PartitionGlob:             partitionGlob,
+					PartitionGlobs:            partitionGlobs,
 				}
 
 				err = captain.RunSuite(cmd.Context(), runConfig)
@@ -274,17 +274,18 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 	)
 
 	runCmd.Flags().StringArrayVar(
-		&cliArgs.partitionGlob,
-		"partition-glob",
+		&cliArgs.partitionGlobs,
+		"partition-globs",
 		[]string{},
-		"TODO",
+		"globs used to identify the test files you wish to partition",
 	)
 
 	runCmd.Flags().StringVar(
 		&cliArgs.partitionCommandTemplate,
 		"partition-command",
 		"",
-		"TODO",
+		"the command that will be run to execute a subset of your tests while partitioning "+
+			"(required if --partition-index or --partition-total is passed)",
 	)
 
 	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",

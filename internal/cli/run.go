@@ -79,11 +79,11 @@ func (c TemplatedRunCommand) CommandArgs() ([]string, error) {
 	return command.CommandArgs()
 }
 
-func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) RunCommand {
+func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand, error) {
 	if cfg.IsRunningPartition() {
 		partitionConfig := PartitionConfig{
 			SuiteID:       cfg.SuiteID,
-			TestFilePaths: cfg.PartitionGlob,
+			TestFilePaths: cfg.PartitionGlobs,
 			Delimiter:     cfg.PartitionDelimeter,
 			PartitionNodes: config.PartitionNodes{
 				Total: cfg.PartitionTotal,
@@ -93,7 +93,7 @@ func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) RunCommand {
 
 		testPartition, err := s.CalculatePartition(ctx, partitionConfig)
 		if err != nil {
-			// TODO: Handle me
+			return nil, errors.WithStack(err)
 		}
 		substitutions := make(map[string]string)
 		substitutions["testFiles"] = strings.Join(testPartition.TestFilePaths, partitionConfig.Delimiter) // TODO: Validation
@@ -104,10 +104,10 @@ func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) RunCommand {
 			substitutions:   substitutions,
 			args:            cfg.Args,
 			isNoop:          isNoop,
-		}
+		}, nil
 	}
 
-	return StaticRunCommand{command: cfg.Command, args: cfg.Args, isNoop: false}
+	return StaticRunCommand{command: cfg.Command, args: cfg.Args, isNoop: false}, nil
 }
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
@@ -145,10 +145,13 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 	}
 
-	runCommand := s.MakeRunCommand(ctx, cfg)
-	commandArgs, err := runCommand.CommandArgs()
+	runCommand, err := s.MakeRunCommand(ctx, cfg)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to assemble run command")
+	}
+	commandArgs, err := runCommand.CommandArgs()
+	if err != nil {
+		return errors.WithStack(err)
 	}
 
 	// Run sub-command

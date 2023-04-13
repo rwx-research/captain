@@ -39,7 +39,7 @@ type SuiteConfigRetries struct {
 
 type SuiteConfigPartition struct {
 	Command   string
-	Glob      []string
+	Globs     []string
 	Delimiter string
 }
 
