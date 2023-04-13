@@ -187,15 +187,13 @@ jobs:
 
   obtain-approval:
     runs-on: ubuntu-latest
-    if: ${{ inputs.kind == 'production' }}
     needs: build-and-upload-binaries
-    environment: release-approval
+    environment: ${{ inputs.kind == 'production' && 'release-approval' || ''}}
     steps:
       - run: exit 0
 
   publish-release:
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.build-and-upload-binaries.result == 'success' && (needs.obtain-approval.result == 'success' || needs.obtain-approval.result == 'skipped') }}
     needs:
       - extract-version-details
       - build-and-upload-binaries
@@ -239,11 +237,6 @@ jobs:
   update-cloudfront:
     runs-on: ubuntu-latest
     environment: Production
-    # This bit is required due to a GitHub oddity. The publish-release step depends on the obtain-approval
-    # step which is conditionally skipped. The publish-release step has to jump through some hoops to ensure
-    # it runs when the obtain-approval step is skipped, but for some reason subsequent steps still remain
-    # skipped even if only depending on steps that did end up running.
-    if: ${{ always() && needs.extract-version-details.result == 'success' && needs.publish-release.result == 'success' }}
     needs:
       - extract-version-details
       - publish-release
