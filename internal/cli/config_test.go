@@ -2,6 +2,7 @@ package cli_test
 
 import (
 	"github.com/rwx-research/captain-cli/internal/cli"
+	"github.com/rwx-research/captain-cli/internal/config"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -137,6 +138,49 @@ var _ = Describe("RunConfig", func() {
 			percentage, err := cli.RunConfig{MaxTestsToRetry: "1"}.MaxTestsToRetryPercentage()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(percentage).To(BeNil())
+		})
+	})
+
+	Describe("IsRunningPartition", func() {
+		It("returns false when partition command template is not set", func() {
+			Expect(cli.RunConfig{}.IsRunningPartition()).To(Equal(false))
+		})
+
+		It("returns false when partition command template is set, but neither partition index nor total are set", func() {
+			rc := cli.RunConfig{
+				PartitionCommandTemplate: "bin/rspec {{testFiles}}",
+				PartitionConfig: cli.PartitionConfig{
+					PartitionNodes: config.PartitionNodes{
+						Index: -1,
+						Total: -1,
+					},
+				},
+			}
+			Expect(rc.IsRunningPartition()).To(Equal(false))
+		})
+
+		It("returns true when partition command template and partition index is set", func() {
+			rc := cli.RunConfig{
+				PartitionCommandTemplate: "bin/rspec {{testFiles}}",
+				PartitionConfig: cli.PartitionConfig{
+					PartitionNodes: config.PartitionNodes{
+						Index: 0,
+					},
+				},
+			}
+			Expect(rc.IsRunningPartition()).To(Equal(true))
+		})
+
+		It("returns true when partition command template and partition total is set", func() {
+			rc := cli.RunConfig{
+				PartitionCommandTemplate: "bin/rspec {{testFiles}}",
+				PartitionConfig: cli.PartitionConfig{
+					PartitionNodes: config.PartitionNodes{
+						Total: 2,
+					},
+				},
+			}
+			Expect(rc.IsRunningPartition()).To(Equal(true))
 		})
 	})
 })

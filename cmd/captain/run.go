@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/rwx-research/captain-cli/internal/cli"
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/partition"
 	"github.com/rwx-research/captain-cli/internal/providers"
@@ -139,10 +140,15 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					UpdateStoredResults:       cliArgs.updateStoredResults,
 					UploadResults:             true,
 					PartitionCommandTemplate:  partitionCommand,
-					PartitionDelimeter:        partitionDelimeter,
-					PartitionIndex:            cliArgs.partitionIndex,
-					PartitionTotal:            cliArgs.partitionTotal,
-					PartitionGlobs:            partitionGlobs,
+					PartitionConfig: cli.PartitionConfig{
+						SuiteID:       cliArgs.RootCliArgs.suiteID,
+						TestFilePaths: partitionGlobs,
+						PartitionNodes: config.PartitionNodes{
+							Index: cliArgs.partitionIndex,
+							Total: cliArgs.partitionTotal,
+						},
+						Delimiter: partitionDelimeter,
+					},
 				}
 
 				err = captain.RunSuite(cmd.Context(), runConfig)
@@ -420,7 +426,7 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 			suiteConfig.Partition.Command = cliArgs.partitionCommandTemplate
 		}
 
-		if len(cliArgs.partitionGlobs) > 0 {
+		if len(cliArgs.partitionGlobs) != 0 {
 			suiteConfig.Partition.Globs = cliArgs.partitionGlobs
 		}
 

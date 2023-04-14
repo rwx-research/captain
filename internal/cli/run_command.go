@@ -6,7 +6,6 @@ import (
 
 	"github.com/mattn/go-shellwords"
 
-	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/partition"
 	"github.com/rwx-research/captain-cli/internal/templating"
@@ -21,7 +20,7 @@ type RunCommand struct {
 	shortCircuitInfo string
 }
 
-func (c RunCommand) CommandArgs() ([]string, error) {
+func (c RunCommand) commandArgs() ([]string, error) {
 	commandArgs := make([]string, 0)
 
 	if c.command != "" {
@@ -43,19 +42,9 @@ func (c RunCommand) CommandArgs() ([]string, error) {
 	return commandArgs, nil
 }
 
-func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand, error) {
+func (s Service) makeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand, error) {
 	if cfg.IsRunningPartition() {
-		partitionConfig := PartitionConfig{
-			SuiteID:       cfg.SuiteID,
-			TestFilePaths: cfg.PartitionGlobs,
-			Delimiter:     cfg.PartitionDelimeter,
-			PartitionNodes: config.PartitionNodes{
-				Total: cfg.PartitionTotal,
-				Index: cfg.PartitionIndex,
-			},
-		}
-
-		partitionResult, err := s.CalculatePartition(ctx, partitionConfig)
+		partitionResult, err := s.calculatePartition(ctx, cfg.PartitionConfig)
 		if err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
@@ -68,7 +57,7 @@ func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 		}
 
 		// validate template
-		substitution := partition.DelimiterSubstitution{Delimiter: partitionConfig.Delimiter}
+		substitution := partition.DelimiterSubstitution{Delimiter: cfg.PartitionConfig.Delimiter}
 		if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
@@ -78,22 +67,22 @@ func (s Service) MakeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 		if err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
-		command := compiledTemplate.Substitute(substitutionValueLookup)
+		partitionCommand := compiledTemplate.Substitute(substitutionValueLookup)
 
 		if len(partitionedTestFilePaths) == 0 {
 			infoMessage := fmt.Sprintf(
 				"Partition %v contained no test files. %d/%d partitions were utilized. "+
 					"We recommend you set --partition-total no more than %d",
-				partitionConfig.PartitionNodes,
+				cfg.PartitionConfig.PartitionNodes,
 				partitionResult.utilizedPartitionCount,
-				partitionConfig.PartitionNodes.Total,
+				cfg.PartitionConfig.PartitionNodes.Total,
 				partitionResult.utilizedPartitionCount,
 			)
 			// short circuit to avoid running the entire test suite in a single partition (e.g empty partition)
-			return RunCommand{command: command, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
+			return RunCommand{command: partitionCommand, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
 		}
 
-		return RunCommand{command: command, shortCircuit: false}, nil
+		return RunCommand{command: partitionCommand, shortCircuit: false}, nil
 	}
 
 	return RunCommand{command: cfg.Command, args: cfg.Args, shortCircuit: false}, nil

@@ -32,11 +32,8 @@ type RunConfig struct {
 	SubstitutionsByFramework  map[v1.Framework]targetedretries.Substitution
 	UpdateStoredResults       bool
 	UploadResults             bool
-	PartitionIndex            int
-	PartitionTotal            int
-	PartitionGlobs            []string
-	PartitionDelimeter        string
 	PartitionCommandTemplate  string
+	PartitionConfig           PartitionConfig
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(
@@ -66,23 +63,21 @@ func (rc RunConfig) Validate() error {
 		)
 	}
 
-	if rc.PartitionCommandTemplate == "" && rc.IsRunningPartition() {
-		return errors.NewConfigurationError(
-			"Missing partition command",
-			"You seem to be passing partition specific options, but there is no partition command template configured.",
-			"The partition command template can be set using the --partition-command flag. Alternatively, you can "+
-				"use the Captain configuration file to permanently set a partition command template for a "+
-				"given test suite.",
-		)
-	}
+	if rc.IsRunningPartition() {
+		err := rc.PartitionConfig.Validate()
+		if err != nil {
+			return errors.WithStack(err)
+		}
 
-	if len(rc.PartitionGlobs) == 0 && (rc.IsRunningPartition()) {
-		return errors.NewConfigurationError(
-			"Missing partition glob configuration",
-			"You seem to be passing partition specific options, but have not provided glob(s) of where to locate your ",
-			"test files. The partition globs can be set using the --partition-globs flag. Alternatively, you can "+
-				"use the Captain configuration file to permanently set partition globs for a given test suite.",
-		)
+		if rc.PartitionCommandTemplate == "" {
+			return errors.NewConfigurationError(
+				"Missing partition command",
+				"You seem to be passing partition specific options, but there is no partition command template configured.",
+				"The partition command template can be set using the --partition-command flag. Alternatively, you can "+
+					"use the Captain configuration file to permanently set a partition command template for a "+
+					"given test suite.",
+			)
+		}
 	}
 
 	return nil
@@ -142,7 +137,8 @@ func (rc RunConfig) MaxTestsToRetryPercentage() (*float64, error) {
 
 func (rc RunConfig) IsRunningPartition() bool {
 	// TODO: Should we have a bit somewhere that indicates provider defaulted?
-	return rc.PartitionCommandTemplate != "" && (rc.PartitionIndex != -1 || rc.PartitionTotal != -1)
+	return rc.PartitionCommandTemplate != "" &&
+		(rc.PartitionConfig.PartitionNodes.Index != -1 || rc.PartitionConfig.PartitionNodes.Total != -1)
 }
 
 type PartitionConfig struct {

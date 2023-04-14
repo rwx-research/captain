@@ -57,7 +57,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 	}
 
-	runCommand, err := s.MakeRunCommand(ctx, cfg)
+	runCommand, err := s.makeRunCommand(ctx, cfg)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to assemble run command")
 	}
@@ -68,7 +68,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		os.Exit(0)
 	}
 
-	commandArgs, err := runCommand.CommandArgs()
+	commandArgs, err := runCommand.commandArgs()
 	if err != nil {
 		return errors.Wrapf(err, "Failed to assemble run command args")
 	}

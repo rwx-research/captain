@@ -13,7 +13,11 @@ import (
 
 // Partition splits a glob of test filepaths using decreasing first fit backed by a timing manifest from captain.
 func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
-	partitionResult, err := s.CalculatePartition(ctx, cfg)
+	err := cfg.Validate()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	partitionResult, err := s.calculatePartition(ctx, cfg)
 	if err != nil {
 		return err
 	}
@@ -21,11 +25,7 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 	return nil
 }
 
-func (s Service) CalculatePartition(ctx context.Context, cfg PartitionConfig) (PartitionResult, error) {
-	err := cfg.Validate()
-	if err != nil {
-		return PartitionResult{}, errors.WithStack(err)
-	}
+func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (PartitionResult, error) {
 	fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
 	if err != nil {
 		return PartitionResult{}, errors.WithStack(err)
