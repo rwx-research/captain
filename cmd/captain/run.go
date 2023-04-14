@@ -56,7 +56,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 				args := cliArgs.RootCliArgs.positionalArgs
 				var postRetryCommands, preRetryCommands, partitionGlobs []string
 				var failOnUploadError, failFast, printSummary, quiet bool
-				var flakyRetries, retries int
+				var flakyRetries, retries, partitionIndex, partitionTotal int
 				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
 				var partitionCommand, partitionDelimiter string
 
@@ -119,6 +119,23 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					partitionDelimiter = suiteConfig.Partition.Delimiter
 				}
 
+				partitionIndex = cliArgs.partitionIndex
+				partitionTotal = cliArgs.partitionTotal
+				if partitionIndex < 0 || partitionTotal < 0 {
+					provider, err := cfg.ProvidersEnv.MakeProvider()
+					if err != nil {
+						return errors.Wrap(err, "failed to construct provider")
+					}
+
+					if partitionIndex < 0 {
+						partitionIndex = provider.PartitionNodes.Index
+					}
+
+					if partitionTotal < 0 {
+						partitionTotal = provider.PartitionNodes.Total
+					}
+				}
+
 				runConfig := cli.RunConfig{
 					Args:                      args,
 					Command:                   command,
@@ -144,8 +161,8 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						SuiteID:       cliArgs.RootCliArgs.suiteID,
 						TestFilePaths: partitionGlobs,
 						PartitionNodes: config.PartitionNodes{
-							Index: cliArgs.partitionIndex,
-							Total: cliArgs.partitionTotal,
+							Index: partitionIndex,
+							Total: partitionTotal,
 						},
 						Delimiter: partitionDelimiter,
 					},
