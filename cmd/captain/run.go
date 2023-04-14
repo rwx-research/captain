@@ -54,11 +54,6 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			err := func() error {
 				args := cliArgs.RootCliArgs.positionalArgs
-				var postRetryCommands, preRetryCommands, partitionGlobs []string
-				var failOnUploadError, failFast, printSummary, quiet bool
-				var flakyRetries, retries, partitionIndex, partitionTotal int
-				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
-				var partitionCommand, partitionDelimiter string
 
 				reporterFuncs := make(map[string]cli.Reporter)
 
@@ -72,6 +67,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					return errors.WithStack(err)
 				}
 
+				var runConfig cli.RunConfig
 				if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 					for name, path := range suiteConfig.Output.Reporters {
 						switch name {
@@ -101,69 +97,52 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						}
 					}
 
-					command = suiteConfig.Command
-					failOnUploadError = suiteConfig.FailOnUploadError
-					failFast = suiteConfig.Retries.FailFast
-					flakyRetries = suiteConfig.Retries.FlakyAttempts
-					maxTests = suiteConfig.Retries.MaxTests
-					postRetryCommands = suiteConfig.Retries.PostRetryCommands
-					preRetryCommands = suiteConfig.Retries.PreRetryCommands
-					printSummary = suiteConfig.Output.PrintSummary
-					quiet = suiteConfig.Output.Quiet
-					retries = suiteConfig.Retries.Attempts
-					retryCommand = suiteConfig.Retries.Command
-					intermediateArtifactsPath = suiteConfig.Retries.IntermediateArtifactsPath
-					testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
-					partitionCommand = suiteConfig.Partition.Command
-					partitionGlobs = suiteConfig.Partition.Globs
-					partitionDelimiter = suiteConfig.Partition.Delimiter
-				}
+					partitionIndex := cliArgs.partitionIndex
+					partitionTotal := cliArgs.partitionTotal
+					provider, err := cfg.ProvidersEnv.MakeProvider()
+					if err != nil {
+						return errors.Wrap(err, "failed to construct provider")
+					}
 
-				partitionIndex = cliArgs.partitionIndex
-				partitionTotal = cliArgs.partitionTotal
-				provider, err := cfg.ProvidersEnv.MakeProvider()
-				if err != nil {
-					return errors.Wrap(err, "failed to construct provider")
-				}
+					if partitionIndex < 0 {
+						partitionIndex = provider.PartitionNodes.Index
+					}
 
-				if partitionIndex < 0 {
-					partitionIndex = provider.PartitionNodes.Index
-				}
+					if partitionTotal < 0 {
+						partitionTotal = provider.PartitionNodes.Total
+					}
 
-				if partitionTotal < 0 {
-					partitionTotal = provider.PartitionNodes.Total
-				}
-
-				runConfig := cli.RunConfig{
-					Args:                      args,
-					Command:                   command,
-					FailOnUploadError:         failOnUploadError,
-					FailRetriesFast:           failFast,
-					FlakyRetries:              flakyRetries,
-					IntermediateArtifactsPath: intermediateArtifactsPath,
-					MaxTestsToRetry:           maxTests,
-					PostRetryCommands:         postRetryCommands,
-					PreRetryCommands:          preRetryCommands,
-					PrintSummary:              printSummary,
-					Quiet:                     quiet,
-					Reporters:                 reporterFuncs,
-					Retries:                   retries,
-					RetryCommandTemplate:      retryCommand,
-					SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
-					SuiteID:                   cliArgs.RootCliArgs.suiteID,
-					TestResultsFileGlob:       testResultsPath,
-					UpdateStoredResults:       cliArgs.updateStoredResults,
-					UploadResults:             true,
-					PartitionCommandTemplate:  partitionCommand,
-					PartitionConfig: cli.PartitionConfig{
-						SuiteID:       cliArgs.RootCliArgs.suiteID,
-						TestFilePaths: partitionGlobs,
-						PartitionNodes: config.PartitionNodes{
-							Index: partitionIndex,
-							Total: partitionTotal,
+					runConfig = cli.RunConfig{
+						Args:                      args,
+						Command:                   suiteConfig.Command,
+						FailOnUploadError:         suiteConfig.FailOnUploadError,
+						FailRetriesFast:           suiteConfig.Retries.FailFast,
+						FlakyRetries:              suiteConfig.Retries.FlakyAttempts,
+						IntermediateArtifactsPath: suiteConfig.Retries.IntermediateArtifactsPath,
+						MaxTestsToRetry:           suiteConfig.Retries.MaxTests,
+						PostRetryCommands:         suiteConfig.Retries.PostRetryCommands,
+						PreRetryCommands:          suiteConfig.Retries.PreRetryCommands,
+						PrintSummary:              suiteConfig.Output.PrintSummary,
+						Quiet:                     suiteConfig.Output.Quiet,
+						Reporters:                 reporterFuncs,
+						Retries:                   suiteConfig.Retries.Attempts,
+						RetryCommandTemplate:      suiteConfig.Retries.Command,
+						SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
+						SuiteID:                   cliArgs.RootCliArgs.suiteID,
+						TestResultsFileGlob:       os.ExpandEnv(suiteConfig.Results.Path),
+						UpdateStoredResults:       cliArgs.updateStoredResults,
+						UploadResults:             true,
+						PartitionCommandTemplate:  suiteConfig.Partition.Command,
+						PartitionConfig: cli.PartitionConfig{
+							SuiteID:       cliArgs.RootCliArgs.suiteID,
+							TestFilePaths: suiteConfig.Partition.Globs,
+							PartitionNodes: config.PartitionNodes{
+								Index: partitionIndex,
+								Total: partitionTotal,
+							},
+							Delimiter: suiteConfig.Partition.Delimiter,
 						},
-						Delimiter: partitionDelimiter,
-					},
+					}
 				}
 
 				err = captain.RunSuite(cmd.Context(), runConfig)

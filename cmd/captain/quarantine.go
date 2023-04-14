@@ -24,9 +24,6 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 			err := func() error {
 				args := cliArgs.RootCliArgs.positionalArgs
 
-				var printSummary, quiet bool
-				var testResultsPath, command string
-
 				reporterFuncs := make(map[string]cli.Reporter)
 
 				cfg, err := getConfig(cmd)
@@ -39,6 +36,7 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 					return errors.WithStack(err)
 				}
 
+				var runConfig cli.RunConfig
 				if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 					for name, path := range suiteConfig.Output.Reporters {
 						switch name {
@@ -68,27 +66,22 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 						}
 					}
 
-					command = suiteConfig.Command
-					printSummary = suiteConfig.Output.PrintSummary
-					testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
-					quiet = suiteConfig.Output.Quiet
-				}
+					runConfig = cli.RunConfig{
+						Args:                args,
+						Command:             suiteConfig.Command,
+						PrintSummary:        suiteConfig.Output.PrintSummary,
+						Quiet:               suiteConfig.Output.Quiet,
+						Reporters:           reporterFuncs,
+						SuiteID:             cliArgs.RootCliArgs.suiteID,
+						TestResultsFileGlob: os.ExpandEnv(suiteConfig.Results.Path),
+						UpdateStoredResults: cliArgs.updateStoredResults,
 
-				runConfig := cli.RunConfig{
-					Args:                args,
-					Command:             command,
-					PrintSummary:        printSummary,
-					Quiet:               quiet,
-					Reporters:           reporterFuncs,
-					SuiteID:             cliArgs.RootCliArgs.suiteID,
-					TestResultsFileGlob: testResultsPath,
-					UpdateStoredResults: cliArgs.updateStoredResults,
-
-					FailOnUploadError: false,
-					FailRetriesFast:   false,
-					FlakyRetries:      0,
-					Retries:           0,
-					UploadResults:     false,
+						FailOnUploadError: false,
+						FailRetriesFast:   false,
+						FlakyRetries:      0,
+						Retries:           0,
+						UploadResults:     false,
+					}
 				}
 
 				err = captain.RunSuite(cmd.Context(), runConfig)

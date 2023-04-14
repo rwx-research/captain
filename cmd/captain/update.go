@@ -29,9 +29,12 @@ func configureUpdateCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
-				if len(artifacts) == 0 && suiteConfig.Results.Path != "" {
-					artifacts = []string{os.ExpandEnv(suiteConfig.Results.Path)}
+
+			if len(artifacts) == 0 {
+				if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
+					if suiteConfig.Results.Path != "" {
+						artifacts = []string{os.ExpandEnv(suiteConfig.Results.Path)}
+					}
 				}
 			}
 

@@ -107,19 +107,16 @@ func initCliServiceWithConfig(
 			return errors.Wrap(err, "unable to create API client")
 		}
 
-		var frameworkKind, frameworkLanguage string
+		var parseConfig parsing.Config
 		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-			frameworkKind = suiteConfig.Results.Framework
-			frameworkLanguage = suiteConfig.Results.Language
-		}
-
-		parseConfig := parsing.Config{
-			ProvidedFrameworkKind:     frameworkKind,
-			ProvidedFrameworkLanguage: frameworkLanguage,
-			MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-			FrameworkParsers:          frameworkParsers,
-			GenericParsers:            genericParsers,
-			Logger:                    logger,
+			parseConfig = parsing.Config{
+				ProvidedFrameworkKind:     suiteConfig.Results.Framework,
+				ProvidedFrameworkLanguage: suiteConfig.Results.Language,
+				MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+				FrameworkParsers:          frameworkParsers,
+				GenericParsers:            genericParsers,
+				Logger:                    logger,
+			}
 		}
 
 		if err := parseConfig.Validate(); err != nil {
@@ -166,20 +163,18 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 				logger = logging.NewDebugLogger()
 			}
 
-			var frameworkKind, frameworkLanguage string
+			var parseConfig parsing.Config
 			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
-				frameworkKind = suiteConfig.Results.Framework
-				frameworkLanguage = suiteConfig.Results.Language
+				parseConfig = parsing.Config{
+					ProvidedFrameworkKind:     suiteConfig.Results.Framework,
+					ProvidedFrameworkLanguage: suiteConfig.Results.Language,
+					MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
+					FrameworkParsers:          frameworkParsers,
+					GenericParsers:            genericParsers,
+					Logger:                    logger,
+				}
 			}
 
-			parseConfig := parsing.Config{
-				ProvidedFrameworkKind:     frameworkKind,
-				ProvidedFrameworkLanguage: frameworkLanguage,
-				MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
-				FrameworkParsers:          frameworkParsers,
-				GenericParsers:            genericParsers,
-				Logger:                    logger,
-			}
 			if err := parseConfig.Validate(); err != nil {
 				return errors.Wrap(err, "invalid parser config")
 			}
