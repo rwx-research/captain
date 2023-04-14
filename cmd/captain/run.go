@@ -11,9 +11,9 @@ import (
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
-	"github.com/rwx-research/captain-cli/internal/partition"
 	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
+	"github.com/rwx-research/captain-cli/internal/runpartition"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
 )
 
@@ -296,7 +296,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"The command that will be run to execute a subset of your tests while partitioning "+
 				"(required if --partition-index or --partition-total is passed)\n"+
 				"Examples:\n  Custom: --partition-command \"%v\"",
-			partition.DelimiterSubstitution{}.Example(),
+			runpartition.DelimiterSubstitution{}.Example(),
 		),
 	)
 

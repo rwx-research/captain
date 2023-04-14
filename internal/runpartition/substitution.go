@@ -1,4 +1,4 @@
-package partition
+package runpartition
 
 import (
 	"github.com/rwx-research/captain-cli/internal/templating"

@@ -162,8 +162,8 @@ func (pc PartitionConfig) Validate() error {
 			"Missing total partition count",
 			"In order to use the partitioning feature, Captain needs to know the total number of partitions.\n",
 			"When using the run command, the total number of partitions can be set using the --partition-total flag.\n\n"+
-				"When using the partition command, the total number of partitions can be set using the --total flag or alternatively the "+
-				"CAPTAIN_PARTITION_TOTAL environment variable.",
+				"When using the partition command, the total number of partitions can be set using the --total flag or "+
+				"alternatively the CAPTAIN_PARTITION_TOTAL environment variable.",
 		)
 	}
 

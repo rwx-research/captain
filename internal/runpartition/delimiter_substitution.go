@@ -1,7 +1,8 @@
-package partition
+package runpartition
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -25,6 +26,7 @@ func (s DelimiterSubstitution) ValidateTemplate(compiledTemplate templating.Comp
 	}
 
 	if len(keywords) > 1 {
+		sort.Strings(keywords)
 		return errors.NewInputError("%v; these were found: %v", message, strings.Join(keywords, ", "))
 	}
 

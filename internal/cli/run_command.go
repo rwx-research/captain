@@ -7,7 +7,7 @@ import (
 	"github.com/mattn/go-shellwords"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
-	"github.com/rwx-research/captain-cli/internal/partition"
+	"github.com/rwx-research/captain-cli/internal/runpartition"
 	"github.com/rwx-research/captain-cli/internal/templating"
 )
 
@@ -57,7 +57,7 @@ func (s Service) makeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 		}
 
 		// validate template
-		substitution := partition.DelimiterSubstitution{Delimiter: cfg.PartitionConfig.Delimiter}
+		substitution := runpartition.DelimiterSubstitution{Delimiter: cfg.PartitionConfig.Delimiter}
 		if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
 			return RunCommand{}, errors.WithStack(err)
 		}
