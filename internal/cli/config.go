@@ -160,8 +160,9 @@ func (pc PartitionConfig) Validate() error {
 	if pc.PartitionNodes.Total <= 0 {
 		return errors.NewConfigurationError(
 			"Missing total partition count",
-			"In order to use the partitioning feature, Captain needs to know the total number of partitions.",
-			"The total number of partitions can be set using the --total flag or alternatively the "+
+			"In order to use the partitioning feature, Captain needs to know the total number of partitions.\n",
+			"When using the run command, the total number of partitions can be set using the --partition-total flag.\n\n"+
+				"When using the partition command, the total number of partitions can be set using the --total flag or alternatively the "+
 				"CAPTAIN_PARTITION_TOTAL environment variable.",
 		)
 	}
@@ -169,9 +170,10 @@ func (pc PartitionConfig) Validate() error {
 	if pc.PartitionNodes.Index < 0 {
 		return errors.NewConfigurationError(
 			"Missing partition index",
-			"Captain is missing the index of the partition that you would like to generate.",
-			"The partition index can be set using the --index flag or alternatively the CAPTAIN_PARTITION_INDEX "+
-				"environment variable.",
+			"Captain is missing the index of the partition that you would like to generate.\n",
+			"When using the run command, partition index can be set using the --partition-index flag.\n\n"+
+				"When using the partition command, partition index can be set using the --index flag "+
+				"or alternatively the CAPTAIN_PARTITION_INDEX environment variable.",
 		)
 	}
 
@@ -190,8 +192,10 @@ func (pc PartitionConfig) Validate() error {
 	if len(pc.TestFilePaths) == 0 {
 		return errors.NewConfigurationError(
 			"Missing test file paths",
-			"No test file paths are given.",
-			"Please specify the path or paths to your test files as arguments to the 'captain partition' command.\n\n"+
+			"No test file paths are provided.\n",
+			"When using the run command, please specify the path or paths to your test files using the --partition-glob flag. "+
+				"You may specify this flag multiple times if needed.\n\n"+
+				"When using the partition command, please specify the path or paths to your test files as arguments.\n\n"+
 				"\tcaptain partition [flags] <filepath>\n\n"+
 				"You can also execute 'captain partition --help' for further information.",
 		)

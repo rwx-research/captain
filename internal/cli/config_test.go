@@ -99,6 +99,65 @@ var _ = Describe("RunConfig", func() {
 			err := cli.RunConfig{FlakyRetries: -1, RetryCommandTemplate: "some-command"}.Validate()
 			Expect(err).NotTo(HaveOccurred())
 		})
+
+		It("errs when partitioning and partition config is missing suite id", func() {
+			err := cli.RunConfig{
+				PartitionCommandTemplate: "something {{ testFiles }}",
+				PartitionConfig: cli.PartitionConfig{
+					PartitionNodes: config.PartitionNodes{
+						Index: 0,
+						Total: 1,
+					},
+				},
+			}.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Missing suite ID"))
+		})
+
+		It("errs when partitioning and partition config is missing test file paths", func() {
+			err := cli.RunConfig{
+				PartitionCommandTemplate: "something {{ testFiles }}",
+				PartitionConfig: cli.PartitionConfig{
+					SuiteID: "your-suite",
+					PartitionNodes: config.PartitionNodes{
+						Index: 0,
+						Total: 1,
+					},
+				},
+			}.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Missing test file paths"))
+		})
+
+		It("errs when partition config has out of bound indices", func() {
+			err := cli.RunConfig{
+				PartitionCommandTemplate: "something {{ testFiles }}",
+				PartitionConfig: cli.PartitionConfig{
+					SuiteID: "your-suite",
+					PartitionNodes: config.PartitionNodes{
+						Index: 2,
+						Total: 1,
+					},
+				},
+			}.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Unsupported partitioning setup"))
+		})
+
+		It("is valid when partitioning and partition config has command and globs", func() {
+			err := cli.RunConfig{
+				PartitionCommandTemplate: "something {{ testFiles }}",
+				PartitionConfig: cli.PartitionConfig{
+					SuiteID: "your-suite",
+					PartitionNodes: config.PartitionNodes{
+						Index: 1,
+						Total: 2,
+					},
+					TestFilePaths: []string{"spec/**/*_spec.rb"},
+				},
+			}.Validate()
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 
 	Describe("MaxTestsToRetryCount", func() {

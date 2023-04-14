@@ -38,7 +38,7 @@ type CliArgs struct {
 	RootCliArgs               rootCliArgs
 	partitionIndex            int
 	partitionTotal            int
-	partitionDelimeter        string
+	partitionDelimiter        string
 	partitionCommandTemplate  string
 	partitionGlobs            []string
 }
@@ -58,7 +58,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 				var failOnUploadError, failFast, printSummary, quiet bool
 				var flakyRetries, retries int
 				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
-				var partitionCommand, partitionDelimeter string
+				var partitionCommand, partitionDelimiter string
 
 				reporterFuncs := make(map[string]cli.Reporter)
 
@@ -116,7 +116,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
 					partitionCommand = suiteConfig.Partition.Command
 					partitionGlobs = suiteConfig.Partition.Globs
-					partitionDelimeter = suiteConfig.Partition.Delimiter
+					partitionDelimiter = suiteConfig.Partition.Delimiter
 				}
 
 				runConfig := cli.RunConfig{
@@ -147,7 +147,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 							Index: cliArgs.partitionIndex,
 							Total: cliArgs.partitionTotal,
 						},
-						Delimiter: partitionDelimeter,
+						Delimiter: partitionDelimiter,
 					},
 				}
 
@@ -275,7 +275,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 	)
 
 	runCmd.Flags().StringVar(
-		&cliArgs.partitionDelimeter,
+		&cliArgs.partitionDelimiter,
 		"partition-delimiter",
 		" ",
 		"The delimiter used to separate partitioned files.",
@@ -294,7 +294,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		"",
 		fmt.Sprintf(
 			"The command that will be run to execute a subset of your tests while partitioning "+
-				"(required if --partition-index or --partition-total is passed)"+
+				"(required if --partition-index or --partition-total is passed)\n"+
 				"Examples:\n  Custom: --partition-command \"%v\"",
 			partition.DelimiterSubstitution{}.Example(),
 		),
@@ -419,7 +419,7 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 		}
 
 		if suiteConfig.Partition.Delimiter == "" {
-			suiteConfig.Partition.Delimiter = cliArgs.partitionDelimeter
+			suiteConfig.Partition.Delimiter = cliArgs.partitionDelimiter
 		}
 
 		if cliArgs.partitionCommandTemplate != "" {
