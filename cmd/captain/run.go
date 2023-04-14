@@ -121,19 +121,17 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 
 				partitionIndex = cliArgs.partitionIndex
 				partitionTotal = cliArgs.partitionTotal
-				if partitionIndex < 0 || partitionTotal < 0 {
-					provider, err := cfg.ProvidersEnv.MakeProvider()
-					if err != nil {
-						return errors.Wrap(err, "failed to construct provider")
-					}
+				provider, err := cfg.ProvidersEnv.MakeProvider()
+				if err != nil {
+					return errors.Wrap(err, "failed to construct provider")
+				}
 
-					if partitionIndex < 0 {
-						partitionIndex = provider.PartitionNodes.Index
-					}
+				if partitionIndex < 0 {
+					partitionIndex = provider.PartitionNodes.Index
+				}
 
-					if partitionTotal < 0 {
-						partitionTotal = provider.PartitionNodes.Total
-					}
+				if partitionTotal < 0 {
+					partitionTotal = provider.PartitionNodes.Total
 				}
 
 				runConfig := cli.RunConfig{
