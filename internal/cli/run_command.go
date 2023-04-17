@@ -43,47 +43,47 @@ func (c RunCommand) commandArgs() ([]string, error) {
 }
 
 func (s Service) makeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand, error) {
-	if cfg.IsRunningPartition() {
-		partitionResult, err := s.calculatePartition(ctx, cfg.PartitionConfig)
-		if err != nil {
-			return RunCommand{}, errors.WithStack(err)
-		}
-		partitionedTestFilePaths := partitionResult.partition.TestFilePaths
-
-		// compile template
-		compiledTemplate, err := templating.CompileTemplate(cfg.PartitionCommandTemplate)
-		if err != nil {
-			return RunCommand{}, errors.WithStack(err)
-		}
-
-		// validate template
-		substitution := runpartition.DelimiterSubstitution{Delimiter: cfg.PartitionConfig.Delimiter}
-		if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
-			return RunCommand{}, errors.WithStack(err)
-		}
-
-		// substitute template keywords with values
-		substitutionValueLookup, err := substitution.SubstitutionLookupFor(compiledTemplate, partitionedTestFilePaths)
-		if err != nil {
-			return RunCommand{}, errors.WithStack(err)
-		}
-		partitionCommand := compiledTemplate.Substitute(substitutionValueLookup)
-
-		if len(partitionedTestFilePaths) == 0 {
-			infoMessage := fmt.Sprintf(
-				"Partition %v contained no test files. %d/%d partitions were utilized. "+
-					"We recommend you set --partition-total no more than %d",
-				cfg.PartitionConfig.PartitionNodes,
-				partitionResult.utilizedPartitionCount,
-				cfg.PartitionConfig.PartitionNodes.Total,
-				partitionResult.utilizedPartitionCount,
-			)
-			// short circuit to avoid running the entire test suite in a single partition (e.g empty partition)
-			return RunCommand{command: partitionCommand, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
-		}
-
-		return RunCommand{command: partitionCommand, shortCircuit: false}, nil
+	if !cfg.IsRunningPartition() {
+		return RunCommand{command: cfg.Command, args: cfg.Args, shortCircuit: false}, nil
 	}
 
-	return RunCommand{command: cfg.Command, args: cfg.Args, shortCircuit: false}, nil
+	partitionResult, err := s.calculatePartition(ctx, cfg.PartitionConfig)
+	if err != nil {
+		return RunCommand{}, errors.WithStack(err)
+	}
+	partitionedTestFilePaths := partitionResult.partition.TestFilePaths
+
+	// compile template
+	compiledTemplate, err := templating.CompileTemplate(cfg.PartitionCommandTemplate)
+	if err != nil {
+		return RunCommand{}, errors.WithStack(err)
+	}
+
+	// validate template
+	substitution := runpartition.DelimiterSubstitution{Delimiter: cfg.PartitionConfig.Delimiter}
+	if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
+		return RunCommand{}, errors.WithStack(err)
+	}
+
+	// substitute template keywords with values
+	substitutionValueLookup, err := substitution.SubstitutionLookupFor(compiledTemplate, partitionedTestFilePaths)
+	if err != nil {
+		return RunCommand{}, errors.WithStack(err)
+	}
+	partitionCommand := compiledTemplate.Substitute(substitutionValueLookup)
+
+	if len(partitionedTestFilePaths) == 0 {
+		infoMessage := fmt.Sprintf(
+			"Partition %v contained no test files. %d/%d partitions were utilized. "+
+				"We recommend you set --partition-total no more than %d",
+			cfg.PartitionConfig.PartitionNodes,
+			partitionResult.utilizedPartitionCount,
+			cfg.PartitionConfig.PartitionNodes.Total,
+			partitionResult.utilizedPartitionCount,
+		)
+		// short circuit to avoid running the entire test suite in a single partition (e.g empty partition)
+		return RunCommand{command: partitionCommand, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
+	}
+
+	return RunCommand{command: partitionCommand, shortCircuit: false}, nil
 }
