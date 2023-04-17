@@ -25,17 +25,15 @@ func commandArgs(command string, args []string) ([]string, error) {
 	if command != "" {
 		parsedCommand, err := shellwords.Parse(command)
 		if err != nil {
-			return commandArgs, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)
+			return nil, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)
 		}
 		commandArgs = append(commandArgs, parsedCommand...)
 	}
 
-	if len(args) > 0 {
-		commandArgs = append(commandArgs, args...)
-	}
+	commandArgs = append(commandArgs, args...)
 
 	if len(commandArgs) == 0 {
-		return commandArgs, errors.NewInputError("No command was provided")
+		return nil, errors.NewInputError("No command was provided")
 	}
 
 	return commandArgs, nil
