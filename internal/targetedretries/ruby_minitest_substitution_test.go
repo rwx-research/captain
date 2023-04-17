@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 	It("works with a real file for Rails", func() {
 		substitution := targetedretries.RubyMinitestSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/rails test {{ tests }}")
+		compiledTemplate, compileErr := templating.CompileTemplate("bin/rails test {{ tests }}")
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -52,7 +53,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 	It("works with a real file for non-Rails", func() {
 		substitution := targetedretries.RubyMinitestSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate("ruby -I test '{{ file }}' --name '{{ name }}'")
+		compiledTemplate, compileErr := templating.CompileTemplate("ruby -I test '{{ file }}' --name '{{ name }}'")
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -83,7 +84,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.RubyMinitestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -94,7 +95,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.RubyMinitestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/rails test")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/rails test")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -103,7 +104,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 		It("is invalid for a template with too many placeholders", func() {
 			substitution := targetedretries.RubyMinitestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/rails test {{ file }} {{ test }} {{ wat }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/rails test {{ file }} {{ test }} {{ wat }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -112,7 +113,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 		It("is invalid for a template with one placeholder that isn't tests", func() {
 			substitution := targetedretries.RubyMinitestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/rails test {{ file }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/rails test {{ file }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -121,7 +122,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 		It("is valid for a template with one placeholder that is tests", func() {
 			substitution := targetedretries.RubyMinitestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/rails test {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/rails test {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -130,7 +131,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 		It("is invalid for a template with two placeholder that are both incorrect", func() {
 			substitution := targetedretries.RubyMinitestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ruby -I test '{{ foo }}' --name '{{ bar }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("ruby -I test '{{ foo }}' --name '{{ bar }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -139,7 +140,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 		It("is invalid for a template with two placeholder where one is incorrect", func() {
 			substitution := targetedretries.RubyMinitestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ruby -I test '{{ file }}' --name '{{ bar }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("ruby -I test '{{ file }}' --name '{{ bar }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -148,7 +149,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 		It("is valid for a template with a file and name placeholder", func() {
 			substitution := targetedretries.RubyMinitestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ruby -I test '{{ file }}' --name '{{ name }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("ruby -I test '{{ file }}' --name '{{ name }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -158,7 +159,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns the shell escaped test locations for the tests keyword", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/rails test {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/rails test {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			file1 := "/path/to/file with spaces.rb"
@@ -214,7 +215,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 		})
 
 		It("filters the tests for the tests keyword with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/rails test {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/rails test {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			file1 := "/path/to/file with spaces.rb"
@@ -270,7 +271,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 		})
 
 		It("returns the individual escaped files and names", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ruby -I test '{{ file }}' --name '{{ name }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("ruby -I test '{{ file }}' --name '{{ name }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			file1 := "/path/to/file with spaces.rb"
@@ -344,7 +345,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 		})
 
 		It("filters the tests for the file/name keywords with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ruby -I test '{{ file }}' --name '{{ name }}'")
+			compiledTemplate, compileErr := templating.CompileTemplate("ruby -I test '{{ file }}' --name '{{ name }}'")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			file1 := "/path/to/file with spaces.rb"

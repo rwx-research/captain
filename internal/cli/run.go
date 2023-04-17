@@ -18,6 +18,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -56,26 +57,19 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 	}
 
-	commandArgs := make([]string, 0)
-
-	if cfg.Command != "" {
-		parsedCommand, err := shellwords.Parse(cfg.Command)
-		if err != nil {
-			return errors.Wrapf(err, "Unable to parse %q into shell arguments", cfg.Command)
-		}
-		commandArgs = append(commandArgs, parsedCommand...)
+	runCommand, err := s.makeRunCommand(ctx, cfg)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to assemble run command")
 	}
 
-	if len(cfg.Args) > 0 {
-		commandArgs = append(commandArgs, cfg.Args...)
-	}
-
-	if len(commandArgs) == 0 {
-		return errors.NewInputError("No command was provided")
+	// Short circuit and print warning info (e.g attempting to run an empty partition)
+	if runCommand.shortCircuit {
+		s.Log.Warnf(runCommand.shortCircuitInfo)
+		os.Exit(0)
 	}
 
 	// Run sub-command
-	ctx, cmdErr := s.runCommand(ctx, commandArgs, stdout, true)
+	ctx, cmdErr := s.runCommand(ctx, runCommand.commandArgs, stdout, true)
 	defer func() {
 		if abqErr := s.setAbqExitCode(ctx, finalErr); abqErr != nil {
 			finalErr = errors.Wrap(finalErr, abqErr.Error())
@@ -280,20 +274,20 @@ func (s Service) attemptRetries(
 		return originalTestResults, false, errors.NewInternalError("No test results detected")
 	}
 
-	compiledTemplate, err := targetedretries.CompileTemplate(cfg.RetryCommandTemplate)
+	compiledRetryTemplate, err := templating.CompileTemplate(cfg.RetryCommandTemplate)
 	if err != nil {
 		return originalTestResults, false, errors.WithStack(err)
 	}
 
 	framework := originalTestResults.Framework
 	var substitution targetedretries.Substitution = targetedretries.JSONSubstitution{FileSystem: s.FileSystem}
-	if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
+	if err := substitution.ValidateTemplate(compiledRetryTemplate); err != nil {
 		frameworkSubstitution, ok := cfg.SubstitutionsByFramework[framework]
 		if !ok {
 			return originalTestResults, false, errors.NewInternalError("Unable to retry %q", framework)
 		}
 
-		if err := frameworkSubstitution.ValidateTemplate(compiledTemplate); err != nil {
+		if err := frameworkSubstitution.ValidateTemplate(compiledRetryTemplate); err != nil {
 			return originalTestResults, false, errors.WithStack(err)
 		}
 
@@ -405,12 +399,12 @@ func (s Service) attemptRetries(
 		}
 
 		allNewTestResults := make([]v1.TestResults, 0)
-		allSubstitutions, err := substitution.SubstitutionsFor(compiledTemplate, *flattenedTestResults, filter)
+		allSubstitutions, err := substitution.SubstitutionsFor(compiledRetryTemplate, *flattenedTestResults, filter)
 		if err != nil {
 			return flattenedTestResults, true, errors.Wrap(err, "Unable construct retry substitutions")
 		}
 		for i, substitutions := range allSubstitutions {
-			command := compiledTemplate.Substitute(substitutions)
+			command := compiledRetryTemplate.Substitute(substitutions)
 			args, err := shellwords.Parse(command)
 			if err != nil {
 				return flattenedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)

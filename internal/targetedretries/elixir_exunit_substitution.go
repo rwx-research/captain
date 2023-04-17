@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -15,7 +16,7 @@ func (s ElixirExUnitSubstitution) Example() string {
 	return "mix test {{ tests }}"
 }
 
-func (s ElixirExUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s ElixirExUnitSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -40,7 +41,7 @@ func (s ElixirExUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemp
 }
 
 func (s ElixirExUnitSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
@@ -54,7 +55,7 @@ func (s ElixirExUnitSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testLinesByFile[file]; !ok {
 			testLinesByFile[file] = make([]string, 0)
 		}

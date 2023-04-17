@@ -10,6 +10,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -418,7 +419,7 @@ func writeMarkdownSection(
 func retryTemplateAndSubstitutionFor(
 	framework v1.Framework,
 	retryCommandTemplate string,
-) (*targetedretries.CompiledTemplate, targetedretries.Substitution) {
+) (*templating.CompiledTemplate, targetedretries.Substitution) {
 	// note we don't propagate any errors up here; if we're unable to generate
 	// the retry command, we should still provide the rest of the summary
 
@@ -427,14 +428,14 @@ func retryTemplateAndSubstitutionFor(
 		return nil, nil
 	}
 
-	var exampleTemplate *targetedretries.CompiledTemplate
-	if t, err := targetedretries.CompileTemplate(substitution.Example()); err == nil {
+	var exampleTemplate *templating.CompiledTemplate
+	if t, err := templating.CompileTemplate(substitution.Example()); err == nil {
 		exampleTemplate = &t
 	}
 
-	var providedTemplate *targetedretries.CompiledTemplate
+	var providedTemplate *templating.CompiledTemplate
 	if retryCommandTemplate != "" {
-		if t, err := targetedretries.CompileTemplate(retryCommandTemplate); err == nil {
+		if t, err := templating.CompileTemplate(retryCommandTemplate); err == nil {
 			providedTemplate = &t
 		}
 	}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.JavaScriptJestSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -53,7 +54,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.JavaScriptJestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -64,7 +65,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.JavaScriptJestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("npx jest")
+			compiledTemplate, compileErr := templating.CompileTemplate("npx jest")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -73,7 +74,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 
 		It("is invalid for a template with too few placeholders", func() {
 			substitution := targetedretries.JavaScriptJestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx jest --testPathPattern '{{ testPathPattern }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -84,7 +85,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 
 		It("is invalid for a template with additional placeholders", func() {
 			substitution := targetedretries.JavaScriptJestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx jest --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}' {{ foo }}",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -95,7 +96,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 
 		It("is invalid for a template with incorrect placeholders", func() {
 			substitution := targetedretries.JavaScriptJestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx jest --testPathPattern '{{ wat }}' --testNamePattern '{{ foo }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -106,7 +107,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 
 		It("is valid for a template with the testPathPattern and testNamePattern placeholders", func() {
 			substitution := targetedretries.JavaScriptJestSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx jest --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -118,7 +119,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns tests grouped by file", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx jest --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -190,7 +191,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(
+			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx jest --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())

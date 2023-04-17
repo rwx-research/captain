@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.GoGinkgoSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -49,7 +50,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.GoGinkgoSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -60,7 +61,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.GoGinkgoSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ginkgo run ./...")
+			compiledTemplate, compileErr := templating.CompileTemplate("ginkgo run ./...")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -69,7 +70,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 
 		It("is invalid for a template with too many placeholders", func() {
 			substitution := targetedretries.GoGinkgoSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ginkgo run {{ file }} {{ tests }} ./...")
+			compiledTemplate, compileErr := templating.CompileTemplate("ginkgo run {{ file }} {{ tests }} ./...")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -78,7 +79,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 
 		It("is invalid for a template without a tests placeholder", func() {
 			substitution := targetedretries.GoGinkgoSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ginkgo run {{ file }} ./...")
+			compiledTemplate, compileErr := templating.CompileTemplate("ginkgo run {{ file }} ./...")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -87,7 +88,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 
 		It("is valid for a template with only a tests placeholder", func() {
 			substitution := targetedretries.GoGinkgoSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ginkgo run {{ tests }} ./...")
+			compiledTemplate, compileErr := templating.CompileTemplate("ginkgo run {{ tests }} ./...")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -97,7 +98,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns the shell escaped test locations", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ginkgo run {{ tests }} ./...")
+			compiledTemplate, compileErr := templating.CompileTemplate("ginkgo run {{ tests }} ./...")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			file1 := "/path/to/file with spaces.go"
@@ -152,7 +153,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("ginkgo run {{ tests }} ./...")
+			compiledTemplate, compileErr := templating.CompileTemplate("ginkgo run {{ tests }} ./...")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			file1 := "/path/to/file with spaces.go"

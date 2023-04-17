@@ -9,9 +9,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/rwx-research/captain-cli/internal/cli"
+	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
+	"github.com/rwx-research/captain-cli/internal/runpartition"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
 )
 
@@ -34,6 +36,11 @@ type CliArgs struct {
 	GenericProvider           providers.GenericEnv
 	frameworkParams           frameworkParams
 	RootCliArgs               rootCliArgs
+	partitionIndex            int
+	partitionTotal            int
+	partitionDelimiter        string
+	partitionCommandTemplate  string
+	partitionGlobs            []string
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -47,10 +54,6 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			err := func() error {
 				args := cliArgs.RootCliArgs.positionalArgs
-				var postRetryCommands, preRetryCommands []string
-				var failOnUploadError, failFast, printSummary, quiet bool
-				var flakyRetries, retries int
-				var command, intermediateArtifactsPath, retryCommand, testResultsPath, maxTests string
 
 				reporterFuncs := make(map[string]cli.Reporter)
 
@@ -64,6 +67,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					return errors.WithStack(err)
 				}
 
+				var runConfig cli.RunConfig
 				if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 					for name, path := range suiteConfig.Output.Reporters {
 						switch name {
@@ -93,41 +97,52 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						}
 					}
 
-					command = suiteConfig.Command
-					failOnUploadError = suiteConfig.FailOnUploadError
-					failFast = suiteConfig.Retries.FailFast
-					flakyRetries = suiteConfig.Retries.FlakyAttempts
-					maxTests = suiteConfig.Retries.MaxTests
-					postRetryCommands = suiteConfig.Retries.PostRetryCommands
-					preRetryCommands = suiteConfig.Retries.PreRetryCommands
-					printSummary = suiteConfig.Output.PrintSummary
-					quiet = suiteConfig.Output.Quiet
-					retries = suiteConfig.Retries.Attempts
-					retryCommand = suiteConfig.Retries.Command
-					intermediateArtifactsPath = suiteConfig.Retries.IntermediateArtifactsPath
-					testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
-				}
+					partitionIndex := cliArgs.partitionIndex
+					partitionTotal := cliArgs.partitionTotal
+					provider, err := cfg.ProvidersEnv.MakeProvider()
+					if err != nil {
+						return errors.Wrap(err, "failed to construct provider")
+					}
 
-				runConfig := cli.RunConfig{
-					Args:                      args,
-					Command:                   command,
-					FailOnUploadError:         failOnUploadError,
-					FailRetriesFast:           failFast,
-					FlakyRetries:              flakyRetries,
-					IntermediateArtifactsPath: intermediateArtifactsPath,
-					MaxTestsToRetry:           maxTests,
-					PostRetryCommands:         postRetryCommands,
-					PreRetryCommands:          preRetryCommands,
-					PrintSummary:              printSummary,
-					Quiet:                     quiet,
-					Reporters:                 reporterFuncs,
-					Retries:                   retries,
-					RetryCommandTemplate:      retryCommand,
-					SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
-					SuiteID:                   cliArgs.RootCliArgs.suiteID,
-					TestResultsFileGlob:       testResultsPath,
-					UpdateStoredResults:       cliArgs.updateStoredResults,
-					UploadResults:             true,
+					if partitionIndex < 0 {
+						partitionIndex = provider.PartitionNodes.Index
+					}
+
+					if partitionTotal < 0 {
+						partitionTotal = provider.PartitionNodes.Total
+					}
+
+					runConfig = cli.RunConfig{
+						Args:                      args,
+						Command:                   suiteConfig.Command,
+						FailOnUploadError:         suiteConfig.FailOnUploadError,
+						FailRetriesFast:           suiteConfig.Retries.FailFast,
+						FlakyRetries:              suiteConfig.Retries.FlakyAttempts,
+						IntermediateArtifactsPath: suiteConfig.Retries.IntermediateArtifactsPath,
+						MaxTestsToRetry:           suiteConfig.Retries.MaxTests,
+						PostRetryCommands:         suiteConfig.Retries.PostRetryCommands,
+						PreRetryCommands:          suiteConfig.Retries.PreRetryCommands,
+						PrintSummary:              suiteConfig.Output.PrintSummary,
+						Quiet:                     suiteConfig.Output.Quiet,
+						Reporters:                 reporterFuncs,
+						Retries:                   suiteConfig.Retries.Attempts,
+						RetryCommandTemplate:      suiteConfig.Retries.Command,
+						SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
+						SuiteID:                   cliArgs.RootCliArgs.suiteID,
+						TestResultsFileGlob:       os.ExpandEnv(suiteConfig.Results.Path),
+						UpdateStoredResults:       cliArgs.updateStoredResults,
+						UploadResults:             true,
+						PartitionCommandTemplate:  suiteConfig.Partition.Command,
+						PartitionConfig: cli.PartitionConfig{
+							SuiteID:       cliArgs.RootCliArgs.suiteID,
+							TestFilePaths: suiteConfig.Partition.Globs,
+							PartitionNodes: config.PartitionNodes{
+								Index: partitionIndex,
+								Total: partitionTotal,
+							},
+							Delimiter: suiteConfig.Partition.Delimiter,
+						},
+					}
 				}
 
 				err = captain.RunSuite(cmd.Context(), runConfig)
@@ -237,6 +252,46 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"in this situation, we know the tests overall will fail so we can stop retrying to save compute. similarly "+
 			"if you only set --flaky-retries 1, we can stop retrying if any non-flaky tests fail because we won't retry "+
 			"them)",
+	)
+
+	runCmd.Flags().IntVar(
+		&cliArgs.partitionIndex,
+		"partition-index",
+		-1,
+		"The 0-indexed index of a particular partition",
+	)
+
+	runCmd.Flags().IntVar(
+		&cliArgs.partitionTotal,
+		"partition-total",
+		-1,
+		"The desired number of partitions. Any empty partitions will result in a noop.",
+	)
+
+	runCmd.Flags().StringVar(
+		&cliArgs.partitionDelimiter,
+		"partition-delimiter",
+		" ",
+		"The delimiter used to separate partitioned files.",
+	)
+
+	runCmd.Flags().StringArrayVar(
+		&cliArgs.partitionGlobs,
+		"partition-globs",
+		[]string{},
+		"Filepath globs used to identify the test files you wish to partition",
+	)
+
+	runCmd.Flags().StringVar(
+		&cliArgs.partitionCommandTemplate,
+		"partition-command",
+		"",
+		fmt.Sprintf(
+			"The command that will be run to execute a subset of your tests while partitioning\n"+
+				"(required if --partition-index or --partition-total is passed)\n"+
+				"Examples:\n  Custom: --partition-command \"%v\"",
+			runpartition.DelimiterSubstitution{}.Example(),
+		),
 	)
 
 	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",
@@ -355,6 +410,18 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 
 		if cliArgs.intermediateArtifactsPath != "" {
 			suiteConfig.Retries.IntermediateArtifactsPath = cliArgs.intermediateArtifactsPath
+		}
+
+		if suiteConfig.Partition.Delimiter == "" {
+			suiteConfig.Partition.Delimiter = cliArgs.partitionDelimiter
+		}
+
+		if cliArgs.partitionCommandTemplate != "" {
+			suiteConfig.Partition.Command = cliArgs.partitionCommandTemplate
+		}
+
+		if len(cliArgs.partitionGlobs) != 0 {
+			suiteConfig.Partition.Globs = cliArgs.partitionGlobs
 		}
 
 		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suiteConfig

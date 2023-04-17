@@ -1,7 +1,7 @@
-package targetedretries_test
+package templating_test
 
 import (
-	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -9,11 +9,11 @@ import (
 
 var _ = Describe("ShellEscape", func() {
 	It("ignores values without single quotes", func() {
-		Expect(targetedretries.ShellEscape("some value")).To(Equal("some value"))
+		Expect(templating.ShellEscape("some value")).To(Equal("some value"))
 	})
 
 	It("escapes single quotes, no matter where they are", func() {
-		Expect(targetedretries.ShellEscape("'some ' val'ue'")).To(Equal(
+		Expect(templating.ShellEscape("'some ' val'ue'")).To(Equal(
 			`'"'"'some '"'"' val'"'"'ue'"'"'`,
 		))
 	})
@@ -21,7 +21,7 @@ var _ = Describe("ShellEscape", func() {
 
 var _ = Describe("RegexpEscape", func() {
 	It("escapes regexp meta characters", func() {
-		Expect(targetedretries.RegexpEscape("a test with a + and a .")).To(Equal(
+		Expect(templating.RegexpEscape("a test with a + and a .")).To(Equal(
 			`a test with a \+ and a \.`,
 		))
 	})

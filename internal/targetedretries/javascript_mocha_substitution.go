@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s JavaScriptMochaSubstitution) Example() string {
 	return "npx mocha '{{ file }}' --grep '{{ grep }}'"
 }
 
-func (s JavaScriptMochaSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s JavaScriptMochaSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -43,7 +44,7 @@ func (s JavaScriptMochaSubstitution) ValidateTemplate(compiledTemplate CompiledT
 }
 
 func (s JavaScriptMochaSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
@@ -58,7 +59,7 @@ func (s JavaScriptMochaSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFile[file]; !ok {
 			testsSeenByFile[file] = map[string]struct{}{}
 		}
@@ -66,7 +67,7 @@ func (s JavaScriptMochaSubstitution) SubstitutionsFor(
 			testsByFile[file] = make([]string, 0)
 		}
 
-		formattedName := ShellEscape(RegexpEscape(test.Name))
+		formattedName := templating.ShellEscape(templating.RegexpEscape(test.Name))
 		if _, ok := testsSeenByFile[file][formattedName]; ok {
 			continue
 		}

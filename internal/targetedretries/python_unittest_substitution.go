@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s PythonUnitTestSubstitution) Example() string {
 	return "python -m xmlrunner {{ tests }}"
 }
 
-func (s PythonUnitTestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s PythonUnitTestSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -39,7 +40,7 @@ func (s PythonUnitTestSubstitution) ValidateTemplate(compiledTemplate CompiledTe
 }
 
 func (s PythonUnitTestSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
@@ -49,7 +50,7 @@ func (s PythonUnitTestSubstitution) SubstitutionsFor(
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			testIdentifiers = append(
 				testIdentifiers,
-				fmt.Sprintf("'%v'", ShellEscape(test.Name)),
+				fmt.Sprintf("'%v'", templating.ShellEscape(test.Name)),
 			)
 		}
 	}

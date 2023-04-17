@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.RubyCucumberSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -49,7 +50,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -60,7 +61,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bundle exec cucumber")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -69,7 +70,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 
 		It("is invalid for a template with too many placeholders", func() {
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bundle exec cucumber {{ file }} {{ examples }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ file }} {{ examples }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -78,7 +79,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 
 		It("is invalid for a template without a examples placeholder", func() {
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bundle exec cucumber {{ file }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ file }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -87,7 +88,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 
 		It("is valid for a template with only a examples placeholder", func() {
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bundle exec cucumber {{ examples }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ examples }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -97,7 +98,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns the shell escaped element start identifiers", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bundle exec cucumber {{ examples }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ examples }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			elementStart1 := "elementStart1 with ' single quotes"
@@ -164,7 +165,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bundle exec cucumber {{ examples }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ examples }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			elementStart1 := "elementStart1 with ' single quotes"

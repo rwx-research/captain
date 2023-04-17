@@ -1,7 +1,7 @@
 package targetedretries_test
 
 import (
-	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -17,7 +17,7 @@ var substitutions = map[string]string{
 var _ = Describe("CompileTemplate", func() {
 	It("errs when the same placeholder is specified multiple times", func() {
 		template := "some-command '{{ keyword1 }}' '{{ keyword1 }}'"
-		_, err := targetedretries.CompileTemplate(template)
+		_, err := templating.CompileTemplate(template)
 
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(
@@ -27,7 +27,7 @@ var _ = Describe("CompileTemplate", func() {
 
 	It("compiles with no mapping when there are no placeholders", func() {
 		template := "some-command"
-		compiledTemplate, err := targetedretries.CompileTemplate(template)
+		compiledTemplate, err := templating.CompileTemplate(template)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(compiledTemplate.Keywords()).To(Equal([]string{}))
@@ -37,7 +37,7 @@ var _ = Describe("CompileTemplate", func() {
 
 	It("compiles one placeholder", func() {
 		template := "some-command '{{keyword1}}}'"
-		compiledTemplate, err := targetedretries.CompileTemplate(template)
+		compiledTemplate, err := templating.CompileTemplate(template)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(compiledTemplate.Keywords()).To(ConsistOf("keyword1"))
@@ -47,7 +47,7 @@ var _ = Describe("CompileTemplate", func() {
 
 	It("compiles multiple placeholder", func() {
 		template := "some-command '{{keyword1}}' '{{ keyword2 }}' '{{keyword3 }}' '{{ keyword4}}'"
-		compiledTemplate, err := targetedretries.CompileTemplate(template)
+		compiledTemplate, err := templating.CompileTemplate(template)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(compiledTemplate.Keywords()).To(ConsistOf("keyword1", "keyword2", "keyword3", "keyword4"))
@@ -65,7 +65,7 @@ var _ = Describe("CompileTemplate", func() {
 
 var _ = Describe("Substitute", func() {
 	It("returns the template when no substitutions are needed", func() {
-		compiledTemplate := targetedretries.CompiledTemplate{
+		compiledTemplate := templating.CompiledTemplate{
 			Template:             "some-command",
 			PlaceholderToKeyword: map[string]string{},
 		}
@@ -75,7 +75,7 @@ var _ = Describe("Substitute", func() {
 	})
 
 	It("can substitute just once", func() {
-		compiledTemplate := targetedretries.CompiledTemplate{
+		compiledTemplate := templating.CompiledTemplate{
 			Template: "some-command '{{ keyword1 }}'",
 			PlaceholderToKeyword: map[string]string{
 				"{{ keyword1 }}": "keyword1",
@@ -87,7 +87,7 @@ var _ = Describe("Substitute", func() {
 	})
 
 	It("can substitute multiple times", func() {
-		compiledTemplate := targetedretries.CompiledTemplate{
+		compiledTemplate := templating.CompiledTemplate{
 			Template: "some-command '{{ keyword1 }}' '{{keyword2}}'",
 			PlaceholderToKeyword: map[string]string{
 				"{{ keyword1 }}": "keyword1",

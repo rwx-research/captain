@@ -12,6 +12,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -43,7 +44,7 @@ var _ = Describe("JSONSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.JSONSubstitution{FileSystem: mockFileSystem}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -68,7 +69,7 @@ var _ = Describe("JSONSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.JSONSubstitution{FileSystem: mockFileSystem}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -79,7 +80,7 @@ var _ = Describe("JSONSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.JSONSubstitution{FileSystem: mockFileSystem}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/your-script")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/your-script")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -88,7 +89,7 @@ var _ = Describe("JSONSubstitution", func() {
 
 		It("is invalid for a template with too many placeholders", func() {
 			substitution := targetedretries.JSONSubstitution{FileSystem: mockFileSystem}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/your-script {{ file }} {{ jsonFilePath }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/your-script {{ file }} {{ jsonFilePath }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -97,7 +98,7 @@ var _ = Describe("JSONSubstitution", func() {
 
 		It("is invalid for a template without a jsonFilePath placeholder", func() {
 			substitution := targetedretries.JSONSubstitution{FileSystem: mockFileSystem}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/your-script {{ file }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/your-script {{ file }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -106,7 +107,7 @@ var _ = Describe("JSONSubstitution", func() {
 
 		It("is valid for a template with only a jsonFilePath placeholder", func() {
 			substitution := targetedretries.JSONSubstitution{FileSystem: mockFileSystem}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/your-script {{ jsonFilePath }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/your-script {{ jsonFilePath }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -116,7 +117,7 @@ var _ = Describe("JSONSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns the path of a temporary file", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/your-script {{ jsonFilePath }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/your-script {{ jsonFilePath }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			id1 := "/path/to/file with spaces.rb:10"
@@ -160,7 +161,7 @@ var _ = Describe("JSONSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("bin/your-script {{ jsonFilePath }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bin/your-script {{ jsonFilePath }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			id1 := "/path/to/file with spaces.rb:10"

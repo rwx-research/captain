@@ -17,16 +17,24 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	partitionResult, err := s.calculatePartition(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	s.Log.Infoln(strings.Join(partitionResult.partition.TestFilePaths, cfg.Delimiter))
+	return nil
+}
+
+func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (PartitionResult, error) {
 	fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
 	if err != nil {
-		return errors.WithStack(err)
+		return PartitionResult{}, errors.WithStack(err)
 	}
 
 	testFilePaths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
 	if err != nil {
-		return errors.NewSystemError("unable to expand filepath glob: %s", err)
+		return PartitionResult{}, errors.NewSystemError("unable to expand filepath glob: %s", err)
 	}
-
 	// Compare expanded client file paths w/ expanded server file paths
 	// taking care to always use the client path and sort by duration desc
 	fileTimingMatches := make([]testing.FileTimingMatch, 0)
@@ -71,7 +79,7 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 	})
 
 	if len(fileTimingMatches) == 0 {
-		s.Log.Errorln("No test file timings were matched. Using naive round-robin strategy.")
+		s.Log.Warnln("No test file timings were matched. Using naive round-robin strategy.")
 	}
 
 	partitions := make([]testing.TestPartition, 0)
@@ -113,10 +121,10 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 		s.Log.Debugf("%s: Assigned '%s' using round robin strategy", partition, testFilepath)
 	}
 
-	activePartition := partitions[cfg.PartitionNodes.Index]
-	s.Log.Infoln(strings.Join(activePartition.TestFilePaths, cfg.Delimiter))
-
-	return nil
+	return PartitionResult{
+		partition:              partitions[cfg.PartitionNodes.Index],
+		utilizedPartitionCount: utilizedPartitionCount(partitions),
+	}, nil
 }
 
 func partitionWithFirstFit(
@@ -140,4 +148,19 @@ func partitionWithMostRemainingCapacity(partitions []testing.TestPartition) test
 		}
 	}
 	return result
+}
+
+func utilizedPartitionCount(partitions []testing.TestPartition) int {
+	count := 0
+	for _, partition := range partitions {
+		if len(partition.TestFilePaths) != 0 {
+			count++
+		}
+	}
+	return count
+}
+
+type PartitionResult struct {
+	partition              testing.TestPartition
+	utilizedPartitionCount int
 }

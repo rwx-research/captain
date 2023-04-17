@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -13,7 +14,7 @@ func (s PHPUnitSubstitution) Example() string {
 	return "vendor/bin/phpunit --filter '{{ filter }}' '{{ file }}'"
 }
 
-func (s PHPUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s PHPUnitSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -42,7 +43,7 @@ func (s PHPUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate)
 }
 
 func (s PHPUnitSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
@@ -56,7 +57,7 @@ func (s PHPUnitSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFile[file]; !ok {
 			testsSeenByFile[file] = map[string]struct{}{}
 		}

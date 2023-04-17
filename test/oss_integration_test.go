@@ -750,6 +750,158 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 		})
 	})
 
+	Describe("captain run w/ partition", func() {
+		Context("given minimal partition config", func() {
+			It("runs the partition command against the provided globs", func() {
+				partitionResult0 := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+						"--partition-index", "0",
+						"--partition-total", "2",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(partitionResult0.exitCode).To(Equal(0))
+				Expect(partitionResult0.stdout).To(ContainSubstring("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+
+				partitionResult1 := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+						"--partition-index", "1",
+						"--partition-total", "2",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(partitionResult1.exitCode).To(Equal(0))
+				Expect(partitionResult1.stdout).To(ContainSubstring("test fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/d_spec.rb fixtures/integration-tests/partition/y.rb"))
+			})
+
+			It("accepts env vars instead of command line args", func() {
+				env := make(map[string]string)
+				env["CAPTAIN_PARTITION_INDEX"] = "0"
+				env["CAPTAIN_PARTITION_TOTAL"] = "2"
+				partitionResult0 := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+					},
+					env: env,
+				})
+
+				Expect(partitionResult0.exitCode).To(Equal(0))
+				Expect(partitionResult0.stdout).To(ContainSubstring("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+			})
+		})
+
+		Context("given partition with multiple globs", func() {
+			It("partitions the files using all glob patterns", func() {
+				partitionResult0 := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition-with-multiple-globs",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+						"--partition-index", "0",
+						"--partition-total", "2",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(partitionResult0.exitCode).To(Equal(0))
+				Expect(partitionResult0.stdout).To(ContainSubstring("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+
+				partitionResult1 := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition-with-multiple-globs",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+						"--partition-index", "1",
+						"--partition-total", "2",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(partitionResult1.exitCode).To(Equal(0))
+				Expect(partitionResult1.stdout).To(ContainSubstring("test fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/d_spec.rb fixtures/integration-tests/partition/y.rb"))
+			})
+		})
+
+		Context("given partition with custom delimiter globs", func() {
+			It("formats the output using the delimiter", func() {
+				partitionResult0 := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition-with-custom-delimiter",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+						"--partition-index", "0",
+						"--partition-total", "2",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(partitionResult0.exitCode).To(Equal(0))
+				Expect(partitionResult0.stdout).To(ContainSubstring("test 'fixtures/integration-tests/partition/a_spec.rb' 'fixtures/integration-tests/partition/c_spec.rb' 'fixtures/integration-tests/partition/x.rb' 'fixtures/integration-tests/partition/z.rb'"))
+			})
+		})
+
+		Context("when partition configured but partition flags are not provided", func() {
+			It("uses the default run command", func() {
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(result.exitCode).To(Equal(123))
+				Expect(result.stdout).To(ContainSubstring("default run"))
+			})
+		})
+
+		Context("when partitioning results in an empty partition", func() {
+			It("noops the command and prints an error to the screen", func() {
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+						"--partition-index", "29",
+						"--partition-total", "30",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(result.exitCode).To(Equal(0))
+				Expect(result.stderr).To(ContainSubstring("Partition 29/30 contained no test files. 7/30 partitions were utilized. We recommend you set --partition-total no more than 7"))
+			})
+		})
+
+		It("accepts env vars instead of command line args", func() {
+			env := make(map[string]string)
+			env["CAPTAIN_PARTITION_INDEX"] = "0"
+			env["CAPTAIN_PARTITION_TOTAL"] = "2"
+			partitionResult0 := runCaptain(captainArgs{
+				args: []string{
+					"run",
+					"oss-run-with-partition",
+					"--config-file", "fixtures/integration-tests/partition-config.yaml",
+				},
+				env: env,
+			})
+
+			Expect(partitionResult0.exitCode).To(Equal(0))
+			Expect(partitionResult0.stdout).To(ContainSubstring("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+		})
+	})
+
 	Describe("captain [add|remove]", func() {
 		actionBuilder := func(resource string, suiteID string) func(string) (captainResult, string) {
 			read := func(path string) string {

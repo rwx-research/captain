@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s RubyMinitestSubstitution) Example() string {
 	return "bin/rails test {{ tests }}"
 }
 
-func (s RubyMinitestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s RubyMinitestSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -64,7 +65,7 @@ func (s RubyMinitestSubstitution) ValidateTemplate(compiledTemplate CompiledTemp
 }
 
 func (s RubyMinitestSubstitution) SubstitutionsFor(
-	compiledTemplate CompiledTemplate,
+	compiledTemplate templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
@@ -87,7 +88,7 @@ func (s RubyMinitestSubstitution) allTestsSubstitutions(
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			tests = append(
 				tests,
-				fmt.Sprintf("'%v:%v'", ShellEscape(test.Location.File), *test.Location.Line),
+				fmt.Sprintf("'%v:%v'", templating.ShellEscape(test.Location.File), *test.Location.Line),
 			)
 		}
 	}
@@ -113,12 +114,12 @@ func (s RubyMinitestSubstitution) singleTestSubstitutions(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFile[file]; !ok {
 			testsSeenByFile[file] = map[string]struct{}{}
 		}
 
-		methodName := ShellEscape(test.Lineage[len(test.Lineage)-1])
+		methodName := templating.ShellEscape(test.Lineage[len(test.Lineage)-1])
 		if _, ok := testsSeenByFile[file][methodName]; ok {
 			continue
 		}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -19,21 +18,6 @@ type partitionArgs struct {
 
 func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	var pArgs partitionArgs
-	// returns a negative value if the environmental variable is not set
-	getEnvAsInt := func(name string) (int, error) {
-		value := os.Getenv(name)
-		if value == "" {
-			return -1, nil
-		}
-
-		i, err := strconv.Atoi(value)
-		if err != nil {
-			return -1,
-				errors.NewInputError("value for environmental variable %s=%s can't be parsed into an integer", name, value)
-		}
-
-		return i, nil
-	}
 
 	partitionCmd := &cobra.Command{
 		Use: "partition [--help] [--config-file=<path>] [--delimiter=<delim>] [--sha=<sha>] --suite-id=<suite> --index=<i> " +
@@ -78,7 +62,7 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 						return errors.NewConfigurationError(
 							"Partition total invalid.",
 							"Partition total must be 1 or greater.",
-							"You can set the partition index by using the --total flag or the CAPTAIN_PARTITION_TOTAL environment variable.",
+							"You can set the partition total by using the --total flag or the CAPTAIN_PARTITION_TOTAL environment variable.",
 						)
 					}
 					pArgs.nodes.Total = provider.PartitionNodes.Total
@@ -117,20 +101,11 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		},
 	}
 
-	defaultPartitionIndex, err := getEnvAsInt("CAPTAIN_PARTITION_INDEX")
-	if err != nil {
-		return err
-	}
-
 	partitionCmd.Flags().IntVar(
-		&pArgs.nodes.Index, "index", defaultPartitionIndex, "the 0-indexed index of a particular partition",
+		&pArgs.nodes.Index, "index", -1, "the 0-indexed index of a particular partition",
 	)
 
-	defaultPartitionTotal, err := getEnvAsInt("CAPTAIN_PARTITION_TOTAL")
-	if err != nil {
-		return err
-	}
-	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", defaultPartitionTotal, "the total number of partitions")
+	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", -1, "the total number of partitions")
 
 	// it's a smell that we're using cliArgs here but I believe it's a major refactor to stop doing that.
 	addShaFlag(partitionCmd, &cliArgs.GenericProvider.Sha)

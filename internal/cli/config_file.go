@@ -37,6 +37,12 @@ type SuiteConfigRetries struct {
 	IntermediateArtifactsPath string   `yaml:"intermediate-artifacts-path"`
 }
 
+type SuiteConfigPartition struct {
+	Command   string
+	Globs     []string
+	Delimiter string
+}
+
 // SuiteConfig holds options that can be customized per suite
 type SuiteConfig struct {
 	Command           string
@@ -44,4 +50,5 @@ type SuiteConfig struct {
 	Output            SuiteConfigOutput
 	Results           SuiteConfigResults
 	Retries           SuiteConfigRetries
+	Partition         SuiteConfigPartition
 }

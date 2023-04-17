@@ -8,6 +8,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,7 +23,7 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 
 	It("works with a real file", func() {
 		substitution := targetedretries.ElixirExUnitSubstitution{}
-		compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -49,7 +50,7 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 	Describe("Example", func() {
 		It("compiles and is valid", func() {
 			substitution := targetedretries.ElixirExUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate(substitution.Example())
+			compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -60,7 +61,7 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 	Describe("ValidateTemplate", func() {
 		It("is invalid for a template without placeholders", func() {
 			substitution := targetedretries.ElixirExUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("mix test")
+			compiledTemplate, compileErr := templating.CompileTemplate("mix test")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -69,7 +70,7 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 
 		It("is invalid for a template with too many placeholders", func() {
 			substitution := targetedretries.ElixirExUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("mix test {{ file }} {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("mix test {{ file }} {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -78,7 +79,7 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 
 		It("is invalid for a template without a tests placeholder", func() {
 			substitution := targetedretries.ElixirExUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("mix test {{ file }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("mix test {{ file }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -87,7 +88,7 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 
 		It("is valid for a template with only a tests placeholder", func() {
 			substitution := targetedretries.ElixirExUnitSubstitution{}
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("mix test {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("mix test {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -97,7 +98,7 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns the shell escaped test identifiers", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("mix test {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("mix test {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			file1 := "/path/to/file with spaces.rb"
@@ -159,7 +160,7 @@ var _ = Describe("ElixirExUnitSubstitution", func() {
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := targetedretries.CompileTemplate("mix test {{ tests }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("mix test {{ tests }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			file1 := "/path/to/file with spaces.rb"

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s GoGinkgoSubstitution) Example() string {
 	return "ginkgo run {{ tests }} ./..."
 }
 
-func (s GoGinkgoSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s GoGinkgoSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -39,7 +40,7 @@ func (s GoGinkgoSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate
 }
 
 func (s GoGinkgoSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
@@ -49,7 +50,7 @@ func (s GoGinkgoSubstitution) SubstitutionsFor(
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			formattedTests = append(
 				formattedTests,
-				fmt.Sprintf("--focus-file '%v:%v'", ShellEscape(test.Location.File), *test.Location.Line),
+				fmt.Sprintf("--focus-file '%v:%v'", templating.ShellEscape(test.Location.File), *test.Location.Line),
 			)
 		}
 	}

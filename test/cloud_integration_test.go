@@ -128,6 +128,116 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					Expect(result.exitCode).To(Equal(123))
 				})
 			})
+
+			Context("partition", func() {
+				Context("without timings", func() {
+					It("sets partition 1 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"run",
+								"captain-cli-functional-tests",
+								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
+								"--test-results", "fixtures/integration-tests/rspec-passing.json",
+								"--partition-globs", "fixtures/integration-tests/partition/x.rb",
+								"--partition-globs", "fixtures/integration-tests/partition/y.rb",
+								"--partition-globs", "fixtures/integration-tests/partition/z.rb",
+								"--partition-index", "0",
+								"--partition-total", "2",
+								"-c", "bash -c 'exit 123'",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						withoutBackwardsCompatibility(func() {
+							Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						})
+						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+
+					It("sets partition 2 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"run",
+								"captain-cli-functional-tests",
+								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
+								"--test-results", "fixtures/integration-tests/rspec-passing.json",
+								"--partition-globs", "fixtures/integration-tests/partition/x.rb",
+								"--partition-globs", "fixtures/integration-tests/partition/y.rb",
+								"--partition-globs", "fixtures/integration-tests/partition/z.rb",
+								"--partition-index", "1",
+								"--partition-total", "2",
+								"-c", "bash -c 'exit 123'",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						withoutBackwardsCompatibility(func() {
+							Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+						})
+						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/y.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+				})
+
+				Context("with timings", func() {
+					BeforeEach(func() {
+						// refresh timing information because they expire periodically
+						Expect(runCaptain(captainArgs{
+							args: []string{
+								"upload", "results",
+								"captain-cli-functional-tests",
+								"fixtures/integration-tests/partition/rspec-partition.json",
+							},
+							env: getEnvWithAccessToken(),
+						}).exitCode).To(Equal(0))
+					})
+
+					It("sets partition 1 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"run",
+								"captain-cli-functional-tests",
+								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
+								"--test-results", "fixtures/integration-tests/rspec-passing.json",
+								"--partition-globs", "fixtures/integration-tests/partition/*_spec.rb",
+								"--partition-index", "0",
+								"--partition-total", "2",
+								"-c", "bash -c 'exit 123'",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						withoutBackwardsCompatibility(func() {
+							Expect(result.stderr).To(BeEmpty())
+						})
+						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+
+					It("sets partition 2 correctly", func() {
+						result := runCaptain(captainArgs{
+							args: []string{
+								"run",
+								"captain-cli-functional-tests",
+								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
+								"--test-results", "fixtures/integration-tests/rspec-passing.json",
+								"--partition-globs", "fixtures/integration-tests/partition/*_spec.rb",
+								"--partition-index", "1",
+								"--partition-total", "2",
+								"-c", "bash -c 'exit 123'",
+							},
+							env: getEnvWithAccessToken(),
+						})
+
+						withoutBackwardsCompatibility(func() {
+							Expect(result.stderr).To(BeEmpty())
+						})
+						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
+						Expect(result.exitCode).To(Equal(0))
+					})
+				})
+			})
 		})
 
 		Describe("captain quarantine", func() {

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s PythonPytestSubstitution) Example() string {
 	return "pytest {{ tests }}"
 }
 
-func (s PythonPytestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s PythonPytestSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -39,7 +40,7 @@ func (s PythonPytestSubstitution) ValidateTemplate(compiledTemplate CompiledTemp
 }
 
 func (s PythonPytestSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
@@ -49,7 +50,7 @@ func (s PythonPytestSubstitution) SubstitutionsFor(
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
 			testIdentifiers = append(
 				testIdentifiers,
-				fmt.Sprintf("'%v'", ShellEscape(*test.ID)),
+				fmt.Sprintf("'%v'", templating.ShellEscape(*test.ID)),
 			)
 		}
 	}

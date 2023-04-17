@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s JavaScriptJestSubstitution) Example() string {
 	return "npx jest --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'"
 }
 
-func (s JavaScriptJestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s JavaScriptJestSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -46,7 +47,7 @@ func (s JavaScriptJestSubstitution) ValidateTemplate(compiledTemplate CompiledTe
 }
 
 func (s JavaScriptJestSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
@@ -61,7 +62,7 @@ func (s JavaScriptJestSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		file := ShellEscape(test.Location.File)
+		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFile[file]; !ok {
 			testsSeenByFile[file] = map[string]struct{}{}
 		}
@@ -69,7 +70,7 @@ func (s JavaScriptJestSubstitution) SubstitutionsFor(
 			testsByFile[file] = make([]string, 0)
 		}
 
-		formattedName := ShellEscape(RegexpEscape(strings.Join(test.Lineage, " ")))
+		formattedName := templating.ShellEscape(templating.RegexpEscape(strings.Join(test.Lineage, " ")))
 		if _, ok := testsSeenByFile[file][formattedName]; ok {
 			continue
 		}

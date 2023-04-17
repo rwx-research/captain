@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -14,7 +15,7 @@ func (s DotNetxUnitSubstitution) Example() string {
 	return "dotnet test --filter '{{ filter }}'"
 }
 
-func (s DotNetxUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
+func (s DotNetxUnitSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
 	if len(keywords) == 0 {
@@ -39,7 +40,7 @@ func (s DotNetxUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTempl
 }
 
 func (s DotNetxUnitSubstitution) SubstitutionsFor(
-	_ CompiledTemplate,
+	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {

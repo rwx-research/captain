@@ -32,6 +32,8 @@ type RunConfig struct {
 	SubstitutionsByFramework  map[v1.Framework]targetedretries.Substitution
 	UpdateStoredResults       bool
 	UploadResults             bool
+	PartitionCommandTemplate  string
+	PartitionConfig           PartitionConfig
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(
@@ -59,6 +61,23 @@ func (rc RunConfig) Validate() error {
 			"It is expected that this option is either set to a positive integer or to a percentage of the total "+
 				"tests to retry. Percentages can be fractional.",
 		)
+	}
+
+	if rc.IsRunningPartition() {
+		err := rc.PartitionConfig.Validate()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if rc.PartitionCommandTemplate == "" {
+			return errors.NewConfigurationError(
+				"Missing partition command",
+				"You seem to be passing partition specific options, but there is no partition command template configured.",
+				"The partition command template can be set using the --partition-command flag. Alternatively, you can "+
+					"use the Captain configuration file to permanently set a partition command template for a "+
+					"given test suite.",
+			)
+		}
 	}
 
 	return nil
@@ -116,6 +135,12 @@ func (rc RunConfig) MaxTestsToRetryPercentage() (*float64, error) {
 	return &percentage, nil
 }
 
+func (rc RunConfig) IsRunningPartition() bool {
+	// TODO: Should we have a bit somewhere that indicates provider defaulted?
+	return rc.PartitionCommandTemplate != "" &&
+		(rc.PartitionConfig.PartitionNodes.Index != -1 || rc.PartitionConfig.PartitionNodes.Total != -1)
+}
+
 type PartitionConfig struct {
 	SuiteID        string
 	TestFilePaths  []string
@@ -135,18 +160,20 @@ func (pc PartitionConfig) Validate() error {
 	if pc.PartitionNodes.Total <= 0 {
 		return errors.NewConfigurationError(
 			"Missing total partition count",
-			"In order to use the partitioning feature, Captain needs to know the total number of partitions.",
-			"The total number of partitions can be set using the --total flag or alternatively the "+
-				"CAPTAIN_PARTITION_TOTAL environment variable.",
+			"In order to use the partitioning feature, Captain needs to know the total number of partitions.\n",
+			"When using the run command, the total number of partitions can be set using the --partition-total flag.\n\n"+
+				"When using the partition command, the total number of partitions can be set using the --total flag or "+
+				"alternatively the CAPTAIN_PARTITION_TOTAL environment variable.",
 		)
 	}
 
 	if pc.PartitionNodes.Index < 0 {
 		return errors.NewConfigurationError(
 			"Missing partition index",
-			"Captain is missing the index of the partition that you would like to generate.",
-			"The partition index can be set using the --index flag or alternatively the CAPTAIN_PARTITION_INDEX "+
-				"environment variable.",
+			"Captain is missing the index of the partition that you would like to generate.\n",
+			"When using the run command, partition index can be set using the --partition-index flag.\n\n"+
+				"When using the partition command, partition index can be set using the --index flag "+
+				"or alternatively the CAPTAIN_PARTITION_INDEX environment variable.",
 		)
 	}
 
@@ -165,8 +192,10 @@ func (pc PartitionConfig) Validate() error {
 	if len(pc.TestFilePaths) == 0 {
 		return errors.NewConfigurationError(
 			"Missing test file paths",
-			"No test file paths are given.",
-			"Please specify the path or paths to your test files as arguments to the 'captain partition' command.\n\n"+
+			"No test file paths are provided.\n",
+			"When using the run command, please specify the path or paths to your test files using the --partition-globs flag. "+
+				"You may specify this flag multiple times if needed.\n\n"+
+				"When using the partition command, please specify the path or paths to your test files as arguments.\n\n"+
 				"\tcaptain partition [flags] <filepath>\n\n"+
 				"You can also execute 'captain partition --help' for further information.",
 		)
