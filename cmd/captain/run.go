@@ -287,7 +287,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		"partition-command",
 		"",
 		fmt.Sprintf(
-			"The command that will be run to execute a subset of your tests while partitioning "+
+			"The command that will be run to execute a subset of your tests while partitioning\n"+
 				"(required if --partition-index or --partition-total is passed)\n"+
 				"Examples:\n  Custom: --partition-command \"%v\"",
 			runpartition.DelimiterSubstitution{}.Example(),
