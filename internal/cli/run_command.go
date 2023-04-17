@@ -14,25 +14,24 @@ import (
 // RunCommand represents the command that captain run ultimately execute.
 // Typically this is executing the underlying test framework.
 type RunCommand struct {
-	command          string
-	args             []string
+	commandArgs      []string
 	shortCircuit     bool
 	shortCircuitInfo string
 }
 
-func (c RunCommand) commandArgs() ([]string, error) {
+func commandArgs(command string, args []string) ([]string, error) {
 	commandArgs := make([]string, 0)
 
-	if c.command != "" {
-		parsedCommand, err := shellwords.Parse(c.command)
+	if command != "" {
+		parsedCommand, err := shellwords.Parse(command)
 		if err != nil {
-			return commandArgs, errors.Wrapf(err, "Unable to parse %q into shell arguments", c.command)
+			return commandArgs, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)
 		}
 		commandArgs = append(commandArgs, parsedCommand...)
 	}
 
-	if len(c.args) > 0 {
-		commandArgs = append(commandArgs, c.args...)
+	if len(args) > 0 {
+		commandArgs = append(commandArgs, args...)
 	}
 
 	if len(commandArgs) == 0 {
@@ -44,7 +43,11 @@ func (c RunCommand) commandArgs() ([]string, error) {
 
 func (s Service) makeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand, error) {
 	if !cfg.IsRunningPartition() {
-		return RunCommand{command: cfg.Command, args: cfg.Args, shortCircuit: false}, nil
+		commandArgs, err := commandArgs(cfg.Command, cfg.Args)
+		if err != nil {
+			return RunCommand{}, err
+		}
+		return RunCommand{commandArgs: commandArgs, shortCircuit: false}, nil
 	}
 
 	partitionResult, err := s.calculatePartition(ctx, cfg.PartitionConfig)
@@ -72,6 +75,11 @@ func (s Service) makeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 	}
 	partitionCommand := compiledTemplate.Substitute(substitutionValueLookup)
 
+	commandArgs, err := commandArgs(partitionCommand, nil)
+	if err != nil {
+		return RunCommand{}, err
+	}
+
 	if len(partitionedTestFilePaths) == 0 {
 		infoMessage := fmt.Sprintf(
 			"Partition %v contained no test files. %d/%d partitions were utilized. "+
@@ -82,8 +90,8 @@ func (s Service) makeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 			partitionResult.utilizedPartitionCount,
 		)
 		// short circuit to avoid running the entire test suite in a single partition (e.g empty partition)
-		return RunCommand{command: partitionCommand, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
+		return RunCommand{commandArgs: commandArgs, shortCircuit: true, shortCircuitInfo: infoMessage}, nil
 	}
 
-	return RunCommand{command: partitionCommand, shortCircuit: false}, nil
+	return RunCommand{commandArgs: commandArgs, shortCircuit: false}, nil
 }
