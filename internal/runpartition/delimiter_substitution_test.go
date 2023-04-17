@@ -85,7 +85,7 @@ var _ = Describe("DelimiterSubstitution", func() {
 				lookup, err := substitution.SubstitutionLookupFor(compiledTemplate, []string{"a", "b", "c"})
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(lookup["testFiles"]).To(Equal("a || b || c"))
+				Expect(lookup["testFiles"]).To(Equal("'a' || 'b' || 'c'"))
 				Expect(len(lookup)).To(Equal(1))
 			})
 		})
@@ -97,7 +97,7 @@ var _ = Describe("DelimiterSubstitution", func() {
 				lookup, err := substitution.SubstitutionLookupFor(compiledTemplate, []string{"a spec", "b spec"})
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(lookup["testFiles"]).To(Equal("a spec,b spec"))
+				Expect(lookup["testFiles"]).To(Equal("'a spec','b spec'"))
 			})
 		})
 	})
