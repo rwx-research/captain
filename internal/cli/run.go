@@ -274,20 +274,20 @@ func (s Service) attemptRetries(
 		return originalTestResults, false, errors.NewInternalError("No test results detected")
 	}
 
-	compiledTemplate, err := templating.CompileTemplate(cfg.RetryCommandTemplate)
+	compiledRetryTemplate, err := templating.CompileTemplate(cfg.RetryCommandTemplate)
 	if err != nil {
 		return originalTestResults, false, errors.WithStack(err)
 	}
 
 	framework := originalTestResults.Framework
 	var substitution targetedretries.Substitution = targetedretries.JSONSubstitution{FileSystem: s.FileSystem}
-	if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
+	if err := substitution.ValidateTemplate(compiledRetryTemplate); err != nil {
 		frameworkSubstitution, ok := cfg.SubstitutionsByFramework[framework]
 		if !ok {
 			return originalTestResults, false, errors.NewInternalError("Unable to retry %q", framework)
 		}
 
-		if err := frameworkSubstitution.ValidateTemplate(compiledTemplate); err != nil {
+		if err := frameworkSubstitution.ValidateTemplate(compiledRetryTemplate); err != nil {
 			return originalTestResults, false, errors.WithStack(err)
 		}
 
@@ -399,12 +399,12 @@ func (s Service) attemptRetries(
 		}
 
 		allNewTestResults := make([]v1.TestResults, 0)
-		allSubstitutions, err := substitution.SubstitutionsFor(compiledTemplate, *flattenedTestResults, filter)
+		allSubstitutions, err := substitution.SubstitutionsFor(compiledRetryTemplate, *flattenedTestResults, filter)
 		if err != nil {
 			return flattenedTestResults, true, errors.Wrap(err, "Unable construct retry substitutions")
 		}
 		for i, substitutions := range allSubstitutions {
-			command := compiledTemplate.Substitute(substitutions)
+			command := compiledRetryTemplate.Substitute(substitutions)
 			args, err := shellwords.Parse(command)
 			if err != nil {
 				return flattenedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)

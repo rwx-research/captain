@@ -55,23 +55,23 @@ func (s Service) makeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 	partitionedTestFilePaths := partitionResult.partition.TestFilePaths
 
 	// compile template
-	compiledTemplate, err := templating.CompileTemplate(cfg.PartitionCommandTemplate)
+	compiledPartitionTemplate, err := templating.CompileTemplate(cfg.PartitionCommandTemplate)
 	if err != nil {
 		return RunCommand{}, errors.WithStack(err)
 	}
 
 	// validate template
 	substitution := runpartition.DelimiterSubstitution{Delimiter: cfg.PartitionConfig.Delimiter}
-	if err := substitution.ValidateTemplate(compiledTemplate); err != nil {
+	if err := substitution.ValidateTemplate(compiledPartitionTemplate); err != nil {
 		return RunCommand{}, errors.WithStack(err)
 	}
 
 	// substitute template keywords with values
-	substitutionValueLookup, err := substitution.SubstitutionLookupFor(compiledTemplate, partitionedTestFilePaths)
+	substitutionValueLookup, err := substitution.SubstitutionLookupFor(compiledPartitionTemplate, partitionedTestFilePaths)
 	if err != nil {
 		return RunCommand{}, errors.WithStack(err)
 	}
-	partitionCommand := compiledTemplate.Substitute(substitutionValueLookup)
+	partitionCommand := compiledPartitionTemplate.Substitute(substitutionValueLookup)
 
 	commandArgs, err := commandArgs(partitionCommand, nil)
 	if err != nil {
