@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -137,7 +136,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 							args: []string{
 								"run",
 								"captain-cli-functional-tests",
-								"--partition-command", "echo " + strconv.Quote("bin/rspec {{ testFiles }}"),
+								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
 								"--test-results", "fixtures/integration-tests/rspec-passing.json",
 								"--partition-globs", "fixtures/integration-tests/partition/x.rb",
 								"--partition-globs", "fixtures/integration-tests/partition/y.rb",
@@ -161,7 +160,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 							args: []string{
 								"run",
 								"captain-cli-functional-tests",
-								"--partition-command", "echo " + strconv.Quote("bin/rspec {{ testFiles }}"),
+								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
 								"--test-results", "fixtures/integration-tests/rspec-passing.json",
 								"--partition-globs", "fixtures/integration-tests/partition/x.rb",
 								"--partition-globs", "fixtures/integration-tests/partition/y.rb",
@@ -199,7 +198,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 							args: []string{
 								"run",
 								"captain-cli-functional-tests",
-								"--partition-command", "echo " + strconv.Quote("bin/rspec {{ testFiles }}"),
+								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
 								"--test-results", "fixtures/integration-tests/rspec-passing.json",
 								"--partition-globs", "fixtures/integration-tests/partition/*_spec.rb",
 								"--partition-index", "0",
@@ -221,7 +220,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 							args: []string{
 								"run",
 								"captain-cli-functional-tests",
-								"--partition-command", "echo " + strconv.Quote("bin/rspec {{ testFiles }}"),
+								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
 								"--test-results", "fixtures/integration-tests/rspec-passing.json",
 								"--partition-globs", "fixtures/integration-tests/partition/*_spec.rb",
 								"--partition-index", "1",
