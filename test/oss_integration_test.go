@@ -765,7 +765,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult0.exitCode).To(Equal(0))
-				Expect(partitionResult0.stdout).To(Equal("test 'fixtures/integration-tests/partition/a_spec.rb' 'fixtures/integration-tests/partition/c_spec.rb' 'fixtures/integration-tests/partition/x.rb' 'fixtures/integration-tests/partition/z.rb'"))
+				Expect(partitionResult0.stdout).To(Equal("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
 
 				partitionResult1 := runCaptain(captainArgs{
 					args: []string{
@@ -779,7 +779,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult1.exitCode).To(Equal(0))
-				Expect(partitionResult1.stdout).To(Equal("test 'fixtures/integration-tests/partition/b_spec.rb' 'fixtures/integration-tests/partition/d_spec.rb' 'fixtures/integration-tests/partition/y.rb'"))
+				Expect(partitionResult1.stdout).To(Equal("test fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/d_spec.rb fixtures/integration-tests/partition/y.rb"))
 			})
 
 			It("accepts env vars instead of command line args", func() {
@@ -796,7 +796,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult0.exitCode).To(Equal(0))
-				Expect(partitionResult0.stdout).To(Equal("test 'fixtures/integration-tests/partition/a_spec.rb' 'fixtures/integration-tests/partition/c_spec.rb' 'fixtures/integration-tests/partition/x.rb' 'fixtures/integration-tests/partition/z.rb'"))
+				Expect(partitionResult0.stdout).To(Equal("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
 			})
 		})
 
@@ -814,7 +814,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult0.exitCode).To(Equal(0))
-				Expect(partitionResult0.stdout).To(Equal("test 'fixtures/integration-tests/partition/a_spec.rb' 'fixtures/integration-tests/partition/c_spec.rb' 'fixtures/integration-tests/partition/x.rb' 'fixtures/integration-tests/partition/z.rb'"))
+				Expect(partitionResult0.stdout).To(Equal("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
 
 				partitionResult1 := runCaptain(captainArgs{
 					args: []string{
@@ -828,7 +828,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult1.exitCode).To(Equal(0))
-				Expect(partitionResult1.stdout).To(Equal("test 'fixtures/integration-tests/partition/b_spec.rb' 'fixtures/integration-tests/partition/d_spec.rb' 'fixtures/integration-tests/partition/y.rb'"))
+				Expect(partitionResult1.stdout).To(Equal("test fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/d_spec.rb fixtures/integration-tests/partition/y.rb"))
 			})
 		})
 
@@ -846,7 +846,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(partitionResult0.exitCode).To(Equal(0))
-				Expect(partitionResult0.stdout).To(Equal("test 'fixtures/integration-tests/partition/a_spec.rb' -hi- 'fixtures/integration-tests/partition/c_spec.rb' -hi- 'fixtures/integration-tests/partition/x.rb' -hi- 'fixtures/integration-tests/partition/z.rb'"))
+				Expect(partitionResult0.stdout).To(Equal("test 'fixtures/integration-tests/partition/a_spec.rb' 'fixtures/integration-tests/partition/c_spec.rb' 'fixtures/integration-tests/partition/x.rb' 'fixtures/integration-tests/partition/z.rb'"))
 			})
 		})
 
@@ -882,6 +882,23 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				Expect(result.exitCode).To(Equal(0))
 				Expect(result.stderr).To(ContainSubstring("Partition 29/30 contained no test files. 7/30 partitions were utilized. We recommend you set --partition-total no more than 7"))
 			})
+		})
+
+		It("accepts env vars instead of command line args", func() {
+			env := make(map[string]string)
+			env["CAPTAIN_PARTITION_INDEX"] = "0"
+			env["CAPTAIN_PARTITION_TOTAL"] = "2"
+			partitionResult0 := runCaptain(captainArgs{
+				args: []string{
+					"run",
+					"oss-run-with-partition",
+					"--config-file", "fixtures/integration-tests/partition-config.yaml",
+				},
+				env: env,
+			})
+
+			Expect(partitionResult0.exitCode).To(Equal(0))
+			Expect(partitionResult0.stdout).To(Equal("test fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/c_spec.rb fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
 		})
 	})
 

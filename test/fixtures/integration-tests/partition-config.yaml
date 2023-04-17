@@ -32,8 +32,8 @@ test-suites:
       framework: RSpec
       path: ./fixtures/integration-tests/rspec-passed.json
     partition:
-      command: echo "test {{ testFiles }}"
-      delimiter: " -hi- "
+      command: echo "test '{{ testFiles }}'"
+      delimiter: "' '"
       globs:
-      - ./fixtures/integration-tests/partition/*_spec.rb
-      - ./fixtures/integration-tests/partition/*.rb
+        - ./fixtures/integration-tests/partition/*_spec.rb
+        - ./fixtures/integration-tests/partition/*.rb
