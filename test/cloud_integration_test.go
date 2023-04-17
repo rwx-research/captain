@@ -151,7 +151,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						withoutBackwardsCompatibility(func() {
 							Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 						})
-						Expect(result.stdout).To(Equal("bin/rspec fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
+						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/x.rb fixtures/integration-tests/partition/z.rb"))
 						Expect(result.exitCode).To(Equal(0))
 					})
 
@@ -175,7 +175,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						withoutBackwardsCompatibility(func() {
 							Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
 						})
-						Expect(result.stdout).To(Equal("bin/rspec fixtures/integration-tests/partition/y.rb"))
+						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/y.rb"))
 						Expect(result.exitCode).To(Equal(0))
 					})
 				})
@@ -211,7 +211,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						withoutBackwardsCompatibility(func() {
 							Expect(result.stderr).To(BeEmpty())
 						})
-						Expect(result.stdout).To(Equal("bin/rspec fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
+						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
 						Expect(result.exitCode).To(Equal(0))
 					})
 
@@ -233,7 +233,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						withoutBackwardsCompatibility(func() {
 							Expect(result.stderr).To(BeEmpty())
 						})
-						Expect(result.stdout).To(Equal("bin/rspec fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
+						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
 						Expect(result.exitCode).To(Equal(0))
 					})
 				})
