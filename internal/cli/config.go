@@ -193,7 +193,7 @@ func (pc PartitionConfig) Validate() error {
 		return errors.NewConfigurationError(
 			"Missing test file paths",
 			"No test file paths are provided.\n",
-			"When using the run command, please specify the path or paths to your test files using the --partition-glob flag. "+
+			"When using the run command, please specify the path or paths to your test files using the --partition-globs flag. "+
 				"You may specify this flag multiple times if needed.\n\n"+
 				"When using the partition command, please specify the path or paths to your test files as arguments.\n\n"+
 				"\tcaptain partition [flags] <filepath>\n\n"+
