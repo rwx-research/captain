@@ -1,6 +1,7 @@
 package runpartition
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -43,7 +44,7 @@ func (s DelimiterSubstitution) SubstitutionLookupFor(
 	escapedTestFilePaths := make([]string, 0)
 
 	for _, testFilePath := range testFilePaths {
-		escapedTestFilePaths = append(escapedTestFilePaths, templating.ShellEscape(testFilePath))
+		escapedTestFilePaths = append(escapedTestFilePaths, fmt.Sprintf("'%v'", templating.ShellEscape(testFilePath)))
 	}
 
 	return map[string]string{"testFiles": strings.Join(escapedTestFilePaths, s.Delimiter)}, nil
