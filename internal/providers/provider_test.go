@@ -84,23 +84,25 @@ var _ = Describe("Validate", func() {
 
 var _ = Describe("providers.Merge", func() {
 	provider1 := providers.Provider{
-		AttemptedBy:   "me",
-		BranchName:    "main",
-		CommitSha:     "abc123",
-		CommitMessage: "one commit message",
-		JobTags:       map[string]any{},
-		ProviderName:  "generic",
-		Title:         "some-title",
+		AttemptedBy:    "me",
+		BranchName:     "main",
+		CommitSha:      "abc123",
+		CommitMessage:  "one commit message",
+		JobTags:        map[string]any{},
+		ProviderName:   "generic",
+		Title:          "some-title",
+		PartitionNodes: config.PartitionNodes{Index: -1, Total: -1},
 	}
 
 	provider2 := providers.Provider{
-		AttemptedBy:   "you",
-		BranchName:    "test-branch",
-		CommitSha:     "qrs789",
-		CommitMessage: "another commit message",
-		JobTags:       map[string]any{},
-		ProviderName:  "GitHub",
-		Title:         "another-title",
+		AttemptedBy:    "you",
+		BranchName:     "test-branch",
+		CommitSha:      "qrs789",
+		CommitMessage:  "another commit message",
+		JobTags:        map[string]any{},
+		ProviderName:   "GitHub",
+		Title:          "another-title",
+		PartitionNodes: config.PartitionNodes{Index: 0, Total: 2},
 	}
 
 	It("returns the second provider if the first is empty", func() {
@@ -115,12 +117,17 @@ var _ = Describe("providers.Merge", func() {
 
 	It("merges all fields except provider name", func() {
 		merged := providers.Merge(provider1, provider2)
+		Expect(merged).ToNot(Equal(provider2))
 		Expect(merged.ProviderName).To(Equal(provider1.ProviderName))
-		Expect(merged.AttemptedBy).To(Equal(provider2.AttemptedBy))
-		Expect(merged.BranchName).To(Equal(provider2.BranchName))
-		Expect(merged.CommitSha).To(Equal(provider2.CommitSha))
-		Expect(merged.CommitMessage).To(Equal(provider2.CommitMessage))
-		Expect(merged.Title).To(Equal(provider2.Title))
+
+		merged.ProviderName = provider2.ProviderName
+		Expect(merged).To(Equal(provider2))
+	})
+
+	It("won't merge PartitionNodes if first node has valid values", func() {
+		provider1.PartitionNodes = config.PartitionNodes{Index: 1, Total: 3}
+		merged := providers.Merge(provider1, provider2)
+		Expect(merged.PartitionNodes).To(Equal(provider1.PartitionNodes))
 	})
 })
 
