@@ -561,7 +561,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 			})
 		})
 
-		It("accepts the language and framework flags CLI flags and parses with their parser", func() {
+		It("accepts the language and framework CLI flags and parses with their parser", func() {
 			tmp, err := os.MkdirTemp("", "*")
 			Expect(err).NotTo(HaveOccurred())
 
