@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bradleyjkemp/cupaloy"
 	"github.com/google/uuid"
 	"github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/test/helpers"
@@ -1002,6 +1003,24 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 
 				Expect(result.exitCode).To(Equal(0))
 				Expect(fileContents).To(Equal("[]\n"))
+			})
+		})
+	})
+
+	withoutBackwardsCompatibility(func() {
+		// `captain parse results` is a hidden command and not part of our public interface, so we don't
+		// assure backwards compatibility
+		Describe("captain parse", func() {
+			Describe("results", func() {
+				It("produces RWX JSON with the parsers", func() {
+					result := runCaptain(captainArgs{
+						args: []string{"parse", "results", "fixtures/rspec.json"},
+						env:  make(map[string]string),
+					})
+
+					Expect(result.exitCode).To(Equal(0))
+					cupaloy.SnapshotT(GinkgoT(), result.stdout)
+				})
 			})
 		})
 	})
