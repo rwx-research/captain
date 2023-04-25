@@ -268,6 +268,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 			Expect(err).ToNot(HaveOccurred())
 			return fmt.Sprintf(string(data), substitution)
 		}
+
 		It("fails if suite id is empty string", func() {
 			result := runCaptain(captainArgs{
 				args: []string{
@@ -557,6 +558,35 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 			Expect(result.exitCode).To(Equal(123))
 			withoutBackwardsCompatibility(func() {
 				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+			})
+		})
+
+		It("accepts the language and framework flags CLI flags and parses with their parser", func() {
+			tmp, err := os.MkdirTemp("", "*")
+			Expect(err).NotTo(HaveOccurred())
+
+			os.Remove(filepath.Join(tmp, "rwx-v1.json"))
+
+			result := runCaptain(captainArgs{
+				args: []string{
+					"run",
+					"captain-cli-functional-tests",
+					"--test-results", "fixtures/integration-tests/rspec-failed-not-quarantined.json",
+					"--language", "Ruby",
+					"--framework", "RSpec",
+					"--reporter", fmt.Sprintf("rwx-v1-json=%v", filepath.Join(tmp, "rwx-v1.json")),
+					"-c", "bash -c 'exit 123'",
+				},
+				env: make(map[string]string),
+			})
+
+			data, err := ioutil.ReadFile(filepath.Join(tmp, "rwx-v1.json"))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(result.exitCode).To(Equal(123))
+			withoutBackwardsCompatibility(func() {
+				Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
+				cupaloy.SnapshotT(GinkgoT(), data)
 			})
 		})
 
