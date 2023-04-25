@@ -44,12 +44,12 @@ func addFrameworkFlags(command *cobra.Command, frameworkParams *frameworkParams)
 
 func bindFrameworkFlags(cfg Config, frameworkParams frameworkParams, suiteID string) Config {
 	if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
-		if frameworkParams.language != "" {
+		if frameworkParams.kind != "" {
 			suiteConfig.Results.Framework = frameworkParams.kind
 		}
 
 		if frameworkParams.language != "" {
-			suiteConfig.Results.Language = frameworkParams.kind
+			suiteConfig.Results.Language = frameworkParams.language
 		}
 
 		cfg.TestSuites[suiteID] = suiteConfig
