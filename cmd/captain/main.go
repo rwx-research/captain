@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 
 	captainCLI "github.com/rwx-research/captain-cli"
-	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
@@ -28,37 +27,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	// add and remove
 	configureAddCmd(rootCmd, &cliArgs)
 	configureRemoveCmd(rootCmd, &cliArgs)
 
 	// quarantine
 	AddQuarantineFlags(rootCmd, &cliArgs)
 
-	// add and remove
-	// parseCmd represents the `parse` sub-command itself
-	// TODO: consider adding some help text here as well. The command is hidden, but maybe adding a small blurb
-	// when running `captain help parse` would be useful.
-	parseCmd := &cobra.Command{
-		Use:               "parse",
-		Hidden:            true,
-		PersistentPreRunE: unsafeInitParsingOnly(&cliArgs),
+	// parse
+	if err := configureParseCmd(rootCmd, &cliArgs); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
-
-	// parseResultsCmd is the 'results' sub-command of 'parse'
-	parseResultsCmd := &cobra.Command{
-		Use: "results [flags] <args>",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// note: fetching from the parent command because this command doesn't run PreRunE
-			captain, err := cli.GetService(parseCmd)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			return errors.WithStack(captain.Parse(cmd.Context(), args))
-		},
-	}
-	addFrameworkFlags(parseResultsCmd, &cliArgs.frameworkParams)
-	parseCmd.AddCommand(parseResultsCmd)
-	rootCmd.AddCommand(parseCmd)
 
 	if err := configurePartitionCmd(rootCmd, &cliArgs); err != nil {
 		fmt.Fprintln(os.Stderr, err)

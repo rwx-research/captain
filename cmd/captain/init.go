@@ -150,9 +150,11 @@ func initCliServiceWithConfig(
 func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		err := func() error {
-			if err := extractSuiteIDFromPositionalArgs(&cliArgs.RootCliArgs, args); err != nil {
-				return err
+			cliArgs.RootCliArgs.positionalArgs = args
+			if cliArgs.RootCliArgs.suiteID == "" {
+				cliArgs.RootCliArgs.suiteID = "placeholder"
 			}
+
 			cfg, err := InitConfig(cmd, *cliArgs)
 			if err != nil {
 				return errors.WithStack(err)
