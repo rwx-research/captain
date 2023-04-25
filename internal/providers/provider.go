@@ -89,10 +89,15 @@ func Merge(into Provider, from Provider) Provider {
 		into.CommitSha = firstNonempty(from.CommitSha, into.CommitSha)
 		into.CommitMessage = firstNonempty(from.CommitMessage, into.CommitMessage)
 		into.Title = firstNonempty(from.Title, into.Title)
-		if (into.PartitionNodes.Index < 0 || into.PartitionNodes.Total < 0) &&
-			(from.PartitionNodes.Index >= 0 && from.PartitionNodes.Total >= 1) {
+
+		intoPartitionImplicitlyUnset := into.PartitionNodes == config.PartitionNodes{}
+		intoPartitionExplicitlyUnset := into.PartitionNodes.Index < 0 || into.PartitionNodes.Total < 0
+		fromPartitionExplicitlySet := from.PartitionNodes.Index >= 0 && from.PartitionNodes.Total >= 1
+
+		if fromPartitionExplicitlySet && (intoPartitionExplicitlyUnset || intoPartitionImplicitlyUnset) {
 			into.PartitionNodes = from.PartitionNodes
 		}
+
 		return into
 	}
 	return from
