@@ -144,6 +144,35 @@ var _ = Describe("RunConfig", func() {
 			Expect(err.Error()).To(ContainSubstring("Unsupported partitioning setup"))
 		})
 
+		It("errs when partitioning and partition config has nonsense index", func() {
+			err := cli.RunConfig{
+				PartitionCommandTemplate: "something {{ testFiles }}",
+				PartitionConfig: cli.PartitionConfig{
+					SuiteID: "your-suite",
+					PartitionNodes: config.PartitionNodes{
+						Index: -1,
+						Total: 1,
+					},
+				},
+			}.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Missing partition index"))
+		})
+
+		It("is not an error when partitioning is configured but not currently partitioning", func() {
+			err := cli.RunConfig{
+				PartitionCommandTemplate: "something {{ testFiles }}",
+				PartitionConfig: cli.PartitionConfig{
+					SuiteID: "your-suite",
+					PartitionNodes: config.PartitionNodes{
+						Index: -1,
+						Total: -1,
+					},
+				},
+			}.Validate()
+			Expect(err).NotTo(HaveOccurred())
+		})
+
 		It("is valid when partitioning and partition config has command and globs", func() {
 			err := cli.RunConfig{
 				PartitionCommandTemplate: "something {{ testFiles }}",
@@ -205,7 +234,7 @@ var _ = Describe("RunConfig", func() {
 			Expect(cli.RunConfig{}.IsRunningPartition()).To(Equal(false))
 		})
 
-		It("returns false when partition command template is set, but neither partition index nor total are set", func() {
+		It("returns false when partition command template is set, but partition nodes are defaulted to -1", func() {
 			rc := cli.RunConfig{
 				PartitionCommandTemplate: "bin/rspec {{testFiles}}",
 				PartitionConfig: cli.PartitionConfig{
@@ -218,16 +247,12 @@ var _ = Describe("RunConfig", func() {
 			Expect(rc.IsRunningPartition()).To(Equal(false))
 		})
 
-		It("returns true when partition command template and partition index is set", func() {
+		It("returns false when partition command template is set, but neither partition nodes are unset", func() {
 			rc := cli.RunConfig{
 				PartitionCommandTemplate: "bin/rspec {{testFiles}}",
-				PartitionConfig: cli.PartitionConfig{
-					PartitionNodes: config.PartitionNodes{
-						Index: 0,
-					},
-				},
+				PartitionConfig:          cli.PartitionConfig{},
 			}
-			Expect(rc.IsRunningPartition()).To(Equal(true))
+			Expect(rc.IsRunningPartition()).To(Equal(false))
 		})
 
 		It("returns true when partition command template and partition total is set", func() {
@@ -235,6 +260,7 @@ var _ = Describe("RunConfig", func() {
 				PartitionCommandTemplate: "bin/rspec {{testFiles}}",
 				PartitionConfig: cli.PartitionConfig{
 					PartitionNodes: config.PartitionNodes{
+						Index: 0,
 						Total: 2,
 					},
 				},
