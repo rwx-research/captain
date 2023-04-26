@@ -137,8 +137,7 @@ func (rc RunConfig) MaxTestsToRetryPercentage() (*float64, error) {
 
 func (rc RunConfig) IsRunningPartition() bool {
 	// TODO: Should we have a bit somewhere that indicates provider defaulted?
-	return rc.PartitionCommandTemplate != "" &&
-		(rc.PartitionConfig.PartitionNodes.Index != -1 || rc.PartitionConfig.PartitionNodes.Total != -1)
+	return rc.PartitionCommandTemplate != "" && rc.PartitionConfig.PartitionNodes.Total >= 1
 }
 
 type PartitionConfig struct {

@@ -779,6 +779,22 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				Expect(result.exitCode).To(Equal(0))
 			})
 		})
+
+		Context("when partitioning is configured but flags aren't provided", func() {
+			It("runs the default run command", func() {
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"oss-run-with-partition",
+						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(result.exitCode).To(Equal(123))
+				Expect(result.stdout).To(Equal("default run"))
+			})
+		})
 	})
 
 	Describe("captain run w/ partition", func() {
