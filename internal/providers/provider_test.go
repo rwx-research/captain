@@ -129,6 +129,90 @@ var _ = Describe("providers.Merge", func() {
 		merged := providers.Merge(provider1, provider2)
 		Expect(merged.PartitionNodes).To(Equal(provider1.PartitionNodes))
 	})
+
+	It("merges partition nodes when into implicitly unset and from is explicitly set", func() {
+		genericWithNodes := providers.Provider{
+			AttemptedBy:    "me",
+			BranchName:     "main",
+			CommitSha:      "abc123",
+			CommitMessage:  "one commit message",
+			JobTags:        map[string]any{},
+			ProviderName:   "generic",
+			Title:          "some-title",
+			PartitionNodes: config.PartitionNodes{Index: 0, Total: 2},
+		}
+
+		githubWithoutNodes := providers.Provider{
+			AttemptedBy:   "you",
+			BranchName:    "test-branch",
+			CommitSha:     "qrs789",
+			CommitMessage: "another commit message",
+			JobTags:       map[string]any{},
+			ProviderName:  "GitHub",
+			Title:         "another-title",
+			// NOTE: no PartitionNodes are set
+		}
+
+		merged := providers.Merge(githubWithoutNodes, genericWithNodes)
+		Expect(merged.PartitionNodes.Index).To(Equal(0))
+		Expect(merged.PartitionNodes.Total).To(Equal(2))
+	})
+
+	It("merges partition nodes when into explicitly unset and from is explicitly set", func() {
+		genericWithNodes := providers.Provider{
+			AttemptedBy:    "me",
+			BranchName:     "main",
+			CommitSha:      "abc123",
+			CommitMessage:  "one commit message",
+			JobTags:        map[string]any{},
+			ProviderName:   "generic",
+			Title:          "some-title",
+			PartitionNodes: config.PartitionNodes{Index: 0, Total: 2},
+		}
+
+		githubWithoutNodes := providers.Provider{
+			AttemptedBy:    "you",
+			BranchName:     "test-branch",
+			CommitSha:      "qrs789",
+			CommitMessage:  "another commit message",
+			JobTags:        map[string]any{},
+			ProviderName:   "GitHub",
+			Title:          "another-title",
+			PartitionNodes: config.PartitionNodes{Index: -1, Total: -1},
+		}
+
+		merged := providers.Merge(githubWithoutNodes, genericWithNodes)
+		Expect(merged.PartitionNodes.Index).To(Equal(0))
+		Expect(merged.PartitionNodes.Total).To(Equal(2))
+	})
+
+	It("does not merge partition nodes when into explicitly set and from is explicitly set", func() {
+		genericWithNodes := providers.Provider{
+			AttemptedBy:    "me",
+			BranchName:     "main",
+			CommitSha:      "abc123",
+			CommitMessage:  "one commit message",
+			JobTags:        map[string]any{},
+			ProviderName:   "generic",
+			Title:          "some-title",
+			PartitionNodes: config.PartitionNodes{Index: 0, Total: 2},
+		}
+
+		githubWithoutNodes := providers.Provider{
+			AttemptedBy:    "you",
+			BranchName:     "test-branch",
+			CommitSha:      "qrs789",
+			CommitMessage:  "another commit message",
+			JobTags:        map[string]any{},
+			ProviderName:   "GitHub",
+			Title:          "another-title",
+			PartitionNodes: config.PartitionNodes{Index: 1, Total: 3},
+		}
+
+		merged := providers.Merge(githubWithoutNodes, genericWithNodes)
+		Expect(merged.PartitionNodes.Index).To(Equal(1))
+		Expect(merged.PartitionNodes.Total).To(Equal(3))
+	})
 })
 
 var _ = Describe("MakeProvider", func() {
