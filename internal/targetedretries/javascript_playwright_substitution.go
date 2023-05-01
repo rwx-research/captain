@@ -14,6 +14,10 @@ func (s JavaScriptPlaywrightSubstitution) Example() string {
 	return "npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'"
 }
 
+func (s JavaScriptPlaywrightSubstitution) SuffixExample() string {
+	return "'{{ file }}' --project '{{ project }}' --grep '{{ grep }}'"
+}
+
 func (s JavaScriptPlaywrightSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

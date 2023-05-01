@@ -13,6 +13,10 @@ func (s PHPUnitSubstitution) Example() string {
 	return "vendor/bin/phpunit --filter '{{ filter }}' '{{ file }}'"
 }
 
+func (s PHPUnitSubstitution) SuffixExample() string {
+	return "--filter '{{ filter }}' '{{ file }}'"
+}
+
 func (s PHPUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

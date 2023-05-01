@@ -14,6 +14,10 @@ func (s RubyMinitestSubstitution) Example() string {
 	return "bin/rails test {{ tests }}"
 }
 
+func (s RubyMinitestSubstitution) SuffixExample() string {
+	return "{{ tests }}"
+}
+
 func (s RubyMinitestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

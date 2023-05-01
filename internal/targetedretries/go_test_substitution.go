@@ -14,6 +14,10 @@ func (s GoTestSubstitution) Example() string {
 	return "go test '{{ package }}' -run '{{ run }}'"
 }
 
+func (s GoTestSubstitution) SuffixExample() string {
+	return "'{{ package }}' -run '{{ run }}'"
+}
+
 func (s GoTestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

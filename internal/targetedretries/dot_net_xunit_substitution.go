@@ -14,6 +14,10 @@ func (s DotNetxUnitSubstitution) Example() string {
 	return "dotnet test --filter '{{ filter }}'"
 }
 
+func (s DotNetxUnitSubstitution) SuffixExample() string {
+	return "--filter '{{ filter }}'"
+}
+
 func (s DotNetxUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

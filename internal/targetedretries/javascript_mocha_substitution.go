@@ -14,6 +14,10 @@ func (s JavaScriptMochaSubstitution) Example() string {
 	return "npx mocha '{{ file }}' --grep '{{ grep }}'"
 }
 
+func (s JavaScriptMochaSubstitution) SuffixExample() string {
+	return "'{{ file }}' --grep '{{ grep }}'"
+}
+
 func (s JavaScriptMochaSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

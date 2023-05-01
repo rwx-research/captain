@@ -14,6 +14,10 @@ func (s PythonPytestSubstitution) Example() string {
 	return "pytest {{ tests }}"
 }
 
+func (s PythonPytestSubstitution) SuffixExample() string {
+	return "{{ tests }}"
+}
+
 func (s PythonPytestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

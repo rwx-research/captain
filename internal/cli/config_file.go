@@ -29,6 +29,7 @@ type SuiteConfigResults struct {
 type SuiteConfigRetries struct {
 	Attempts                  int
 	Command                   string
+	CommandSuffix             string
 	FailFast                  bool `yaml:"fail-fast"`
 	FlakyAttempts             int  `yaml:"flaky-attempts"`
 	MaxTests                  string

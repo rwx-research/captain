@@ -17,6 +17,10 @@ func (s JSONSubstitution) Example() string {
 	return "bin/your-script {{ jsonFilePath }}"
 }
 
+func (s JSONSubstitution) SuffixExample() string {
+	return "{{ jsonFilePath }}"
+}
+
 func (s JSONSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

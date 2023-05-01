@@ -14,6 +14,10 @@ func (s RubyCucumberSubstitution) Example() string {
 	return "bundle exec cucumber {{ examples }}"
 }
 
+func (s RubyCucumberSubstitution) SuffixExample() string {
+	return "{{ examples }}"
+}
+
 func (s RubyCucumberSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

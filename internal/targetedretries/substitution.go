@@ -10,6 +10,7 @@ import (
 
 type Substitution interface {
 	Example() string
+	SuffixExample() string
 	ValidateTemplate(compiledTemplate CompiledTemplate) error
 	SubstitutionsFor(
 		_ CompiledTemplate,

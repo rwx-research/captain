@@ -14,6 +14,10 @@ func (s PythonUnitTestSubstitution) Example() string {
 	return "python -m xmlrunner {{ tests }}"
 }
 
+func (s PythonUnitTestSubstitution) SuffixExample() string {
+	return "{{ tests }}"
+}
+
 func (s PythonUnitTestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

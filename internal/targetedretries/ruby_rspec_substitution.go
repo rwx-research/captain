@@ -14,6 +14,10 @@ func (s RubyRSpecSubstitution) Example() string {
 	return "bundle exec rspec {{ tests }}"
 }
 
+func (s RubyRSpecSubstitution) SuffixExample() string {
+	return "{{ tests }}"
+}
+
 func (s RubyRSpecSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

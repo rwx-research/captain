@@ -14,6 +14,10 @@ func (s JavaScriptJestSubstitution) Example() string {
 	return "npx jest --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'"
 }
 
+func (s JavaScriptJestSubstitution) SuffixExample() string {
+	return "--testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'"
+}
+
 func (s JavaScriptJestSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

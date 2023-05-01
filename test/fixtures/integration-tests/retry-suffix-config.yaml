@@ -1,0 +1,61 @@
+test-suites:
+  buildkite-quarantined-retries-with-config:
+    command: bash -c 'exit 123'
+    fail-on-upload-error: true
+    results:
+      language: Ruby
+      framework: RSpec
+      path: ./fixtures/integration-tests/retries/with-config-buildkite-rspec-failed-not-quarantined.json*
+    retries:
+      attempts: 2
+      command-suffix: "{{ tests }}"
+  circleci-quarantined-retries-with-config:
+    command: bash -c 'exit 123'
+    fail-on-upload-error: true
+    results:
+      language: Ruby
+      framework: RSpec
+      path: ./fixtures/integration-tests/retries/with-config-circleci-rspec-failed-not-quarantined.json*
+    retries:
+      attempts: 2
+      command-suffix: "{{ tests }}"
+  github-actions-quarantined-retries-with-config:
+    command: bash -c 'exit 123'
+    fail-on-upload-error: true
+    results:
+      language: Ruby
+      framework: RSpec
+      path: ./fixtures/integration-tests/retries/with-config-github-actions-rspec-failed-not-quarantined.json*
+    retries:
+      attempts: 2
+      command-suffix: "{{ tests }}"
+  gitlab-ci-quarantined-retries-with-config:
+    command: bash -c 'exit 123'
+    fail-on-upload-error: true
+    results:
+      language: Ruby
+      framework: RSpec
+      path: ./fixtures/integration-tests/retries/with-config-gitlab-ci-rspec-failed-not-quarantined.json*
+    retries:
+      attempts: 2
+      command-suffix: "{{ tests }}"
+  generic-quarantined-retries-with-config:
+    command: bash -c 'exit 123'
+    fail-on-upload-error: true
+    results:
+      language: Ruby
+      framework: RSpec
+      path: ./fixtures/integration-tests/retries/with-config-generic-rspec-failed-not-quarantined.json*
+    retries:
+      attempts: 2
+      command-suffix: "{{ tests }}"
+  inherited-env-quarantined-retries-with-config:
+    command: bash -c 'exit 123'
+    fail-on-upload-error: true
+    results:
+      language: Ruby
+      framework: RSpec
+      path: ./fixtures/integration-tests/retries/with-config-inherited-env-rspec-failed-not-quarantined.json*
+    retries:
+      attempts: 2
+      command-suffix: "{{ tests }}"

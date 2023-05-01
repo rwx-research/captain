@@ -14,6 +14,10 @@ func (s GoGinkgoSubstitution) Example() string {
 	return "ginkgo run {{ tests }} ./..."
 }
 
+func (s GoGinkgoSubstitution) SuffixExample() string {
+	return "{{ tests }}"
+}
+
 func (s GoGinkgoSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

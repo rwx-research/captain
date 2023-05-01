@@ -14,6 +14,10 @@ func (s JavaScriptCypressSubstitution) Example() string {
 	return "npx cypress run --spec '{{ spec }}' --env {{ grep }}"
 }
 
+func (s JavaScriptCypressSubstitution) SuffixExample() string {
+	return "--spec '{{ spec }}' --env {{ grep }}"
+}
+
 func (s JavaScriptCypressSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 

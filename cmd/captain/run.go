@@ -30,6 +30,7 @@ type CliArgs struct {
 	reporters                 []string
 	Retries                   int
 	retryCommandTemplate      string
+	retryCommandSuffix        string
 	updateStoredResults       bool
 	GenericProvider           providers.GenericEnv
 	frameworkParams           frameworkParams
@@ -103,6 +104,9 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 				quiet = suiteConfig.Output.Quiet
 				retries = suiteConfig.Retries.Attempts
 				retryCommand = suiteConfig.Retries.Command
+				if retryCommand == "" && suiteConfig.Retries.CommandSuffix != "" {
+					retryCommand = fmt.Sprintf("%s %s", command, suiteConfig.Retries.CommandSuffix)
+				}
 				intermediateArtifactsPath = suiteConfig.Retries.IntermediateArtifactsPath
 				testResultsPath = os.ExpandEnv(suiteConfig.Results.Path)
 			}
@@ -245,13 +249,18 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 	}
 
 	formattedSubstitutionExamples := make([]string, len(targetedretries.SubstitutionsByFramework))
+	formattedSubstitutionSuffixExamples := make([]string, len(targetedretries.SubstitutionsByFramework))
 	i := 0
 	for framework, substitution := range targetedretries.SubstitutionsByFramework {
 		formattedSubstitutionExamples[i] = fmt.Sprintf("  %v: --retry-command \"%v\"", framework, substitution.Example())
+		formattedSubstitutionSuffixExamples[i] = fmt.Sprintf("  %v: --retry-command-suffix \"%v\"", framework, substitution.SuffixExample())
 		i++
 	}
 	sort.SliceStable(formattedSubstitutionExamples, func(i, j int) bool {
 		return strings.ToLower(formattedSubstitutionExamples[i]) < strings.ToLower(formattedSubstitutionExamples[j])
+	})
+	sort.SliceStable(formattedSubstitutionSuffixExamples, func(i, j int) bool {
+		return strings.ToLower(formattedSubstitutionSuffixExamples[i]) < strings.ToLower(formattedSubstitutionSuffixExamples[j])
 	})
 
 	runCmd.Flags().StringVar(
@@ -264,6 +273,19 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 				"Examples:\n  Custom: --retry-command \"%v\"\n%v",
 			targetedretries.JSONSubstitution{}.Example(),
 			strings.Join(formattedSubstitutionExamples, "\n"),
+		),
+	)
+
+	runCmd.Flags().StringVar(
+		&cliArgs.retryCommandSuffix,
+		"retry-command-suffix",
+		"",
+		fmt.Sprintf(
+			"the arguments that will be appended to your test suite's command when retrying"+
+				"(one of --retry-command-suffix or --retry-comand is required if --retries or --flaky-retries is passed)\n"+
+				"Examples:\n  Custom: --retry-command-suffix \"%v\"\n%v",
+			targetedretries.JSONSubstitution{}.SuffixExample(),
+			strings.Join(formattedSubstitutionSuffixExamples, "\n"),
 		),
 	)
 
@@ -345,6 +367,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 
 		if cliArgs.retryCommandTemplate != "" {
 			suiteConfig.Retries.Command = cliArgs.retryCommandTemplate
+		}
+
+		if cliArgs.retryCommandSuffix != "" {
+			suiteConfig.Retries.CommandSuffix = cliArgs.retryCommandSuffix
 		}
 
 		if cliArgs.intermediateArtifactsPath != "" {

@@ -15,6 +15,10 @@ func (s ElixirExUnitSubstitution) Example() string {
 	return "mix test {{ tests }}"
 }
 
+func (s ElixirExUnitSubstitution) SuffixExample() string {
+	return "{{ tests }}"
+}
+
 func (s ElixirExUnitSubstitution) ValidateTemplate(compiledTemplate CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
 
