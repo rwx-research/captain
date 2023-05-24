@@ -133,7 +133,9 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 				return cfg, errors.Wrap(err, fmt.Sprintf("unable to open config file %q", cliArgs.RootCliArgs.configFilePath))
 			}
 		} else {
-			if err = yaml.NewDecoder(fd).Decode(&cfg.ConfigFile); err != nil {
+			decoder := yaml.NewDecoder(fd)
+			decoder.KnownFields(true)
+			if err = decoder.Decode(&cfg.ConfigFile); err != nil {
 				return cfg, errors.Wrap(err, "unable to parse config file")
 			}
 		}
