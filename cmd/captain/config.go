@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/caarlos0/env/v7"
 	"github.com/spf13/cobra"
@@ -136,6 +137,16 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 			decoder := yaml.NewDecoder(fd)
 			decoder.KnownFields(true)
 			if err = decoder.Decode(&cfg.ConfigFile); err != nil {
+				typeError := new(yaml.TypeError)
+				if errors.As(err, &typeError) {
+					err = errors.NewConfigurationError(
+						"Parsing Error",
+						strings.Join(typeError.Errors, "\n"),
+						"Please refer to the documentation at https://www.rwx.com/docs/captain/cli-configuration/config-yaml for the"+
+							" correct config file syntax.",
+					)
+				}
+
 				return cfg, errors.Wrap(err, "unable to parse config file")
 			}
 		}
