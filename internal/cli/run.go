@@ -24,7 +24,7 @@ import (
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.
 func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
-	err := cfg.Validate()
+	err := cfg.Validate(s.Log)
 	if err != nil {
 		return errors.WithStack(err)
 	}

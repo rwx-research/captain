@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 
+	"go.uber.org/zap"
+
 	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
@@ -40,7 +42,7 @@ var maxTestsToRetryRegexp = regexp.MustCompile(
 	`^\s*(?P<failureCount>\d+)\s*$|^\s*(?:(?P<failurePercentage>\d+(?:\.\d+)?)%)\s*$`,
 )
 
-func (rc RunConfig) Validate() error {
+func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
 	if rc.RetryCommandTemplate == "" && (rc.Retries > 0 || rc.FlakyRetries > 0) {
 		return errors.NewConfigurationError(
 			"Missing retry command",
@@ -49,6 +51,11 @@ func (rc RunConfig) Validate() error {
 				"use the Captain configuration file to permanently set a command template for a "+
 				"given test suite.",
 		)
+	}
+
+	if rc.RetryCommandTemplate != "" && !(rc.Retries > 0 || rc.FlakyRetries > 0) {
+		log.Warn("There is a retry command configured for this test suite, however the retry count is set to 0.")
+		log.Warn("Retries are disabled.")
 	}
 
 	if rc.MaxTestsToRetry != "" && !maxTestsToRetryRegexp.MatchString(rc.MaxTestsToRetry) {
@@ -63,34 +70,13 @@ func (rc RunConfig) Validate() error {
 		)
 	}
 
-	// The following three checks are necessary because rc.IsRunningPartition() prevents us from running `Validate` on the PartitionConfig
-	// directly.
-	if rc.PartitionCommandTemplate == "" && (rc.PartitionConfig.PartitionNodes.Total > 0) {
-		return errors.NewConfigurationError(
-			"Missing partition command",
-			"You seem to have partitioning enabled, but there is no partition command template configured.",
-			"The partition command template can be set using the --partition-command flag. Alternatively, you can "+
-				"use the Captain configuration file to permanently set a command template for a "+
-				"given test suite.",
-		)
+	if rc.MaxTestsToRetry != "" && !(rc.Retries > 0 || rc.FlakyRetries > 0) {
+		log.Warn("The --max-tests-to-retry flag has no effect as no retries are otherwise configured.")
 	}
 
-	if rc.PartitionCommandTemplate != "" && rc.PartitionConfig.PartitionNodes.Total <= 0 && rc.PartitionConfig.PartitionNodes.Index < 0 {
-		return errors.NewConfigurationError(
-			"Missing partition configuration",
-			"You seem to use a partition command, but there is no partition index or partition total configured.",
-			"The partition configuration can be set using the --partition-index and --partition-total flags. Alternatively, you "+
-				"can use the Captain configuration file to permanently set these values for a  given test suite.",
-		)
-	}
-
-	if rc.PartitionConfig.PartitionNodes.Index >= 0 && rc.PartitionConfig.PartitionNodes.Total <= 0 {
-		return errors.NewConfigurationError(
-			"Invalid partition configuration",
-			"You seem to have a partition index set, but the partition total is 0.",
-			"To enable partitioning, be sure to also set the --partition-command and --partition-total flags (or corresponding "+
-				"values in the configuration file)",
-		)
+	if rc.PartitionCommandTemplate != "" && rc.PartitionConfig.PartitionNodes.Total <= 0 {
+		log.Warnf("There is a partition command configured for this test suite, however the partition total is set to 0.")
+		log.Warnf("Partitioning is disabled.")
 	}
 
 	if rc.IsRunningPartition() {
