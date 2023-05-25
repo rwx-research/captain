@@ -56,11 +56,6 @@ func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	if (cfg.ProvidedFrameworkKind != "" && cfg.ProvidedFrameworkLanguage == "") ||
-		(cfg.ProvidedFrameworkKind == "" && cfg.ProvidedFrameworkLanguage != "") {
-		return nil, errors.NewInputError("Must provide both language and kind when one is provided")
-	}
-
 	var parsers []Parser
 	var coercedFramework *v1.Framework
 	if cfg.ProvidedFrameworkKind == "" && cfg.ProvidedFrameworkLanguage == "" {
@@ -70,6 +65,15 @@ func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
 		framework := v1.CoerceFramework(cfg.ProvidedFrameworkLanguage, cfg.ProvidedFrameworkKind)
 
 		if framework.IsOther() {
+			cfg.Logger.Warnf(
+				"Could not find a suitable parser for %q and %q - Captain will fall back to generic parsers.",
+				cfg.ProvidedFrameworkLanguage,
+				cfg.ProvidedFrameworkKind,
+			)
+			cfg.Logger.Warnln(
+				"If this fails, omit the `--language` and `--framework` flags to attempt parsing with all available parsers" +
+					" instead.",
+			)
 			parsers = cfg.GenericParsers
 		} else {
 			parsers = append(parsers, cfg.FrameworkParsers[framework]...)
