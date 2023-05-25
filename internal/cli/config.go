@@ -63,20 +63,40 @@ func (rc RunConfig) Validate() error {
 		)
 	}
 
+	// The following three checks are necessary because rc.IsRunningPartition() prevents us from running `Validate` on the PartitionConfig
+	// directly.
+	if rc.PartitionCommandTemplate == "" && (rc.PartitionConfig.PartitionNodes.Total > 0) {
+		return errors.NewConfigurationError(
+			"Missing partition command",
+			"You seem to have partitioning enabled, but there is no partition command template configured.",
+			"The partition command template can be set using the --partition-command flag. Alternatively, you can "+
+				"use the Captain configuration file to permanently set a command template for a "+
+				"given test suite.",
+		)
+	}
+
+	if rc.PartitionCommandTemplate != "" && rc.PartitionConfig.PartitionNodes.Total <= 0 && rc.PartitionConfig.PartitionNodes.Index < 0 {
+		return errors.NewConfigurationError(
+			"Missing partition configuration",
+			"You seem to use a partition command, but there is no partition index or partition total configured.",
+			"The partition configuration can be set using the --partition-index and --partition-total flags. Alternatively, you "+
+				"can use the Captain configuration file to permanently set these values for a  given test suite.",
+		)
+	}
+
+	if rc.PartitionConfig.PartitionNodes.Index >= 0 && rc.PartitionConfig.PartitionNodes.Total <= 0 {
+		return errors.NewConfigurationError(
+			"Invalid partition configuration",
+			"You seem to have a partition index set, but the partition total is 0.",
+			"To enable partitioning, be sure to also set the --partition-command and --partition-total flags (or corresponding "+
+				"values in the configuration file)",
+		)
+	}
+
 	if rc.IsRunningPartition() {
 		err := rc.PartitionConfig.Validate()
 		if err != nil {
 			return errors.WithStack(err)
-		}
-
-		if rc.PartitionCommandTemplate == "" {
-			return errors.NewConfigurationError(
-				"Missing partition command",
-				"You seem to be passing partition specific options, but there is no partition command template configured.",
-				"The partition command template can be set using the --partition-command flag. Alternatively, you can "+
-					"use the Captain configuration file to permanently set a partition command template for a "+
-					"given test suite.",
-			)
 		}
 	}
 
