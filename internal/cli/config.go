@@ -74,9 +74,8 @@ func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
 		log.Warn("The --max-tests-to-retry flag has no effect as no retries are otherwise configured.")
 	}
 
-	if rc.PartitionCommandTemplate != "" && rc.PartitionConfig.PartitionNodes.Total <= 0 {
-		log.Warnf("There is a partition command configured for this test suite, however the partition total is set to 0.")
-		log.Warnf("Partitioning is disabled.")
+	if rc.PartitionCommandTemplate != "" && rc.PartitionConfig.PartitionNodes.Total <= 1 {
+		log.Warnf("There is a partition command configured for this test suite, but partitioning is disabled.")
 	}
 
 	if rc.IsRunningPartition() {
