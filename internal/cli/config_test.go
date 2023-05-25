@@ -1,6 +1,8 @@
 package cli_test
 
 import (
+	"go.uber.org/zap/zaptest"
+
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/config"
 
@@ -9,94 +11,96 @@ import (
 )
 
 var _ = Describe("RunConfig", func() {
+	logger := zaptest.NewLogger(GinkgoT()).Sugar()
+
 	Describe("Validate", func() {
 		It("errs when max-tests-to-retry is neither an integer nor float percentage", func() {
 			var err error
 
-			err = cli.RunConfig{MaxTestsToRetry: "1.5"}.Validate()
+			err = cli.RunConfig{MaxTestsToRetry: "1.5"}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unsupported --max-tests-to-retry value"))
 
-			err = cli.RunConfig{MaxTestsToRetry: "something"}.Validate()
+			err = cli.RunConfig{MaxTestsToRetry: "something"}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unsupported --max-tests-to-retry value"))
 
-			err = cli.RunConfig{MaxTestsToRetry: "something%"}.Validate()
+			err = cli.RunConfig{MaxTestsToRetry: "something%"}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unsupported --max-tests-to-retry value"))
 
-			err = cli.RunConfig{MaxTestsToRetry: " 1 "}.Validate()
+			err = cli.RunConfig{MaxTestsToRetry: " 1 "}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = cli.RunConfig{MaxTestsToRetry: " 1.5% "}.Validate()
+			err = cli.RunConfig{MaxTestsToRetry: " 1.5% "}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = cli.RunConfig{MaxTestsToRetry: " 1% "}.Validate()
+			err = cli.RunConfig{MaxTestsToRetry: " 1% "}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = cli.RunConfig{MaxTestsToRetry: ""}.Validate()
+			err = cli.RunConfig{MaxTestsToRetry: ""}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("errs when retries are positive and the retry command is missing", func() {
-			err := cli.RunConfig{Retries: 1, RetryCommandTemplate: ""}.Validate()
+			err := cli.RunConfig{Retries: 1, RetryCommandTemplate: ""}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Missing retry command"))
 		})
 
 		It("errs when flaky-retries are positive and the retry command is missing", func() {
-			err := cli.RunConfig{FlakyRetries: 1, RetryCommandTemplate: ""}.Validate()
+			err := cli.RunConfig{FlakyRetries: 1, RetryCommandTemplate: ""}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Missing retry command"))
 		})
 
 		It("is valid when retries are positive and the retry command is present", func() {
-			err := cli.RunConfig{Retries: 1, RetryCommandTemplate: "some-command"}.Validate()
+			err := cli.RunConfig{Retries: 1, RetryCommandTemplate: "some-command"}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when flaky-retries are positive and the retry command is present", func() {
-			err := cli.RunConfig{FlakyRetries: 1, RetryCommandTemplate: "some-command"}.Validate()
+			err := cli.RunConfig{FlakyRetries: 1, RetryCommandTemplate: "some-command"}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when retries are 0 and the retry command is missing", func() {
-			err := cli.RunConfig{Retries: 0, RetryCommandTemplate: ""}.Validate()
+			err := cli.RunConfig{Retries: 0, RetryCommandTemplate: ""}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when flaky-retries are 0 and the retry command is missing", func() {
-			err := cli.RunConfig{FlakyRetries: 0, RetryCommandTemplate: ""}.Validate()
+			err := cli.RunConfig{FlakyRetries: 0, RetryCommandTemplate: ""}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when retries are 0 and the retry command is present", func() {
-			err := cli.RunConfig{Retries: 0, RetryCommandTemplate: "some-command"}.Validate()
+			err := cli.RunConfig{Retries: 0, RetryCommandTemplate: "some-command"}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when flaky-retries are 0 and the retry command is present", func() {
-			err := cli.RunConfig{FlakyRetries: 0, RetryCommandTemplate: "some-command"}.Validate()
+			err := cli.RunConfig{FlakyRetries: 0, RetryCommandTemplate: "some-command"}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when retries are negative and the retry command is missing", func() {
-			err := cli.RunConfig{Retries: -1, RetryCommandTemplate: ""}.Validate()
+			err := cli.RunConfig{Retries: -1, RetryCommandTemplate: ""}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when flaky-retries are negative and the retry command is missing", func() {
-			err := cli.RunConfig{FlakyRetries: -1, RetryCommandTemplate: ""}.Validate()
+			err := cli.RunConfig{FlakyRetries: -1, RetryCommandTemplate: ""}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when retries are negative and the retry command is present", func() {
-			err := cli.RunConfig{Retries: -1, RetryCommandTemplate: "some-command"}.Validate()
+			err := cli.RunConfig{Retries: -1, RetryCommandTemplate: "some-command"}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("is valid when flaky-retries are negative and the retry command is present", func() {
-			err := cli.RunConfig{FlakyRetries: -1, RetryCommandTemplate: "some-command"}.Validate()
+			err := cli.RunConfig{FlakyRetries: -1, RetryCommandTemplate: "some-command"}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -109,7 +113,7 @@ var _ = Describe("RunConfig", func() {
 						Total: 1,
 					},
 				},
-			}.Validate()
+			}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Missing suite ID"))
 		})
@@ -124,7 +128,7 @@ var _ = Describe("RunConfig", func() {
 						Total: 1,
 					},
 				},
-			}.Validate()
+			}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Missing test file paths"))
 		})
@@ -139,7 +143,7 @@ var _ = Describe("RunConfig", func() {
 						Total: 1,
 					},
 				},
-			}.Validate()
+			}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unsupported partitioning setup"))
 		})
@@ -154,7 +158,7 @@ var _ = Describe("RunConfig", func() {
 						Total: 1,
 					},
 				},
-			}.Validate()
+			}.Validate(logger)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Missing partition index"))
 		})
@@ -169,7 +173,7 @@ var _ = Describe("RunConfig", func() {
 						Total: -1,
 					},
 				},
-			}.Validate()
+			}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -184,7 +188,7 @@ var _ = Describe("RunConfig", func() {
 					},
 					TestFilePaths: []string{"spec/**/*_spec.rb"},
 				},
-			}.Validate()
+			}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})

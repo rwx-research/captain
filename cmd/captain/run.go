@@ -249,7 +249,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		false,
 		"if set, your test suite will fail as quickly as we know it will fail (e.g. with --retries 1 and "+
 			"--flaky-retries 5, you might have a non-flaky test that we stop retrying after 1 additional attempt. "+
-			"in this situation, we know the tests overall will fail so we can stop retrying to save compute. similarly "+
+			"In this situation, we know the tests overall will fail so we can stop retrying to save compute. Similarly "+
 			"if you only set --flaky-retries 1, we can stop retrying if any non-flaky tests fail because we won't retry "+
 			"them)",
 	)

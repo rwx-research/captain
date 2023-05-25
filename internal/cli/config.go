@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 
+	"go.uber.org/zap"
+
 	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
@@ -40,7 +42,7 @@ var maxTestsToRetryRegexp = regexp.MustCompile(
 	`^\s*(?P<failureCount>\d+)\s*$|^\s*(?:(?P<failurePercentage>\d+(?:\.\d+)?)%)\s*$`,
 )
 
-func (rc RunConfig) Validate() error {
+func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
 	if rc.RetryCommandTemplate == "" && (rc.Retries > 0 || rc.FlakyRetries > 0) {
 		return errors.NewConfigurationError(
 			"Missing retry command",
@@ -49,6 +51,11 @@ func (rc RunConfig) Validate() error {
 				"use the Captain configuration file to permanently set a command template for a "+
 				"given test suite.",
 		)
+	}
+
+	if rc.RetryCommandTemplate != "" && !(rc.Retries > 0 || rc.FlakyRetries > 0) {
+		log.Warn("There is a retry command configured for this test suite, however the retry count is set to 0.")
+		log.Warn("Retries are disabled.")
 	}
 
 	if rc.MaxTestsToRetry != "" && !maxTestsToRetryRegexp.MatchString(rc.MaxTestsToRetry) {
@@ -63,20 +70,18 @@ func (rc RunConfig) Validate() error {
 		)
 	}
 
+	if rc.MaxTestsToRetry != "" && !(rc.Retries > 0 || rc.FlakyRetries > 0) {
+		log.Warn("The --max-tests-to-retry flag has no effect as no retries are otherwise configured.")
+	}
+
+	if rc.PartitionCommandTemplate != "" && rc.PartitionConfig.PartitionNodes.Total <= 1 {
+		log.Warnf("There is a partition command configured for this test suite, but partitioning is disabled.")
+	}
+
 	if rc.IsRunningPartition() {
 		err := rc.PartitionConfig.Validate()
 		if err != nil {
 			return errors.WithStack(err)
-		}
-
-		if rc.PartitionCommandTemplate == "" {
-			return errors.NewConfigurationError(
-				"Missing partition command",
-				"You seem to be passing partition specific options, but there is no partition command template configured.",
-				"The partition command template can be set using the --partition-command flag. Alternatively, you can "+
-					"use the Captain configuration file to permanently set a partition command template for a "+
-					"given test suite.",
-			)
 		}
 	}
 
