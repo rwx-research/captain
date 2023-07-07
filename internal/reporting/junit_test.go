@@ -49,6 +49,10 @@ var _ = Describe("JUnit Report", func() {
 						Duration: nil,
 						Status:   v1.TestStatus{Kind: "successful"},
 					},
+					Location: &v1.Location{
+						File: "/path/to/file",
+						Line: new(int),
+					},
 				},
 			},
 		}
@@ -67,5 +71,7 @@ var _ = Describe("JUnit Report", func() {
 
 		Expect(result.TestSuites[0].TestCases).To(HaveLen(1))
 		Expect(result.TestSuites[0].TestCases[0].Name).To(Equal("name of the test"))
+		Expect(*result.TestSuites[0].TestCases[0].File).To(Equal("/path/to/file"))
+		Expect(*result.TestSuites[0].TestCases[0].Line).To(Equal(0))
 	})
 })
