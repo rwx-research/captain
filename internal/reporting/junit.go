@@ -42,6 +42,16 @@ func WriteJUnitSummary(file fs.File, testResults v1.TestResults, _ Configuration
 			finishedAt = *test.Attempt.FinishedAt
 		}
 
+		if test.Location != nil {
+			if test.Location.File != "" {
+				testCase.File = &test.Location.File
+			}
+
+			if test.Location.Line != nil {
+				testCase.Line = test.Location.Line
+			}
+		}
+
 		//nolint:exhaustive
 		switch test.Attempt.Status.Kind {
 		case v1.TestStatusPended, v1.TestStatusSkipped, v1.TestStatusTodo:
