@@ -259,9 +259,9 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			type1 := "type1"
-			method1 := "method1(val1: 100, val2: \"test\")"
+			method1 := `method1(val1: 100, val2: "test")`
 			type2 := "type2"
-			method2 := "!method2=|&\\"
+			method2 := `!method2=|&\`
 			testResults := v1.TestResults{
 				Tests: []v1.Test{
 					{
@@ -289,8 +289,8 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 			Expect(substitutions).To(Equal(
 				[]map[string]string{
 					{
-						"filter": "FullyQualifiedName=type1.method1\\(val1: 100, val2: \"test\"\\) | " +
-							"FullyQualifiedName=type2.\\!method2\\=\\|\\&\\\\",
+						"filter": `FullyQualifiedName=type1.method1\(val1: 100, val2: "test"\) | ` +
+							`FullyQualifiedName=type2.\!method2\=\|\&\\`,
 					},
 				},
 			))

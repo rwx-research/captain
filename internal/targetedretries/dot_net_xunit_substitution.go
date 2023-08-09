@@ -44,7 +44,7 @@ func (s DotNetxUnitSubstitution) ValidateTemplate(compiledTemplate templating.Co
 var testFilterSpecialCharacters = regexp.MustCompile(`[()\\&|=!~]`)
 
 func escapeTestFilterCharacter(value string) string {
-	return fmt.Sprintf("\\%v", value)
+	return fmt.Sprintf(`\%v`, value)
 }
 
 func (s DotNetxUnitSubstitution) SubstitutionsFor(
