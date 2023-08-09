@@ -2,8 +2,7 @@
   description = "A development environment for the Captain CLI";
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.nixpkgs.url =
-    "github:nixos/nixpkgs/nixpkgs-unstable"; # Unstable is needed for Go 1.20
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
@@ -21,10 +20,10 @@
         devShell = pkgs.mkShell {
           packages = with pkgs;
             [
-              (assertVersion "2.9.2" ginkgo)
-              (assertVersion "1.20.2" go)
+              (assertVersion "2.9.4" ginkgo)
+              (assertVersion "1.20.6" go)
               (assertVersion "1.52.2" golangci-lint)
-              (assertVersion "1.14.0" mage)
+              (assertVersion "1.15.0" mage)
             ];
         };
       });
