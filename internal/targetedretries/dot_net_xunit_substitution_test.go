@@ -253,5 +253,47 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 				},
 			))
 		})
+
+		It("correctly escapes the filter substitution", func() {
+			compiledTemplate, compileErr := templating.CompileTemplate("dotnet test --filter '{{ filter }}'")
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			type1 := "type1"
+			method1 := `method1(val1: 100, val2: "test")`
+			type2 := "type2"
+			method2 := `!method2=|&\`
+			testResults := v1.TestResults{
+				Tests: []v1.Test{
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type1, "method": &method1},
+							Status: v1.NewFailedTestStatus(nil, nil, nil),
+						},
+					},
+					{
+						Attempt: v1.TestAttempt{
+							Meta:   map[string]any{"type": &type2, "method": &method2},
+							Status: v1.NewFailedTestStatus(nil, nil, nil),
+						},
+					},
+				},
+			}
+
+			substitution := targetedretries.DotNetxUnitSubstitution{}
+			substitutions, err := substitution.SubstitutionsFor(
+				compiledTemplate,
+				testResults,
+				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(substitutions).To(Equal(
+				[]map[string]string{
+					{
+						"filter": `FullyQualifiedName=type1.method1\(val1: 100, val2: "test"\) | ` +
+							`FullyQualifiedName=type2.\!method2\=\|\&\\`,
+					},
+				},
+			))
+		})
 	})
 })

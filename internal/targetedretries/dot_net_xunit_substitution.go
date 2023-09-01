@@ -2,6 +2,7 @@ package targetedretries
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -39,6 +40,13 @@ func (s DotNetxUnitSubstitution) ValidateTemplate(compiledTemplate templating.Co
 	return nil
 }
 
+// https://github.com/microsoft/vstest/blob/main/docs/filter.md
+var testFilterSpecialCharacters = regexp.MustCompile(`[()\\&|=!~]`)
+
+func escapeTestFilterCharacter(value string) string {
+	return fmt.Sprintf(`\%v`, value)
+}
+
 func (s DotNetxUnitSubstitution) SubstitutionsFor(
 	_ templating.CompiledTemplate,
 	testResults v1.TestResults,
@@ -57,7 +65,11 @@ func (s DotNetxUnitSubstitution) SubstitutionsFor(
 
 		testType := test.Attempt.Meta["type"].(*string)
 		testMethod := test.Attempt.Meta["method"].(*string)
-		formattedTest := fmt.Sprintf("FullyQualifiedName=%v.%v", *testType, *testMethod)
+		fullyQualifiedName := testFilterSpecialCharacters.ReplaceAllStringFunc(
+			fmt.Sprintf("%v.%v", *testType, *testMethod),
+			escapeTestFilterCharacter,
+		)
+		formattedTest := templating.ShellEscape(fmt.Sprintf("FullyQualifiedName=%v", fullyQualifiedName))
 		if _, ok := testsSeen[formattedTest]; ok {
 			continue
 		}
