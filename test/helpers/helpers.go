@@ -37,6 +37,12 @@ func SetEnvFromFile(fileName string) {
 	}
 }
 
+func SetEnv(env map[string]string) {
+	for name, value := range env {
+		os.Setenv(name, value)
+	}
+}
+
 func UnsetCIEnv() {
 	envPrefixes := []string{"GITHUB", "BUILDKITE", "CIRCLE", "GITLAB", "CI", "RWX", "CAPTAIN"}
 	for _, env := range os.Environ() {

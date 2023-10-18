@@ -38,5 +38,8 @@ func MergeGeneric(into GenericEnv, from GenericEnv) GenericEnv {
 	into.Who = firstNonempty(from.Who, into.Who)
 	into.Branch = firstNonempty(from.Branch, into.Branch)
 	into.Sha = firstNonempty(from.Sha, into.Sha)
+	into.CommitMessage = firstNonempty(from.CommitMessage, into.CommitMessage)
+	into.BuildURL = firstNonempty(from.BuildURL, into.BuildURL)
+	into.Title = firstNonempty(from.Title, into.Title)
 	return into
 }
