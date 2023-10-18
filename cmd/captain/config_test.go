@@ -146,4 +146,32 @@ var _ = Describe("InitConfig", func() {
 			Expect(cfg.ProvidersEnv.GitLab.APIV4URL).To(Equal("https://gitlab.com/api/v4"))
 		})
 	})
+
+	Context("with Captain environment variables", func() {
+		BeforeEach(func() {
+			helpers.SetEnv(map[string]string{
+				"CAPTAIN_WHO":            "tester",
+				"CAPTAIN_SHA":            "1fc108cab0bb46083c6cdd50f8cd1deb5005e235",
+				"CAPTAIN_BRANCH":         "main",
+				"CAPTAIN_BUILD_URL":      "https://example.com/build/1",
+				"CAPTAIN_TITLE":          "Captain Test",
+				"CAPTAIN_COMMIT_MESSAGE": "print env",
+			})
+		})
+
+		It("parses the Captain variables", func() {
+			err := captain.AddFlags(cmd, &cliArgs)
+			Expect(err).ToNot(HaveOccurred())
+
+			cfg, err := captain.InitConfig(cmd, cliArgs)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(cfg.ProvidersEnv.Generic.Who).To(Equal("tester"))
+			Expect(cfg.ProvidersEnv.Generic.Sha).To(Equal("1fc108cab0bb46083c6cdd50f8cd1deb5005e235"))
+			Expect(cfg.ProvidersEnv.Generic.Branch).To(Equal("main"))
+			Expect(cfg.ProvidersEnv.Generic.BuildURL).To(Equal("https://example.com/build/1"))
+			Expect(cfg.ProvidersEnv.Generic.Title).To(Equal("Captain Test"))
+			Expect(cfg.ProvidersEnv.Generic.CommitMessage).To(Equal("print env"))
+		})
+	})
 })
