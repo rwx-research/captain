@@ -23,6 +23,15 @@ var _ = Describe("JUnit Report", func() {
 		mockFile = new(mocks.File)
 		mockFile.Builder = new(strings.Builder)
 
+		message := "expected true to equal false"
+		messageWithAnsi := `[31mFailure/Error: [0m[32mexpect[0m(thanos).to ` +
+			`eq([31m[1;31m"[0m[31minevitable[1;31m"[0m[31m[0m)[0m
+[31m[0m
+[31m  expected: "inevitable"[0m
+[31m       got: "evitable"[0m
+[31m[0m
+[31m  (compared using ==)[0m`
+
 		testResults = v1.TestResults{
 			Framework: v1.Framework{
 				Language: "Ruby",
@@ -54,6 +63,26 @@ var _ = Describe("JUnit Report", func() {
 						Line: new(int),
 					},
 				},
+				{
+					Name: "failed test message only w/o ansi",
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(
+							&message,
+							nil,
+							nil,
+						),
+					},
+				},
+				{
+					Name: "failed test message only w/ ansi",
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(
+							&messageWithAnsi,
+							nil,
+							nil,
+						),
+					},
+				},
 			},
 		}
 	})
@@ -69,9 +98,20 @@ var _ = Describe("JUnit Report", func() {
 		Expect(result.TestSuites[0].Failures).To(Equal(9))
 		Expect(result.TestSuites[0].Skipped).To(Equal(25))
 
-		Expect(result.TestSuites[0].TestCases).To(HaveLen(1))
+		Expect(result.TestSuites[0].TestCases).To(HaveLen(3))
 		Expect(result.TestSuites[0].TestCases[0].Name).To(Equal("name of the test"))
 		Expect(*result.TestSuites[0].TestCases[0].File).To(Equal("/path/to/file"))
 		Expect(*result.TestSuites[0].TestCases[0].Line).To(Equal(0))
+
+		Expect(result.TestSuites[0].TestCases[1].Name).To(Equal("failed test message only w/o ansi"))
+		Expect(*result.TestSuites[0].TestCases[1].Failure.Message).To(Equal("expected true to equal false"))
+
+		Expect(result.TestSuites[0].TestCases[2].Name).To(Equal("failed test message only w/ ansi"))
+		Expect(*result.TestSuites[0].TestCases[2].Failure.Message).To(Equal(`Failure/Error: expect(thanos).to eq("inevitable")
+
+  expected: "inevitable"
+       got: "evitable"
+
+  (compared using ==)`))
 	})
 })

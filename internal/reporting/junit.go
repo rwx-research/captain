@@ -4,6 +4,8 @@ import (
 	"encoding/xml"
 	"time"
 
+	"github.com/acarl005/stripansi"
+
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/parsing"
@@ -52,19 +54,25 @@ func WriteJUnitSummary(file fs.File, testResults v1.TestResults, _ Configuration
 			}
 		}
 
+		message := test.Attempt.Status.Message
+		if message != nil {
+			strippedMessage := stripansi.Strip(*test.Attempt.Status.Message)
+			message = &strippedMessage
+		}
+
 		//nolint:exhaustive
 		switch test.Attempt.Status.Kind {
 		case v1.TestStatusPended, v1.TestStatusSkipped, v1.TestStatusTodo:
 			testCase.Skipped = &parsing.JUnitSkipped{
-				Message: test.Attempt.Status.Message,
+				Message: message,
 			}
 		case v1.TestStatusCanceled, v1.TestStatusFailed:
 			testCase.Failure = &parsing.JUnitFailure{
-				Message: test.Attempt.Status.Message,
+				Message: message,
 			}
 		case v1.TestStatusTimedOut:
 			testCase.Error = &parsing.JUnitFailure{
-				Message: test.Attempt.Status.Message,
+				Message: message,
 			}
 		}
 
