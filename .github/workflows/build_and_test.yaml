@@ -1,0 +1,59 @@
+name: Build & Test
+on:
+  # This schedule ensures we keep test file timings available to avoid a race
+  # condition between this these tests and the background processing job in cloud.
+  schedule:
+    - cron: "35 2 * * 2" # At 02:35 every Tuesday
+  workflow_call:
+    inputs:
+      legacy_version:
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            keep-derivations = true
+            keep-outputs = true
+      - name: build captain
+        run: |
+          CGO_ENABLED=0 \
+            LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
+            nix develop --command mage
+
+      - name: run tests against current version
+        if: ${{ inputs.legacy_version == '' }}
+        run: |
+          CGO_ENABLED=0 \
+            LDFLAGS="-X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
+            ./captain run captain-cli-ginkgo
+        env:
+          RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
+          RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
+          DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
+          REPORT: true
+
+      - name: checkout old version
+        if: ${{ inputs.legacy_version != '' }}
+        run: |
+          git fetch --tags
+          git checkout ${{ inputs.legacy_version }} -- ./test
+      - name: run integration tests from ${{ inputs.legacy_version }}
+        if: ${{ inputs.legacy_version != '' }}
+        run: |
+          CGO_ENABLED=0 \
+            LDFLAGS="-X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
+            ./captain run captain-cli-backwards-compatibility
+        env:
+          RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
+          RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
+          DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
+          REPORT: true
+          LEGACY_VERSION_TO_TEST: ${{ inputs.legacy_version }}
