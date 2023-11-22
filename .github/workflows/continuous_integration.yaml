@@ -5,27 +5,8 @@ on:
 jobs:
   build-and-test:
     name: Build & Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v18
-        with:
-          extra_nix_config: |
-            keep-derivations = true
-            keep-outputs = true
-      - run: |
-          CGO_ENABLED=0 \
-            LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
-            nix develop --command mage
-      - run: |
-          CGO_ENABLED=0 \
-            LDFLAGS="-X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
-            ./captain run captain-cli-ginkgo
-        env:
-          RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
-          RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
-          DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
-          REPORT: true
+    uses: ./.github/workflows/build_and_test.yaml
+    secrets: inherit
 
   unstable-release:
     if: ${{ github.ref == 'refs/heads/main' }}
@@ -90,35 +71,10 @@ jobs:
     name: Backwards compatibility tests
     needs: which-versions-to-test
     if: ${{ needs.which-versions-to-test.outputs.versions != '[]' }}
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         legacy_version: ${{ fromJSON(needs.which-versions-to-test.outputs.versions) }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v18
-        with:
-          extra_nix_config: |
-            keep-derivations = true
-            keep-outputs = true
-
-      - name: build captain
-        run: |
-          CGO_ENABLED=0 \
-            LDFLAGS="-w -s -X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
-            nix develop --command mage
-      - name: checkout old version
-        run: |
-          git fetch --tags
-          git checkout ${{ matrix.legacy_version }} -- ./test
-      - name: run integration tests from ${{ matrix.legacy_version }}
-        run: |
-          CGO_ENABLED=0 \
-            LDFLAGS="-X github.com/rwx-research/captain-cli.Version=testing-$(git rev-parse HEAD)" \
-            ./captain run captain-cli-backwards-compatibility
-        env:
-          RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
-          RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
-          DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG }}
-          REPORT: true
-          LEGACY_VERSION_TO_TEST: ${{ matrix.legacy_version }}
+    uses: ./.github/workflows/build_and_test.yaml
+    with:
+      legacy_version: ${{ matrix.legacy_version }}
+    secrets: inherit
