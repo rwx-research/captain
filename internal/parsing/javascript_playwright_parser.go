@@ -114,6 +114,11 @@ type JavaScriptPlaywrightReport struct {
 	Errors []JavaScriptPlaywrightTestError `json:"errors"`
 }
 
+type JavaScriptPlaywrightMetaFileAttachment struct {
+	Name string `json:"name"`
+	Path string `json:"path,omitempty"`
+}
+
 var javaScriptPlaywrightBacktraceSeparatorRegexp = regexp.MustCompile(`\r?\n\s{4}at`)
 
 func (p JavaScriptPlaywrightParser) Parse(data io.Reader) (*v1.TestResults, error) {
@@ -284,13 +289,28 @@ func (p JavaScriptPlaywrightParser) testsWithinSuite(
 				return nil, errors.NewInputError("Unexpected test results status: %v", result.Status)
 			}
 
+			meta := map[string]any{
+				"annotations": test.Annotations,
+				"project":     test.ProjectName,
+				"tags":        spec.Tags,
+			}
+
+			if len(result.Attachments) > 0 {
+				attachments := make([]JavaScriptPlaywrightMetaFileAttachment, len(result.Attachments))
+
+				for j, attachment := range result.Attachments {
+					attachments[j] = JavaScriptPlaywrightMetaFileAttachment{
+						Name: attachment.Name,
+						Path: attachment.Path,
+					}
+				}
+
+				meta["fileAttachments"] = attachments
+			}
+
 			workingAttempt := v1.TestAttempt{
-				Duration: &duration,
-				Meta: map[string]any{
-					"annotations": test.Annotations,
-					"project":     test.ProjectName,
-					"tags":        spec.Tags,
-				},
+				Duration:  &duration,
+				Meta:      meta,
 				Status:    status,
 				Stderr:    &stderr,
 				Stdout:    &stdout,
