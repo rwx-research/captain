@@ -30,7 +30,7 @@ func (cfg ClientConfig) Validate() error {
 			"Missing API token",
 			"In order to use the CLI in conjunction with Captain Cloud, please supply an API token.",
 			"The token can be set by using the RWX_ACCESS_TOKEN environment variable. If you don't have a token yet "+
-				"you can create one under \"Organization Settings\" at https://account.rwx.com/.",
+				"you can create one under \"Organization Settings\" at https://cloud.rwx.com/.",
 		)
 	}
 
