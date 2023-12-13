@@ -42,7 +42,7 @@ func (s Service) AddFlake(_ context.Context, args []string) error {
 			"'captain add flake' only works in OSS mode",
 			"You are trying to register a new flake in Captain, however it appears that you are using "+
 				"Captain Cloud.",
-			"Please visit https://captain.build/ to configure your flakes or quarantines.",
+			"Please visit https://cloud.rwx.com/captain to configure your flakes or quarantines.",
 		)
 	}
 
@@ -58,7 +58,7 @@ func (s Service) AddQuarantine(_ context.Context, args []string) error {
 			"'captain add quarantine' only works in OSS mode",
 			"You are trying to quarantine a new test in Captain, however it appears that you are using "+
 				"Captain Cloud.",
-			"Please visit https://captain.build/ to configure your flakes or quarantines.",
+			"Please visit https://cloud.rwx.com/captain to configure your flakes or quarantines.",
 		)
 	}
 
@@ -74,7 +74,7 @@ func (s Service) RemoveFlake(_ context.Context, args []string) error {
 			"'captain remove flake' only works in OSS mode",
 			"You are trying to remove a flake in Captain, however it appears that you are using "+
 				"Captain Cloud.",
-			"Please visit https://captain.build/ to configure your flakes or quarantines.",
+			"Please visit https://cloud.rwx.com/captain to configure your flakes or quarantines.",
 		)
 	}
 
@@ -95,7 +95,7 @@ func (s Service) RemoveQuarantine(_ context.Context, args []string) error {
 			"'captain remove quarantine' only works in OSS mode",
 			"You are trying to remove a quarantine in Captain, however it appears that you are using "+
 				"Captain Cloud.",
-			"Please visit https://captain.build/ to configure your flakes or quarantines.",
+			"Please visit https://cloud.rwx.com/captain to configure your flakes or quarantines.",
 		)
 	}
 

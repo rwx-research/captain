@@ -16,7 +16,7 @@ func main() {
 	rootCmd := &cobra.Command{
 		Use: "captain",
 		Long: "Captain provides client-side utilities related to build- and test-suites. This CLI is a complementary " +
-			"component to the main WebUI at https://captain.build.",
+			"component to the main WebUI at https://cloud.rwx.com/captain",
 
 		Version: captainCLI.Version,
 	}
