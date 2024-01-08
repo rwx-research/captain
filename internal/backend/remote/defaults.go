@@ -3,7 +3,7 @@ package remote
 import "regexp"
 
 const (
-	defaultHost = "captain.build"
+	defaultHost = "cloud.rwx.com"
 
 	contentTypeJSON   = "application/json"
 	headerContentType = "Content-Type"

@@ -19,7 +19,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 	withAndWithoutInheritedEnv(func(getEnv envGenerator, prefix string) {
 		getEnvWithAccessToken := func() map[string]string {
 			env := getEnv()
-			env["CAPTAIN_HOST"] = "staging.captain.build"
+			env["CAPTAIN_HOST"] = "staging.cloud.rwx.com"
 			env["RWX_ACCESS_TOKEN"] = os.Getenv("RWX_ACCESS_TOKEN_STAGING")
 			return env
 		}
