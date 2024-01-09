@@ -20,7 +20,7 @@ func (c Client) registerTestResults(
 	testSuite string,
 	testResultsFiles []TestResultsFile,
 ) ([]TestResultsFile, error) {
-	endpoint := "/api/test_suites/bulk_test_results"
+	endpoint := hostEndpointCompat(c, "/api/test_suites/bulk_test_results")
 
 	reqBody := struct {
 		AttemptedBy         string            `json:"attempted_by"`
@@ -105,7 +105,7 @@ func (c Client) updateTestResultsStatuses(
 	testSuite string,
 	testResultsFiles []TestResultsFile,
 ) error {
-	endpoint := "/api/test_suites/bulk_test_results"
+	endpoint := hostEndpointCompat(c, "/api/test_suites/bulk_test_results")
 
 	type uploadStatus struct {
 		CaptainID string `json:"id"`

@@ -83,7 +83,7 @@ func (c Client) GetTestTimingManifest(
 	ctx context.Context,
 	testSuiteIdentifier string,
 ) ([]testing.TestFileTiming, error) {
-	endpoint := "/api/test_suites/timing_manifest"
+	endpoint := hostEndpointCompat(c, "/api/test_suites/timing_manifest")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -177,7 +177,7 @@ func (c Client) GetRunConfiguration(
 	ctx context.Context,
 	testSuiteIdentifier string,
 ) (backend.RunConfiguration, error) {
-	endpoint := "/api/test_suites/run_configuration"
+	endpoint := hostEndpointCompat(c, "/api/test_suites/run_configuration")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -213,4 +213,14 @@ func (c Client) GetRunConfiguration(
 	}
 
 	return runConfiguration, nil
+}
+
+// TODO(TS): Remove this once we're no longer testing against versions that use captain.build
+func hostEndpointCompat(c Client, endpoint string) string {
+	remoteHost := c.ClientConfig.Host
+
+	if !strings.Contains(remoteHost, "cloud") {
+		return endpoint
+	}
+	return "/captain" + endpoint
 }
