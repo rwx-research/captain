@@ -26,6 +26,7 @@ var _ = Describe("Uploading Test Results", func() {
 		mockRoundTripper   func(*http.Request) (*http.Response, error)
 		mockRoundTripCalls int
 		mockUUID           uuid.UUID
+		host               string
 	)
 
 	BeforeEach(func() {
@@ -41,10 +42,11 @@ var _ = Describe("Uploading Test Results", func() {
 		apiClient = remote.Client{ClientConfig: remote.ClientConfig{
 			Log:     zap.NewNop().Sugar(),
 			NewUUID: mockNewUUID,
+			Host:    host,
 		}, RoundTrip: mockRoundTripper}
 	})
 
-	Context("under expected conditions", func() {
+	Context("under expected conditions w/ captain.build host", func() {
 		BeforeEach(func() {
 			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
 				var resp http.Response
@@ -52,7 +54,7 @@ var _ = Describe("Uploading Test Results", func() {
 				switch mockRoundTripCalls {
 				case 0: // registering the test results file
 					Expect(req.Method).To(Equal(http.MethodPost))
-					Expect(req.URL.Path).To(HaveSuffix("bulk_test_results"))
+					Expect(req.URL.Path).To(HaveSuffix("/api/test_suites/bulk_test_results"))
 					Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
 					resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(
 						"{\"test_results_uploads\":[{\"id\": %q, \"external_identifier\":%q,\"upload_url\":\"%d\"}]}",
@@ -64,7 +66,54 @@ var _ = Describe("Uploading Test Results", func() {
 					resp.Body = io.NopCloser(strings.NewReader(""))
 				case 2: // update status
 					Expect(req.Method).To(Equal(http.MethodPut))
-					Expect(req.URL.Path).To(HaveSuffix("bulk_test_results"))
+					Expect(req.URL.Path).To(HaveSuffix("/api/test_suites/bulk_test_results"))
+					body, err := io.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(body)).To(ContainSubstring(fmt.Sprintf(
+						"%q,\"upload_status\":\"uploaded\"",
+						"some-captain-identifier",
+					)))
+					resp.Body = io.NopCloser(strings.NewReader(""))
+				default:
+					Fail("too many HTTP calls")
+				}
+
+				mockRoundTripCalls++
+
+				return &resp, nil
+			}
+		})
+
+		It("registers, uploads, and updates the test result in sequence", func() {
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+			Expect(err).To(Succeed())
+			Expect(uploadResults).To(HaveLen(1))
+			Expect(uploadResults[0].Uploaded).To(Equal(true))
+		})
+	})
+
+	Context("under expected conditions", func() {
+		BeforeEach(func() {
+			host = "cloud.rwx.com"
+			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
+				var resp http.Response
+
+				switch mockRoundTripCalls {
+				case 0: // registering the test results file
+					Expect(req.Method).To(Equal(http.MethodPost))
+					Expect(req.URL.Path).To(HaveSuffix("/captain/api/test_suites/bulk_test_results"))
+					Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+					resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(
+						"{\"test_results_uploads\":[{\"id\": %q, \"external_identifier\":%q,\"upload_url\":\"%d\"}]}",
+						"some-captain-identifier", mockUUID, GinkgoRandomSeed(),
+					)))
+				case 1: // upload to `upload_url`
+					Expect(req.Method).To(Equal(http.MethodPut))
+					Expect(req.URL.String()).To(ContainSubstring(fmt.Sprintf("%d", GinkgoRandomSeed())))
+					resp.Body = io.NopCloser(strings.NewReader(""))
+				case 2: // update status
+					Expect(req.Method).To(Equal(http.MethodPut))
+					Expect(req.URL.Path).To(HaveSuffix("/captain/api/test_suites/bulk_test_results"))
 					body, err := io.ReadAll(req.Body)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(string(body)).To(ContainSubstring(fmt.Sprintf(
@@ -92,6 +141,7 @@ var _ = Describe("Uploading Test Results", func() {
 
 	Context("with an error during test results file registration", func() {
 		BeforeEach(func() {
+			host = "cloud.rwx.com"
 			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
 				return nil, errors.NewInternalError("Error")
 			}
@@ -106,6 +156,7 @@ var _ = Describe("Uploading Test Results", func() {
 
 	Context("with an error from S3", func() {
 		BeforeEach(func() {
+			host = "cloud.rwx.com"
 			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
 				var resp http.Response
 
@@ -146,6 +197,7 @@ var _ = Describe("Uploading Test Results", func() {
 
 	Context("with an error while updating an test results file status", func() {
 		BeforeEach(func() {
+			host = "cloud.rwx.com"
 			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
 				var (
 					resp http.Response
