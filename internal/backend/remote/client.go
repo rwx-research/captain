@@ -83,7 +83,7 @@ func (c Client) GetTestTimingManifest(
 	ctx context.Context,
 	testSuiteIdentifier string,
 ) ([]testing.TestFileTiming, error) {
-	endpoint := "/api/test_suites/timing_manifest"
+	endpoint := "/captain/api/test_suites/timing_manifest"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -177,7 +177,7 @@ func (c Client) GetRunConfiguration(
 	ctx context.Context,
 	testSuiteIdentifier string,
 ) (backend.RunConfiguration, error) {
-	endpoint := "/api/test_suites/run_configuration"
+	endpoint := "/captain/api/test_suites/run_configuration"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {

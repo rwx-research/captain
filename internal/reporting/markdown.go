@@ -71,7 +71,7 @@ func WriteMarkdownSummary(file fs.File, testResults v1.TestResults, cfg Configur
 	if cfg.CloudEnabled {
 		if _, err := markdown.WriteString(
 			fmt.Sprintf(
-				"[🔗 View in Captain Cloud](https://%v/deep_link/test_suite_summaries/%v/%v/%v)\n\n",
+				"[🔗 View in Captain Cloud](https://%v/captain/deep_link/test_suite_summaries/%v/%v/%v)\n\n",
 				cfg.CloudHost,
 				cfg.SuiteID,
 				cfg.Provider.BranchName,
