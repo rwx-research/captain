@@ -204,6 +204,16 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 	}
 
+	if hasDetails && hasQuarantinedFailedTests && otherErrorCount > 0 {
+		s.Log.Infoln(
+			fmt.Sprintf(
+				"\n%v other %v occurred",
+				otherErrorCount,
+				pluralize(otherErrorCount, "failure", "failures"),
+			),
+		)
+	}
+
 	// Return the original exit code if there was a non-test error
 	if runErr != nil && otherErrorCount > 0 {
 		return errors.WithStack(runErr)
