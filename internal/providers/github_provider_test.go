@@ -26,6 +26,8 @@ var _ = Describe("GitHubEnv.makeProvider", func() {
 			TriggeringActor: "test",
 			// for commit sha
 			CommitSha: "abc123",
+			// for workflow title
+			Workflow: "workflow.yml",
 			// for tags
 			ID:         "123",
 			Attempt:    "1",
@@ -58,6 +60,35 @@ var _ = Describe("GitHubEnv.makeProvider", func() {
 		Expect(provider.CommitMessage).To(Equal(""))
 		Expect(provider.ProviderName).To(Equal("github"))
 		Expect(provider.Title).To(Equal("PR title (PR #5)"))
+	})
+
+	It("uses the issue info for the title when the commit message and PR title are missing", func() {
+		eventPayloadData.HeadCommit.Message = ""
+		eventPayloadData.Issue.Title = "Issue title"
+		eventPayloadData.Issue.Number = 3
+		eventPayloadData.PullRequest.Title = ""
+		provider, err := params.MakeProviderWithoutCommitMessageParsing(eventPayloadData)
+		Expect(err).To(BeNil())
+		Expect(provider.AttemptedBy).To(Equal("test"))
+		Expect(provider.BranchName).To(Equal("main"))
+		Expect(provider.CommitSha).To(Equal("abc123"))
+		Expect(provider.CommitMessage).To(Equal(""))
+		Expect(provider.ProviderName).To(Equal("github"))
+		Expect(provider.Title).To(Equal("Issue title (PR #3)"))
+	})
+
+	It("uses the github workflow name for the title when the commit message, and titles are missing", func() {
+		eventPayloadData.HeadCommit.Message = ""
+		eventPayloadData.Issue.Title = ""
+		eventPayloadData.PullRequest.Title = ""
+		provider, err := params.MakeProviderWithoutCommitMessageParsing(eventPayloadData)
+		Expect(err).To(BeNil())
+		Expect(provider.AttemptedBy).To(Equal("test"))
+		Expect(provider.BranchName).To(Equal("main"))
+		Expect(provider.CommitSha).To(Equal("abc123"))
+		Expect(provider.CommitMessage).To(Equal(""))
+		Expect(provider.ProviderName).To(Equal("github"))
+		Expect(provider.Title).To(Equal("workflow.yml"))
 	})
 
 	It("requires an repository", func() {

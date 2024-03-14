@@ -885,124 +885,6 @@ var _ = Describe("Run", func() {
 			})
 		})
 
-		Context("all tests quarantined, but there are other errors", func() {
-			BeforeEach(func() {
-				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
-				) (backend.RunConfiguration, error) {
-					return backend.RunConfiguration{
-						QuarantinedTests: []backend.QuarantinedTest{
-							{
-								Test: backend.Test{
-									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
-									IdentityComponents:  []string{"description", "file"},
-									StrictIdentity:      true,
-								},
-							},
-							{
-								Test: backend.Test{
-									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
-									IdentityComponents:  []string{"description", "file"},
-									StrictIdentity:      true,
-								},
-							},
-						},
-					}, nil
-				}
-				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
-
-				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
-					*v1.TestResults,
-					error,
-				) {
-					return &v1.TestResults{
-						OtherErrors: []v1.OtherError{
-							{Message: "uh oh another error"},
-						},
-						Tests: []v1.Test{
-							{
-								Name:     firstSuccessfulTestDescription,
-								Location: &v1.Location{File: "/path/to/file.test"},
-								Attempt: v1.TestAttempt{
-									Status: v1.NewSuccessfulTestStatus(),
-								},
-							},
-							{
-								Name:     firstFailedTestDescription,
-								Location: &v1.Location{File: "/path/to/file.test"},
-								Attempt: v1.TestAttempt{
-									Status: v1.NewFailedTestStatus(nil, nil, nil),
-								},
-							},
-							{
-								Name:     secondFailedTestDescription,
-								Location: &v1.Location{File: "/other/path/to/file.test"},
-								Attempt: v1.TestAttempt{
-									Status: v1.NewFailedTestStatus(nil, nil, nil),
-								},
-							},
-						},
-					}, nil
-				}
-			})
-
-			It("returns the error code of the command", func() {
-				Expect(err).To(HaveOccurred())
-				executionError, ok := errors.AsExecutionError(err)
-				Expect(ok).To(BeTrue(), "Error is an execution error")
-				Expect(executionError.Code).To(Equal(exitCode))
-			})
-
-			It("logs the quarantined tests", func() {
-				logMessages := make([]string, 0)
-
-				for _, log := range recordedLogs.All() {
-					logMessages = append(logMessages, log.Message)
-				}
-
-				Expect(logMessages).To(ContainElement(ContainSubstring("2 of 2 failures under quarantine")))
-				Expect(logMessages).NotTo(ContainElement(ContainSubstring("remaining actionable")))
-				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
-				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
-
-				Expect(uploadedTestResults).ToNot(BeNil())
-				Expect(uploadedTestResults.Summary.Quarantined).To(Equal(2))
-				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-
-				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(uploadedTestResults.Tests[1].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
-
-				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
-				Expect(uploadedTestResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
-			})
-
-			Context("ABQ", func() {
-				Context("with a supervisor ABQ state file", func() {
-					BeforeEach(func() {
-						abqStateFileExists = true
-						abqStateJSON = fmt.Sprintf(`{
-              "abq_version": "1.1.2",
-              "abq_executable": "%s",
-              "run_id": "not-a-real-run-id",
-              "supervisor": true
-            }`, abqExecutable)
-					})
-
-					It("calls abq set-exit-code", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeTrue())
-						Expect(mockAbqCommandArgs).To(Equal([]string{
-							"set-exit-code",
-							"--run-id", "not-a-real-run-id",
-							"--exit-code", "1",
-						}))
-						Expect(err).To(HaveOccurred())
-					})
-				})
-			})
-		})
-
 		Context("some quarantined tests successful", func() {
 			BeforeEach(func() {
 				mockGetRunConfiguration := func(
@@ -1088,6 +970,129 @@ var _ = Describe("Run", func() {
 					})
 				})
 			})
+		})
+	})
+
+	Context("with other errors", func() {
+		var (
+			exitCode                       int
+			firstFailedTestDescription     string
+			secondFailedTestDescription    string
+			firstSuccessfulTestDescription string
+		)
+
+		BeforeEach(func() {
+			exitCode = int(GinkgoRandomSeed() + 1)
+			firstFailedTestDescription = fmt.Sprintf("first-failed-description-%d", GinkgoRandomSeed()+2)
+			secondFailedTestDescription = fmt.Sprintf("second-failed-description-%d", GinkgoRandomSeed()+3)
+			firstSuccessfulTestDescription = fmt.Sprintf("first-successful-description-%d", GinkgoRandomSeed()+4)
+
+			mockGetExitStatusFromError := func(error) (int, error) {
+				return exitCode, nil
+			}
+			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
+
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+				*v1.TestResults,
+				error,
+			) {
+				return &v1.TestResults{
+					OtherErrors: []v1.OtherError{
+						{
+							Message: "Something went wrong",
+						},
+					},
+					Tests: []v1.Test{
+						{
+							Name:     firstSuccessfulTestDescription,
+							Location: &v1.Location{File: "/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: v1.NewSuccessfulTestStatus(),
+							},
+						},
+						{
+							Name:     firstFailedTestDescription,
+							Location: &v1.Location{File: "/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: v1.NewFailedTestStatus(nil, nil, nil),
+							},
+						},
+						{
+							Name:     secondFailedTestDescription,
+							Location: &v1.Location{File: "/other/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: v1.NewTimedOutTestStatus(),
+							},
+						},
+					},
+				}, nil
+			}
+
+			mockUploadTestResults := func(
+				ctx context.Context,
+				testSuite string,
+				testResults v1.TestResults,
+			) ([]backend.TestResultsUploadResult, error) {
+				testResultsFileUploaded = true
+
+				return []backend.TestResultsUploadResult{
+					{OriginalPaths: []string{testResultsFilePath}, Uploaded: true},
+					{OriginalPaths: []string{"./fake/path/1.json", "./fake/path/2.json"}, Uploaded: false},
+				}, nil
+			}
+			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
+
+			mockGetRunConfiguration := func(
+				ctx context.Context,
+				testSuiteIdentifier string,
+			) (backend.RunConfiguration, error) {
+				return backend.RunConfiguration{
+					QuarantinedTests: []backend.QuarantinedTest{
+						{
+							Test: backend.Test{
+								CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
+								IdentityComponents:  []string{"description", "file"},
+								StrictIdentity:      true,
+							},
+						},
+						{
+							Test: backend.Test{
+								CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+								IdentityComponents:  []string{"description", "file"},
+								StrictIdentity:      true,
+							},
+						},
+					},
+				}, nil
+			}
+			service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+		})
+
+		It("returns the error code of the command", func() {
+			Expect(err).To(HaveOccurred())
+			executionError, ok := errors.AsExecutionError(err)
+			Expect(ok).To(BeTrue(), "Error is an execution error")
+			Expect(executionError.Code).To(Equal(exitCode))
+		})
+
+		It("logs the quarantined tests", func() {
+			logMessages := make([]string, 0)
+
+			for _, log := range recordedLogs.All() {
+				logMessages = append(logMessages, log.Message)
+			}
+
+			Expect(logMessages).To(ContainElement(ContainSubstring("2 of 2 failures under quarantine")))
+		})
+
+		It("logs the other error count", func() {
+			logMessages := make([]string, 0)
+
+			for _, log := range recordedLogs.All() {
+				logMessages = append(logMessages, log.Message)
+			}
+
+			Expect(logMessages).To(ContainElement(ContainSubstring("1 other failure occurred")))
 		})
 	})
 

@@ -28,6 +28,9 @@ type GitHubEnv struct {
 	// commit sha
 	CommitSha string `env:"GITHUB_SHA"`
 
+	// workflow
+	Workflow string `env:"GITHUB_WORKFLOW"`
+
 	// tags
 	Attempt    string `env:"GITHUB_RUN_ATTEMPT"`
 	ID         string `env:"GITHUB_RUN_ID"`
@@ -43,6 +46,10 @@ type GitHubEventPayloadData struct {
 		Number int    `json:"number"`
 		Title  string `json:"title"`
 	} `json:"pull_request"`
+	Issue struct {
+		Number int    `json:"number"`
+		Title  string `json:"title"`
+	} `json:"issue"`
 }
 
 func (cfg GitHubEnv) makeProvider() (Provider, error) {
@@ -77,10 +84,19 @@ func (cfg GitHubEnv) MakeProviderWithoutCommitMessageParsing(payloadData GitHubE
 		return Provider{}, validationError
 	}
 
+	if payloadData.PullRequest.Title == "" && payloadData.Issue.Title != "" {
+		payloadData.PullRequest.Title = payloadData.Issue.Title
+		payloadData.PullRequest.Number = payloadData.Issue.Number
+	}
+
 	commitMessage := payloadData.HeadCommit.Message
 	var title string
 	if commitMessage == "" {
-		title = fmt.Sprintf("%s (PR #%d)", payloadData.PullRequest.Title, payloadData.PullRequest.Number)
+		if payloadData.PullRequest.Title == "" {
+			title = cfg.Workflow
+		} else {
+			title = fmt.Sprintf("%s (PR #%d)", payloadData.PullRequest.Title, payloadData.PullRequest.Number)
+		}
 	}
 
 	provider := Provider{
