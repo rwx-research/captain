@@ -49,7 +49,7 @@ type RubyCucumberElement struct {
 }
 
 type RubyCucumberHook struct {
-	Match  RubyCucumberMatch     `json:"match"`
+	Match  RubyCucumberMatch      `json:"match"`
 	Result *FailingCucumberResult `json:"result"`
 }
 
@@ -136,7 +136,7 @@ outer:
 
 			for _, hook := range element.Before {
 				if hook.Result == nil {
-					break;
+					break
 				}
 
 				if firstErrorMessage == nil && hook.Result.ErrorMessage != "" {
@@ -150,7 +150,7 @@ outer:
 
 			for _, step := range element.Steps {
 				if step.Result == nil {
-					break;
+					break
 				}
 
 				if firstErrorMessage == nil && step.Result.ErrorMessage != nil && *step.Result.ErrorMessage != "" {
@@ -164,7 +164,7 @@ outer:
 
 			for _, hook := range element.After {
 				if hook.Result == nil {
-					break;
+					break
 				}
 
 				if firstErrorMessage == nil && hook.Result.ErrorMessage != "" {
@@ -200,8 +200,8 @@ outer:
 			location := v1.Location{File: feature.URI, Line: &element.Line}
 			attempt := v1.TestAttempt{
 				Duration: &duration,
-				Status: status,
-				Meta: map[string]any{"tags": element.Tags},
+				Status:   status,
+				Meta:     map[string]any{"tags": element.Tags},
 			}
 
 			lineage := []string{feature.Name, element.Name}

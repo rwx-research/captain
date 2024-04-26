@@ -38,8 +38,8 @@ type JavaScriptCucumberJSONFeature struct {
 				Location string `json:"location"`
 			} `json:"match"`
 			Result *struct {
-				Status       string `json:"status"`
-				Duration     *int   `json:"duration"`
+				Status       string  `json:"status"`
+				Duration     *int    `json:"duration"`
 				ErrorMessage *string `json:"error_message"`
 			} `json:"result"`
 		} `json:"steps"`
@@ -89,7 +89,7 @@ outer:
 
 			for _, step := range element.Steps {
 				if step.Result == nil {
-					break;
+					break
 				}
 
 				if firstErrorMessage == nil && step.Result.ErrorMessage != nil && *step.Result.ErrorMessage != "" {
@@ -125,8 +125,8 @@ outer:
 			location := v1.Location{File: feature.URI, Line: &element.Line}
 			attempt := v1.TestAttempt{
 				Duration: &duration,
-				Status: status,
-				Meta: map[string]any{"tags": element.Tags},
+				Status:   status,
+				Meta:     map[string]any{"tags": element.Tags},
 			}
 
 			lineage := []string{feature.Name, element.Name}
