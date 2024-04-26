@@ -65,6 +65,9 @@ var (
 	GoTestFramework = registerFramework(
 		Framework{Language: FrameworkLanguageGo, Kind: FrameworkKindGoTest},
 	)
+	JavaScriptCucumberFramework = registerFramework(
+		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindCucumber},
+	)
 	JavaScriptCypressFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindCypress},
 	)

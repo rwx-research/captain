@@ -30,7 +30,6 @@ var mutuallyExclusiveParsers []parsing.Parser = []parsing.Parser{
 	new(parsing.JavaScriptMochaParser),
 	new(parsing.JavaScriptPlaywrightParser),
 	new(parsing.PythonPytestParser),
-	new(parsing.RubyCucumberParser),
 	new(parsing.RubyRSpecParser),
 }
 
@@ -39,6 +38,7 @@ var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]pars
 	v1.ElixirExUnitFramework:         {new(parsing.ElixirExUnitParser)},
 	v1.GoGinkgoFramework:             {new(parsing.GoGinkgoParser)},
 	v1.GoTestFramework:               {new(parsing.GoTestParser)},
+	v1.JavaScriptCucumberFramework:   {new(parsing.JavaScriptCucumberJSONParser)},
 	v1.JavaScriptCypressFramework:    {new(parsing.JavaScriptCypressParser)},
 	v1.JavaScriptJestFramework:       {new(parsing.JavaScriptJestParser)},
 	v1.JavaScriptKarmaFramework:      {new(parsing.JavaScriptKarmaParser)},
