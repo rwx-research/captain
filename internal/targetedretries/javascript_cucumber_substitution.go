@@ -51,7 +51,11 @@ func (s JavaScriptCucumberSubstitution) SubstitutionsFor(
 
 	for _, test := range testResults.Tests {
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
-			example := templating.ShellEscape(test.Attempt.Meta["elementStart"].(string))
+			scenarioLocation := test.Location.File
+			if test.Location.Line != nil {
+				scenarioLocation = fmt.Sprintf("%s:%v", test.Location.File, *test.Location.Line)
+			}
+			example := templating.ShellEscape(scenarioLocation)
 			if _, ok := scenariosSeen[example]; ok {
 				continue
 			}

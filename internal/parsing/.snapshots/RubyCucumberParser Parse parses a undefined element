@@ -8,7 +8,7 @@
     "status": {
       "kind": "successful"
     },
-    "tests": 3,
+    "tests": 1,
     "otherErrors": 0,
     "retries": 0,
     "canceled": 0,
@@ -18,57 +18,22 @@
     "skipped": 1,
     "successful": 0,
     "timedOut": 0,
-    "todo": 2
+    "todo": 0
   },
   "tests": [
     {
-      "name": "Rule Sample \u003e An undefined example \u003e this is undefined",
+      "name": "Rule Sample \u003e An undefined example",
       "lineage": [
         "Rule Sample",
-        "An undefined example",
-        "this is undefined"
+        "An undefined example"
       ],
       "location": {
         "file": "features/rule.feature",
-        "line": 31
+        "line": 28
       },
       "attempt": {
-        "durationInNanoseconds": null,
+        "durationInNanoseconds": 0,
         "meta": {
-          "elementStart": "features/rule.feature:28",
-          "stepLocation": "features/rule.feature:29",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": 4
-            }
-          ]
-        },
-        "status": {
-          "kind": "todo"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e An undefined example \u003e I do an action",
-      "lineage": [
-        "Rule Sample",
-        "An undefined example",
-        "I do an action"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 31
-      },
-      "attempt": {
-        "durationInNanoseconds": null,
-        "meta": {
-          "elementStart": "features/rule.feature:28",
-          "stepLocation": "features/step_definitions/steps.rb:9",
           "tags": [
             {
               "name": "@feature_tag",
@@ -82,38 +47,6 @@
         },
         "status": {
           "kind": "skipped"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e An undefined example \u003e nothing should happen",
-      "lineage": [
-        "Rule Sample",
-        "An undefined example",
-        "nothing should happen"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 31
-      },
-      "attempt": {
-        "durationInNanoseconds": null,
-        "meta": {
-          "elementStart": "features/rule.feature:28",
-          "stepLocation": "features/rule.feature:31",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": 4
-            }
-          ]
-        },
-        "status": {
-          "kind": "todo"
         }
       }
     }

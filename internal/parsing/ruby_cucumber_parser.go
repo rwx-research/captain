@@ -3,7 +3,6 @@ package parsing
 import (
 	"encoding/json"
 	"io"
-	"strconv"
 	"strings"
 	"time"
 
@@ -51,7 +50,7 @@ type RubyCucumberElement struct {
 
 type RubyCucumberHook struct {
 	Match  RubyCucumberMatch     `json:"match"`
-	Result FailingCucumberResult `json:"result"`
+	Result *FailingCucumberResult `json:"result"`
 }
 
 // https://github.com/cucumber/cucumber-ruby/blob/b0c5eff4c3a6675f791692b677126e99788165b5/lib/cucumber/formatter/json.rb#L174-L178
@@ -95,23 +94,35 @@ func (p RubyCucumberParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		return nil, errors.NewInputError("No test results were found in the JSON")
 	}
 
-	// at least one feature has an element
-	foundOneStepResult := false
+	foundOneResult := false
 outer:
 	for _, feature := range cucumberFeatures {
-		// Check if the element is divisible by 2
 		for _, element := range feature.Elements {
 			for _, step := range element.Steps {
 				if step.Result != nil {
-					foundOneStepResult = true
+					foundOneResult = true
+					break outer
+				}
+			}
+
+			for _, before := range element.Before {
+				if before.Result != nil {
+					foundOneResult = true
+					break outer
+				}
+			}
+
+			for _, after := range element.After {
+				if after.Result != nil {
+					foundOneResult = true
 					break outer
 				}
 			}
 		}
 	}
 
-	if !foundOneStepResult {
-		return nil, errors.NewInputError("Found features, but no steps in the JSON")
+	if !foundOneResult {
+		return nil, errors.NewInputError("Found features, but no results in the JSON")
 	}
 
 	tests := make([]v1.Test, 0)
@@ -119,76 +130,91 @@ outer:
 
 	for _, feature := range cucumberFeatures {
 		for _, element := range feature.Elements {
-			for _, hook := range element.Before {
-				// do I reach this line?
-				hookError := p.extractOtherError("before hook", hook)
-				if hookError != nil {
-					otherErrors = append(otherErrors, *hookError)
-				}
-			}
+			var firstErrorMessage *string
+			statusesSeen := map[string]bool{}
+			duration := time.Duration(0)
 
-			for _, hook := range element.After {
-				hookError := p.extractOtherError("after hook", hook)
-				if hookError != nil {
-					otherErrors = append(otherErrors, *hookError)
+			for _, hook := range element.Before {
+				if hook.Result == nil {
+					break;
+				}
+
+				if firstErrorMessage == nil && hook.Result.ErrorMessage != "" {
+					firstErrorMessage = &hook.Result.ErrorMessage
+				}
+				statusesSeen[hook.Result.Status] = true
+				if hook.Result.Duration != nil {
+					duration += time.Duration(*hook.Result.Duration * int(time.Nanosecond))
 				}
 			}
 
 			for _, step := range element.Steps {
 				if step.Result == nil {
-					break // we can't do anything without a result
+					break;
 				}
 
-				location := v1.Location{File: feature.URI, Line: &step.Line}
-
-				var duration *time.Duration
+				if firstErrorMessage == nil && step.Result.ErrorMessage != nil && *step.Result.ErrorMessage != "" {
+					firstErrorMessage = step.Result.ErrorMessage
+				}
+				statusesSeen[step.Result.Status] = true
 				if step.Result.Duration != nil {
-					transformedDuration := time.Duration(*step.Result.Duration * int(time.Nanosecond))
-					duration = &transformedDuration
+					duration += time.Duration(*step.Result.Duration * int(time.Nanosecond))
 				}
-
-				var status v1.TestStatus
-				switch step.Result.Status {
-				case "passed":
-					status = v1.NewSuccessfulTestStatus()
-				case "failed":
-					status = v1.NewFailedTestStatus(step.Result.ErrorMessage, nil, nil)
-				case "undefined":
-					status = v1.NewTodoTestStatus(nil)
-				case "skipped":
-					status = v1.NewSkippedTestStatus(nil)
-				case "pending":
-					status = v1.NewPendedTestStatus(nil)
-				default:
-					return nil, errors.NewInputError(
-						"Unexpected status %q for cucumber step %v",
-						step.Result.Status,
-						step,
-					)
-				}
-
-				attempt := v1.TestAttempt{
-					Duration: duration, Status: status,
-					Meta: map[string]any{
-						"tags":         element.Tags,
-						"stepLocation": step.Match.Location,
-						"elementStart": feature.URI + ":" + strconv.Itoa(element.Line),
-					},
-				}
-
-				lineage := []string{feature.Name, element.Name, step.Name}
-				// note: the location and id are different
-				tests = append(
-					tests,
-					v1.Test{
-						Name:         strings.Join(lineage, " > "),
-						Lineage:      lineage,
-						Location:     &location,
-						Attempt:      attempt,
-						PastAttempts: nil,
-					})
 			}
 
+			for _, hook := range element.After {
+				if hook.Result == nil {
+					break;
+				}
+
+				if firstErrorMessage == nil && hook.Result.ErrorMessage != "" {
+					firstErrorMessage = &hook.Result.ErrorMessage
+				}
+				statusesSeen[hook.Result.Status] = true
+				if hook.Result.Duration != nil {
+					duration += time.Duration(*hook.Result.Duration * int(time.Nanosecond))
+				}
+			}
+
+			var status v1.TestStatus
+			if statusesSeen["failed"] {
+				status = v1.NewFailedTestStatus(firstErrorMessage, nil, nil)
+			} else if statusesSeen["pending"] && !statusesSeen["passed"] {
+				status = v1.NewPendedTestStatus(firstErrorMessage)
+			} else if statusesSeen["skipped"] && !statusesSeen["passed"] {
+				status = v1.NewSkippedTestStatus(firstErrorMessage)
+			} else if statusesSeen["undefined"] && !statusesSeen["passed"] {
+				status = v1.NewTodoTestStatus(firstErrorMessage)
+			} else if statusesSeen["passed"] {
+				status = v1.NewSuccessfulTestStatus()
+			} else if len(statusesSeen) == 0 {
+				status = v1.NewTodoTestStatus(firstErrorMessage)
+			} else {
+				return nil, errors.NewInputError(
+					"Unexpected statuses %v for cucumber scenario %v",
+					statusesSeen,
+					element,
+				)
+			}
+
+			location := v1.Location{File: feature.URI, Line: &element.Line}
+			attempt := v1.TestAttempt{
+				Duration: &duration,
+				Status: status,
+				Meta: map[string]any{"tags": element.Tags},
+			}
+
+			lineage := []string{feature.Name, element.Name}
+			tests = append(
+				tests,
+				v1.Test{
+					Name:         strings.Join(lineage, " > "),
+					Lineage:      lineage,
+					Location:     &location,
+					Attempt:      attempt,
+					PastAttempts: nil,
+				},
+			)
 		}
 	}
 
@@ -197,32 +223,4 @@ outer:
 		tests,
 		otherErrors,
 	), nil
-}
-
-func (p RubyCucumberParser) extractOtherError(metaType string, hook RubyCucumberHook) *v1.OtherError {
-	if hook.Result.Status != "failed" {
-		return nil
-	}
-
-	parts := strings.Split(hook.Match.Location, ":")
-	var location v1.Location
-	if len(parts) == 2 {
-		lineString := parts[1]
-		lineNumber, err := strconv.Atoi(lineString)
-		if err == nil {
-			location = v1.Location{File: parts[0], Line: &lineNumber}
-		} else {
-			location = v1.Location{File: parts[0]}
-		}
-	} else {
-		location = v1.Location{File: hook.Match.Location}
-	}
-
-	return &v1.OtherError{
-		Message:  hook.Result.ErrorMessage,
-		Location: &location,
-		Meta: map[string]any{
-			"type": metaType,
-		},
-	}
 }
