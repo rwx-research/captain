@@ -101,47 +101,47 @@ var _ = Describe("JavaScriptCucumberSubstitution", func() {
 			compiledTemplate, compileErr := templating.CompileTemplate("npx cucumber-js {{ scenarios }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
-			elementStart1 := "elementStart1 with ' single quotes"
-			elementStart2 := "elementStart2"
-			elementStart3 := "elementStart3"
-			elementStart4 := "elementStart4"
-			elementStart5 := "elementStart5"
-			elementStart6 := "elementStart6"
+			file1 := "file1 with ' single quotes"
+			file2 := "file2"
+			file3 := "file3"
+			file4 := "file4"
+			file5 := "file5"
+			file6 := "file6"
 			testResults := v1.TestResults{
 				Tests: []v1.Test{
 					{
+						Location: &v1.Location{File: file1},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart1},
 							Status: v1.NewFailedTestStatus(nil, nil, nil),
 						},
 					},
 					{
+						Location: &v1.Location{File: file2},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart2},
 							Status: v1.NewCanceledTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file3},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart3},
 							Status: v1.NewTimedOutTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file4},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart4},
 							Status: v1.NewPendedTestStatus(nil),
 						},
 					},
 					{
+						Location: &v1.Location{File: file5},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart5},
 							Status: v1.NewSuccessfulTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file6},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart6},
 							Status: v1.NewSkippedTestStatus(nil),
 						},
 					},
@@ -156,9 +156,9 @@ var _ = Describe("JavaScriptCucumberSubstitution", func() {
 			)).To(Equal(
 				[]map[string]string{
 					{
-						"scenarios": `'elementStart1 with '"'"' single quotes' ` +
-							`'elementStart2' ` +
-							`'elementStart3'`,
+						"scenarios": `'file1 with '"'"' single quotes' ` +
+							`'file2' ` +
+							`'file3'`,
 					},
 				},
 			))
@@ -168,47 +168,47 @@ var _ = Describe("JavaScriptCucumberSubstitution", func() {
 			compiledTemplate, compileErr := templating.CompileTemplate("npx cucumber-js {{ scenarios }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
-			elementStart1 := "elementStart1 with ' single quotes"
-			elementStart2 := "elementStart2"
-			elementStart3 := "elementStart3"
-			elementStart4 := "elementStart4"
-			elementStart5 := "elementStart5"
-			elementStart6 := "elementStart6"
+			file1 := "file1 with ' single quotes"
+			file2 := "file2"
+			file3 := "file3"
+			file4 := "file4"
+			file5 := "file5"
+			file6 := "file6"
 			testResults := v1.TestResults{
 				Tests: []v1.Test{
 					{
+						Location: &v1.Location{File: file1},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart1},
 							Status: v1.NewFailedTestStatus(nil, nil, nil),
 						},
 					},
 					{
+						Location: &v1.Location{File: file2},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart2},
 							Status: v1.NewCanceledTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file3},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart3},
 							Status: v1.NewTimedOutTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file4},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart4},
 							Status: v1.NewPendedTestStatus(nil),
 						},
 					},
 					{
+						Location: &v1.Location{File: file5},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart5},
 							Status: v1.NewSuccessfulTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file6},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart6},
 							Status: v1.NewSkippedTestStatus(nil),
 						},
 					},
@@ -225,7 +225,7 @@ var _ = Describe("JavaScriptCucumberSubstitution", func() {
 			Expect(substitutions).To(Equal(
 				[]map[string]string{
 					{
-						"scenarios": `'elementStart1 with '"'"' single quotes'`,
+						"scenarios": `'file1 with '"'"' single quotes'`,
 					},
 				},
 			))

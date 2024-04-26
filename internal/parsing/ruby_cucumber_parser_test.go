@@ -132,7 +132,7 @@ var _ = Describe("RubyCucumberParser", func() {
 					}
 				]`))
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("Found features, but no steps in the JSON"))
+			Expect(err.Error()).To(ContainSubstring("Found features, but no results in the JSON"))
 			Expect(testResults).To(BeNil())
 		})
 	})

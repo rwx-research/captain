@@ -8,35 +8,32 @@
     "status": {
       "kind": "failed"
     },
-    "tests": 18,
-    "otherErrors": 2,
+    "tests": 7,
+    "otherErrors": 0,
     "retries": 0,
     "canceled": 0,
-    "failed": 1,
-    "pended": 1,
+    "failed": 3,
+    "pended": 0,
     "quarantined": 0,
-    "skipped": 4,
-    "successful": 8,
+    "skipped": 0,
+    "successful": 1,
     "timedOut": 0,
-    "todo": 4
+    "todo": 3
   },
   "tests": [
     {
-      "name": "Rule Sample \u003e A passing example \u003e this will pass",
+      "name": "Rule Sample \u003e A passing example",
       "lineage": [
         "Rule Sample",
-        "A passing example",
-        "this will pass"
+        "A passing example"
       ],
       "location": {
         "file": "features/rule.feature",
-        "line": 10
+        "line": 41
       },
       "attempt": {
-        "durationInNanoseconds": 142791,
+        "durationInNanoseconds": 179957,
         "meta": {
-          "elementStart": "features/rule.feature:7",
-          "stepLocation": "features/support/steps.js:4",
           "tags": [
             {
               "name": "@feature_tag",
@@ -54,165 +51,18 @@
       }
     },
     {
-      "name": "Rule Sample \u003e A passing example \u003e I do an action",
+      "name": "Rule Sample \u003e A failing example",
       "lineage": [
         "Rule Sample",
-        "A passing example",
-        "I do an action"
+        "A failing example"
       ],
       "location": {
         "file": "features/rule.feature",
-        "line": 10
+        "line": 41
       },
       "attempt": {
-        "durationInNanoseconds": 16584,
+        "durationInNanoseconds": 109040,
         "meta": {
-          "elementStart": "features/rule.feature:7",
-          "stepLocation": "features/support/steps.js:12",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            }
-          ]
-        },
-        "status": {
-          "kind": "successful"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e A passing example \u003e some results should be there",
-      "lineage": [
-        "Rule Sample",
-        "A passing example",
-        "some results should be there"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 10
-      },
-      "attempt": {
-        "durationInNanoseconds": 20582,
-        "meta": {
-          "elementStart": "features/rule.feature:7",
-          "stepLocation": "features/support/steps.js:14",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            }
-          ]
-        },
-        "status": {
-          "kind": "successful"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e A failing example \u003e this will fail",
-      "lineage": [
-        "Rule Sample",
-        "A failing example",
-        "this will fail"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 17
-      },
-      "attempt": {
-        "durationInNanoseconds": 28541,
-        "meta": {
-          "elementStart": "features/rule.feature:14",
-          "stepLocation": "features/support/steps.js:8",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            },
-            {
-              "name": "@flaky",
-              "line": 12
-            },
-            {
-              "name": "@failing",
-              "line": 13
-            }
-          ]
-        },
-        "status": {
-          "kind": "successful"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e A failing example \u003e I do an action",
-      "lineage": [
-        "Rule Sample",
-        "A failing example",
-        "I do an action"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 17
-      },
-      "attempt": {
-        "durationInNanoseconds": 12542,
-        "meta": {
-          "elementStart": "features/rule.feature:14",
-          "stepLocation": "features/support/steps.js:12",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            },
-            {
-              "name": "@flaky",
-              "line": 12
-            },
-            {
-              "name": "@failing",
-              "line": 13
-            }
-          ]
-        },
-        "status": {
-          "kind": "successful"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e A failing example \u003e some results should be there",
-      "lineage": [
-        "Rule Sample",
-        "A failing example",
-        "some results should be there"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 17
-      },
-      "attempt": {
-        "durationInNanoseconds": 67957,
-        "meta": {
-          "elementStart": "features/rule.feature:14",
-          "stepLocation": "features/support/steps.js:14",
           "tags": [
             {
               "name": "@feature_tag",
@@ -239,85 +89,18 @@
       }
     },
     {
-      "name": "Rule Sample \u003e A pending example \u003e this is pending",
+      "name": "Rule Sample \u003e A pending example",
       "lineage": [
         "Rule Sample",
-        "A pending example",
-        "this is pending"
+        "A pending example"
       ],
       "location": {
         "file": "features/rule.feature",
-        "line": 22
+        "line": 41
       },
       "attempt": {
         "durationInNanoseconds": 22791,
         "meta": {
-          "elementStart": "features/rule.feature:19",
-          "stepLocation": "features/support/steps.js:18",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            }
-          ]
-        },
-        "status": {
-          "kind": "pended"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e A pending example \u003e I do an action",
-      "lineage": [
-        "Rule Sample",
-        "A pending example",
-        "I do an action"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 22
-      },
-      "attempt": {
-        "durationInNanoseconds": 0,
-        "meta": {
-          "elementStart": "features/rule.feature:19",
-          "stepLocation": "features/support/steps.js:12",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            }
-          ]
-        },
-        "status": {
-          "kind": "skipped"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e A pending example \u003e nothing should happen",
-      "lineage": [
-        "Rule Sample",
-        "A pending example",
-        "nothing should happen"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 22
-      },
-      "attempt": {
-        "durationInNanoseconds": 0,
-        "meta": {
-          "elementStart": "features/rule.feature:19",
-          "stepLocation": "",
           "tags": [
             {
               "name": "@feature_tag",
@@ -335,85 +118,18 @@
       }
     },
     {
-      "name": "Rule Sample \u003e A skipped example \u003e this is skipped",
+      "name": "Rule Sample \u003e A skipped example",
       "lineage": [
         "Rule Sample",
-        "A skipped example",
-        "this is skipped"
+        "A skipped example"
       ],
       "location": {
         "file": "features/rule.feature",
-        "line": 27
+        "line": 41
       },
       "attempt": {
         "durationInNanoseconds": 91374,
         "meta": {
-          "elementStart": "features/rule.feature:24",
-          "stepLocation": "features/support/steps.js:22",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            }
-          ]
-        },
-        "status": {
-          "kind": "skipped"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e A skipped example \u003e I do an action",
-      "lineage": [
-        "Rule Sample",
-        "A skipped example",
-        "I do an action"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 27
-      },
-      "attempt": {
-        "durationInNanoseconds": 0,
-        "meta": {
-          "elementStart": "features/rule.feature:24",
-          "stepLocation": "features/support/steps.js:12",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            }
-          ]
-        },
-        "status": {
-          "kind": "skipped"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e A skipped example \u003e nothing should happen",
-      "lineage": [
-        "Rule Sample",
-        "A skipped example",
-        "nothing should happen"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 27
-      },
-      "attempt": {
-        "durationInNanoseconds": 0,
-        "meta": {
-          "elementStart": "features/rule.feature:24",
-          "stepLocation": "",
           "tags": [
             {
               "name": "@feature_tag",
@@ -431,21 +147,18 @@
       }
     },
     {
-      "name": "Rule Sample \u003e An undefined example \u003e this is undefined",
+      "name": "Rule Sample \u003e An undefined example",
       "lineage": [
         "Rule Sample",
-        "An undefined example",
-        "this is undefined"
+        "An undefined example"
       ],
       "location": {
         "file": "features/rule.feature",
-        "line": 32
+        "line": 41
       },
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
-          "elementStart": "features/rule.feature:29",
-          "stepLocation": "",
           "tags": [
             {
               "name": "@feature_tag",
@@ -463,21 +176,18 @@
       }
     },
     {
-      "name": "Rule Sample \u003e An undefined example \u003e I do an action",
+      "name": "Rule Sample \u003e With a failing before hook",
       "lineage": [
         "Rule Sample",
-        "An undefined example",
-        "I do an action"
+        "With a failing before hook"
       ],
       "location": {
         "file": "features/rule.feature",
-        "line": 32
+        "line": 41
       },
       "attempt": {
-        "durationInNanoseconds": 0,
+        "durationInNanoseconds": 104333,
         "meta": {
-          "elementStart": "features/rule.feature:29",
-          "stepLocation": "features/support/steps.js:12",
           "tags": [
             {
               "name": "@feature_tag",
@@ -486,62 +196,32 @@
             {
               "name": "@rule_tag",
               "line": null
-            }
-          ]
-        },
-        "status": {
-          "kind": "skipped"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e An undefined example \u003e nothing should happen",
-      "lineage": [
-        "Rule Sample",
-        "An undefined example",
-        "nothing should happen"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 32
-      },
-      "attempt": {
-        "durationInNanoseconds": 0,
-        "meta": {
-          "elementStart": "features/rule.feature:29",
-          "stepLocation": "",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
             },
             {
-              "name": "@rule_tag",
-              "line": null
+              "name": "@failing_before_hook",
+              "line": 34
             }
           ]
         },
         "status": {
-          "kind": "todo"
+          "kind": "failed",
+          "message": "Error: failed in before hook\n    at World.\u003canonymous\u003e (/Users/kylekthompson/src/captain-examples/cucumber-js/features/support/steps.js:27:9)"
         }
       }
     },
     {
-      "name": "Rule Sample \u003e With a failing after hook \u003e this will pass",
+      "name": "Rule Sample \u003e With a failing after hook",
       "lineage": [
         "Rule Sample",
-        "With a failing after hook",
-        "this will pass"
+        "With a failing after hook"
       ],
       "location": {
         "file": "features/rule.feature",
-        "line": 0
+        "line": 41
       },
       "attempt": {
-        "durationInNanoseconds": 87083,
+        "durationInNanoseconds": 118291,
         "meta": {
-          "elementStart": "features/rule.feature:41",
-          "stepLocation": "features/support/steps.js:4",
           "tags": [
             {
               "name": "@feature_tag",
@@ -558,94 +238,9 @@
           ]
         },
         "status": {
-          "kind": "successful"
+          "kind": "failed",
+          "message": "Error: failed in after hook\n    at World.\u003canonymous\u003e (/Users/kylekthompson/src/captain-examples/cucumber-js/features/support/steps.js:31:9)"
         }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e With a failing after hook \u003e I do an action",
-      "lineage": [
-        "Rule Sample",
-        "With a failing after hook",
-        "I do an action"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 0
-      },
-      "attempt": {
-        "durationInNanoseconds": 9459,
-        "meta": {
-          "elementStart": "features/rule.feature:41",
-          "stepLocation": "features/support/steps.js:12",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            },
-            {
-              "name": "@failing_after_hook",
-              "line": 40
-            }
-          ]
-        },
-        "status": {
-          "kind": "successful"
-        }
-      }
-    },
-    {
-      "name": "Rule Sample \u003e With a failing after hook \u003e some results should be there",
-      "lineage": [
-        "Rule Sample",
-        "With a failing after hook",
-        "some results should be there"
-      ],
-      "location": {
-        "file": "features/rule.feature",
-        "line": 0
-      },
-      "attempt": {
-        "durationInNanoseconds": 6999,
-        "meta": {
-          "elementStart": "features/rule.feature:41",
-          "stepLocation": "features/support/steps.js:14",
-          "tags": [
-            {
-              "name": "@feature_tag",
-              "line": 1
-            },
-            {
-              "name": "@rule_tag",
-              "line": null
-            },
-            {
-              "name": "@failing_after_hook",
-              "line": 40
-            }
-          ]
-        },
-        "status": {
-          "kind": "successful"
-        }
-      }
-    }
-  ],
-  "otherErrors": [
-    {
-      "message": "Error: failed in before hook\n    at World.\u003canonymous\u003e (/Users/kylekthompson/src/captain-examples/cucumber-js/features/support/steps.js:27:9)",
-      "meta": {
-        "type": "Before"
-      }
-    },
-    {
-      "message": "Error: failed in after hook\n    at World.\u003canonymous\u003e (/Users/kylekthompson/src/captain-examples/cucumber-js/features/support/steps.js:31:9)",
-      "meta": {
-        "type": "After"
       }
     }
   ]

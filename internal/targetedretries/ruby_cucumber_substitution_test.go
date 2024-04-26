@@ -29,7 +29,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 		err := substitution.ValidateTemplate(compiledTemplate)
 		Expect(err).NotTo(HaveOccurred())
 
-		fixture, err := os.Open("../../test/fixtures/cucumber/failing.json")
+		fixture, err := os.Open("../../test/fixtures/cucumber-js.json")
 		Expect(err).ToNot(HaveOccurred())
 
 		testResults, err := parsing.RubyCucumberParser{}.Parse(fixture)
@@ -42,7 +42,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 		)
 		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
-			return substitutions[i]["examples"] < substitutions[j]["examples"]
+			return substitutions[i]["scenarios"] < substitutions[j]["scenarios"]
 		})
 		cupaloy.SnapshotT(GinkgoT(), substitutions)
 	})
@@ -70,14 +70,14 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 
 		It("is invalid for a template with too many placeholders", func() {
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ file }} {{ examples }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ file }} {{ scenarios }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
 			Expect(err).To(HaveOccurred())
 		})
 
-		It("is invalid for a template without a examples placeholder", func() {
+		It("is invalid for a template without a scenarios placeholder", func() {
 			substitution := targetedretries.RubyCucumberSubstitution{}
 			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ file }}")
 			Expect(compileErr).NotTo(HaveOccurred())
@@ -86,9 +86,9 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 			Expect(err).To(HaveOccurred())
 		})
 
-		It("is valid for a template with only a examples placeholder", func() {
+		It("is valid for a template with only a scenarios placeholder", func() {
 			substitution := targetedretries.RubyCucumberSubstitution{}
-			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ examples }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ scenarios }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
 			err := substitution.ValidateTemplate(compiledTemplate)
@@ -98,50 +98,50 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		It("returns the shell escaped element start identifiers", func() {
-			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ examples }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ scenarios }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
-			elementStart1 := "elementStart1 with ' single quotes"
-			elementStart2 := "elementStart2"
-			elementStart3 := "elementStart3"
-			elementStart4 := "elementStart4"
-			elementStart5 := "elementStart5"
-			elementStart6 := "elementStart6"
+			file1 := "file1 with ' single quotes"
+			file2 := "file2"
+			file3 := "file3"
+			file4 := "file4"
+			file5 := "file5"
+			file6 := "file6"
 			testResults := v1.TestResults{
 				Tests: []v1.Test{
 					{
+						Location: &v1.Location{File: file1},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart1},
 							Status: v1.NewFailedTestStatus(nil, nil, nil),
 						},
 					},
 					{
+						Location: &v1.Location{File: file2},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart2},
 							Status: v1.NewCanceledTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file3},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart3},
 							Status: v1.NewTimedOutTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file4},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart4},
 							Status: v1.NewPendedTestStatus(nil),
 						},
 					},
 					{
+						Location: &v1.Location{File: file5},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart5},
 							Status: v1.NewSuccessfulTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file6},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart6},
 							Status: v1.NewSkippedTestStatus(nil),
 						},
 					},
@@ -156,59 +156,59 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 			)).To(Equal(
 				[]map[string]string{
 					{
-						"examples": `'elementStart1 with '"'"' single quotes' ` +
-							`'elementStart2' ` +
-							`'elementStart3'`,
+						"scenarios": `'file1 with '"'"' single quotes' ` +
+							`'file2' ` +
+							`'file3'`,
 					},
 				},
 			))
 		})
 
 		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ examples }}")
+			compiledTemplate, compileErr := templating.CompileTemplate("bundle exec cucumber {{ scenarios }}")
 			Expect(compileErr).NotTo(HaveOccurred())
 
-			elementStart1 := "elementStart1 with ' single quotes"
-			elementStart2 := "elementStart2"
-			elementStart3 := "elementStart3"
-			elementStart4 := "elementStart4"
-			elementStart5 := "elementStart5"
-			elementStart6 := "elementStart6"
+			file1 := "file1 with ' single quotes"
+			file2 := "file2"
+			file3 := "file3"
+			file4 := "file4"
+			file5 := "file5"
+			file6 := "file6"
 			testResults := v1.TestResults{
 				Tests: []v1.Test{
 					{
+						Location: &v1.Location{File: file1},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart1},
 							Status: v1.NewFailedTestStatus(nil, nil, nil),
 						},
 					},
 					{
+						Location: &v1.Location{File: file2},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart2},
 							Status: v1.NewCanceledTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file3},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart3},
 							Status: v1.NewTimedOutTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file4},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart4},
 							Status: v1.NewPendedTestStatus(nil),
 						},
 					},
 					{
+						Location: &v1.Location{File: file5},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart5},
 							Status: v1.NewSuccessfulTestStatus(),
 						},
 					},
 					{
+						Location: &v1.Location{File: file6},
 						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"elementStart": elementStart6},
 							Status: v1.NewSkippedTestStatus(nil),
 						},
 					},
@@ -225,7 +225,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 			Expect(substitutions).To(Equal(
 				[]map[string]string{
 					{
-						"examples": `'elementStart1 with '"'"' single quotes'`,
+						"scenarios": `'file1 with '"'"' single quotes'`,
 					},
 				},
 			))

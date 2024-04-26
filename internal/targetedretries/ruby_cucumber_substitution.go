@@ -12,7 +12,7 @@ import (
 type RubyCucumberSubstitution struct{}
 
 func (s RubyCucumberSubstitution) Example() string {
-	return "bundle exec cucumber {{ examples }}"
+	return "bundle exec cucumber {{ scenarios }}"
 }
 
 func (s RubyCucumberSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
@@ -20,20 +20,20 @@ func (s RubyCucumberSubstitution) ValidateTemplate(compiledTemplate templating.C
 
 	if len(keywords) == 0 {
 		return errors.NewInputError(
-			"Retrying Cucumber requires a template with the 'examples' keyword; no keywords were found",
+			"Retrying Cucumber requires a template with the 'scenarios' keyword; no keywords were found",
 		)
 	}
 
 	if len(keywords) > 1 {
 		return errors.NewInputError(
-			"Retrying Cucumber requires a template with only the 'examples' keyword; these were found: %v",
+			"Retrying Cucumber requires a template with only the 'scenarios' keyword; these were found: %v",
 			strings.Join(keywords, ", "),
 		)
 	}
 
-	if keywords[0] != "examples" {
+	if keywords[0] != "scenarios" {
 		return errors.NewInputError(
-			"Retrying Cucumber requires a template with only the 'examples' keyword; '%v' was found instead",
+			"Retrying Cucumber requires a template with only the 'scenarios' keyword; '%v' was found instead",
 			keywords[0],
 		)
 	}
@@ -46,23 +46,27 @@ func (s RubyCucumberSubstitution) SubstitutionsFor(
 	testResults v1.TestResults,
 	filter func(v1.Test) bool,
 ) ([]map[string]string, error) {
-	examples := make([]string, 0)
-	examplesSeen := map[string]struct{}{}
+	scenarios := make([]string, 0)
+	scenariosSeen := map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
 		if test.Attempt.Status.ImpliesFailure() && filter(test) {
-			example := templating.ShellEscape(test.Attempt.Meta["elementStart"].(string))
-			if _, ok := examplesSeen[example]; ok {
+			scenarioLocation := test.Location.File
+			if test.Location.Line != nil {
+				scenarioLocation = fmt.Sprintf("%s:%v", test.Location.File, *test.Location.Line)
+			}
+			example := templating.ShellEscape(scenarioLocation)
+			if _, ok := scenariosSeen[example]; ok {
 				continue
 			}
 
-			examples = append(examples, fmt.Sprintf("'%v'", example))
-			examplesSeen[example] = struct{}{}
+			scenarios = append(scenarios, fmt.Sprintf("'%v'", example))
+			scenariosSeen[example] = struct{}{}
 		}
 	}
 
-	if len(examples) > 0 {
-		return []map[string]string{{"examples": strings.Join(examples, " ")}}, nil
+	if len(scenarios) > 0 {
+		return []map[string]string{{"scenarios": strings.Join(scenarios, " ")}}, nil
 	}
 
 	return []map[string]string{}, nil
