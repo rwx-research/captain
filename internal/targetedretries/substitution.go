@@ -20,6 +20,7 @@ var SubstitutionsByFramework = map[v1.Framework]Substitution{
 	v1.ElixirExUnitFramework:         new(ElixirExUnitSubstitution),
 	v1.GoGinkgoFramework:             new(GoGinkgoSubstitution),
 	v1.GoTestFramework:               new(GoTestSubstitution),
+	v1.JavaScriptCucumberFramework:   new(JavaScriptCucumberSubstitution),
 	v1.JavaScriptCypressFramework:    new(JavaScriptCypressSubstitution),
 	v1.JavaScriptJestFramework:       new(JavaScriptJestSubstitution),
 	v1.JavaScriptMochaFramework:      new(JavaScriptMochaSubstitution),
