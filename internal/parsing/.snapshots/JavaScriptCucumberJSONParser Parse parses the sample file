@@ -13,12 +13,12 @@
     "retries": 0,
     "canceled": 0,
     "failed": 3,
-    "pended": 1,
+    "pended": 0,
     "quarantined": 0,
-    "skipped": 2,
+    "skipped": 0,
     "successful": 1,
     "timedOut": 0,
-    "todo": 0
+    "todo": 3
   },
   "tests": [
     {
@@ -113,7 +113,7 @@
           ]
         },
         "status": {
-          "kind": "pended"
+          "kind": "todo"
         }
       }
     },
@@ -142,7 +142,7 @@
           ]
         },
         "status": {
-          "kind": "skipped"
+          "kind": "todo"
         }
       }
     },
@@ -171,7 +171,7 @@
           ]
         },
         "status": {
-          "kind": "skipped"
+          "kind": "todo"
         }
       }
     },

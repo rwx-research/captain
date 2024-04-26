@@ -49,8 +49,8 @@ type RubyCucumberElement struct {
 }
 
 type RubyCucumberHook struct {
-	Match  RubyCucumberMatch      `json:"match"`
-	Result *FailingCucumberResult `json:"result"`
+	Match  RubyCucumberMatch   `json:"match"`
+	Result *RubyCucumberResult `json:"result"`
 }
 
 // https://github.com/cucumber/cucumber-ruby/blob/b0c5eff4c3a6675f791692b677126e99788165b5/lib/cucumber/formatter/json.rb#L174-L178
@@ -76,12 +76,6 @@ type RubyCucumberResult struct {
 	Status       string  `json:"status"`
 	Duration     *int    `json:"duration"`
 	ErrorMessage *string `json:"error_message"` // this is required if status is failed
-}
-
-type FailingCucumberResult struct {
-	Status       string `json:"status"`
-	Duration     *int   `json:"duration"`
-	ErrorMessage string `json:"error_message"` // this is required if status is failed
 }
 
 func (p RubyCucumberParser) Parse(data io.Reader) (*v1.TestResults, error) {
@@ -128,73 +122,82 @@ outer:
 	tests := make([]v1.Test, 0)
 	otherErrors := make([]v1.OtherError, 0)
 
+	// https://github.com/cucumber/cucumber-ruby/blob/d9d6f380c77b79c3670fa8f1d620d7b57f42b3ae/lib/cucumber/formatter/usage.rb#L141
+	// failed, then skipped, then pending, then undefined, then passed
+	priority := map[string]int{
+		"failed":    5,
+		"skipped":   4,
+		"pending":   3,
+		"undefined": 2,
+		"passed":    1,
+	}
+
 	for _, feature := range cucumberFeatures {
 		for _, element := range feature.Elements {
-			var firstErrorMessage *string
-			statusesSeen := map[string]bool{}
 			duration := time.Duration(0)
+			allResults := make([]RubyCucumberResult, 0)
 
 			for _, hook := range element.Before {
+				if hook.Result.Duration != nil {
+					duration += time.Duration(*hook.Result.Duration * int(time.Nanosecond))
+				}
+
 				if hook.Result == nil {
 					break
 				}
 
-				if firstErrorMessage == nil && hook.Result.ErrorMessage != "" {
-					firstErrorMessage = &hook.Result.ErrorMessage
-				}
-				statusesSeen[hook.Result.Status] = true
-				if hook.Result.Duration != nil {
-					duration += time.Duration(*hook.Result.Duration * int(time.Nanosecond))
-				}
+				allResults = append(allResults, *hook.Result)
 			}
 
 			for _, step := range element.Steps {
+				if step.Result.Duration != nil {
+					duration += time.Duration(*step.Result.Duration * int(time.Nanosecond))
+				}
+
 				if step.Result == nil {
 					break
 				}
 
-				if firstErrorMessage == nil && step.Result.ErrorMessage != nil && *step.Result.ErrorMessage != "" {
-					firstErrorMessage = step.Result.ErrorMessage
-				}
-				statusesSeen[step.Result.Status] = true
-				if step.Result.Duration != nil {
-					duration += time.Duration(*step.Result.Duration * int(time.Nanosecond))
-				}
+				allResults = append(allResults, *step.Result)
 			}
 
-			for _, hook := range element.After {
+			for _, hook := range element.Before {
+				if hook.Result.Duration != nil {
+					duration += time.Duration(*hook.Result.Duration * int(time.Nanosecond))
+				}
+
 				if hook.Result == nil {
 					break
 				}
 
-				if firstErrorMessage == nil && hook.Result.ErrorMessage != "" {
-					firstErrorMessage = &hook.Result.ErrorMessage
-				}
-				statusesSeen[hook.Result.Status] = true
-				if hook.Result.Duration != nil {
-					duration += time.Duration(*hook.Result.Duration * int(time.Nanosecond))
-				}
+				allResults = append(allResults, *hook.Result)
 			}
 
+			var stepStatus string
 			var status v1.TestStatus
-			if statusesSeen["failed"] {
-				status = v1.NewFailedTestStatus(firstErrorMessage, nil, nil)
-			} else if statusesSeen["pending"] && !statusesSeen["passed"] {
-				status = v1.NewPendedTestStatus(firstErrorMessage)
-			} else if statusesSeen["skipped"] && !statusesSeen["passed"] {
-				status = v1.NewSkippedTestStatus(firstErrorMessage)
-			} else if statusesSeen["undefined"] && !statusesSeen["passed"] {
-				status = v1.NewTodoTestStatus(firstErrorMessage)
-			} else if statusesSeen["passed"] {
-				status = v1.NewSuccessfulTestStatus()
-			} else if len(statusesSeen) == 0 {
-				status = v1.NewTodoTestStatus(firstErrorMessage)
-			} else {
-				return nil, errors.NewInputError(
-					"Unexpected statuses %v for cucumber scenario %v",
-					statusesSeen,
-					element,
-				)
+
+			for _, result := range allResults {
+				if _, ok := priority[result.Status]; !ok {
+					return nil, errors.NewInputError("Unexpected status %v", result.Status)
+				}
+
+				if stepStatus == "" || priority[stepStatus] < priority[result.Status] {
+					stepStatus = result.Status
+					switch result.Status {
+					case "passed":
+						status = v1.NewSuccessfulTestStatus()
+					case "failed":
+						status = v1.NewFailedTestStatus(result.ErrorMessage, nil, nil)
+					case "skipped":
+						status = v1.NewSkippedTestStatus(result.ErrorMessage)
+					case "undefined":
+						status = v1.NewTodoTestStatus(result.ErrorMessage)
+					case "pending":
+						status = v1.NewTodoTestStatus(result.ErrorMessage)
+					default:
+						return nil, errors.NewInputError("Unexpected status %v", result.Status)
+					}
+				}
 			}
 
 			location := v1.Location{File: feature.URI, Line: &element.Line}

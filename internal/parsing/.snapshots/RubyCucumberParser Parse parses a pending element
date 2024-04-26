@@ -13,9 +13,9 @@
     "retries": 0,
     "canceled": 0,
     "failed": 0,
-    "pended": 1,
+    "pended": 0,
     "quarantined": 0,
-    "skipped": 0,
+    "skipped": 1,
     "successful": 0,
     "timedOut": 0,
     "todo": 0
@@ -46,8 +46,7 @@
           ]
         },
         "status": {
-          "kind": "pended",
-          "message": "TODO (Cucumber::Pending)\n./features/step_definitions/steps.rb:17:in `\"this is pending\"'\nfeatures/rule.feature:19:in `this is pending'"
+          "kind": "skipped"
         }
       }
     }
