@@ -1,0 +1,447 @@
+[
+  {
+    "description": "",
+    "elements": [
+      {
+        "description": "",
+        "id": "rule-sample;this-is-a-rule;a-passing-example",
+        "keyword": "Example",
+        "line": 7,
+        "name": "A passing example",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 8,
+            "name": "this will pass",
+            "match": {
+              "location": "features/support/steps.js:4"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 142791
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 9,
+            "name": "I do an action",
+            "match": {
+              "location": "features/support/steps.js:12"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 16584
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 10,
+            "name": "some results should be there",
+            "match": {
+              "location": "features/support/steps.js:14"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 20582
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag"
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "rule-sample;this-is-a-rule;a-failing-example",
+        "keyword": "Example",
+        "line": 14,
+        "name": "A failing example",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 15,
+            "name": "this will fail",
+            "match": {
+              "location": "features/support/steps.js:8"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 28541
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 16,
+            "name": "I do an action",
+            "match": {
+              "location": "features/support/steps.js:12"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 12542
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 17,
+            "name": "some results should be there",
+            "match": {
+              "location": "features/support/steps.js:14"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 67957,
+              "error_message": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(this.this_will_pass === true)\n\n    + expected - actual\n\n    -false\n    +true\n\n    at World.<anonymous> (/Users/kylekthompson/src/captain-examples/cucumber-js/features/support/steps.js:15:3)"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag"
+          },
+          {
+            "name": "@flaky",
+            "line": 12
+          },
+          {
+            "name": "@failing",
+            "line": 13
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "rule-sample;this-is-a-rule;a-pending-example",
+        "keyword": "Example",
+        "line": 19,
+        "name": "A pending example",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 20,
+            "name": "this is pending",
+            "match": {
+              "location": "features/support/steps.js:18"
+            },
+            "result": {
+              "status": "pending",
+              "duration": 22791
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 21,
+            "name": "I do an action",
+            "match": {
+              "location": "features/support/steps.js:12"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 22,
+            "name": "nothing should happen",
+            "result": {
+              "status": "undefined",
+              "duration": 0
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag"
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "rule-sample;this-is-a-rule;a-skipped-example",
+        "keyword": "Example",
+        "line": 24,
+        "name": "A skipped example",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 25,
+            "name": "this is skipped",
+            "match": {
+              "location": "features/support/steps.js:22"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 91374
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 26,
+            "name": "I do an action",
+            "match": {
+              "location": "features/support/steps.js:12"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 27,
+            "name": "nothing should happen",
+            "result": {
+              "status": "undefined",
+              "duration": 0
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag"
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "rule-sample;this-is-a-rule;an-undefined-example",
+        "keyword": "Example",
+        "line": 29,
+        "name": "An undefined example",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 30,
+            "name": "this is undefined",
+            "result": {
+              "status": "undefined",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 31,
+            "name": "I do an action",
+            "match": {
+              "location": "features/support/steps.js:12"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 32,
+            "name": "nothing should happen",
+            "result": {
+              "status": "undefined",
+              "duration": 0
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag"
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "rule-sample;this-is-a-rule;with-a-failing-before-hook",
+        "keyword": "Example",
+        "line": 35,
+        "name": "With a failing before hook",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "failed",
+              "duration": 104333,
+              "error_message": "Error: failed in before hook\n    at World.<anonymous> (/Users/kylekthompson/src/captain-examples/cucumber-js/features/support/steps.js:27:9)"
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 36,
+            "name": "this will pass",
+            "match": {
+              "location": "features/support/steps.js:4"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 37,
+            "name": "I do an action",
+            "match": {
+              "location": "features/support/steps.js:12"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 38,
+            "name": "some results should be there",
+            "match": {
+              "location": "features/support/steps.js:14"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag"
+          },
+          {
+            "name": "@failing_before_hook",
+            "line": 34
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "rule-sample;this-is-a-rule;with-a-failing-after-hook",
+        "keyword": "Example",
+        "line": 41,
+        "name": "With a failing after hook",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 42,
+            "name": "this will pass",
+            "match": {
+              "location": "features/support/steps.js:4"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 87083
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 43,
+            "name": "I do an action",
+            "match": {
+              "location": "features/support/steps.js:12"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 9459
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 44,
+            "name": "some results should be there",
+            "match": {
+              "location": "features/support/steps.js:14"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 6999
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "failed",
+              "duration": 14750,
+              "error_message": "Error: failed in after hook\n    at World.<anonymous> (/Users/kylekthompson/src/captain-examples/cucumber-js/features/support/steps.js:31:9)"
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@feature_tag",
+            "line": 1
+          },
+          {
+            "name": "@rule_tag"
+          },
+          {
+            "name": "@failing_after_hook",
+            "line": 40
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "rule-sample",
+    "line": 2,
+    "keyword": "Feature",
+    "name": "Rule Sample",
+    "tags": [
+      {
+        "name": "@feature_tag",
+        "line": 1
+      }
+    ],
+    "uri": "features/rule.feature"
+  }
+]
