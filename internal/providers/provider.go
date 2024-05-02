@@ -13,6 +13,7 @@ type Env struct {
 	Generic   GenericEnv
 	GitHub    GitHubEnv
 	GitLab    GitLabEnv
+	Mint      MintEnv
 }
 
 type Provider struct {
@@ -125,6 +126,8 @@ func (env Env) MakeProvider() (Provider, error) {
 			return wrapError(env.CircleCI.makeProvider())
 		case env.GitLab.Detected:
 			return wrapError(env.GitLab.makeProvider())
+		case env.Mint.Detected:
+			return wrapError(env.Mint.makeProvider())
 		}
 		return Provider{}, nil
 	}()

@@ -1,0 +1,17 @@
+export MINT=true
+export MINT_PARALLEL_INDEX=0
+export MINT_PARALLEL_TOTAL=2
+export MINT_ACTOR=some-actor
+export MINT_ACTOR_ID=some-actor-id
+export MINT_RUN_URL=https://cloud.rwx.com/mint/some-org/runs/some-run-id
+export MINT_TASK_URL=https://cloud.rwx.com/mint/some-org/tasks/some-task-id
+export MINT_RUN_ID=some-run-id
+export MINT_TASK_ID=some-task-id
+export MINT_TASK_ATTEMPT_NUMBER=1
+export MINT_RUN_TITLE=Some title
+export MINT_GIT_REPOSITORY_URL=git@github.com:rwx-research/captain.git
+export MINT_GIT_REPOSITORY_NAME=rwx-research/captain
+export MINT_GIT_COMMIT_MESSAGE=Some commit message
+export MINT_GIT_COMMIT_SHA=some-commit-sha
+export MINT_GIT_REF=refs/heads/some-ref
+export MINT_GIT_REF_NAME=some-ref
