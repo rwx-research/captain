@@ -3,15 +3,19 @@
 package integration_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bradleyjkemp/cupaloy"
 	"github.com/google/uuid"
 	"github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/test/helpers"
+
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -1066,6 +1070,36 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 
 					Expect(result.exitCode).To(Equal(0))
 					cupaloy.SnapshotT(GinkgoT(), result.stdout)
+				})
+
+				It("does not add the parsed file to derivedFrom when it's already in the RWX format", func() {
+					result := runCaptain(captainArgs{
+						args: []string{"parse", "results", "fixtures/rwx/v1_not_derived.json"},
+						env:  make(map[string]string),
+					})
+
+					Expect(result.exitCode).To(Equal(0))
+
+					var testResults v1.TestResults
+
+					err := json.NewDecoder(strings.NewReader(result.stdout)).Decode(&testResults)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(testResults.DerivedFrom).To(BeNil())
+				})
+
+				It("leaves the derived from contents exactly as it was when it's already in the RWX format", func() {
+					result := runCaptain(captainArgs{
+						args: []string{"parse", "results", "fixtures/rwx/v1.json"},
+						env:  make(map[string]string),
+					})
+
+					Expect(result.exitCode).To(Equal(0))
+
+					var testResults v1.TestResults
+
+					err := json.NewDecoder(strings.NewReader(result.stdout)).Decode(&testResults)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(testResults.DerivedFrom[0].Contents).To(Equal("base64encodedoriginalfile"))
 				})
 			})
 		})
