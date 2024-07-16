@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/mattn/go-shellwords"
@@ -652,6 +653,21 @@ func (s Service) reportTestResults(
 		} else {
 			// Append an empty line to make output more readable
 			fmt.Fprintf(os.Stdout, "\n")
+		}
+	}
+
+	mintLinksPath := os.Getenv("MINT_LINKS")
+	if reportingConfiguration.Provider.ProviderName == "mint" && mintLinksPath != "" {
+		backlinkPath := filepath.Join(mintLinksPath, "View Captain results")
+		backlinkURL := fmt.Sprintf(
+			"https://%v/captain/deep_link/test_suite_summaries/%v/%v/%v",
+			reportingConfiguration.CloudHost,
+			reportingConfiguration.SuiteID,
+			reportingConfiguration.Provider.BranchName,
+			reportingConfiguration.Provider.CommitSha,
+		)
+		if err := os.WriteFile(backlinkPath, []byte(backlinkURL), 0o600); err != nil {
+			s.Log.Warnf("Could not populate backlink in Mint")
 		}
 	}
 
