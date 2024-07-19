@@ -1,0 +1,49 @@
+on:
+  github:
+    push:
+      init:
+        commit-sha: ${{ event.git.sha }}
+    pull_request:
+      init:
+        commit-sha: ${{ event.git.sha }}
+
+tasks:
+  - key: test
+    call: ${{ run.mint-dir }}/test.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: release-unstable
+    after: test
+    call: ${{ run.mint-dir }}/release.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+      kind: unstable
+
+  - key: setup
+    call: ${{ run.mint-dir }}/setup.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: lint
+    after: setup
+    run: mage lint
+
+  - key: go-mod-tidy
+    after: setup
+    run: |
+      go mod tidy
+      git diff-index --quiet HEAD
+
+  - key: legacy-test-suite-tags
+    after: setup
+    run: mage legacyTestSuiteTags > $MINT_VALUES/versions
+
+  - key: backwards-compatibility-tests
+    parallel:
+      matrix:
+        version: ${{ tasks.legacy-test-suite-tags.values.versions }}
+    call: ${{ run.mint-dir }}/test_backwards_compatibility.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+      legacy_version: ${{ parallel.version }}

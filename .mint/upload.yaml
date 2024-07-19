@@ -1,0 +1,61 @@
+tasks:
+  - key: setup
+    call: ${{ run.mint-dir }}/setup.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: build-binary
+    use: setup
+    run: mage
+    env:
+      GOOS: ${{ init.os }}
+      GOARCH: ${{ init.arch }}
+      CGO_ENABLED: 0
+      LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=${{ init.full-version }}
+
+  - key: upload
+    if: ${{ init.os != 'darwin' }}
+    use: build-binary
+    run: |
+      if [[ "${{ init.os }}" == "windows" ]]; then
+        extension=".exe"
+      fi
+      arch=${{ init.arch }}
+      if [[ "${{ init.arch }}" == "arm64" ]]; then
+        arch="aarch64"
+      fi
+      github_asset_name=$(echo "captain-${{ init.os }}-$arch$extension" | tr '[:upper:]' '[:lower:]')
+      mv "captain$extension" "$github_asset_name"
+      gh release upload ${{ init.full-version }} "$github_asset_name" --clobber
+
+  - key: notarize
+    use: build-binary
+    if: ${{ init.os == 'darwin' }}
+    run: |
+      curl -fsSLO https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F0.22.0/apple-codesign-0.22.0-x86_64-unknown-linux-musl.tar.gz
+      tar xzvf apple-codesign-0.22.0-x86_64-unknown-linux-musl.tar.gz --strip-components=1
+
+      echo "$RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT" > rwx-developer-id-application-cert.pem
+      # first we sign the binary. This happens locally.
+      ./rcodesign sign --pem-source rwx-developer-id-application-cert.pem --code-signature-flags runtime "./captain"
+      # notarizing requires certain container formats, that's why we zip
+      zip -r captain.zip "./captain"
+      echo "$RWX_APPLE_APP_STORE_CONNECT_API_KEY" > rwx-apple-app-store-connect-api-key.json
+      ./rcodesign notary-submit --wait --api-key-path rwx-apple-app-store-connect-api-key.json captain.zip
+    env:
+      CODESIGN_VERSION: 0.22.0
+      RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT: ${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT }}
+      RWX_APPLE_APP_STORE_CONNECT_API_KEY: ${{ secrets.RWX_APPLE_APP_STORE_CONNECT_API_KEY }}
+
+  - key: upload
+    if: ${{ init.os == 'darwin' }}
+    use: notarize
+    run: |
+      arch=${{ init.arch }}
+      if [[ "${{ init.arch }}" == "arm64" ]]; then
+        arch="aarch64"
+      fi
+      github_asset_name=$(echo "captain-${{ init.os }}-$arch" | tr '[:upper:]' '[:lower:]')
+      mv "captain" "$github_asset_name"
+      gh release upload ${{ init.full-version }} "$github_asset_name" --clobber
+

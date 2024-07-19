@@ -46,6 +46,7 @@ func WriteJUnitSummary(file fs.File, testResults v1.TestResults, _ Configuration
 
 		if test.Location != nil {
 			if test.Location.File != "" {
+				test := test
 				testCase.File = &test.Location.File
 			}
 

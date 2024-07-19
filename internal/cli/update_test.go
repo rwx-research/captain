@@ -61,7 +61,7 @@ var _ = Describe("Update Captain", func() {
 				return nil, errors.NewInternalError("unknown file")
 			}
 		}
-		mockedFS.MockOpenFile = func(name string, flag int, perm os.FileMode) (fs.File, error) {
+		mockedFS.MockOpenFile = func(name string, _ int, _ os.FileMode) (fs.File, error) {
 			return mockedFS.MockOpen(name)
 		}
 	})

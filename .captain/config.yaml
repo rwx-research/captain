@@ -1,6 +1,6 @@
 test-suites:
   captain-cli-ginkgo:
-    command: nix develop --command mage test
+    command: mage test
     fail-on-upload-error: true
     output:
       reporters:
@@ -8,7 +8,7 @@ test-suites:
     results:
       path: report.xml
   captain-cli-backwards-compatibility:
-    command: nix develop --command mage integrationTest
+    command: mage integrationTest
     fail-on-upload-error: true
     output:
       reporters:

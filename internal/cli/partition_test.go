@@ -55,7 +55,7 @@ var _ = Describe("Partition", func() {
 		service = cli.Service{
 			API: new(mocks.API),
 			Log: zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
-				zap.WrapCore(func(original zapcore.Core) zapcore.Core { return core }),
+				zap.WrapCore(func(_ zapcore.Core) zapcore.Core { return core }),
 			)).Sugar(),
 			FileSystem:  new(mocks.FileSystem),
 			TaskRunner:  new(mocks.TaskRunner),
@@ -84,10 +84,10 @@ var _ = Describe("Partition", func() {
 
 	Context("when the client provides multiple globs", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
-			mockGetTimingManifest := func(ctx context.Context, testSuiteIdentifier string) ([]testing.TestFileTiming, error) {
+			mockGetTimingManifest := func(_ context.Context, _ string) ([]testing.TestFileTiming, error) {
 				return []testing.TestFileTiming{}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
@@ -107,8 +107,8 @@ var _ = Describe("Partition", func() {
 	Context("under expected conditions", func() {
 		BeforeEach(func() {
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				return []testing.TestFileTiming{
@@ -119,7 +119,7 @@ var _ = Describe("Partition", func() {
 				}, nil
 			}
 			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
@@ -173,12 +173,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when there are no test file timings", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				return []testing.TestFileTiming{}, nil
@@ -239,12 +239,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when test file timings overflow partitions", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				return []testing.TestFileTiming{
@@ -306,12 +306,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when suite run with some timed and some untimed files", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				return []testing.TestFileTiming{
@@ -372,12 +372,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when we're provided out of order timings", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				return []testing.TestFileTiming{
@@ -411,12 +411,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when we have moar partitions", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				return []testing.TestFileTiming{
@@ -450,12 +450,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when the server sends down ./filepaths", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				return []testing.TestFileTiming{
@@ -489,12 +489,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when the server sends down fully expanded paths", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				a, _ := filepath.Abs("a.test")
@@ -550,12 +550,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when the server returns an error", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				return nil, errors.NewSystemError("something bad!")
 			}
@@ -571,12 +571,12 @@ var _ = Describe("Partition", func() {
 
 	Context("when using a custom delimiter", func() {
 		BeforeEach(func() {
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
 			}
 			mockGetTimingManifest := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) ([]testing.TestFileTiming, error) {
 				fetchedTimingManifest = true
 				a, _ := filepath.Abs("a.test")

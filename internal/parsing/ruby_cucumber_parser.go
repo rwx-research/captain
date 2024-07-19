@@ -200,6 +200,7 @@ outer:
 				}
 			}
 
+			element := element
 			location := v1.Location{File: feature.URI, Line: &element.Line}
 			attempt := v1.TestAttempt{
 				Duration: &duration,

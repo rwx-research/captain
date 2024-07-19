@@ -1,0 +1,29 @@
+on:
+  cron:
+    - key: ensure-test-file-timings
+      schedule: "35 2 * * 2" # At 02:35 every Tuesday
+      init:
+        commit-sha: ${{ event.git.sha }}
+
+tasks:
+  - key: setup
+    call: ${{ run.mint-dir }}/setup.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: build
+    after: setup
+    run: mage
+    env: 
+      CGO_ENABLED: 0
+      LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
+
+  - key: test
+    use: build
+    env: 
+      CGO_ENABLED: 0
+      LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
+      REPORT: true
+      RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
+      RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
+    run: ./captain run captain-cli-ginkgo

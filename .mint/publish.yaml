@@ -1,0 +1,43 @@
+tasks:
+  - key: github-cli
+    call: github/install-cli 1.0.0
+
+  - key: publish-github-release
+    use: github-cli
+    if: ${{ init.kind == 'production' }}
+    run: gh release edit ${{ init.full-version }} --draft=false --latest
+
+  - key: setup
+    call: ${{ run.mint-dir }}/setup.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: push-tags
+    if: ${{ init.aliased-version != '' }}
+    use: setup
+    run: |
+      git tag --force ${{ init.aliased-version }}
+      git push --force origin ${{ init.aliased-version }}
+
+  - key: create-release
+    if: ${{ init.aliased-version != '' }}
+    after: [push-tags]
+    use: [github-cli]
+    run: |
+      gh release view ${{ init.full-version }} || \
+        gh release create ${{ init.full-version }} \
+        --latest=false \
+        --draft=false \
+        --prerelease=false \
+        --notes "The Captain ${{ init.aliased-version }} release and tag exist to provide an easy way to download the latest ${{ init.aliased-version }}.x.x release of Captain. For example, you can always download the latest Linux x86 ${{ init.aliased-version }} release at this URL: https://github.com/rwx-research/captain/releases/download/${{ init.aliased-version }}/captain-linux-x86_64. (Look at the assets attached to this release to find the other available downloads.) This release and its assets are updated whenever a new ${{ init.aliased-version }}.x.x version of Captain is released." \
+        --title "Captain ${{ init.aliased-version }}"
+
+  - key: copy-assets-to-aliased-release
+    if: ${{ init.aliased-version != '' }}
+    after: [create-release]
+    use: [github-cli]
+    run: |
+      gh release download ${{ init.full-version }}
+      gh release upload ${{ init.aliased-version }} captain-* --clobber
+
+# TODO: Update Cloudfront

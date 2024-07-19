@@ -1,0 +1,85 @@
+on:
+  github:
+    push:
+      init:
+        commit-sha: ${{ event.git.sha }}
+
+tasks:
+  - key: captain-source
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https://github.com/rwx-research/captain.git
+      ref: ${{ init.commit-sha }}
+      github-access-token: ${{ github.token }}
+      path: captain
+      preserve-git-dir: true
+
+  - key: tool-versions
+    use: captain-source
+    run: |
+      cd captain
+      grep golang .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
+      grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
+
+  - key: golang
+    call: mint/install-go 1.0.6
+    with:
+      go-version: ${{ tasks.tool-versions.values.golang }}
+
+  - key: mage-source
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https://github.com/magefile/mage.git
+      ref: v${{ tasks.tool-versions.values.mage }}
+      path: mage
+
+  - key: mage
+    use: [mage-source, golang]
+    run: |
+      cd mage
+      go run bootstrap.go
+
+  - key: test
+    use: [captain-source, mage]
+    run: |
+      cd captain
+      mage build
+      cp ./captain /tmp/captain
+      ginkgo build --tags integration ./test/
+      cp ./test/test.test /tmp/test
+    env:
+      CGO_ENABLED: 0
+      LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
+
+  - key: install-buildkite
+    run: |
+      curl -fsSL https://keys.openpgp.org/vks/v1/by-fingerprint/32A37959C2FA5C3C99EFBC32A79206696452D198 | sudo gpg --dearmor -o /usr/share/keyrings/buildkite-agent-archive-keyring.gpg
+      echo "deb [signed-by=/usr/share/keyrings/buildkite-agent-archive-keyring.gpg] https://apt.buildkite.com/buildkite-agent stable main" | sudo tee /etc/apt/sources.list.d/buildkite-agent.list
+      sudo apt-get update && sudo apt-get install -y buildkite-agent
+      sudo sed -i "s/xxx/$BUILDKITE_AGENT_TOKEN/g" /etc/buildkite-agent/buildkite-agent.cfg
+      sudo systemctl enable buildkite-agent && sudo systemctl start buildkite-agent
+    env:
+      BUILDKITE_AGENT_TOKEN: ${{ secrets.BUILDKITE_AGENT_TOKEN }}
+
+  - key: configure-buildkite
+    use: [install-buildkite]
+    run: |
+      sudo mkdir /var/lib/buildkite-agent/.ssh
+      sudo --preserve-env bash -c 'echo "$BUILDKITE_SSH_KEY" > /var/lib/buildkite-agent/.ssh/id_ed25519'
+      sudo chown buildkite-agent:buildkite-agent /var/lib/buildkite-agent/.ssh
+      sudo chmod 700 /var/lib/buildkite-agent/.ssh
+      sudo chown buildkite-agent:buildkite-agent /var/lib/buildkite-agent/.ssh/id_ed25519
+      sudo chmod 400 /var/lib/buildkite-agent/.ssh/id_ed25519
+
+      sudo tee /etc/buildkite-agent/hooks/environment > /dev/null <<'EOF'
+      #!/usr/bin/env bash
+      export RWX_ACCESS_TOKEN="${{ secrets.RWX_ACCESS_TOKEN }}"
+      export RWX_ACCESS_TOKEN_STAGING="${{ secrets.RWX_ACCESS_TOKEN_STAGING }}"
+      EOF
+      sudo chmod +x /etc/buildkite-agent/hooks/environment
+    env:
+      BUILDKITE_AGENT_TOKEN: ${{ secrets.BUILDKITE_AGENT_TOKEN }}
+
+  - key: sleep
+    after: [test, configure-buildkite]
+    run: sleep 60
