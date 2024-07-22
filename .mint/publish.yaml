@@ -2,11 +2,6 @@ tasks:
   - key: github-cli
     call: github/install-cli 1.0.0
 
-  - key: publish-github-release
-    use: github-cli
-    if: ${{ init.kind == 'production' }}
-    run: gh release edit ${{ init.full-version }} --draft=false --latest
-
   - key: captain-source
     call: mint/git-clone 1.2.4
     with:
@@ -15,9 +10,18 @@ tasks:
       github-access-token: ${{ github.token }}
       preserve-git-dir: true
 
+  - key: publish-github-release
+    use: [captain-source, github-cli]
+    if: ${{ init.kind == 'production' }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: gh release edit ${{ init.full-version }} --draft=false --latest
+
   - key: push-tags
     if: ${{ init.aliased-version != '' }}
     use: captain-source
+    env:
+      GITHUB_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
     run: |
       git tag --force ${{ init.aliased-version }}
       git push --force origin ${{ init.aliased-version }}
@@ -25,7 +29,9 @@ tasks:
   - key: create-release
     if: ${{ init.aliased-version != '' }}
     after: [push-tags]
-    use: [github-cli]
+    use: [captain-source, github-cli]
+    env:
+      GH_TOKEN: ${{ github.token }}
     run: |
       gh release view ${{ init.full-version }} || \
         gh release create ${{ init.full-version }} \
@@ -38,9 +44,73 @@ tasks:
   - key: copy-assets-to-aliased-release
     if: ${{ init.aliased-version != '' }}
     after: [create-release]
-    use: [github-cli]
+    use: [captain-source, github-cli]
+    env:
+      GH_TOKEN: ${{ github.token }}
     run: |
       gh release download ${{ init.full-version }}
       gh release upload ${{ init.aliased-version }} captain-* --clobber
 
-# TODO: Update Cloudfront
+  - key: aws-cli
+    call: aws/install-cli 1.0.1
+
+  - key: configure-aws
+    use: aws-cli
+    after: copy-assets-to-aliased-release
+    call: aws/assume-role 1.1.1
+    with:
+      oidc-token: ${{ vaults.captain_main.oidc.aws_token }}
+      region: us-east-1
+      role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
+
+  - key: update-cloudfront
+    use: [copy-assets-to-aliased-release, configure-aws]
+    run: |
+      updatedPaths=""
+
+      for binary in captain-*
+      do
+        cleanedBinary=${binary//.exe/}
+        os=$(echo "$cleanedBinary" | cut -d '-' -f 2)
+        arch=$(echo "$cleanedBinary" | cut -d '-' -f 3)
+        version="${{ init.full-version }}"
+
+        if [[ "$arch" == "x86_64" ]]; then
+          oldArch="amd64"
+        elif [[ "$arch" == "aarch64" ]]; then
+          oldArch="arm64"
+        else
+          echo "unmapped arch: $arch"
+          exit 1
+        fi
+
+        if [[ "$os" == "windows" ]]; then
+          extension=".exe"
+        fi
+
+        # the old format does not include the extension intentionally
+        oldPath="captain-$os-$oldArch-$version"
+        aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$oldPath"
+        newPath="$version/$os/$arch/captain$extension"
+        aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$newPath"
+
+        if [[ "${{ init.aliased-version }}" != "" ]]; then
+          aliasedOldPath=${oldPath//$version/${{ init.aliased-version }}}
+          aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$aliasedOldPath"
+
+          aliasedNewPath=${newPath//$version/${{ init.aliased-version }}}
+          aws s3 cp "$binary" "s3://terraform-20221109133415397600000001/$aliasedNewPath"
+
+          if [[ "$updatedPaths" == "" ]]; then
+            # shellcheck disable=SC2089
+            updatedPaths="/$aliasedOldPath /$aliasedNewPath"
+          else
+            updatedPaths="$updatedPaths /$aliasedOldPath /$aliasedNewPath"
+          fi
+        fi
+      done
+
+      if [[ "$updatedPaths" != "" ]]; then
+        # shellcheck disable=SC2086,SC2090
+        aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths $updatedPaths
+      fi
