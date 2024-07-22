@@ -53,6 +53,7 @@ tasks:
       cd /tmp/mage
       mkdir $HOME/go # Mage assumes this already exists
       go run bootstrap.go
+      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
 
   - key: lint
     use: [captain-source, mage]

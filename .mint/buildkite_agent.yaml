@@ -37,7 +37,9 @@ tasks:
     use: [mage-source, golang]
     run: |
       cd mage
+      mkdir $HOME/go # Mage assumes this already exists
       go run bootstrap.go
+      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
 
   - key: test
     use: [captain-source, mage]
