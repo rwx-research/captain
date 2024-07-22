@@ -29,7 +29,7 @@
       ],
       "location": {
         "file": "test.py",
-        "line": 10
+        "line": 23
       },
       "attempt": {
         "durationInNanoseconds": 2406000000,
@@ -48,7 +48,7 @@
       ],
       "location": {
         "file": "test.py",
-        "line": 10
+        "line": 32
       },
       "attempt": {
         "durationInNanoseconds": 2402000000,
@@ -67,7 +67,7 @@
       ],
       "location": {
         "file": "test.py",
-        "line": 10
+        "line": 14
       },
       "attempt": {
         "durationInNanoseconds": 0,
@@ -86,7 +86,7 @@
       ],
       "location": {
         "file": "test.py",
-        "line": 10
+        "line": 28
       },
       "attempt": {
         "durationInNanoseconds": 2405000000,

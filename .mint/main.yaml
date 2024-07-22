@@ -8,13 +8,13 @@ on:
         commit-sha: ${{ event.git.sha }}
 
 tasks:
-  - key: unit-tests
+  - key: test
     call: ${{ run.mint-dir }}/test.yaml
     init:
       commit-sha: ${{ init.commit-sha }}
 
-  - key: integration-tests
-    call: ${{ run.mint-dir }}/test_integration.yaml
+  - key: buildkite-tests
+    call: ${{ run.mint-dir }}/buildkite.yaml
     init:
       commit-sha: ${{ init.commit-sha }}
 
@@ -29,7 +29,7 @@ tasks:
       commit-sha: ${{ init.commit-sha }}
 
   - key: release-unstable
-    after: unit-tests
+    after: test
     call: ${{ run.mint-dir }}/release.yaml
     init:
       commit-sha: ${{ init.commit-sha }}
