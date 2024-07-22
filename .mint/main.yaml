@@ -3,9 +3,11 @@ on:
     push:
       init:
         commit-sha: ${{ event.git.sha }}
+        branch: ${{ event.git.branch }}
     pull_request:
       init:
         commit-sha: ${{ event.git.sha }}
+        branch: ${{ event.git.branch }}
 
 tasks:
   - key: test
@@ -30,6 +32,7 @@ tasks:
 
   - key: release-unstable
     after: test
+    if: ${{ init.branch == 'main' }}
     call: ${{ run.mint-dir }}/release.yaml
     init:
       commit-sha: ${{ init.commit-sha }}

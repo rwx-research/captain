@@ -43,23 +43,33 @@ tasks:
       CGO_ENABLED: 0
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=${{ init.full-version }}
 
+  - key: github-cli
+    call: github/install-cli 1.0.0
+
   - key: upload
     if: ${{ init.os != 'darwin' }}
-    use: build-binary
+    use: [build-binary, github-cli]
+    env:
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
     run: |
       if [[ "${{ init.os }}" == "windows" ]]; then
         extension=".exe"
       fi
-      arch=${{ init.arch }}
       if [[ "${{ init.arch }}" == "arm64" ]]; then
         arch="aarch64"
+      fi
+      if [[ "${{ init.arch }}" == "amd64" ]]; then
+        arch="x86_64"
       fi
       github_asset_name=$(echo "captain-${{ init.os }}-$arch$extension" | tr '[:upper:]' '[:lower:]')
       mv "captain$extension" "$github_asset_name"
       gh release upload ${{ init.full-version }} "$github_asset_name" --clobber
 
+  - key: zip
+    run: sudo apt-get update && sudo apt-get install -y zip
+
   - key: notarize
-    use: build-binary
+    use: [build-binary, zip]
     if: ${{ init.os == 'darwin' }}
     run: |
       curl -fsSLO https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F0.22.0/apple-codesign-0.22.0-x86_64-unknown-linux-musl.tar.gz
@@ -74,16 +84,20 @@ tasks:
       ./rcodesign notary-submit --wait --api-key-path rwx-apple-app-store-connect-api-key.json captain.zip
     env:
       CODESIGN_VERSION: 0.22.0
-      RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT: ${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT }}
+      RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT: "${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT_CERTIFICATE }}${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT_PRIVATE_KEY }}"
       RWX_APPLE_APP_STORE_CONNECT_API_KEY: ${{ secrets.RWX_APPLE_APP_STORE_CONNECT_API_KEY }}
 
-  - key: upload
+  - key: upload-darwin
     if: ${{ init.os == 'darwin' }}
-    use: notarize
+    use: [notarize, github-cli]
+    env:
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
     run: |
-      arch=${{ init.arch }}
       if [[ "${{ init.arch }}" == "arm64" ]]; then
         arch="aarch64"
+      fi
+      if [[ "${{ init.arch }}" == "amd64" ]]; then
+        arch="x86_64"
       fi
       github_asset_name=$(echo "captain-${{ init.os }}-$arch" | tr '[:upper:]' '[:lower:]')
       mv "captain" "$github_asset_name"
