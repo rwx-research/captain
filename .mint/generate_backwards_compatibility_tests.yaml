@@ -1,25 +1,4 @@
-on:
-  github:
-    push:
-      init:
-        commit-sha: ${{ event.git.sha }}
-    pull_request:
-      init:
-        commit-sha: ${{ event.git.sha }}
-
 tasks:
-  - key: test
-    call: ${{ run.mint-dir }}/test.yaml
-    init:
-      commit-sha: ${{ init.commit-sha }}
-
-  - key: release-unstable
-    after: test
-    call: ${{ run.mint-dir }}/release.yaml
-    init:
-      commit-sha: ${{ init.commit-sha }}
-      kind: unstable
-
   - key: captain-source
     call: mint/git-clone 1.2.4
     with:
@@ -55,21 +34,12 @@ tasks:
       go run bootstrap.go
       echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
 
-  - key: lint
-    use: [captain-source, mage]
-    run: mage lint
-
-  - key: go-mod-tidy
-    use: [captain-source, golang]
-    run: |
-      go mod tidy
-      git diff-index --quiet HEAD
-
   - key: legacy-test-suite-tags
     use: [captain-source, mage]
-    run: mage legacyTestSuiteTags > $MINT_VALUES/versions
+    run: mage legacyTestSuiteTags | tee $MINT_VALUES/versions
 
   - key: backwards-compatibility-tests
+    after: legacy-test-suite-tags
     parallel:
       matrix:
         version: ${{ tasks.legacy-test-suite-tags.values.versions }}

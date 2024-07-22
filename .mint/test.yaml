@@ -20,6 +20,7 @@ tasks:
     run: |
       grep "golang " .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
       grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
+      grep ginkgo .tool-versions | awk '{print $2}' | tee $MINT_VALUES/ginkgo
 
   - key: golang
     call: mint/install-go 1.0.6
@@ -41,6 +42,20 @@ tasks:
       go run bootstrap.go
       echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
 
+  - key: ginkgo-source
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https://github.com/onsi/ginkgo.git
+      ref: v${{ tasks.tool-versions.values.ginkgo }}
+      path: /tmp/ginkgo
+
+  - key: ginkgo
+    use: [ginkgo-source, golang]
+    run: |
+      cd /tmp/ginkgo
+      go install ./ginkgo
+      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
+
   - key: build
     use: [captain-source, mage]
     run: mage
@@ -49,7 +64,7 @@ tasks:
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
 
   - key: test
-    use: build
+    use: [build, ginkgo]
     env: 
       CGO_ENABLED: 0
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
