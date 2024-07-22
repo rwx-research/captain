@@ -44,10 +44,13 @@ tasks:
       echo "$full_version" > $MINT_VALUES/full_version
       echo "$aliased_version" > $MINT_VALUES/aliased_version
 
-  - key: setup
-    call: ${{ run.mint-dir }}/setup.yaml
-    init:
-      commit-sha: ${{ init.commit-sha }}
+  - key: captain-source
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https://github.com/rwx-research/captain.git
+      ref: ${{ init.commit-sha }}
+      github-access-token: ${{ github.token }}
+      preserve-git-dir: true
 
   - key: github-cli
     call: github/install-cli 1.0.0
@@ -57,7 +60,7 @@ tasks:
     run: gh release view ${{ tasks.extract-version-details.values.full_version }} --json isDraft | jq -e '.isDraft == true'
 
   - key: push-tags
-    use: setup
+    use: captain-source
     after: ensure-not-published-yet
     run: |
       git tag --force ${{ tasks.extract-version-details.values.full_version }}
@@ -90,7 +93,7 @@ tasks:
   # TODO: Approval
   - key: publish
     after: upload
-    call: ${{ run.mint-dir }}/setup.yaml
+    call: ${{ run.mint-dir }}/publish.yaml
     if: ${{ init.kind == 'production' }}
     init:
       full-version: ${{ tasks.extract-version-details.values.full-version }}

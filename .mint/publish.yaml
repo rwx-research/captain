@@ -7,14 +7,17 @@ tasks:
     if: ${{ init.kind == 'production' }}
     run: gh release edit ${{ init.full-version }} --draft=false --latest
 
-  - key: setup
-    call: ${{ run.mint-dir }}/setup.yaml
-    init:
-      commit-sha: ${{ init.commit-sha }}
+  - key: captain-source
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https://github.com/rwx-research/captain.git
+      ref: ${{ init.commit-sha }}
+      github-access-token: ${{ github.token }}
+      preserve-git-dir: true
 
   - key: push-tags
     if: ${{ init.aliased-version != '' }}
-    use: setup
+    use: captain-source
     run: |
       git tag --force ${{ init.aliased-version }}
       git push --force origin ${{ init.aliased-version }}
