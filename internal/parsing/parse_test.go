@@ -66,7 +66,7 @@ var _ = Describe("Parse", func() {
 	BeforeEach(func() {
 		logCore, recordedLogs = observer.New(zapcore.DebugLevel)
 		log = zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
-			zap.WrapCore(func(original zapcore.Core) zapcore.Core { return logCore }),
+			zap.WrapCore(func(_ zapcore.Core) zapcore.Core { return logCore }),
 		)).Sugar()
 		file = new(mocks.File)
 		file.Reader = strings.NewReader("the fake contents to base64 encode")

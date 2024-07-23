@@ -144,6 +144,7 @@ func (p JavaScriptJestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			var line *int
 			var column *int
 			if assertionResult.Location != nil {
+				assertionResult := assertionResult
 				line = &assertionResult.Location.Line
 				column = &assertionResult.Location.Column
 			}

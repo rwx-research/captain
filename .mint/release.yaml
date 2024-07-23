@@ -1,0 +1,118 @@
+concurrency-pools:
+  - id: release-captain-${{ init.kind }}
+    capacity: 1
+    on-overflow: queue
+
+tasks:
+  - key: verify-kind
+    if: ${{ init.kind == 'production' || init.kind == 'unstable' || init.kind == 'testing' }}
+    run: exit 0
+
+  - key: verify-commit-sha
+    run: echo "${{ init.commit-sha }}" | grep -E '^[0-9a-f]{40}$' || (echo "Sha is not formatted as 40 hex digits" && false)
+
+  - key: generate-extract-version-details
+    after: [verify-kind, verify-commit-sha]
+    run: |
+      if [[ "${{ init.kind }}" == "production" ]]; then
+        cat << EOF | tee extract-version-details.yaml
+          tasks:
+            - key: extract-version-details
+              run: |
+                echo "\${{ init.version }}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || (echo "Version number is not formatted as vX.X.X" && false)
+                echo "\${{ init.version }}" > \$MINT_VALUES/full_version
+                echo "\${{ init.version }}" | sed -E 's/\.[0-9]+\.[0-9]+$//g' > \$MINT_VALUES/aliased_version
+      EOF
+      fi
+      if [[ "${{ init.kind }}" == "unstable" ]]; then
+        cat << EOF | tee extract-version-details.yaml
+          tasks:
+            - key: extract-version-details
+              run: |
+                echo "unstable-${{ init.commit-sha }}" > \$MINT_VALUES/full_version
+                echo "unstable" > \$MINT_VALUES/aliased_version
+      EOF
+      fi
+      if [[ "${{ init.kind }}" == "testing" ]]; then
+        cat << EOF | tee extract-version-details.yaml
+          tasks:
+            - key: extract-version-details
+              run: |
+                echo "testing-${{ init.commit-sha }}" > \$MINT_VALUES/full_version
+                echo "" > \$MINT_VALUES/aliased_version
+      EOF
+      fi
+    outputs:
+      artifacts:
+        - key: extract-version-details
+          path: extract-version-details.yaml
+
+  - key: run-extract-version-details
+    call: ${{ tasks.generate-extract-version-details.artifacts.extract-version-details }}
+
+  - key: extract-version-details
+    run: |
+      echo "${{ tasks.run-extract-version-details.tasks.extract-version-details.values.full_version }}" > $MINT_VALUES/full_version
+      echo "${{ tasks.run-extract-version-details.tasks.extract-version-details.values.aliased_version }}" > $MINT_VALUES/aliased_version
+
+  - key: captain-source
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https://github.com/rwx-research/captain.git
+      ref: ${{ init.commit-sha }}
+      github-access-token: ${{ github.token }}
+      preserve-git-dir: true
+
+  - key: github-cli
+    call: github/install-cli 1.0.0
+
+  - key: ensure-not-published-yet
+    use: [captain-source, github-cli]
+    run: |
+      (gh release view ${{ tasks.extract-version-details.values.full_version }} --json isDraft || echo '{"isDraft": true}') | jq -e '.isDraft == true'
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+  - key: push-tags
+    use: captain-source
+    after: [ensure-not-published-yet, extract-version-details]
+    env:
+      GITHUB_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
+    run: |
+      git tag --force ${{ tasks.extract-version-details.values.full_version }}
+      git push --force origin ${{ tasks.extract-version-details.values.full_version }}
+
+  - key: create-release
+    use: [captain-source, github-cli]
+    after: [push-tags, extract-version-details]
+    env:
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
+    run: |
+      gh release view ${{ tasks.extract-version-details.values.full_version }} || \
+        gh release create ${{ tasks.extract-version-details.values.full_version }} \
+        --draft \
+        --prerelease=${{ init.kind != 'production' }} \
+        --generate-notes \
+        --title "Captain ${{ tasks.extract-version-details.values.full_version }}"
+
+  - key: upload-binary
+    after: [create-release, extract-version-details]
+    parallel:
+      matrix:
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64]
+    call: ${{ run.mint-dir }}/upload.yaml
+    init:
+      os: ${{ parallel.os }}
+      arch: ${{ parallel.arch }}
+      full-version: ${{ tasks.extract-version-details.values.full_version }}
+      commit-sha: ${{ init.commit-sha }}
+
+  # TODO: Approval
+  - key: publish
+    after: [upload-binary, extract-version-details]
+    call: ${{ run.mint-dir }}/publish.yaml
+    if: ${{ init.kind == 'production' }}
+    init:
+      full-version: ${{ tasks.extract-version-details.values.full_version }}
+      aliased-version: ${{ tasks.extract-version-details.values.aliased_version }}

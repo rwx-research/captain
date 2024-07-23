@@ -25,7 +25,7 @@ var _ = Describe("AddFlags", func() {
 		// set up the Cobra command and flags
 		cmd = &cobra.Command{
 			Use: "mycli",
-			Run: func(cmd *cobra.Command, args []string) {}, // do nothing
+			Run: func(_ *cobra.Command, _ []string) {}, // do nothing
 		}
 	})
 

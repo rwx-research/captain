@@ -70,7 +70,7 @@ var _ = Describe("local backend client", func() {
 			quarantines.Builder = new(strings.Builder)
 			timings.Builder = new(strings.Builder)
 
-			fileSystem.MockOpenFile = func(name string, flags int, perm os.FileMode) (fs.File, error) {
+			fileSystem.MockOpenFile = func(name string, _ int, _ os.FileMode) (fs.File, error) {
 				switch name {
 				case flakesPath:
 					return &flakes, nil

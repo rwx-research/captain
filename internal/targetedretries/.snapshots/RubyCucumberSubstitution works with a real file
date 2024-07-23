@@ -1,5 +1,5 @@
 ([]map[string]string) (len=1) {
   (map[string]string) (len=1) {
-    (string) (len=9) "scenarios": (string) (len=26) "'features/rule.feature:41'"
+    (string) (len=9) "scenarios": (string) (len=80) "'features/rule.feature:14' 'features/rule.feature:35' 'features/rule.feature:41'"
   }
 }

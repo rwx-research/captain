@@ -96,6 +96,7 @@ func (p PythonUnitTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 				status = v1.NewSuccessfulTestStatus()
 			}
 
+			testCase := testCase
 			location := &v1.Location{File: testCase.File, Line: &testCase.Line}
 			startedAt, err := time.Parse("2006-01-02T15:04:05", testCase.Timestamp)
 			var finishedAt time.Time

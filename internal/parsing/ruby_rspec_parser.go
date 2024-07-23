@@ -95,6 +95,7 @@ func (p RubyRSpecParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		var status v1.TestStatus
 		switch example.Status {
 		case "failed":
+			example := example
 			status = v1.NewFailedTestStatus(
 				&example.Exception.Message,
 				&example.Exception.Class,

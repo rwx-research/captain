@@ -1,0 +1,49 @@
+tasks:
+  - key: captain-source
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https://github.com/rwx-research/captain.git
+      ref: ${{ init.commit-sha }}
+      github-access-token: ${{ github.token }}
+      preserve-git-dir: true
+
+  - key: tool-versions
+    use: captain-source
+    filter: [.tool-versions]
+    run: |
+      grep "golang " .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
+      grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
+
+  - key: golang
+    call: mint/install-go 1.0.6
+    with:
+      go-version: ${{ tasks.tool-versions.values.golang }}
+
+  - key: mage-source
+    call: mint/git-clone 1.2.4
+    with:
+      repository: https://github.com/magefile/mage.git
+      ref: v${{ tasks.tool-versions.values.mage }}
+      path: /tmp/mage
+
+  - key: mage
+    use: [mage-source, golang]
+    run: |
+      cd /tmp/mage
+      mkdir $HOME/go # Mage assumes this already exists
+      go run bootstrap.go
+      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
+
+  - key: legacy-test-suite-tags
+    use: [captain-source, mage]
+    run: mage legacyTestSuiteTags | tee $MINT_VALUES/versions
+
+  - key: backwards-compatibility-tests
+    after: legacy-test-suite-tags
+    parallel:
+      matrix:
+        version: ${{ tasks.legacy-test-suite-tags.values.versions }}
+    call: ${{ run.mint-dir }}/test_backwards_compatibility.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+      legacy_version: ${{ parallel.version }}

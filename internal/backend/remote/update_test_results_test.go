@@ -142,7 +142,7 @@ var _ = Describe("Uploading Test Results", func() {
 	Context("with an error during test results file registration", func() {
 		BeforeEach(func() {
 			host = "cloud.rwx.com"
-			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
+			mockRoundTripper = func(_ *http.Request) (*http.Response, error) {
 				return nil, errors.NewInternalError("Error")
 			}
 		})
@@ -198,7 +198,7 @@ var _ = Describe("Uploading Test Results", func() {
 	Context("with an error while updating an test results file status", func() {
 		BeforeEach(func() {
 			host = "cloud.rwx.com"
-			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
+			mockRoundTripper = func(_ *http.Request) (*http.Response, error) {
 				var (
 					resp http.Response
 					err  error
