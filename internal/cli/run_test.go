@@ -68,7 +68,7 @@ var _ = Describe("Run", func() {
 
 		core, recordedLogs = observer.New(zapcore.InfoLevel)
 		log := zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
-			zap.WrapCore(func(original zapcore.Core) zapcore.Core { return core }),
+			zap.WrapCore(func(_ zapcore.Core) zapcore.Core { return core }),
 		)).Sugar()
 		service = cli.Service{
 			API:        new(mocks.API),
@@ -97,7 +97,7 @@ var _ = Describe("Run", func() {
 			return nil
 		}
 
-		newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+		newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 			switch cfg.Name {
 			case abqExecutable:
 				mockAbqCommandArgs = cfg.Args
@@ -120,7 +120,7 @@ var _ = Describe("Run", func() {
 		}
 		service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
 
-		service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+		service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
 			*v1.TestResults,
 			error,
 		) {
@@ -131,7 +131,7 @@ var _ = Describe("Run", func() {
 		// functionality is not mocked, i.e. it still uses the file-system.
 		testResultsFilePath = "run.go"
 
-		mockGlob := func(pattern string) ([]string, error) {
+		mockGlob := func(_ string) ([]string, error) {
 			return []string{testResultsFilePath}, nil
 		}
 		mockOpen := func(name string) (fs.File, error) {
@@ -192,9 +192,9 @@ var _ = Describe("Run", func() {
 	Context("under expected conditions", func() {
 		BeforeEach(func() {
 			mockUploadTestResults := func(
-				ctx context.Context,
-				testSuite string,
-				testResults v1.TestResults,
+				_ context.Context,
+				_ string,
+				_ v1.TestResults,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
 				return []backend.TestResultsUploadResult{{OriginalPaths: []string{testResultsFilePath}, Uploaded: true}}, nil
@@ -202,8 +202,8 @@ var _ = Describe("Run", func() {
 			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
 
 			mockGetRunConfiguration := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) (backend.RunConfiguration, error) {
 				fetchedRunConfiguration = true
 				return backend.RunConfiguration{}, nil
@@ -521,7 +521,7 @@ var _ = Describe("Run", func() {
 			}
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
-			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
 				*v1.TestResults,
 				error,
 			) {
@@ -553,8 +553,8 @@ var _ = Describe("Run", func() {
 			}
 
 			mockUploadTestResults := func(
-				ctx context.Context,
-				testSuite string,
+				_ context.Context,
+				_ string,
 				testResults v1.TestResults,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
@@ -619,8 +619,8 @@ var _ = Describe("Run", func() {
 		Context("other unknown tests quarantined", func() {
 			BeforeEach(func() {
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						QuarantinedTests: []backend.QuarantinedTest{
@@ -673,8 +673,8 @@ var _ = Describe("Run", func() {
 		Context("other unknown tests quarantined", func() {
 			BeforeEach(func() {
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						QuarantinedTests: []backend.QuarantinedTest{
@@ -740,8 +740,8 @@ var _ = Describe("Run", func() {
 		Context("some tests quarantined", func() {
 			BeforeEach(func() {
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						QuarantinedTests: []backend.QuarantinedTest{
@@ -807,8 +807,8 @@ var _ = Describe("Run", func() {
 		Context("all tests quarantined tests fail", func() {
 			BeforeEach(func() {
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						QuarantinedTests: []backend.QuarantinedTest{
@@ -888,8 +888,8 @@ var _ = Describe("Run", func() {
 		Context("some quarantined tests successful", func() {
 			BeforeEach(func() {
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						QuarantinedTests: []backend.QuarantinedTest{
@@ -992,7 +992,7 @@ var _ = Describe("Run", func() {
 			}
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
-			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
 				*v1.TestResults,
 				error,
 			) {
@@ -1029,9 +1029,9 @@ var _ = Describe("Run", func() {
 			}
 
 			mockUploadTestResults := func(
-				ctx context.Context,
-				testSuite string,
-				testResults v1.TestResults,
+				_ context.Context,
+				_ string,
+				_ v1.TestResults,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
 
@@ -1043,8 +1043,8 @@ var _ = Describe("Run", func() {
 			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
 
 			mockGetRunConfiguration := func(
-				ctx context.Context,
-				testSuiteIdentifier string,
+				_ context.Context,
+				_ string,
 			) (backend.RunConfiguration, error) {
 				return backend.RunConfiguration{
 					QuarantinedTests: []backend.QuarantinedTest{
@@ -1156,8 +1156,8 @@ var _ = Describe("Run", func() {
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
 			mockUploadTestResults := func(
-				ctx context.Context,
-				testSuite string,
+				_ context.Context,
+				_ string,
 				testResults v1.TestResults,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
@@ -1171,7 +1171,7 @@ var _ = Describe("Run", func() {
 			}
 			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
 
-			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
 				*v1.TestResults,
 				error,
 			) {
@@ -1309,7 +1309,7 @@ var _ = Describe("Run", func() {
 					return nil
 				}
 
-				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+				newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 					switch cfg.Name {
 					case "pre":
 						return mockPreRetryCommand, nil
@@ -1427,8 +1427,8 @@ var _ = Describe("Run", func() {
 				runConfig.Retries = 1
 
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						QuarantinedTests: []backend.QuarantinedTest{
@@ -1477,8 +1477,8 @@ var _ = Describe("Run", func() {
 				runConfig.FlakyRetries = 1
 
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{FlakyTests: []backend.Test{}}, nil
 				}
@@ -1502,8 +1502,8 @@ var _ = Describe("Run", func() {
 				runConfig.FlakyRetries = 1
 
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						FlakyTests: []backend.Test{
@@ -1518,7 +1518,7 @@ var _ = Describe("Run", func() {
 
 				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
 
-				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+				newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 					if cfg.Name == "retry" {
 						Expect(cfg.Args).To(ContainElement(ContainSubstring(firstTestDescription)))
 						Expect(cfg.Args).NotTo(ContainElement(ContainSubstring(secondTestDescription)))
@@ -1545,8 +1545,8 @@ var _ = Describe("Run", func() {
 				retryCount = 0
 
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						FlakyTests: []backend.Test{
@@ -1561,7 +1561,7 @@ var _ = Describe("Run", func() {
 
 				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
 
-				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+				newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 					if cfg.Name == "retry" {
 						retryCount++
 
@@ -1580,7 +1580,7 @@ var _ = Describe("Run", func() {
 				}
 				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
 
-				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
 					*v1.TestResults,
 					error,
 				) {
@@ -1637,8 +1637,8 @@ var _ = Describe("Run", func() {
 				retryCount = 0
 
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						FlakyTests: []backend.Test{
@@ -1653,7 +1653,7 @@ var _ = Describe("Run", func() {
 
 				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
 
-				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+				newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 					if cfg.Name == "retry" {
 						retryCount++
 
@@ -1672,7 +1672,7 @@ var _ = Describe("Run", func() {
 				}
 				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
 
-				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
 					*v1.TestResults,
 					error,
 				) {
@@ -1726,8 +1726,8 @@ var _ = Describe("Run", func() {
 				runConfig.FlakyRetries = -1
 
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						FlakyTests: []backend.Test{
@@ -1742,7 +1742,7 @@ var _ = Describe("Run", func() {
 
 				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
 
-				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+				newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 					if cfg.Name == "retry" {
 						Expect(cfg.Args).To(ContainElement(ContainSubstring(firstTestDescription)))
 						Expect(cfg.Args).To(ContainElement(ContainSubstring(secondTestDescription)))
@@ -1753,7 +1753,7 @@ var _ = Describe("Run", func() {
 				}
 				service.TaskRunner.(*mocks.TaskRunner).MockNewCommand = newCommand
 
-				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
 					*v1.TestResults,
 					error,
 				) {
@@ -1808,8 +1808,8 @@ var _ = Describe("Run", func() {
 				runConfig.FailRetriesFast = true
 
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						FlakyTests: []backend.Test{
@@ -1842,8 +1842,8 @@ var _ = Describe("Run", func() {
 				runConfig.FailRetriesFast = true
 
 				mockGetRunConfiguration := func(
-					ctx context.Context,
-					testSuiteIdentifier string,
+					_ context.Context,
+					_ string,
 				) (backend.RunConfiguration, error) {
 					return backend.RunConfiguration{
 						FlakyTests: []backend.Test{
@@ -1945,7 +1945,7 @@ var _ = Describe("Run", func() {
 					return nil
 				}
 
-				service.FileSystem.(*mocks.FileSystem).MockCreateTemp = func(dir string, pattern string) (fs.File, error) {
+				service.FileSystem.(*mocks.FileSystem).MockCreateTemp = func(_ string, _ string) (fs.File, error) {
 					mockFile := new(mocks.File)
 					mockFile.Builder = new(strings.Builder)
 					mockFile.MockName = func() string {
@@ -1956,7 +1956,7 @@ var _ = Describe("Run", func() {
 				runConfig.Retries = 2
 				runConfig.RetryCommandTemplate = "retry {{ jsonFilePath }}"
 
-				newCommand := func(ctx context.Context, cfg exec.CommandConfig) (exec.Command, error) {
+				newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 					if cfg.Name == "retry" {
 						Expect(cfg.Args).To(ContainElement(ContainSubstring("json-temp-file")))
 					}
@@ -2065,7 +2065,7 @@ var _ = Describe("Run", func() {
 
 		Context("when there are no results", func() {
 			BeforeEach(func() {
-				mockGlob := func(pattern string) ([]string, error) {
+				mockGlob := func(_ string) ([]string, error) {
 					return []string{}, nil
 				}
 				service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
@@ -2091,12 +2091,12 @@ var _ = Describe("Run", func() {
 			}
 			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
 
-			mockGlob := func(pattern string) ([]string, error) {
+			mockGlob := func(_ string) ([]string, error) {
 				return []string{testResultsFilePath, testResultsFilePath}, nil
 			}
 			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 
-			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(r io.Reader) (
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
 				*v1.TestResults,
 				error,
 			) {

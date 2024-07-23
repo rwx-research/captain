@@ -32,7 +32,7 @@ var _ = Describe("JSONSubstitution", func() {
 		mockFile.MockName = func() string {
 			return "json-temp-file"
 		}
-		mockFileSystem.MockCreateTemp = func(dir, pattern string) (fs.File, error) {
+		mockFileSystem.MockCreateTemp = func(_, _ string) (fs.File, error) {
 			return mockFile, nil
 		}
 	})
@@ -59,7 +59,7 @@ var _ = Describe("JSONSubstitution", func() {
 		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
-			func(test v1.Test) bool { return true },
+			func(_ v1.Test) bool { return true },
 		)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(substitutions).To(HaveLen(1))
@@ -141,7 +141,7 @@ var _ = Describe("JSONSubstitution", func() {
 			Expect(substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
-				func(test v1.Test) bool { return true },
+				func(_ v1.Test) bool { return true },
 			)).To(Equal(
 				[]map[string]string{
 					{
@@ -227,7 +227,7 @@ var _ = Describe("JSONSubstitution", func() {
 		})
 
 		It("errs when the file at the path in the substitution can't be removed", func() {
-			mockFileSystem.MockRemove = func(name string) error {
+			mockFileSystem.MockRemove = func(_ string) error {
 				return errors.NewInternalError("uh oh")
 			}
 

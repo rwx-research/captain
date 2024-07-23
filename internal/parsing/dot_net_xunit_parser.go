@@ -170,6 +170,7 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 
 				var stdout *string
 				if testCase.Output != nil {
+					testCase := testCase
 					stdout = &testCase.Output.Contents
 				}
 
@@ -190,6 +191,7 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 				case "Skip":
 					var message *string
 					if testCase.SkippedReason != nil {
+						testCase := testCase
 						message = &testCase.SkippedReason.Contents
 					}
 

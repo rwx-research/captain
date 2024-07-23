@@ -21,8 +21,8 @@ var _ = Describe("InitConfig", func() {
 		cliArgs = main.CliArgs{}
 		cmd = &cobra.Command{
 			Use:                "mycli",
-			Run:                func(cmd *cobra.Command, args []string) {}, // do nothing
-			DisableFlagParsing: true,                                       // without this we can't call Execute()
+			Run:                func(_ *cobra.Command, _ []string) {}, // do nothing
+			DisableFlagParsing: true,                                  // without this we can't call Execute()
 		}
 		Expect(cmd.Execute()).ToNot(HaveOccurred()) // before Execute, cmd.Context() is nil
 		helpers.UnsetCIEnv()

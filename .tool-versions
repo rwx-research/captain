@@ -1,2 +1,4 @@
-golang 1.19.13
+golang 1.22.5
+mage 1.15.0
 golangci-lint 1.57.1
+ginkgo 2.19.0

@@ -38,7 +38,7 @@ var _ = Describe("PythonPytestSubstitution", func() {
 		substitutions, err := substitution.SubstitutionsFor(
 			compiledTemplate,
 			*testResults,
-			func(test v1.Test) bool { return true },
+			func(_ v1.Test) bool { return true },
 		)
 		Expect(err).NotTo(HaveOccurred())
 		sort.SliceStable(substitutions, func(i int, j int) bool {
@@ -122,7 +122,7 @@ var _ = Describe("PythonPytestSubstitution", func() {
 			Expect(substitution.SubstitutionsFor(
 				compiledTemplate,
 				testResults,
-				func(test v1.Test) bool { return true },
+				func(_ v1.Test) bool { return true },
 			)).To(Equal(
 				[]map[string]string{
 					{

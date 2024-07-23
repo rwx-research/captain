@@ -1,0 +1,39 @@
+on:
+  github:
+    push:
+      init:
+        commit-sha: ${{ event.git.sha }}
+        branch: ${{ event.git.branch }}
+    pull_request:
+      init:
+        commit-sha: ${{ event.git.sha }}
+        branch: ${{ event.git.branch }}
+
+tasks:
+  - key: test
+    call: ${{ run.mint-dir }}/test.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: buildkite-tests
+    call: ${{ run.mint-dir }}/buildkite.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: backwards-compatibility-tests
+    call: ${{ run.mint-dir }}/generate_backwards_compatibility_tests.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: lint
+    call: ${{ run.mint-dir }}/lint.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+
+  - key: release-unstable
+    after: test
+    if: ${{ init.branch == 'main' }}
+    call: ${{ run.mint-dir }}/release.yaml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+      kind: unstable
