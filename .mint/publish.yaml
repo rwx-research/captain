@@ -12,7 +12,6 @@ tasks:
 
   - key: publish-github-release
     use: [captain-source, github-cli]
-    if: ${{ init.kind == 'production' }}
     env:
       GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
     run: gh release edit ${{ init.full-version }} --draft=false --latest

@@ -37,3 +37,4 @@ tasks:
     init:
       commit-sha: ${{ init.commit-sha }}
       kind: unstable
+      version: ''
