@@ -12,7 +12,6 @@ tasks:
 
   - key: publish-github-release
     use: [captain-source, github-cli]
-    if: ${{ init.kind == 'production' }}
     env:
       GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
     run: gh release edit ${{ init.full-version }} --draft=false --latest
@@ -61,7 +60,7 @@ tasks:
     with:
       oidc-token: ${{ vaults.captain_main.oidc.aws_token }}
       region: us-east-1
-      role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd
+      role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd-through-mint
 
   - key: update-cloudfront
     use: [copy-assets-to-aliased-release, configure-aws]
@@ -112,5 +111,5 @@ tasks:
 
       if [[ "$updatedPaths" != "" ]]; then
         # shellcheck disable=SC2086,SC2090
-        aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths $updatedPaths
+        aws cloudfront create-invalidation --distribution-id ${{ vaults.captain_main.secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths $updatedPaths
       fi
