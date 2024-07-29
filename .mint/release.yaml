@@ -19,9 +19,9 @@ tasks:
           tasks:
             - key: extract-version-details
               run: |
-                echo "\${{ init.version }}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || (echo "Version number is not formatted as vX.X.X" && false)
-                echo "\${{ init.version }}" > \$MINT_VALUES/full_version
-                echo "\${{ init.version }}" | sed -E 's/\.[0-9]+\.[0-9]+$//g' > \$MINT_VALUES/aliased_version
+                echo "${{ init.version }}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || (echo "Version number is not formatted as vX.X.X" && false)
+                echo "${{ init.version }}" > \$MINT_VALUES/full_version
+                echo "${{ init.version }}" | sed -E 's/\.[0-9]+\.[0-9]+$//g' > \$MINT_VALUES/aliased_version
       EOF
       fi
       if [[ "${{ init.kind }}" == "unstable" ]]; then
@@ -114,5 +114,6 @@ tasks:
     call: ${{ run.mint-dir }}/publish.yaml
     if: ${{ init.kind == 'production' }}
     init:
+      commit-sha: ${{ init.commit-sha }}
       full-version: ${{ tasks.extract-version-details.values.full_version }}
       aliased-version: ${{ tasks.extract-version-details.values.aliased_version }}
