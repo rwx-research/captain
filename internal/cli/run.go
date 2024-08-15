@@ -657,7 +657,9 @@ func (s Service) reportTestResults(
 	}
 
 	mintLinksPath := os.Getenv("MINT_LINKS")
-	if reportingConfiguration.Provider.ProviderName == "mint" && mintLinksPath != "" {
+	if reportingConfiguration.CloudEnabled &&
+		reportingConfiguration.Provider.ProviderName == "mint" &&
+		mintLinksPath != "" {
 		backlinkPath := filepath.Join(mintLinksPath, "View Captain results")
 		backlinkURL := fmt.Sprintf(
 			"https://%v/captain/deep_link/test_suite_summaries/%v/%v/%v",
