@@ -1,0 +1,171 @@
+{
+  "numTotalTestSuites": 4,
+  "numPassedTestSuites": 4,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 10,
+  "numPassedTests": 8,
+  "numFailedTests": 2,
+  "numPendingTests": 0,
+  "numTodoTests": 1,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1724351128553,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "adds 1 + 2 to equal 3",
+          "status": "passed",
+          "title": "adds 1 + 2 to equal 3",
+          "duration": 1,
+          "failureMessages": [],
+          "location": {
+            "line": 4,
+            "column": 1
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "it is pended",
+          "status": "skipped",
+          "title": "it is pended",
+          "failureMessages": [],
+          "location": {
+            "line": 8,
+            "column": 6
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "it is not written yet",
+          "status": "todo",
+          "title": "it is not written yet",
+          "failureMessages": [],
+          "location": {
+            "line": 12,
+            "column": 6
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["first level of nesting"],
+          "fullName": "first level of nesting it passes",
+          "status": "passed",
+          "title": "it passes",
+          "duration": 0,
+          "failureMessages": [],
+          "location": {
+            "line": 15,
+            "column": 3
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["first level of nesting"],
+          "fullName": "first level of nesting it fails",
+          "status": "failed",
+          "title": "it fails",
+          "duration": 2,
+          "failureMessages": [
+            "AssertionError: expected 1 to be 2 // Object.is equality\n    at /Users/kylekthompson/src/captain-examples/vitest/sum.test.js:20:15\n    at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:146:14\n    at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:61:7\n    at runTest (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:960:17)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)\n    at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)\n    at runFiles (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1173:5)\n    at startTests (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1182:3)\n    at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/vitest/dist/chunks/runBaseTests.CyvqmuC9.js:130:11"
+          ],
+          "location": {
+            "line": 19,
+            "column": 3
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["first level of nesting"],
+          "fullName": "first level of nesting it is slow",
+          "status": "passed",
+          "title": "it is slow",
+          "duration": 5002,
+          "failureMessages": [],
+          "location": {
+            "line": 23,
+            "column": 3
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["first level of nesting", "second level of nesting"],
+          "fullName": "first level of nesting second level of nesting it passes",
+          "status": "passed",
+          "title": "it passes",
+          "duration": 1,
+          "failureMessages": [],
+          "location": {
+            "line": 29,
+            "column": 5
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["first level of nesting", "second level of nesting"],
+          "fullName": "first level of nesting second level of nesting it fails",
+          "status": "failed",
+          "title": "it fails",
+          "duration": 2,
+          "failureMessages": [
+            "AssertionError: expected 1 to be 2 // Object.is equality\n    at /Users/kylekthompson/src/captain-examples/vitest/sum.test.js:34:17\n    at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:146:14\n    at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:61:7\n    at runTest (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:960:17)\n    at runNextTicks (node:internal/process/task_queues:60:5)\n    at listOnTimeout (node:internal/timers:538:9)\n    at processTimers (node:internal/timers:512:7)\n    at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)\n    at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)\n    at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)"
+          ],
+          "location": {
+            "line": 33,
+            "column": 5
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["first level of nesting", "second level of nesting"],
+          "fullName": "first level of nesting second level of nesting it is slow",
+          "status": "passed",
+          "title": "it is slow",
+          "duration": 5001,
+          "failureMessages": [],
+          "location": {
+            "line": 37,
+            "column": 5
+          },
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["skipped whole nested describe"],
+          "fullName": "skipped whole nested describe there's a test in here though",
+          "status": "skipped",
+          "title": "there's a test in here though",
+          "failureMessages": [],
+          "location": {
+            "line": 45,
+            "column": 3
+          },
+          "meta": {}
+        }
+      ],
+      "startTime": 1724351128781,
+      "endTime": 1724351138790,
+      "status": "failed",
+      "message": "",
+      "name": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js"
+    }
+  ]
+}
