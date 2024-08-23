@@ -1,0 +1,6 @@
+([]map[string]string) (len=1) {
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=60) "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+    (string) (len=15) "testNamePattern": (string) (len=89) "^first level of nesting it fails|first level of nesting second level of nesting it fails$"
+  }
+}

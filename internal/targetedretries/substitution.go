@@ -25,6 +25,7 @@ var SubstitutionsByFramework = map[v1.Framework]Substitution{
 	v1.JavaScriptJestFramework:       new(JavaScriptJestSubstitution),
 	v1.JavaScriptMochaFramework:      new(JavaScriptMochaSubstitution),
 	v1.JavaScriptPlaywrightFramework: new(JavaScriptPlaywrightSubstitution),
+	v1.JavaScriptVitestFramework:     new(JavaScriptVitestSubstitution),
 	v1.PHPUnitFramework:              new(PHPUnitSubstitution),
 	v1.PythonPytestFramework:         new(PythonPytestSubstitution),
 	v1.PythonUnitTestFramework:       new(PythonUnitTestSubstitution),
