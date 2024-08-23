@@ -26,6 +26,7 @@ var mutuallyExclusiveParsers []parsing.Parser = []parsing.Parser{
 	parsing.GoTestParser{},
 	parsing.JavaScriptCypressParser{},
 	parsing.JavaScriptJestParser{},
+	parsing.JavaScriptVitestParser{}, // Vitest MUST be after Jest as Jest _looks like_ a superset of Vitest
 	parsing.JavaScriptKarmaParser{},
 	parsing.JavaScriptMochaParser{},
 	parsing.JavaScriptPlaywrightParser{},
@@ -44,6 +45,7 @@ var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]pars
 	v1.JavaScriptKarmaFramework:      {parsing.JavaScriptKarmaParser{}},
 	v1.JavaScriptMochaFramework:      {parsing.JavaScriptMochaParser{}},
 	v1.JavaScriptPlaywrightFramework: {parsing.JavaScriptPlaywrightParser{}},
+	v1.JavaScriptVitestFramework:     {parsing.JavaScriptVitestParser{}},
 	v1.PHPUnitFramework:              {parsing.PHPUnitParser{}},
 	v1.PythonPytestFramework:         {parsing.PythonPytestParser{}},
 	v1.PythonUnitTestFramework:       {parsing.PythonUnitTestParser{}},

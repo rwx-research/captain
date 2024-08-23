@@ -1,0 +1,231 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "Vitest"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 10,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 2,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 2,
+    "successful": 5,
+    "timedOut": 0,
+    "todo": 1
+  },
+  "tests": [
+    {
+      "name": "adds 1 + 2 to equal 3",
+      "lineage": [
+        "adds 1 + 2 to equal 3"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 4,
+        "column": 1
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "it is pended",
+      "lineage": [
+        "it is pended"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 8,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "it is not written yet",
+      "lineage": [
+        "it is not written yet"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 12,
+        "column": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "todo"
+        }
+      }
+    },
+    {
+      "name": "first level of nesting \u003e it passes",
+      "lineage": [
+        "first level of nesting",
+        "it passes"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 15,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "first level of nesting \u003e it fails",
+      "lineage": [
+        "first level of nesting",
+        "it fails"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 19,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 2000000,
+        "status": {
+          "kind": "failed",
+          "message": "AssertionError: expected 1 to be 2 // Object.is equality",
+          "backtrace": [
+            "at /Users/kylekthompson/src/captain-examples/vitest/sum.test.js:20:15",
+            "at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:146:14",
+            "at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:61:7",
+            "at runTest (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:960:17)",
+            "at processTicksAndRejections (node:internal/process/task_queues:95:5)",
+            "at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)",
+            "at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)",
+            "at runFiles (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1173:5)",
+            "at startTests (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1182:3)",
+            "at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/vitest/dist/chunks/runBaseTests.CyvqmuC9.js:130:11"
+          ]
+        }
+      }
+    },
+    {
+      "name": "first level of nesting \u003e it is slow",
+      "lineage": [
+        "first level of nesting",
+        "it is slow"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 23,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 5002000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "first level of nesting \u003e second level of nesting \u003e it passes",
+      "lineage": [
+        "first level of nesting",
+        "second level of nesting",
+        "it passes"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 29,
+        "column": 5
+      },
+      "attempt": {
+        "durationInNanoseconds": 1000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "first level of nesting \u003e second level of nesting \u003e it fails",
+      "lineage": [
+        "first level of nesting",
+        "second level of nesting",
+        "it fails"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 33,
+        "column": 5
+      },
+      "attempt": {
+        "durationInNanoseconds": 2000000,
+        "status": {
+          "kind": "failed",
+          "message": "AssertionError: expected 1 to be 2 // Object.is equality",
+          "backtrace": [
+            "at /Users/kylekthompson/src/captain-examples/vitest/sum.test.js:34:17",
+            "at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:146:14",
+            "at file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:61:7",
+            "at runTest (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:960:17)",
+            "at runNextTicks (node:internal/process/task_queues:60:5)",
+            "at listOnTimeout (node:internal/timers:538:9)",
+            "at processTimers (node:internal/timers:512:7)",
+            "at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)",
+            "at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)",
+            "at runSuite (file:///Users/kylekthompson/src/captain-examples/vitest/node_modules/@vitest/runner/dist/index.js:1116:15)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "first level of nesting \u003e second level of nesting \u003e it is slow",
+      "lineage": [
+        "first level of nesting",
+        "second level of nesting",
+        "it is slow"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 37,
+        "column": 5
+      },
+      "attempt": {
+        "durationInNanoseconds": 5001000000,
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "skipped whole nested describe \u003e there's a test in here though",
+      "lineage": [
+        "skipped whole nested describe",
+        "there's a test in here though"
+      ],
+      "location": {
+        "file": "/Users/kylekthompson/src/captain-examples/vitest/sum.test.js",
+        "line": 45,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": null,
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    }
+  ]
+}
