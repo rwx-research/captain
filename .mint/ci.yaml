@@ -2,12 +2,20 @@ on:
   github:
     push:
       init:
+        trigger: push
         commit-sha: ${{ event.git.sha }}
         branch: ${{ event.git.branch }}
     pull_request:
       init:
+        trigger: pull_request
         commit-sha: ${{ event.git.sha }}
         branch: ${{ event.git.branch }}
+
+concurrency-pools:
+  - id: rwx-research/captain:ci:${{ init.commit-sha }}:${{ init.trigger }}
+    if: ${{ init.branch != "main" }}
+    capacity: 1
+    on-overflow: cancel-running
 
 tasks:
   - key: test
@@ -37,4 +45,4 @@ tasks:
     init:
       commit-sha: ${{ init.commit-sha }}
       kind: unstable
-      version: ''
+      version: ""
