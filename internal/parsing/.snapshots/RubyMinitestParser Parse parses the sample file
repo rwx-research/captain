@@ -63,10 +63,10 @@
         },
         "status": {
           "kind": "failed",
-          "message": "RuntimeError: uh oh\n    /Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:9:in `test_raises'",
+          "message": "RuntimeError: uh oh",
           "exception": "RuntimeError",
           "backtrace": [
-            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:9"
+            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:9:in `test_raises'"
           ]
         }
       }
@@ -88,10 +88,10 @@
         },
         "status": {
           "kind": "failed",
-          "message": "RWX::Example::MyError: uh oh\n    /Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13:in `test_raises_custom'",
+          "message": "RWX::Example::MyError: uh oh",
           "exception": "RWX::Example::MyError",
           "backtrace": [
-            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13"
+            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13:in `test_raises_custom'"
           ]
         }
       }
