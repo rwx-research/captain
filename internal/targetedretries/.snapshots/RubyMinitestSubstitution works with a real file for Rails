@@ -1,5 +1,5 @@
 ([]map[string]string) (len=1) {
   (map[string]string) (len=1) {
-    (string) (len=5) "tests": (string) (len=75) "'test/failing_test.rb:4' 'test/failing_test.rb:8' 'test/failing_test.rb:12'"
+    (string) (len=5) "tests": (string) (len=101) "'test/failing_test.rb:4' 'test/failing_test.rb:8' 'test/failing_test.rb:12' 'test/failing_test.rb:25'"
   }
 }

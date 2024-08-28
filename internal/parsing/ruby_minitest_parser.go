@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -114,6 +115,11 @@ func (p RubyMinitestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	), nil
 }
 
+var (
+	rubyMinitestNewlineRegexp   = regexp.MustCompile(`\r?\n`)
+	rubyMinitestBacktraceRegexp = regexp.MustCompile("\\s{4}.+:in `.+'")
+)
+
 func (p RubyMinitestParser) NewFailedTestStatus(failure RubyMinitestFailure) v1.TestStatus {
 	failureMessage := failure.Message
 	failureException := failure.Type
@@ -122,10 +128,31 @@ func (p RubyMinitestParser) NewFailedTestStatus(failure RubyMinitestFailure) v1.
 		return v1.NewFailedTestStatus(failureMessage, failureException, nil)
 	}
 
-	location := rubyMinitestFailureLocationRegexp.FindStringSubmatch(*failure.Contents)
-	if len(location) < 2 {
-		return v1.NewFailedTestStatus(failureMessage, failureException, nil)
+	lines := rubyMinitestNewlineRegexp.Split(strings.TrimSpace(*failure.Contents), -1)[2:]
+
+	var failureBacktrace []string
+
+	if len(lines) > 0 {
+		failureMessageComponents := make([]string, 0)
+
+		for _, line := range lines {
+			if rubyMinitestBacktraceRegexp.Match([]byte(line)) {
+				failureBacktrace = append(failureBacktrace, strings.TrimSpace(line))
+			} else {
+				failureMessageComponents = append(failureMessageComponents, line)
+			}
+		}
+
+		constructedMessage := strings.Join(failureMessageComponents, "\n")
+		failureMessage = &constructedMessage
 	}
 
-	return v1.NewFailedTestStatus(failureMessage, failureException, []string{location[1]})
+	if failureBacktrace == nil {
+		location := rubyMinitestFailureLocationRegexp.FindStringSubmatch(*failure.Contents)
+		if len(location) >= 2 {
+			failureBacktrace = []string{location[1]}
+		}
+	}
+
+	return v1.NewFailedTestStatus(failureMessage, failureException, failureBacktrace)
 }

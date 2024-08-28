@@ -8,11 +8,11 @@
     "status": {
       "kind": "failed"
     },
-    "tests": 10,
+    "tests": 11,
     "otherErrors": 0,
     "retries": 0,
     "canceled": 0,
-    "failed": 3,
+    "failed": 4,
     "pended": 0,
     "quarantined": 0,
     "skipped": 2,
@@ -63,10 +63,10 @@
         },
         "status": {
           "kind": "failed",
-          "message": "RuntimeError: uh oh...",
+          "message": "RuntimeError: uh oh",
           "exception": "RuntimeError",
           "backtrace": [
-            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:9"
+            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:9:in `test_raises'"
           ]
         }
       }
@@ -88,10 +88,35 @@
         },
         "status": {
           "kind": "failed",
-          "message": "RWX::Example::MyError: uh oh...",
+          "message": "RWX::Example::MyError: uh oh",
           "exception": "RWX::Example::MyError",
           "backtrace": [
-            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13"
+            "/Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13:in `test_raises_custom'"
+          ]
+        }
+      }
+    },
+    {
+      "name": "TestFailing#test_assert_equal_fails",
+      "lineage": [
+        "TestFailing",
+        "test_assert_equal_fails"
+      ],
+      "location": {
+        "file": "test/failing_test.rb",
+        "line": 25
+      },
+      "attempt": {
+        "durationInNanoseconds": 35000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "failed",
+          "message": "Expected: 2\n  Actual: 1",
+          "exception": "Minitest::Assertion",
+          "backtrace": [
+            "/Users/kylekthompson/src/captain-examples/minitest/test/rwx/example_test.rb:26"
           ]
         }
       }
