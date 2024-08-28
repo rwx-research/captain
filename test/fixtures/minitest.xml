@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="TestFailing" filepath="test/failing_test.rb" skipped="0" failures="1" errors="2" tests="3" assertions="1" time="9.200000204145908e-05">
+  <testsuite name="TestFailing" filepath="test/failing_test.rb" skipped="0" failures="2" errors="2" tests="4" assertions="2" time="0.00012700003571808338">
     <testcase name="test_fails" lineno="4" classname="TestFailing" assertions="1" time="2.3000058718025684e-05" file="test/failing_test.rb">
     <failure type="Minitest::Assertion" message="Expected false to be truthy.">
 Failure:
@@ -23,6 +23,14 @@ test_raises_custom(Minitest::Result) [/Users/kylekthompson/src/captain-examples/
 RWX::Example::MyError: uh oh
     /Users/kylekthompson/src/captain-examples/minitest/test/failing_test.rb:13:in `test_raises_custom'
     </error>
+    </testcase>
+    <testcase name="test_assert_equal_fails" lineno="25" classname="TestFailing" assertions="1" time="3.50000336766243e-05" file="test/failing_test.rb">
+    <failure type="Minitest::Assertion" message="Expected: 2...">
+Failure:
+test_assert_equal_fails(Minitest::Result) [/Users/kylekthompson/src/captain-examples/minitest/test/rwx/example_test.rb:26]:
+Expected: 2
+  Actual: 1
+    </failure>
     </testcase>
   </testsuite>
   <testsuite name="RWX::TestExample" filepath="test/rwx/example_test.rb" skipped="0" failures="0" errors="0" tests="4" assertions="4" time="1.5039960000431165">

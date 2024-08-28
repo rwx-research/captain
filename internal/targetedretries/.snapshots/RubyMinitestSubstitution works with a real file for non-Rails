@@ -1,4 +1,8 @@
-([]map[string]string) (len=3) {
+([]map[string]string) (len=4) {
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=20) "test/failing_test.rb",
+    (string) (len=4) "name": (string) (len=23) "test_assert_equal_fails"
+  },
   (map[string]string) (len=2) {
     (string) (len=4) "file": (string) (len=20) "test/failing_test.rb",
     (string) (len=4) "name": (string) (len=10) "test_fails"

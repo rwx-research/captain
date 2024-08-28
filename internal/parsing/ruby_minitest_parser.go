@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -114,12 +115,20 @@ func (p RubyMinitestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	), nil
 }
 
+var rubyMinitestNewlineRegexp = regexp.MustCompile(`\r?\n`)
+
 func (p RubyMinitestParser) NewFailedTestStatus(failure RubyMinitestFailure) v1.TestStatus {
 	failureMessage := failure.Message
 	failureException := failure.Type
 
 	if failure.Contents == nil {
 		return v1.NewFailedTestStatus(failureMessage, failureException, nil)
+	}
+
+	lines := rubyMinitestNewlineRegexp.Split(strings.TrimSpace(*failure.Contents), -1)[2:]
+	if len(lines) > 0 {
+		constructedMessage := strings.Join(lines, "\n")
+		failureMessage = &constructedMessage
 	}
 
 	location := rubyMinitestFailureLocationRegexp.FindStringSubmatch(*failure.Contents)
