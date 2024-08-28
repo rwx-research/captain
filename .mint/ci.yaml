@@ -12,7 +12,7 @@ on:
         branch: ${{ event.git.branch }}
 
 concurrency-pools:
-  - id: rwx-research/captain:ci:${{ init.commit-sha }}:${{ init.trigger }}
+  - id: rwx-research/captain:ci:${{ init.branch }}:${{ init.trigger }}
     if: ${{ init.branch != "main" }}
     capacity: 1
     on-overflow: cancel-running
