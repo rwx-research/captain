@@ -116,6 +116,7 @@ func (p RubyMinitestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 }
 
 var rubyMinitestNewlineRegexp = regexp.MustCompile(`\r?\n`)
+var rubyMinitestBacktraceRegexp = regexp.MustCompile("\\s{4}.+:in `.+'")
 
 func (p RubyMinitestParser) NewFailedTestStatus(failure RubyMinitestFailure) v1.TestStatus {
 	failureMessage := failure.Message
@@ -126,15 +127,30 @@ func (p RubyMinitestParser) NewFailedTestStatus(failure RubyMinitestFailure) v1.
 	}
 
 	lines := rubyMinitestNewlineRegexp.Split(strings.TrimSpace(*failure.Contents), -1)[2:]
+
+	var failureBacktrace []string
+
 	if len(lines) > 0 {
-		constructedMessage := strings.Join(lines, "\n")
+		failureMessageComponents := make([]string, 0)
+
+		for _, line := range lines {
+			if rubyMinitestBacktraceRegexp.Match([]byte(line)) {
+				failureBacktrace = append(failureBacktrace, strings.TrimSpace(line))
+			} else {
+				failureMessageComponents = append(failureMessageComponents, line)
+			}
+		}
+
+		constructedMessage := strings.Join(failureMessageComponents, "\n")
 		failureMessage = &constructedMessage
 	}
 
-	location := rubyMinitestFailureLocationRegexp.FindStringSubmatch(*failure.Contents)
-	if len(location) < 2 {
-		return v1.NewFailedTestStatus(failureMessage, failureException, nil)
+	if failureBacktrace == nil {
+		location := rubyMinitestFailureLocationRegexp.FindStringSubmatch(*failure.Contents)
+		if len(location) >= 2 {
+			failureBacktrace = []string{location[1]}
+		}
 	}
 
-	return v1.NewFailedTestStatus(failureMessage, failureException, []string{location[1]})
+	return v1.NewFailedTestStatus(failureMessage, failureException, failureBacktrace)
 }
