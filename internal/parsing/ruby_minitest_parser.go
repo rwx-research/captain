@@ -115,8 +115,10 @@ func (p RubyMinitestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	), nil
 }
 
-var rubyMinitestNewlineRegexp = regexp.MustCompile(`\r?\n`)
-var rubyMinitestBacktraceRegexp = regexp.MustCompile("\\s{4}.+:in `.+'")
+var (
+	rubyMinitestNewlineRegexp   = regexp.MustCompile(`\r?\n`)
+	rubyMinitestBacktraceRegexp = regexp.MustCompile("\\s{4}.+:in `.+'")
+)
 
 func (p RubyMinitestParser) NewFailedTestStatus(failure RubyMinitestFailure) v1.TestStatus {
 	failureMessage := failure.Message
