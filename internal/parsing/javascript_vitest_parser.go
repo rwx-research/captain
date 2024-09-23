@@ -50,7 +50,7 @@ type JavaScriptVitestTaskMeta struct{}
 // https://github.com/vitest-dev/vitest/blob/95f0203f27f5659f5758638edc4d1d90283801ac/packages/vitest/src/node/reporters/json.ts#L30-L39
 type JavaScriptVitestAssertionResult struct {
 	AncestorTitles  []string                  `json:"ancestorTitles"`
-	Duration        *int                      `json:"duration"`
+	Duration        *float64                  `json:"duration"`
 	FailureMessages []string                  `json:"failureMessages"`
 	FullName        string                    `json:"fullName"`
 	Location        *JavaScriptVitestCallsite `json:"location"`
@@ -62,10 +62,10 @@ type JavaScriptVitestAssertionResult struct {
 // https://github.com/vitest-dev/vitest/blob/95f0203f27f5659f5758638edc4d1d90283801ac/packages/vitest/src/node/reporters/json.ts#L41-L50
 type JavaScriptVitestTestResult struct {
 	AssertionResults []JavaScriptVitestAssertionResult `json:"assertionResults"`
-	EndTime          int                               `json:"endTime"`
+	EndTime          float64                           `json:"endTime"`
 	Message          string                            `json:"message"`
 	Name             string                            `json:"name"`
-	StartTime        int                               `json:"startTime"`
+	StartTime        float64                           `json:"startTime"`
 	Status           string                            `json:"status"`
 }
 
@@ -81,7 +81,7 @@ type JavaScriptVitestTestResults struct {
 	NumTotalTests        int                          `json:"numTotalTests"`
 	NumTotalTestSuites   int                          `json:"numTotalTestSuites"`
 	Snapshot             *JavaScriptVitestSnapshot    `json:"snapshot"`
-	StartTime            int                          `json:"startTime"`
+	StartTime            float64                      `json:"startTime"`
 	Success              bool                         `json:"success"`
 	TestResults          []JavaScriptVitestTestResult `json:"testResults"`
 }
@@ -126,7 +126,7 @@ func (p JavaScriptVitestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 
 			var duration *time.Duration
 			if assertionResult.Duration != nil {
-				transformedDuration := time.Duration(*assertionResult.Duration * int(time.Millisecond))
+				transformedDuration := time.Duration(*assertionResult.Duration * float64(time.Millisecond))
 				duration = &transformedDuration
 			}
 

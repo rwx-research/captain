@@ -61,7 +61,7 @@ var _ = Describe("JavaScriptVitestParser", func() {
 		})
 
 		It("parses a minimally failing test", func() {
-			durationInMilliseconds := 653
+			durationInMilliseconds := 653.0
 			jestResults := parsing.JavaScriptVitestTestResults{
 				Snapshot: &parsing.JavaScriptVitestSnapshot{},
 				TestResults: []parsing.JavaScriptVitestTestResult{
@@ -101,7 +101,7 @@ var _ = Describe("JavaScriptVitestParser", func() {
 		})
 
 		It("parses a maximally failing test", func() {
-			durationInMilliseconds := 653
+			durationInMilliseconds := 653.0
 			jestResults := parsing.JavaScriptVitestTestResults{
 				Snapshot: &parsing.JavaScriptVitestSnapshot{},
 				TestResults: []parsing.JavaScriptVitestTestResult{
@@ -148,7 +148,7 @@ var _ = Describe("JavaScriptVitestParser", func() {
 		})
 
 		It("parses passed statuses", func() {
-			durationInMilliseconds := 653
+			durationInMilliseconds := 653.0
 			jestResults := parsing.JavaScriptVitestTestResults{
 				Snapshot: &parsing.JavaScriptVitestSnapshot{},
 				TestResults: []parsing.JavaScriptVitestTestResult{
