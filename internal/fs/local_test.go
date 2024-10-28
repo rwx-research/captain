@@ -86,6 +86,47 @@ var _ = Describe("fs.GlobMany", func() {
 			"../../test/fixtures/integration-tests/partition/z.rb",
 		}))
 	})
+
+	It("supports files with special characters", func() {
+		fs := fs.Local{}
+		expandedPaths, err := fs.GlobMany([]string{
+			"../../test/fixtures/filenames/**/*.txt",
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(expandedPaths).To(Equal([]string{
+			"../../test/fixtures/filenames/nested/$ @=:+{}[]^><~#|.txt",
+			"../../test/fixtures/filenames/nested/**.txt",
+			"../../test/fixtures/filenames/nested/*.txt",
+			"../../test/fixtures/filenames/nested/?.txt",
+			"../../test/fixtures/filenames/nested/[].txt",
+			"../../test/fixtures/filenames/nested/\\.txt",
+		}))
+	})
+
+	It("supports escaping *s", func() {
+		fs := fs.Local{}
+		expandedPaths, err := fs.GlobMany([]string{
+			"../../test/fixtures/filenames/**/\\*.txt",
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(expandedPaths).To(Equal([]string{
+			"../../test/fixtures/filenames/nested/*.txt",
+		}))
+	})
+
+	It("supports escaping **s", func() {
+		fs := fs.Local{}
+		expandedPaths, err := fs.GlobMany([]string{
+			"../../test/fixtures/filenames/**/\\*\\*.txt",
+		})
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(expandedPaths).To(Equal([]string{
+			"../../test/fixtures/filenames/nested/**.txt",
+		}))
+	})
 })
 
 var _ = Describe("fs.Stat", func() {

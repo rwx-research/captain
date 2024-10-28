@@ -9,7 +9,6 @@ require (
 	github.com/onsi/gomega v1.33.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.6.1
-	github.com/yargevad/filepathx v1.0.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.7.0
 )
@@ -21,6 +20,7 @@ require github.com/mileusna/useragent v1.2.1
 require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/blang/semver/v4 v4.0.0
+	github.com/bmatcuk/doublestar/v4 v4.7.1
 	github.com/mitchellh/go-wordwrap v1.0.1
 )
 
