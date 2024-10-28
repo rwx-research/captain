@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/yargevad/filepathx"
+	doublestar "github.com/bmatcuk/doublestar/v4"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
@@ -39,8 +39,16 @@ func (l Local) CreateTemp(dir string, pattern string) (File, error) {
 }
 
 func (l Local) Glob(pattern string) ([]string, error) {
-	filepaths, err := filepathx.Glob(pattern)
-	return filepaths, errors.WithStack(err)
+	filepaths, err := doublestar.FilepathGlob(pattern)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	if filepaths == nil {
+		return []string{}, nil
+	}
+
+	return filepaths, nil
 }
 
 func (l Local) GlobMany(patterns []string) ([]string, error) {
