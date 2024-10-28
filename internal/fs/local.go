@@ -40,7 +40,6 @@ func (l Local) CreateTemp(dir string, pattern string) (File, error) {
 
 func (l Local) Glob(pattern string) ([]string, error) {
 	filepaths, err := doublestar.FilepathGlob(pattern)
-
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
