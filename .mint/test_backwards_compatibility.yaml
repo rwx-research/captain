@@ -1,6 +1,6 @@
 concurrency-pools:
   - id: test-captain-backwards-compatibility
-    capacity: 1
+    capacity: 2
     on-overflow: queue
 
 tasks:
@@ -43,7 +43,7 @@ tasks:
   - key: build
     use: [captain-source, mage]
     run: mage
-    env: 
+    env:
       CGO_ENABLED: 0
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
 
@@ -69,7 +69,7 @@ tasks:
 
   - key: test
     use: [checkout-legacy-version, ginkgo]
-    env: 
+    env:
       CGO_ENABLED: 0
       LEGACY_VERSION_TO_TEST: ${{ init.legacy_version }}
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
