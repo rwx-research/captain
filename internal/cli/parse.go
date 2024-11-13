@@ -11,7 +11,17 @@ import (
 
 // Parse parses the files supplied in `filepaths` and prints them as formatted JSON to stdout.
 func (s Service) Parse(_ context.Context, filepaths []string) error {
-	results, err := s.parse(filepaths, 1)
+	testResultsFiles := make([]string, 0)
+	for _, filepath := range filepaths {
+		files, err := s.FileSystem.Glob(filepath)
+		if err != nil {
+			return errors.NewSystemError("unable to expand filepath glob: %s", err)
+		}
+
+		testResultsFiles = append(testResultsFiles, files...)
+	}
+
+	results, err := s.parse(testResultsFiles, 1)
 	if err != nil {
 		return errors.WithStack(err)
 	}

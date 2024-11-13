@@ -1101,6 +1101,16 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 					Expect(err).NotTo(HaveOccurred())
 					Expect(testResults.DerivedFrom[0].Contents).To(Equal("base64encodedoriginalfile"))
 				})
+
+				It("supports globs", func() {
+					result := runCaptain(captainArgs{
+						args: []string{"parse", "results", "fixtures/rs*ec.json"},
+						env:  make(map[string]string),
+					})
+
+					Expect(result.exitCode).To(Equal(0))
+					cupaloy.SnapshotT(GinkgoT(), result.stdout)
+				})
 			})
 		})
 	})
