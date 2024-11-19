@@ -43,6 +43,8 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			s.Log.Debug("No quarantined tests defined in Captain")
 		}
 
+		cfg.CloudOrganizationSlug = apiConfiguration.OrganizationSlug
+
 		return nil
 	})
 
@@ -628,12 +630,14 @@ func (s Service) reportTestResults(
 	if remoteClient, ok := s.API.(remote.Client); ok {
 		reportingConfiguration.CloudEnabled = true
 		reportingConfiguration.CloudHost = remoteClient.Host
+		reportingConfiguration.CloudOrganizationSlug = cfg.CloudOrganizationSlug
 		reportingConfiguration.Provider = remoteClient.Provider
 	}
 
 	if _, ok := s.API.(local.Client); ok {
 		reportingConfiguration.CloudEnabled = false
 		reportingConfiguration.CloudHost = ""
+		reportingConfiguration.CloudOrganizationSlug = ""
 		reportingConfiguration.Provider = providers.Provider{}
 	}
 
@@ -662,8 +666,9 @@ func (s Service) reportTestResults(
 		mintLinksPath != "" {
 		backlinkPath := filepath.Join(mintLinksPath, "View Captain results")
 		backlinkURL := fmt.Sprintf(
-			"https://%v/captain/deep_link/test_suite_summaries/%v/%v/%v",
+			"https://%v/captain/%v/test_suite_summaries/%v/%v/%v",
 			reportingConfiguration.CloudHost,
+			reportingConfiguration.CloudOrganizationSlug,
 			reportingConfiguration.SuiteID,
 			reportingConfiguration.Provider.BranchName,
 			reportingConfiguration.Provider.CommitSha,
