@@ -162,7 +162,15 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
 		}
 
-		testResults, newlyExecutedTestResults, didRetry, err = s.attemptRetries(ctx, testResults, newlyExecutedTestResults, testResultsFiles, cfg, apiConfiguration, 0)
+		testResults, newlyExecutedTestResults, didRetry, err = s.attemptRetries(
+			ctx,
+			testResults,
+			newlyExecutedTestResults,
+			testResultsFiles,
+			cfg,
+			apiConfiguration,
+			0,
+		)
 		if err != nil {
 			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
 		}
@@ -353,7 +361,9 @@ func (s Service) attemptRetries(
 			return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 		}
 
-		return originalTestResults, newlyExecutedTestResults, false, errors.NewInputError("Captain retries cannot be used with ABQ")
+		return originalTestResults, newlyExecutedTestResults, false, errors.NewInputError(
+			"Captain retries cannot be used with ABQ",
+		)
 	}
 
 	if originalTestResults == nil {
@@ -488,13 +498,20 @@ func (s Service) attemptRetries(
 		allNewTestResults := make([]v1.TestResults, 0)
 		allSubstitutions, err := substitution.SubstitutionsFor(compiledRetryTemplate, *flattenedTestResults, filter)
 		if err != nil {
-			return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrap(err, "Unable construct retry substitutions")
+			return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrap(
+				err,
+				"Unable construct retry substitutions",
+			)
 		}
 		for i, substitutions := range allSubstitutions {
 			command := compiledRetryTemplate.Substitute(substitutions)
 			args, err := shellwords.Parse(command)
 			if err != nil {
-				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
+					err,
+					"Unable to parse %q into shell arguments",
+					command,
+				)
 			}
 
 			ias.setCommandID(i + 1)
@@ -529,11 +546,19 @@ func (s Service) attemptRetries(
 			for _, preRetryCommand := range cfg.PreRetryCommands {
 				preRetryArgs, err := shellwords.Parse(preRetryCommand)
 				if err != nil {
-					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", preRetryCommand)
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
+						err,
+						"Unable to parse %q into shell arguments",
+						preRetryCommand,
+					)
 				}
 
 				if _, err := s.runCommand(ctx, preRetryArgs, stdout, false); err != nil {
-					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Error while executing %q", preRetryCommand)
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
+						err,
+						"Error while executing %q",
+						preRetryCommand,
+					)
 				}
 			}
 
@@ -542,11 +567,19 @@ func (s Service) attemptRetries(
 			for _, postRetryCommand := range cfg.PostRetryCommands {
 				postRetryArgs, err := shellwords.Parse(postRetryCommand)
 				if err != nil {
-					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", postRetryCommand)
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
+						err,
+						"Unable to parse %q into shell arguments",
+						postRetryCommand,
+					)
 				}
 
 				if _, err := s.runCommand(ctx, postRetryArgs, stdout, false); err != nil {
-					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Error while executing %q", postRetryCommand)
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
+						err,
+						"Error while executing %q",
+						postRetryCommand,
+					)
 				}
 			}
 

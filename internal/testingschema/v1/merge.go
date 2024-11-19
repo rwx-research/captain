@@ -30,7 +30,9 @@ func union(separateTestResults []TestResults) *TestResults {
 
 func flatten(unionedTestResults []TestResults) TestResults {
 	flattened, rest := unionedTestResults[0], unionedTestResults[1:]
-	flattenedStartedEmpty := len(flattened.Tests) == 0 && len(flattened.OtherErrors) == 0 && len(flattened.DerivedFrom) == 0
+	flattenedStartedEmpty := len(flattened.Tests) == 0 &&
+		len(flattened.OtherErrors) == 0 &&
+		len(flattened.DerivedFrom) == 0
 
 	for index, testResults := range rest {
 		flattened.DerivedFrom = append(flattened.DerivedFrom, testResults.DerivedFrom...)
