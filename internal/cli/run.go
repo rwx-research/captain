@@ -64,6 +64,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	var didRetry bool
 	var runErr error
 	var testResults *v1.TestResults
+	var newlyExecutedTestResults *v1.TestResults
 	var testResultsFiles []string
 
 	if cfg.DidRetryFailedTestsInMint {
@@ -113,11 +114,13 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			}
 		}
 
+		newlyExecutedTestResults = v1.NewTestResults(testResults.Framework, []v1.Test{}, []v1.OtherError{})
 		// -1 because of 0 indexing
-		testResults, didRetry, err = s.attemptRetries(
+		testResults, newlyExecutedTestResults, didRetry, err = s.attemptRetries(
 			ctx,
 			testResults,
-			testResultsFiles,
+			newlyExecutedTestResults,
+			[]string{}, // testResultsFiles
 			cfg,
 			apiConfiguration,
 			largestGroupNumberPreviouslySeen-1,
@@ -149,6 +152,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			}
 		}()
 		testResults, testResultsFiles, runErr, err = s.handleCommandOutcome(cfg, cmdErr, 1)
+		newlyExecutedTestResults = v1.NewTestResults(testResults.Framework, testResults.Tests, testResults.OtherErrors)
 		if err != nil {
 			return err
 		}
@@ -158,7 +162,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
 		}
 
-		testResults, didRetry, err = s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration, 0)
+		testResults, newlyExecutedTestResults, didRetry, err = s.attemptRetries(ctx, testResults, newlyExecutedTestResults, testResultsFiles, cfg, apiConfiguration, 0)
 		if err != nil {
 			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
 		}
@@ -201,7 +205,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	// We ignore the error here since `UploadTestResults` will already log any errors. Furthermore, any errors here will
 	// not affect the exit code.
 	if testResults != nil {
-		uploadResults, uploadError = s.reportTestResults(ctx, cfg, *testResults)
+		uploadResults, uploadError = s.reportTestResults(ctx, cfg, *testResults, *newlyExecutedTestResults)
 	} else {
 		s.Log.Debugf("No test results were parsed. Globbed files: %v", testResultsFiles)
 	}
@@ -310,21 +314,22 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 func (s Service) attemptRetries(
 	ctx context.Context,
 	originalTestResults *v1.TestResults,
+	newlyExecutedTestResults *v1.TestResults,
 	originalTestResultsFiles []string,
 	cfg RunConfig,
 	apiConfiguration backend.RunConfiguration,
 	groupNumberOffset int,
-) (*v1.TestResults, bool, error) {
+) (*v1.TestResults, *v1.TestResults, bool, error) {
 	nonFlakyRetries := cfg.Retries
 	flakyRetries := cfg.FlakyRetries
 
 	if nonFlakyRetries <= 0 && flakyRetries <= 0 {
-		return originalTestResults, false, nil
+		return originalTestResults, newlyExecutedTestResults, false, nil
 	}
 
 	ias, err := s.newIntermediateArtifactStorage(cfg.IntermediateArtifactsPath)
 	if err != nil {
-		return originalTestResults, false, errors.WithStack(err)
+		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
 
 	if cfg.IntermediateArtifactsPath == "" {
@@ -345,19 +350,19 @@ func (s Service) attemptRetries(
 
 	if didRun, err := s.didAbqRun(ctx); didRun || err != nil {
 		if err != nil {
-			return originalTestResults, false, errors.WithStack(err)
+			return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 		}
 
-		return originalTestResults, false, errors.NewInputError("Captain retries cannot be used with ABQ")
+		return originalTestResults, newlyExecutedTestResults, false, errors.NewInputError("Captain retries cannot be used with ABQ")
 	}
 
 	if originalTestResults == nil {
-		return originalTestResults, false, errors.NewInternalError("No test results detected")
+		return originalTestResults, newlyExecutedTestResults, false, errors.NewInternalError("No test results detected")
 	}
 
 	compiledRetryTemplate, err := templating.CompileTemplate(cfg.RetryCommandTemplate)
 	if err != nil {
-		return originalTestResults, false, errors.WithStack(err)
+		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
 
 	framework := originalTestResults.Framework
@@ -365,30 +370,28 @@ func (s Service) attemptRetries(
 	if err := substitution.ValidateTemplate(compiledRetryTemplate); err != nil {
 		frameworkSubstitution, ok := cfg.SubstitutionsByFramework[framework]
 		if !ok {
-			return originalTestResults, false, errors.NewInternalError("Unable to retry %q", framework)
+			return originalTestResults, newlyExecutedTestResults, false, errors.NewInternalError("Unable to retry %q", framework)
 		}
 
 		if err := frameworkSubstitution.ValidateTemplate(compiledRetryTemplate); err != nil {
-			return originalTestResults, false, errors.WithStack(err)
+			return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 		}
 
 		substitution = frameworkSubstitution
 	}
 
-	flattenedTestResults := originalTestResults
-
 	if err := ias.moveTestResults(originalTestResultsFiles); err != nil {
-		return flattenedTestResults, false, errors.WithStack(err)
+		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
 
 	maxTestsToRetryCount, err := cfg.MaxTestsToRetryCount()
 	if err != nil {
-		return flattenedTestResults, false, errors.WithStack(err)
+		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
 
 	maxTestsToRetryPercentage, err := cfg.MaxTestsToRetryPercentage()
 	if err != nil {
-		return flattenedTestResults, false, errors.WithStack(err)
+		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
 
 	maxRetries := nonFlakyRetries
@@ -399,6 +402,9 @@ func (s Service) attemptRetries(
 	if flakyRetries > 0 && nonFlakyRetries > 0 && nonFlakyRetries != flakyRetries {
 		formattedRetryTotal = ""
 	}
+
+	flattenedTestResults := originalTestResults
+	flattenedNewlyExecutedTestResults := newlyExecutedTestResults
 
 	for retries := 0; retries < maxRetries; retries++ {
 		remainingFlakyFailures := make([]v1.Test, 0)
@@ -482,13 +488,13 @@ func (s Service) attemptRetries(
 		allNewTestResults := make([]v1.TestResults, 0)
 		allSubstitutions, err := substitution.SubstitutionsFor(compiledRetryTemplate, *flattenedTestResults, filter)
 		if err != nil {
-			return flattenedTestResults, true, errors.Wrap(err, "Unable construct retry substitutions")
+			return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrap(err, "Unable construct retry substitutions")
 		}
 		for i, substitutions := range allSubstitutions {
 			command := compiledRetryTemplate.Substitute(substitutions)
 			args, err := shellwords.Parse(command)
 			if err != nil {
-				return flattenedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", command)
 			}
 
 			ias.setCommandID(i + 1)
@@ -523,11 +529,11 @@ func (s Service) attemptRetries(
 			for _, preRetryCommand := range cfg.PreRetryCommands {
 				preRetryArgs, err := shellwords.Parse(preRetryCommand)
 				if err != nil {
-					return flattenedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", preRetryCommand)
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", preRetryCommand)
 				}
 
 				if _, err := s.runCommand(ctx, preRetryArgs, stdout, false); err != nil {
-					return flattenedTestResults, true, errors.Wrapf(err, "Error while executing %q", preRetryCommand)
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Error while executing %q", preRetryCommand)
 				}
 			}
 
@@ -536,25 +542,25 @@ func (s Service) attemptRetries(
 			for _, postRetryCommand := range cfg.PostRetryCommands {
 				postRetryArgs, err := shellwords.Parse(postRetryCommand)
 				if err != nil {
-					return flattenedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", postRetryCommand)
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Unable to parse %q into shell arguments", postRetryCommand)
 				}
 
 				if _, err := s.runCommand(ctx, postRetryArgs, stdout, false); err != nil {
-					return flattenedTestResults, true, errors.Wrapf(err, "Error while executing %q", postRetryCommand)
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(err, "Error while executing %q", postRetryCommand)
 				}
 			}
 
 			// +1 because it's 1-indexed, +1 because the original attempt was #1
 			newTestResults, newTestResultsFiles, _, err := s.handleCommandOutcome(cfg, cmdErr, retries+2+groupNumberOffset)
 			if err != nil {
-				return flattenedTestResults, true, err
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, err
 			}
 
 			if newTestResults != nil {
 				allNewTestResults = append(allNewTestResults, *newTestResults)
 			}
 			if err := ias.moveTestResults(newTestResultsFiles); err != nil {
-				return flattenedTestResults, true, errors.WithStack(err)
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.WithStack(err)
 			}
 		}
 		if jsonSubstitution, ok := substitution.(targetedretries.JSONSubstitution); ok {
@@ -564,10 +570,13 @@ func (s Service) attemptRetries(
 		}
 		mergedTestResults := v1.Merge([]v1.TestResults{*flattenedTestResults}, allNewTestResults)
 		flattenedTestResults = &mergedTestResults
+
+		mergedNewlyExecutedTestResults := v1.Merge([]v1.TestResults{*flattenedNewlyExecutedTestResults}, allNewTestResults)
+		flattenedNewlyExecutedTestResults = &mergedNewlyExecutedTestResults
 	}
 
 	s.Log.Debugf("Retries complete, summary: %v\n", flattenedTestResults.Summary)
-	return flattenedTestResults, true, nil
+	return flattenedTestResults, flattenedNewlyExecutedTestResults, true, nil
 }
 
 func (s Service) handleCommandOutcome(
@@ -689,6 +698,7 @@ func (s Service) reportTestResults(
 	ctx context.Context,
 	cfg RunConfig,
 	testResults v1.TestResults,
+	newlyExecutedTestResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
 	if cfg.WriteRetryFailedTestsAction {
 		hasFailedTests := false
@@ -771,7 +781,7 @@ func (s Service) reportTestResults(
 		return nil, nil
 	}
 
-	result, err := s.API.UpdateTestResults(ctx, cfg.SuiteID, testResults)
+	result, err := s.API.UpdateTestResults(ctx, cfg.SuiteID, newlyExecutedTestResults)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to update test results")
 	}
