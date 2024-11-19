@@ -67,14 +67,15 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 					}
 
 					runConfig = cli.RunConfig{
-						Args:                args,
-						Command:             suiteConfig.Command,
-						PrintSummary:        suiteConfig.Output.PrintSummary,
-						Quiet:               suiteConfig.Output.Quiet,
-						Reporters:           reporterFuncs,
-						SuiteID:             cliArgs.RootCliArgs.suiteID,
-						TestResultsFileGlob: os.ExpandEnv(suiteConfig.Results.Path),
-						UpdateStoredResults: cliArgs.updateStoredResults,
+						Args:                  args,
+						CloudOrganizationSlug: "deep_link",
+						Command:               suiteConfig.Command,
+						PrintSummary:          suiteConfig.Output.PrintSummary,
+						Quiet:                 suiteConfig.Output.Quiet,
+						Reporters:             reporterFuncs,
+						SuiteID:               cliArgs.RootCliArgs.suiteID,
+						TestResultsFileGlob:   os.ExpandEnv(suiteConfig.Results.Path),
+						UpdateStoredResults:   cliArgs.updateStoredResults,
 
 						FailOnUploadError: false,
 						FailRetriesFast:   false,

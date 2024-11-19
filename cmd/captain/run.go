@@ -114,6 +114,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 
 					runConfig = cli.RunConfig{
 						Args:                      args,
+						CloudOrganizationSlug:     "deep_link",
 						Command:                   suiteConfig.Command,
 						FailOnUploadError:         suiteConfig.FailOnUploadError,
 						FailRetriesFast:           suiteConfig.Retries.FailFast,

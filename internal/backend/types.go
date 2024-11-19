@@ -23,6 +23,7 @@ type RunConfiguration struct {
 	GeneratedAt      string            `json:"generated_at,omitempty"`
 	QuarantinedTests []QuarantinedTest `json:"quarantined_tests,omitempty"`
 	FlakyTests       []Test            `json:"flaky_tests,omitempty"`
+	OrganizationSlug string            `json:"organization_slug,omitempty"`
 }
 
 type Test struct {

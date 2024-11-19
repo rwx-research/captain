@@ -132,9 +132,11 @@ var _ = Describe("Markdown Report", func() {
 
 	It("produces a readable summary when cloud is enabled", func() {
 		cfg := reporting.Configuration{
-			SuiteID:      "some-suite-id",
-			CloudEnabled: true,
-			CloudHost:    "example.com",
+			SuiteID:               "some-suite-id",
+			CloudEnabled:          true,
+			CloudHost:             "example.com",
+			CloudOrganizationSlug: "my-slug",
+
 			Provider: providers.Provider{
 				BranchName: "some/branch",
 				CommitSha:  "abcdef113131",
