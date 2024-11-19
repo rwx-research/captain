@@ -10,9 +10,11 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-const retryActionKey = "retry-failed-tests"
-const retryActionLabel = "Retry failed tests"
-const retryActionEnv = "CAPTAIN_MINT_RETRY_FAILED_TESTS"
+const (
+	retryActionKey   = "retry-failed-tests"
+	retryActionLabel = "Retry failed tests"
+	retryActionEnv   = "CAPTAIN_MINT_RETRY_FAILED_TESTS"
+)
 
 func IsMint() bool {
 	return os.Getenv("MINT") == "true"
@@ -48,7 +50,7 @@ func ReadFailedTestResults(fs fs.FileSystem) (*v1.TestResults, error) {
 
 	testResultsFile, err := fs.Open(filepath.Join(retryDataDirectory(), "test-results.json"))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to open test results file")
 	}
 	defer testResultsFile.Close()
 
@@ -66,13 +68,13 @@ func WriteError(fs fs.FileSystem, errorMessage string) error {
 
 	errorFile, err := fs.CreateTemp(errorsDirectory(), "captain-")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to create error file")
 	}
 	defer errorFile.Close()
 
 	_, err = errorFile.Write([]byte(errorMessage))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to write to error file")
 	}
 
 	return nil
@@ -99,13 +101,13 @@ func writeEnv(fs fs.FileSystem) error {
 
 	envFile, err := fs.Create(filepath.Join(retryActionDirectory(), "env", retryActionEnv))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to create env file")
 	}
 	defer envFile.Close()
 
 	_, err = envFile.Write([]byte("true"))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to write to env file")
 	}
 
 	return nil
@@ -116,13 +118,13 @@ func writeLabel(fs fs.FileSystem) error {
 
 	labelFile, err := fs.Create(filepath.Join(retryActionDirectory(), "label"))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to create label file")
 	}
 	defer labelFile.Close()
 
 	_, err = labelFile.Write([]byte(RetryFailedTestsLabel()))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to write to label file")
 	}
 
 	return nil
@@ -133,7 +135,7 @@ func writeTestResults(fs fs.FileSystem, testResults v1.TestResults) error {
 
 	testResultsFile, err := fs.Create(filepath.Join(retryActionDirectory(), "data", "test-results.json"))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to create test results file")
 	}
 	defer testResultsFile.Close()
 

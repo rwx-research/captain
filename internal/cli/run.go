@@ -69,7 +69,8 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	if cfg.DidRetryFailedTestsInMint {
 		if cfg.RetryCommandTemplate == "" {
 			errorMessage := fmt.Sprintf(
-				"You cannot use %q unless you have a Captain retry command configured.\n\nSee https://www.rwx.com/docs/captain/cli-configuration/config-yaml#test-suites-retries-command",
+				"You cannot use %q unless you have a Captain retry command configured.\n\n"+
+					"See https://www.rwx.com/docs/captain/cli-configuration/config-yaml#test-suites-retries-command",
 				mint.RetryFailedTestsLabel(),
 			)
 			_ = mint.WriteError(s.FileSystem, errorMessage)
@@ -83,7 +84,8 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 
 		if testResults.Summary.OtherErrors > 0 {
 			errorMessage := fmt.Sprintf(
-				"The previous execution of this test suite had errors that occurred outside the test suite. These errors cannot be retried individually. Use 'Retry' instead of %q.",
+				"The previous execution of this test suite had errors that occurred outside the test suite. "+
+					"These errors cannot be retried individually. Use 'Retry' instead of %q.",
 				mint.RetryFailedTestsLabel(),
 			)
 			_ = mint.WriteError(s.FileSystem, errorMessage)
@@ -95,11 +97,11 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
 		}
 
-		cfg.Retries = cfg.Retries + 1
+		cfg.Retries++
 		if cfg.Retries < 1 {
 			cfg.Retries = 1
 		}
-		cfg.FlakyRetries = cfg.FlakyRetries + 1
+		cfg.FlakyRetries++
 		if cfg.FlakyRetries < 1 {
 			cfg.FlakyRetries = 1
 		}
@@ -112,7 +114,14 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 
 		// -1 because of 0 indexing
-		testResults, didRetry, err = s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration, largestGroupNumberPreviouslySeen-1)
+		testResults, didRetry, err = s.attemptRetries(
+			ctx,
+			testResults,
+			testResultsFiles,
+			cfg,
+			apiConfiguration,
+			largestGroupNumberPreviouslySeen-1,
+		)
 		if err != nil {
 			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
 		}
