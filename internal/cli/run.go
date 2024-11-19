@@ -152,9 +152,21 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			}
 		}()
 		testResults, testResultsFiles, runErr, err = s.handleCommandOutcome(cfg, cmdErr, 1)
-		newlyExecutedTestResults = v1.NewTestResults(testResults.Framework, testResults.Tests, testResults.OtherErrors)
 		if err != nil {
 			return err
+		}
+		if testResults != nil {
+			tests := make([]v1.Test, len(testResults.Tests))
+			copy(tests, testResults.Tests)
+
+			otherErrors := make([]v1.OtherError, len(testResults.OtherErrors))
+			copy(otherErrors, testResults.OtherErrors)
+
+			derivedFrom := make([]v1.OriginalTestResults, len(testResults.DerivedFrom))
+			copy(derivedFrom, testResults.DerivedFrom)
+
+			newlyExecutedTestResults = v1.NewTestResults(testResults.Framework, tests, otherErrors)
+			newlyExecutedTestResults.DerivedFrom = derivedFrom
 		}
 
 		// Wait until run configuration was fetched. Ignore any errors.
@@ -199,6 +211,20 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			}
 		}
 		testResults.Summary = v1.NewSummary(testResults.Tests, testResults.OtherErrors)
+	}
+
+	if newlyExecutedTestResults != nil {
+		quarantinedTests := make([]backend.Test, len(apiConfiguration.QuarantinedTests))
+		for i, quarantinedTest := range apiConfiguration.QuarantinedTests {
+			quarantinedTests[i] = quarantinedTest.Test
+		}
+
+		for i, test := range newlyExecutedTestResults.Tests {
+			if s.isIdentifiedIn(test, quarantinedTests) && test.Attempt.Status.PotentiallyFlaky() {
+				newlyExecutedTestResults.Tests[i] = test.Quarantine()
+			}
+		}
+		newlyExecutedTestResults.Summary = v1.NewSummary(newlyExecutedTestResults.Tests, newlyExecutedTestResults.OtherErrors)
 	}
 
 	var uploadResults []backend.TestResultsUploadResult
