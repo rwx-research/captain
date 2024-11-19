@@ -115,3 +115,7 @@ func (l Local) Stat(name string) (os.FileInfo, error) {
 func (l Local) TempDir() string {
 	return os.TempDir()
 }
+
+func (l Local) WriteFile(path string, data []byte, perm os.FileMode) error {
+	return os.WriteFile(path, data, perm)
+}

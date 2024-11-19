@@ -2080,6 +2080,210 @@ var _ = Describe("Run", func() {
 		})
 	})
 
+	Describe("Mint retries", func() {
+		var (
+			parseCount            int
+			exitCode              int
+			uploadedTestResults   *v1.TestResults
+			firstTestDescription  string
+			secondTestDescription string
+			thirdTestDescription  string
+			firstInitialStatus    v1.TestStatus
+			secondInitialStatus   v1.TestStatus
+			thirdInitialStatus    v1.TestStatus
+		)
+
+		BeforeEach(func() {
+			parseCount = 0
+			exitCode = int(GinkgoRandomSeed() + 1)
+			firstTestDescription = fmt.Sprintf("first-description-%d", GinkgoRandomSeed()+2)
+			secondTestDescription = fmt.Sprintf("second-description-%d", GinkgoRandomSeed()+3)
+			thirdTestDescription = fmt.Sprintf("third-description-%d", GinkgoRandomSeed()+4)
+			firstInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
+			secondInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
+			thirdInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
+
+			mockGetwd := func() (string, error) {
+				return "/go/github.com/rwx-research/captain-cli", nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockGetwd = mockGetwd
+
+			mockMkdirAll := func(_ string, _ os.FileMode) error {
+				return nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
+
+			mockRename := func(_, _ string) error {
+				return nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockRename = mockRename
+
+			mockMkdirTemp := func(_, _ string) (string, error) {
+				return "/tmp/captain-test", nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockMkdirTemp = mockMkdirTemp
+
+			mockStat := func(string) (iofs.FileInfo, error) {
+				// abq state file
+				return nil, iofs.ErrNotExist
+			}
+			service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
+
+			mockRemove := func(string) error {
+				return nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockRemove = mockRemove
+
+			mockGetExitStatusFromError := func(error) (int, error) {
+				return exitCode, nil
+			}
+			service.TaskRunner.(*mocks.TaskRunner).MockGetExitStatusFromError = mockGetExitStatusFromError
+
+			mockUploadTestResults := func(
+				_ context.Context,
+				_ string,
+				testResults v1.TestResults,
+			) ([]backend.TestResultsUploadResult, error) {
+				testResultsFileUploaded = true
+
+				uploadedTestResults = &testResults
+
+				return []backend.TestResultsUploadResult{
+					{OriginalPaths: []string{testResultsFilePath}, Uploaded: true},
+					{OriginalPaths: []string{"./fake/path/1.json", "./fake/path/2.json"}, Uploaded: false},
+				}, nil
+			}
+			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
+
+			service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+				*v1.TestResults,
+				error,
+			) {
+				parseCount++
+				firstStatus := firstInitialStatus
+				secondStatus := secondInitialStatus
+				thirdStatus := thirdInitialStatus
+
+				switch parseCount {
+				case 2:
+					secondStatus = v1.NewSuccessfulTestStatus()
+					thirdStatus = v1.NewSuccessfulTestStatus()
+				case 3:
+					firstStatus = v1.NewSuccessfulTestStatus()
+					secondStatus = v1.NewSuccessfulTestStatus()
+					thirdStatus = v1.NewSuccessfulTestStatus()
+				}
+
+				return &v1.TestResults{
+					Framework: v1.RubyRSpecFramework,
+					Tests: []v1.Test{
+						{
+							ID:       &firstTestDescription,
+							Name:     firstTestDescription,
+							Location: &v1.Location{File: "/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: firstStatus,
+							},
+						},
+						{
+							ID:       &secondTestDescription,
+							Name:     secondTestDescription,
+							Location: &v1.Location{File: "/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: secondStatus,
+							},
+						},
+						{
+							ID:       &thirdTestDescription,
+							Name:     thirdTestDescription,
+							Location: &v1.Location{File: "/other/path/to/file.test"},
+							Attempt: v1.TestAttempt{
+								Status: thirdStatus,
+							},
+						},
+					},
+				}, nil
+			}
+
+			runConfig = cli.RunConfig{
+				Args:                 []string{arg},
+				TestResultsFileGlob:  testResultsFilePath,
+				MintErrorsDirectory: "",
+				MintRetryActionsDirectory: "",
+				MintRetryDataDirectory: "",
+				MintRetryFailedTests: true,
+				SuiteID:              "test",
+				Retries:              1,
+				RetryCommandTemplate: "retry {{ tests }}",
+				SubstitutionsByFramework: map[v1.Framework]targetedretries.Substitution{
+					v1.RubyRSpecFramework: new(targetedretries.RubyRSpecSubstitution),
+				},
+			}
+		})
+
+		Context("when there are no remaining failures after some retries", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 1
+			})
+
+			It("stops retrying", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
+
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(2))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].PastAttempts).To(HaveLen(2))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusSuccessful))
+
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[2].PastAttempts).To(HaveLen(2))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusSuccessful))
+			})
+		})
+
+		Context("when there are failures left after all retries", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 1
+			})
+
+			It("stops retrying", func() {
+				Expect(err).To(HaveOccurred())
+				executionError, ok := errors.AsExecutionError(err)
+				Expect(ok).To(BeTrue(), "Error is an execution error")
+				Expect(executionError.Code).To(Equal(exitCode))
+
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(2))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(1))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
+
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[2].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+			})
+		})
+	})
+
 	Context("when there are multiple frameworks parsed", func() {
 		var parseCount int
 

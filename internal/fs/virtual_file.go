@@ -46,3 +46,7 @@ func (vf VirtualReadOnlyFile) Stat() (os.FileInfo, error) {
 func (vf VirtualReadOnlyFile) Sys() any {
 	return nil
 }
+
+func (vf VirtualReadOnlyFile) WriteFile(path string, data []byte, perm os.FileMode) error {
+	return nil
+}

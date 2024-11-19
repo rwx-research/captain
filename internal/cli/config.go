@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 
@@ -24,6 +25,10 @@ type RunConfig struct {
 	FlakyRetries              int
 	IntermediateArtifactsPath string
 	MaxTestsToRetry           string
+	MintErrorsDirectory       string
+	MintRetryActionsDirectory string
+	MintRetryDataDirectory    string
+	MintRetryFailedTests      bool
 	PostRetryCommands         []string
 	PreRetryCommands          []string
 	PrintSummary              bool
@@ -54,7 +59,7 @@ func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
 		)
 	}
 
-	if rc.RetryCommandTemplate != "" && !(rc.Retries > 0 || rc.FlakyRetries > 0) {
+	if rc.RetryCommandTemplate != "" && rc.Retries <= 0 && rc.FlakyRetries <= 0 && os.Getenv("MINT_RETRY_ACTIONS") == "" {
 		log.Warn("There is a retry command configured for this test suite, however the retry count is set to 0.")
 		log.Warn("Retries are disabled.")
 	}

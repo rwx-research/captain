@@ -19,4 +19,5 @@ type FileSystem interface {
 	Rename(oldname string, newname string) error
 	Stat(name string) (os.FileInfo, error)
 	TempDir() string
+	WriteFile(path string, data []byte, perm os.FileMode) error
 }
