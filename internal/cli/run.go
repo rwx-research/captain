@@ -16,6 +16,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/exec"
+	"github.com/rwx-research/captain-cli/internal/mint"
 	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
@@ -60,41 +61,90 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 	}
 
-	runCommand, err := s.makeRunCommand(ctx, cfg)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to assemble run command")
-	}
+	var didRetry bool
+	var runErr error
+	var testResults *v1.TestResults
+	var testResultsFiles []string
 
-	// Short circuit and print warning info (e.g attempting to run an empty partition)
-	if runCommand.shortCircuit {
-		s.Log.Warnf(runCommand.shortCircuitInfo)
-		os.Exit(0)
-	}
-
-	// Run sub-command
-	ctx, cmdErr := s.runCommand(ctx, runCommand.commandArgs, stdout, true)
-	defer func() {
-		if abqErr := s.setAbqExitCode(ctx, finalErr); abqErr != nil {
-			finalErr = errors.Wrap(finalErr, abqErr.Error())
-			if finalErr == nil {
-				finalErr = abqErr
-			}
-			s.Log.Errorf("Error setting ABQ exit code: %v", finalErr)
+	if mint.DidRetryFailedTests() {
+		if cfg.RetryCommandTemplate == "" {
+			errorMessage := fmt.Sprintf(
+				"You cannot use %q unless you have a Captain retry command configured.\n\nSee https://www.rwx.com/docs/captain/cli-configuration/config-yaml#test-suites-retries-command",
+				mint.RetryFailedTestsLabel(),
+			)
+			_ = mint.WriteError(s.FileSystem, errorMessage)
+			return errors.NewInputError(errorMessage)
 		}
-	}()
-	testResults, testResultsFiles, runErr, err := s.handleCommandOutcome(cfg, cmdErr, 1)
-	if err != nil {
-		return err
-	}
 
-	// Wait until run configuration was fetched. Ignore any errors.
-	if err := eg.Wait(); err != nil {
-		s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
-	}
+		testResults, err = mint.ReadFailedTestResults(s.FileSystem)
+		if err != nil {
+			return errors.Wrap(err, "Could not load the failed tests from the previous attempt")
+		}
 
-	testResults, didRetry, err := s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration)
-	if err != nil {
-		s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
+		if testResults.Summary.OtherErrors > 0 {
+			errorMessage := fmt.Sprintf(
+				"The previous execution of this test suite had errors that occurred outside the test suite. These errors cannot be retried individually. Use 'Retry' instead of %q.",
+				mint.RetryFailedTestsLabel(),
+			)
+			_ = mint.WriteError(s.FileSystem, errorMessage)
+			return errors.NewInputError(errorMessage)
+		}
+
+		// Wait until run configuration was fetched. Ignore any errors.
+		if err := eg.Wait(); err != nil {
+			s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
+		}
+
+		cfg.Retries = cfg.Retries + 1
+		if cfg.Retries < 1 {
+			cfg.Retries = 1
+		}
+		cfg.FlakyRetries = cfg.FlakyRetries + 1
+		if cfg.FlakyRetries < 1 {
+			cfg.FlakyRetries = 1
+		}
+
+		testResults, didRetry, err = s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration)
+		if err != nil {
+			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
+		}
+	} else {
+		runCommand, err := s.makeRunCommand(ctx, cfg)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to assemble run command")
+		}
+
+		// Short circuit and print warning info (e.g attempting to run an empty partition)
+		if runCommand.shortCircuit {
+			s.Log.Warnf(runCommand.shortCircuitInfo)
+			os.Exit(0)
+		}
+
+		// Run sub-command
+		ctx, cmdErr := s.runCommand(ctx, runCommand.commandArgs, stdout, true)
+		defer func() {
+			if abqErr := s.setAbqExitCode(ctx, finalErr); abqErr != nil {
+				finalErr = errors.Wrap(finalErr, abqErr.Error())
+				if finalErr == nil {
+					finalErr = abqErr
+				}
+				s.Log.Errorf("Error setting ABQ exit code: %v", finalErr)
+			}
+		}()
+		testResults, testResultsFiles, runErr, err = s.handleCommandOutcome(cfg, cmdErr, 1)
+		if err != nil {
+			return err
+		}
+
+		// Wait until run configuration was fetched. Ignore any errors.
+		if err := eg.Wait(); err != nil {
+			s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
+		}
+
+		testResults, didRetry, err = s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration)
+		if err != nil {
+			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
+		}
 	}
 
 	quarantinedFailedTests := make([]v1.Test, 0)
@@ -622,6 +672,23 @@ func (s Service) reportTestResults(
 	cfg RunConfig,
 	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
+	if mint.IsMint() {
+		hasFailedTests := false
+		for _, test := range testResults.Tests {
+			if test.Attempt.Status.ImpliesFailure() {
+				hasFailedTests = true
+				break
+			}
+		}
+
+		if hasFailedTests {
+			err := mint.WriteRetryFailedTestsAction(s.FileSystem, testResults)
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to write Mint retry failed tests action")
+			}
+		}
+	}
+
 	reportingConfiguration := reporting.Configuration{
 		SuiteID:              cfg.SuiteID,
 		RetryCommandTemplate: cfg.RetryCommandTemplate,

@@ -37,6 +37,7 @@ type RunConfig struct {
 	UploadResults             bool
 	PartitionCommandTemplate  string
 	PartitionConfig           PartitionConfig
+	MintRetryActionsDirectory string
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(
