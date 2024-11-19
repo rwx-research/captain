@@ -104,7 +104,15 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			cfg.FlakyRetries = 1
 		}
 
-		testResults, didRetry, err = s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration)
+		largestGroupNumberPreviouslySeen := 0
+		for _, derivedFrom := range testResults.DerivedFrom {
+			if derivedFrom.GroupNumber > largestGroupNumberPreviouslySeen {
+				largestGroupNumberPreviouslySeen = derivedFrom.GroupNumber
+			}
+		}
+
+		// -1 because of 0 indexing
+		testResults, didRetry, err = s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration, largestGroupNumberPreviouslySeen-1)
 		if err != nil {
 			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
 		}
@@ -141,7 +149,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
 		}
 
-		testResults, didRetry, err = s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration)
+		testResults, didRetry, err = s.attemptRetries(ctx, testResults, testResultsFiles, cfg, apiConfiguration, 0)
 		if err != nil {
 			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
 		}
@@ -296,6 +304,7 @@ func (s Service) attemptRetries(
 	originalTestResultsFiles []string,
 	cfg RunConfig,
 	apiConfiguration backend.RunConfiguration,
+	groupNumberOffset int,
 ) (*v1.TestResults, bool, error) {
 	nonFlakyRetries := cfg.Retries
 	flakyRetries := cfg.FlakyRetries
@@ -527,7 +536,7 @@ func (s Service) attemptRetries(
 			}
 
 			// +1 because it's 1-indexed, +1 because the original attempt was #1
-			newTestResults, newTestResultsFiles, _, err := s.handleCommandOutcome(cfg, cmdErr, retries+2)
+			newTestResults, newTestResultsFiles, _, err := s.handleCommandOutcome(cfg, cmdErr, retries+2+groupNumberOffset)
 			if err != nil {
 				return flattenedTestResults, true, err
 			}
