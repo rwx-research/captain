@@ -11,6 +11,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/mint"
 	"github.com/rwx-research/captain-cli/internal/providers"
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/runpartition"
@@ -143,6 +144,8 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 							},
 							Delimiter: suiteConfig.Partition.Delimiter,
 						},
+						WriteRetryFailedTestsAction: mint.IsMint(),
+						DidRetryFailedTestsInMint:   mint.DidRetryFailedTests(),
 					}
 				}
 

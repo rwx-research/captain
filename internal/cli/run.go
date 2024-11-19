@@ -66,7 +66,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	var testResults *v1.TestResults
 	var testResultsFiles []string
 
-	if mint.DidRetryFailedTests() {
+	if cfg.DidRetryFailedTestsInMint {
 		if cfg.RetryCommandTemplate == "" {
 			errorMessage := fmt.Sprintf(
 				"You cannot use %q unless you have a Captain retry command configured.\n\nSee https://www.rwx.com/docs/captain/cli-configuration/config-yaml#test-suites-retries-command",
@@ -672,7 +672,7 @@ func (s Service) reportTestResults(
 	cfg RunConfig,
 	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
-	if mint.IsMint() {
+	if cfg.WriteRetryFailedTestsAction {
 		hasFailedTests := false
 		for _, test := range testResults.Tests {
 			if test.Attempt.Status.ImpliesFailure() {
