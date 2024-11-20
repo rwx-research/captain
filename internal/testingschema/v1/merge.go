@@ -30,7 +30,11 @@ func union(separateTestResults []TestResults) *TestResults {
 
 func flatten(unionedTestResults []TestResults) TestResults {
 	flattened, rest := unionedTestResults[0], unionedTestResults[1:]
-	for _, testResults := range rest {
+	flattenedStartedEmpty := len(flattened.Tests) == 0 &&
+		len(flattened.OtherErrors) == 0 &&
+		len(flattened.DerivedFrom) == 0
+
+	for index, testResults := range rest {
 		flattened.DerivedFrom = append(flattened.DerivedFrom, testResults.DerivedFrom...)
 		flattened.OtherErrors = append(flattened.OtherErrors, testResults.OtherErrors...)
 
@@ -70,7 +74,11 @@ func flatten(unionedTestResults []TestResults) TestResults {
 			}
 
 			if !matchedWithBaseTest {
-				flattened.Tests = append(flattened.Tests, incomingTest.Tag("missingInPreviousBatchOfResults", true))
+				if flattenedStartedEmpty && index == 0 {
+					flattened.Tests = append(flattened.Tests, incomingTest)
+				} else {
+					flattened.Tests = append(flattened.Tests, incomingTest.Tag("missingInPreviousBatchOfResults", true))
+				}
 			}
 		}
 	}

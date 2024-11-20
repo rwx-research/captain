@@ -15,28 +15,30 @@ import (
 
 // RunConfig holds the configuration for running a test suite (used by `RunSuite`)
 type RunConfig struct {
-	Args                      []string
-	CloudOrganizationSlug     string
-	Command                   string
-	TestResultsFileGlob       string
-	FailOnUploadError         bool
-	FailRetriesFast           bool
-	FlakyRetries              int
-	IntermediateArtifactsPath string
-	MaxTestsToRetry           string
-	PostRetryCommands         []string
-	PreRetryCommands          []string
-	PrintSummary              bool
-	Quiet                     bool
-	Reporters                 map[string]Reporter
-	Retries                   int
-	RetryCommandTemplate      string
-	SuiteID                   string
-	SubstitutionsByFramework  map[v1.Framework]targetedretries.Substitution
-	UpdateStoredResults       bool
-	UploadResults             bool
-	PartitionCommandTemplate  string
-	PartitionConfig           PartitionConfig
+	Args                        []string
+	CloudOrganizationSlug       string
+	Command                     string
+	TestResultsFileGlob         string
+	FailOnUploadError           bool
+	FailRetriesFast             bool
+	FlakyRetries                int
+	IntermediateArtifactsPath   string
+	MaxTestsToRetry             string
+	PostRetryCommands           []string
+	PreRetryCommands            []string
+	PrintSummary                bool
+	Quiet                       bool
+	Reporters                   map[string]Reporter
+	Retries                     int
+	RetryCommandTemplate        string
+	SuiteID                     string
+	SubstitutionsByFramework    map[v1.Framework]targetedretries.Substitution
+	UpdateStoredResults         bool
+	UploadResults               bool
+	PartitionCommandTemplate    string
+	PartitionConfig             PartitionConfig
+	WriteRetryFailedTestsAction bool
+	DidRetryFailedTestsInMint   bool
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(

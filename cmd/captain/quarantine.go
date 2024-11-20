@@ -77,11 +77,13 @@ func AddQuarantineFlags(rootCmd *cobra.Command, cliArgs *CliArgs) {
 						TestResultsFileGlob:   os.ExpandEnv(suiteConfig.Results.Path),
 						UpdateStoredResults:   cliArgs.updateStoredResults,
 
-						FailOnUploadError: false,
-						FailRetriesFast:   false,
-						FlakyRetries:      0,
-						Retries:           0,
-						UploadResults:     false,
+						FailOnUploadError:           false,
+						FailRetriesFast:             false,
+						FlakyRetries:                0,
+						Retries:                     0,
+						UploadResults:               false,
+						WriteRetryFailedTestsAction: false,
+						DidRetryFailedTestsInMint:   false,
 					}
 				}
 
