@@ -112,6 +112,10 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						partitionTotal = provider.PartitionNodes.Total
 					}
 
+					if suiteConfig.Retries.MaxTests == "" && suiteConfig.Retries.MaxTestsLegacyName != "" {
+						suiteConfig.Retries.MaxTests = suiteConfig.Retries.MaxTestsLegacyName
+					}
+
 					runConfig = cli.RunConfig{
 						Args:                      args,
 						CloudOrganizationSlug:     "deep_link",
