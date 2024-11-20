@@ -32,6 +32,7 @@ type SuiteConfigRetries struct {
 	FailFast                  bool     `yaml:"fail-fast"`
 	FlakyAttempts             int      `yaml:"flaky-attempts"`
 	MaxTests                  string   `yaml:"max-tests"`
+	MaxTestsLegacyName        string   `yaml:"maxtests"`
 	PostRetryCommands         []string `yaml:"post-retry-commands"`
 	PreRetryCommands          []string `yaml:"pre-retry-commands"`
 	IntermediateArtifactsPath string   `yaml:"intermediate-artifacts-path"`
