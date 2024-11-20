@@ -56,11 +56,6 @@ func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
 		)
 	}
 
-	if rc.RetryCommandTemplate != "" && !(rc.Retries > 0 || rc.FlakyRetries > 0) {
-		log.Warn("There is a retry command configured for this test suite, however the retry count is set to 0.")
-		log.Warn("Retries are disabled.")
-	}
-
 	if rc.MaxTestsToRetry != "" && !maxTestsToRetryRegexp.MatchString(rc.MaxTestsToRetry) {
 		return errors.NewConfigurationError(
 			"Unsupported --max-tests-to-retry value",
