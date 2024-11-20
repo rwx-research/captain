@@ -23,7 +23,7 @@ test-suites:
       command: ""
       fail-fast: false
       flaky-attempts: 0
-      maxtests: ""
+      max-tests: ""
       post-retry-commands: []
       pre-retry-commands: []
       intermediate-artifacts-path: ""
