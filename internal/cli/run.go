@@ -107,6 +107,9 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			cfg.FlakyRetries = 1
 		}
 
+		// start with runErr in an error state to represent the error from the previous task attempt
+		runErr = errors.NewExecutionError(1, "test suite had failed tests")
+
 		largestGroupNumberPreviouslySeen := 0
 		for _, derivedFrom := range testResults.DerivedFrom {
 			if derivedFrom.GroupNumber > largestGroupNumberPreviouslySeen {
