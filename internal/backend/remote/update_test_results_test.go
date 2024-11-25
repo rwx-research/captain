@@ -85,7 +85,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("registers, uploads, and updates the test result in sequence", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
 			Expect(err).To(Succeed())
 			Expect(uploadResults).To(HaveLen(1))
 			Expect(uploadResults[0].Uploaded).To(Equal(true))
@@ -132,7 +132,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("registers, uploads, and updates the test result in sequence", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
 			Expect(err).To(Succeed())
 			Expect(uploadResults).To(HaveLen(1))
 			Expect(uploadResults[0].Uploaded).To(Equal(true))
@@ -148,7 +148,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("returns an error to the user", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
 			Expect(uploadResults).To(BeNil())
 			Expect(err).ToNot(Succeed())
 		})
@@ -188,7 +188,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("updates the upload status as failed", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
 			Expect(err).To(Succeed())
 			Expect(uploadResults).To(HaveLen(1))
 			Expect(uploadResults[0].Uploaded).To(Equal(false))
@@ -225,7 +225,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("does not return an error to the user", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
 			Expect(err).To(Succeed())
 			Expect(uploadResults).To(HaveLen(1))
 			Expect(uploadResults[0].Uploaded).To(Equal(true))
