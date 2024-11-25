@@ -809,7 +809,7 @@ func (s Service) reportTestResults(
 	}
 
 	if cfg.PrintSummary {
-		if err := reporting.WriteTextSummary(os.Stdout, testResults, reportingConfiguration); err != nil {
+		if err := reporting.WriteTextSummary(os.Stdout, newlyExecutedTestResults, reportingConfiguration); err != nil {
 			s.Log.Warnf("Unable to write text summary to stdout: %s", err.Error())
 		} else {
 			// Append an empty line to make output more readable
