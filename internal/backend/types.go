@@ -11,7 +11,7 @@ import (
 type Client interface {
 	GetRunConfiguration(ctx context.Context, testSuiteIdentifier string) (RunConfiguration, error)
 	GetTestTimingManifest(context.Context, string) ([]testing.TestFileTiming, error)
-	UpdateTestResults(context.Context, string, v1.TestResults) ([]TestResultsUploadResult, error)
+	UpdateTestResults(context.Context, string, v1.TestResults, bool) ([]TestResultsUploadResult, error)
 }
 
 type QuarantinedTest struct {

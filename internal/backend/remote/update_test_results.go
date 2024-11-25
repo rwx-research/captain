@@ -151,6 +151,7 @@ func (c Client) UpdateTestResults(
 	ctx context.Context,
 	testSuite string,
 	testResults v1.TestResults,
+	adjustDerivedFromDueToContentLength bool,
 ) ([]backend.TestResultsUploadResult, error) {
 	if testSuite == "" {
 		return nil, errors.NewInputError("test suite name required")
@@ -191,6 +192,28 @@ func (c Client) UpdateTestResults(
 		}
 
 		fileSizeLookup[testResultsFile.ExternalID] = fileInfo.Size()
+
+		// strip out derivedFrom when over 5MB
+		if adjustDerivedFromDueToContentLength && fileInfo.Size() > 5242880 {
+			c.Log.Warnf("removing original test result data from uploaded Captain test results due to content size threshold")
+			cleanedDerivedFrom := make([]v1.OriginalTestResults, len(testResults.DerivedFrom))
+
+			for i, originalTestResults := range testResults.DerivedFrom {
+				cleanedDerivedFrom[i] = v1.OriginalTestResults{
+					OriginalFilePath: originalTestResults.OriginalFilePath,
+					GroupNumber:      originalTestResults.GroupNumber,
+					Contents:         "W29taXR0ZWRd", // base64 encoded "[omitted]"
+				}
+			}
+			testResultsWithoutDerivedFrom := v1.TestResults{
+				Framework:   testResults.Framework,
+				Summary:     testResults.Summary,
+				Tests:       testResults.Tests,
+				OtherErrors: testResults.OtherErrors,
+				DerivedFrom: cleanedDerivedFrom,
+			}
+			return c.UpdateTestResults(ctx, testSuite, testResultsWithoutDerivedFrom, false)
+		}
 	}
 
 	testResultsFiles, err = c.registerTestResults(ctx, testSuite, testResultsFiles)

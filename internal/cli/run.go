@@ -843,7 +843,7 @@ func (s Service) reportTestResults(
 		return nil, nil
 	}
 
-	result, err := s.API.UpdateTestResults(ctx, cfg.SuiteID, newlyExecutedTestResults)
+	result, err := s.API.UpdateTestResults(ctx, cfg.SuiteID, newlyExecutedTestResults, true)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to update test results")
 	}

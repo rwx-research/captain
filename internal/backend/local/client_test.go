@@ -103,7 +103,7 @@ var _ = Describe("local backend client", func() {
 		})
 
 		JustBeforeEach(func() {
-			uploadResults, err = client.UpdateTestResults(context.Background(), suiteID, testResults)
+			uploadResults, err = client.UpdateTestResults(context.Background(), suiteID, testResults, true)
 		})
 
 		It("updates the timings file", func() {
