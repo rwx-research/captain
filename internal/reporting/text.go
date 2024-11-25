@@ -27,7 +27,12 @@ func WriteTextSummary(file fs.File, testResults v1.TestResults, _ Configuration)
 		statuses[test.Attempt.Status.Kind] = tests
 	}
 
-	_, err := file.Write([]byte(fmt.Sprintf("\nCaptain detected a total of %d tests.\n", totalTests)))
+	pluralizeTests := "tests"
+	if totalTests == 1 {
+		pluralizeTests = "test"
+	}
+
+	_, err := file.Write([]byte(fmt.Sprintf("\nCaptain detected a total of %d %s.\n", totalTests, pluralizeTests)))
 	if err != nil {
 		return errors.WithStack(err)
 	}
