@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	doublestar "github.com/bmatcuk/doublestar/v4"
 
@@ -52,14 +53,25 @@ func (l Local) Glob(pattern string) ([]string, error) {
 }
 
 func (l Local) GlobMany(patterns []string) ([]string, error) {
-	pathSet := make(map[string]struct{})
+	pathSet := make(map[string]bool)
 	for _, pattern := range patterns {
+		isNegation := false
+
+		if strings.HasPrefix(pattern, "!") {
+			isNegation = true
+			pattern = strings.TrimPrefix(pattern, "!")
+		}
+
 		expandedPaths, err := l.Glob(pattern)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 		for _, filePath := range expandedPaths {
-			pathSet[filePath] = struct{}{}
+			if isNegation {
+				delete(pathSet, filePath)
+			} else {
+				pathSet[filePath] = true
+			}
 		}
 	}
 
