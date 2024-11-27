@@ -39,6 +39,22 @@ var _ = Describe("fs.GlobMany", func() {
 		}))
 	})
 
+	It("supports negation", func() {
+		fs := fs.Local{}
+		expandedPaths, _ := fs.GlobMany([]string{
+			"../../test/fixtures/integration-tests/partition/*_spec.rb",
+			"!../../test/fixtures/integration-tests/partition/a_spec.rb",
+			"!../../test/fixtures/integration-tests/partition/b_spec.rb",
+			"../../test/fixtures/integration-tests/partition/b_spec.rb",
+		})
+
+		Expect(expandedPaths).To(Equal([]string{
+			"../../test/fixtures/integration-tests/partition/b_spec.rb",
+			"../../test/fixtures/integration-tests/partition/c_spec.rb",
+			"../../test/fixtures/integration-tests/partition/d_spec.rb",
+		}))
+	})
+
 	It("expands multiple glob patterns only returning unique paths", func() {
 		fs := fs.Local{}
 		expandedPaths, _ := fs.GlobMany([]string{
