@@ -61,11 +61,13 @@ func setConfigContext(cmd *cobra.Command, cfg Config) error {
 
 const (
 	captainDirectory    = ".captain"
-	configFileName      = "config.yaml"
+	configFileName      = "config"
 	flakesFileName      = "flakes.yaml"
 	quarantinesFileName = "quarantines.yaml"
 	timingsFileName     = "timings.yaml"
 )
+
+var configFileExtensions = []string{"yaml", "yml"}
 
 // findInParentDir starts at the current working directory and walk up to the root, trying
 // to find the specified fileName
@@ -114,17 +116,49 @@ func findInParentDir(fileName string) (string, error) {
 // Flags take precedence over all other options.
 func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 	if cliArgs.RootCliArgs.configFilePath == "" {
-		cliArgs.RootCliArgs.configFilePath, err = findInParentDir(filepath.Join(captainDirectory, configFileName))
-		if err != nil && !errors.Is(err, os.ErrNotExist) {
+		possibleConfigFilePaths := make([]string, 0, 2)
+		errs := make([]error, 0, 2)
+
+		for _, extension := range configFileExtensions {
+			configFilePath, err := findInParentDir(
+				filepath.Join(captainDirectory, fmt.Sprintf("%s.%s", configFileName, extension)),
+			)
+
+			if err == nil {
+				possibleConfigFilePaths = append(possibleConfigFilePaths, configFilePath)
+			} else {
+				errs = append(errs, err)
+			}
+		}
+
+		if len(possibleConfigFilePaths) > 1 {
 			return cfg, errors.NewConfigurationError(
-				"Unable to read configuration file",
+				"Unable to identify configuration file",
 				fmt.Sprintf(
-					"The following system error occurred while attempting to read the config file at %q: %s",
-					cliArgs.RootCliArgs.configFilePath, err.Error(),
+					"Captain found multiple configuration files in your environment: %s\n",
+					strings.Join(possibleConfigFilePaths, ", "),
 				),
-				"Please make sure that Captain has the correct permissions to access the config file.",
+				"Please make sure only one config file is present in your environment or explicitly a "+
+					"one using the '--config-file' flag.",
 			)
 		}
+
+		if len(possibleConfigFilePaths) == 0 {
+			for _, err := range errs {
+				if err != nil && !errors.Is(err, os.ErrNotExist) {
+					return cfg, errors.NewConfigurationError(
+						"Unable to read configuration file",
+						fmt.Sprintf(
+							"The following system error occurred while attempting to read the config file at %q: %s",
+							cliArgs.RootCliArgs.configFilePath, err.Error(),
+						),
+						"Please make sure that Captain has the correct permissions to access the config file.",
+					)
+				}
+			}
+		}
+
+		cliArgs.RootCliArgs.configFilePath = possibleConfigFilePaths[0]
 	}
 
 	if cliArgs.RootCliArgs.configFilePath != "" {
