@@ -138,7 +138,7 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 					"Captain found multiple configuration files in your environment: %s\n",
 					strings.Join(possibleConfigFilePaths, ", "),
 				),
-				"Please make sure only one config file is present in your environment or explicitly a "+
+				"Please make sure only one config file is present in your environment or explicitly specify "+
 					"one using the '--config-file' flag.",
 			)
 		}
