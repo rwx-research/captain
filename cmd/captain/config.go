@@ -156,9 +156,9 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 					)
 				}
 			}
+		} else {
+			cliArgs.RootCliArgs.configFilePath = possibleConfigFilePaths[0]
 		}
-
-		cliArgs.RootCliArgs.configFilePath = possibleConfigFilePaths[0]
 	}
 
 	if cliArgs.RootCliArgs.configFilePath != "" {
