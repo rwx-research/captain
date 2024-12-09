@@ -72,3 +72,31 @@ tasks:
       RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
       RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
     run: ./captain run captain-cli-ginkgo
+
+  - key: test-alternate-filename
+    use: [build, ginkgo]
+    env: 
+      CGO_ENABLED: 0
+      LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
+      REPORT: true
+      RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
+      RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
+    run: |
+      mv .captain/config.yaml .captain/config.yml
+      ./captain run captain-cli-ginkgo
+
+  - key: test-without-config
+    use: [build, ginkgo]
+    env: 
+      CGO_ENABLED: 0
+      LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
+      REPORT: true
+      RWX_ACCESS_TOKEN: ${{ secrets.RWX_ACCESS_TOKEN }}
+      RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
+    run: |
+      rm -rf .captain
+      ./captain run \
+        --command "mage test" \
+        --fail-on-upload-error true \
+        --reporter github-step-summary \
+        --test-results report.xml
