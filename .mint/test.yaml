@@ -59,13 +59,13 @@ tasks:
   - key: build
     use: [captain-source, mage]
     run: mage
-    env: 
+    env:
       CGO_ENABLED: 0
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
 
   - key: test
     use: [build, ginkgo]
-    env: 
+    env:
       CGO_ENABLED: 0
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
       REPORT: true
@@ -75,7 +75,7 @@ tasks:
 
   - key: test-alternate-filename
     use: [build, ginkgo]
-    env: 
+    env:
       CGO_ENABLED: 0
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
       REPORT: true
@@ -83,11 +83,11 @@ tasks:
       RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
     run: |
       mv .captain/config.yaml .captain/config.yml
-      ./captain run captain-cli-ginkgo
+      ./captain run captain-cli-ginkgo --command mage unittest
 
   - key: test-without-config
     use: [build, ginkgo]
-    env: 
+    env:
       CGO_ENABLED: 0
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
       REPORT: true
@@ -96,7 +96,7 @@ tasks:
     run: |
       rm -rf .captain
       ./captain run \
-        --command "mage test" \
+        --command "mage unittest" \
         --fail-on-upload-error true \
         --reporter github-step-summary \
         --test-results report.xml
