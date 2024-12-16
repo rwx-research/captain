@@ -144,7 +144,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 
 		// Run sub-command
-		ctx, cmdErr := s.runCommand(ctx, runCommand.commandArgs, stdout, true)
+		ctx, cmdErr := s.runCommand(ctx, runCommand.commandArgs, stdout, true, []string{})
 		defer func() {
 			if abqErr := s.setAbqExitCode(ctx, finalErr); abqErr != nil {
 				finalErr = errors.Wrap(finalErr, abqErr.Error())
@@ -544,6 +544,11 @@ func (s Service) attemptRetries(
 			}
 
 			ias.setCommandID(i + 1)
+			env := []string{
+				fmt.Sprintf("CAPTAIN_RETRY_ATTEMPT_NUMBER=%v", retries+1),
+				fmt.Sprintf("CAPTAIN_RETRY_INVOCATION_NUMBER=%v", i+1),
+				fmt.Sprintf("CAPTAIN_RETRY_COMMAND_ID=%v-%v", retries+1, i+1),
+			}
 
 			s.Log.Infoln()
 			s.Log.Infoln(strings.Repeat("-", 80))
@@ -582,7 +587,7 @@ func (s Service) attemptRetries(
 					)
 				}
 
-				if _, err := s.runCommand(ctx, preRetryArgs, stdout, false); err != nil {
+				if _, err := s.runCommand(ctx, preRetryArgs, stdout, false, env); err != nil {
 					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
 						err,
 						"Error while executing %q",
@@ -591,7 +596,7 @@ func (s Service) attemptRetries(
 				}
 			}
 
-			_, cmdErr := s.runCommand(ctx, args, stdout, false)
+			_, cmdErr := s.runCommand(ctx, args, stdout, false, env)
 
 			for _, postRetryCommand := range cfg.PostRetryCommands {
 				postRetryArgs, err := shellwords.Parse(postRetryCommand)
@@ -603,7 +608,7 @@ func (s Service) attemptRetries(
 					)
 				}
 
-				if _, err := s.runCommand(ctx, postRetryArgs, stdout, false); err != nil {
+				if _, err := s.runCommand(ctx, postRetryArgs, stdout, false, env); err != nil {
 					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
 						err,
 						"Error while executing %q",
@@ -687,17 +692,20 @@ func (s Service) runCommand(
 	args []string,
 	stdout io.Writer,
 	setAbqEnviron bool,
+	env []string,
 ) (context.Context, error) {
-	var environ []string
-
 	if setAbqEnviron {
-		ctx, environ = s.applyAbqEnvironment(ctx)
+		newCtx, environ := s.applyAbqEnvironment(ctx)
+		ctx = newCtx
+		if len(environ) > 0 {
+			env = append(env, environ...)
+		}
 	}
 
 	cmd, err := s.TaskRunner.NewCommand(ctx, exec.CommandConfig{
 		Name:   args[0],
 		Args:   args[1:],
-		Env:    environ,
+		Env:    env,
 		Stdout: stdout,
 		Stderr: os.Stderr,
 	})
