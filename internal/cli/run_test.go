@@ -1226,7 +1226,7 @@ var _ = Describe("Run", func() {
 			}
 
 			runConfig = cli.RunConfig{
-				Args:                 []string{arg},
+				Command:              arg,
 				TestResultsFileGlob:  testResultsFilePath,
 				SuiteID:              "test",
 				Retries:              1,
@@ -1316,10 +1316,25 @@ var _ = Describe("Run", func() {
 				newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 					switch cfg.Name {
 					case "pre":
+						Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_ATTEMPT_NUMBER=")))
+						Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_INVOCATION_NUMBER=")))
+						Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_COMMAND_ID=")))
 						return mockPreRetryCommand, nil
 					case "post":
+						Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_ATTEMPT_NUMBER=")))
+						Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_INVOCATION_NUMBER=")))
+						Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_COMMAND_ID=")))
 						return mockPostRetryCommand, nil
 					default:
+						if strings.Contains(cfg.Name, "retry") {
+							Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_ATTEMPT_NUMBER=")))
+							Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_INVOCATION_NUMBER=")))
+							Expect(cfg.Env).To(ContainElement(ContainSubstring("CAPTAIN_RETRY_COMMAND_ID=")))
+						} else {
+							Expect(cfg.Env).NotTo(ContainElement(ContainSubstring("CAPTAIN_RETRY_ATTEMPT_NUMBER=")))
+							Expect(cfg.Env).NotTo(ContainElement(ContainSubstring("CAPTAIN_RETRY_INVOCATION_NUMBER=")))
+							Expect(cfg.Env).NotTo(ContainElement(ContainSubstring("CAPTAIN_RETRY_COMMAND_ID=")))
+						}
 						return mockCommand, nil
 					}
 				}
