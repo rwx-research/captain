@@ -6,7 +6,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/testing"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 )
 
 // API is a mocked implementation of 'backend.Client'.

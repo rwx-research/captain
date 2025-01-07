@@ -1,6 +1,6 @@
-// testingschema/v1 holds the implementation of V1 of RWX's test results schema:
+// testresultsschema holds the implementation of V1 of RWX's test results schema:
 // https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json
-package v1
+package testresultsschema
 
 import (
 	"encoding/json"

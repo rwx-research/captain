@@ -6,7 +6,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/reporting"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 )
 
 // Reporter is a function that writes test results to a file. Different reporters implement different encodings.

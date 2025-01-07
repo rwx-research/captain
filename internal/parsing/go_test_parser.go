@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 )
 
 type GoTestParser struct{}

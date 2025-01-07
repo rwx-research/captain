@@ -1,4 +1,4 @@
-package v1
+package testresultsschema
 
 // Merges and flattens test results together
 func Merge(allTestResults ...[]TestResults) TestResults {

@@ -21,7 +21,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/reporting"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
 	"github.com/rwx-research/captain-cli/internal/templating"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 )
 
 // RunSuite runs the specified build- or test-suite and optionally uploads the resulting test results file.

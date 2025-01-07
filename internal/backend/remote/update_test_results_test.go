@@ -12,7 +12,7 @@ import (
 
 	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/errors"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

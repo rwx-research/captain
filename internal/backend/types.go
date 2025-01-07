@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/rwx-research/captain-cli/internal/testing"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 )
 
 // Client is the interface of our API layer.
