@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 )
 
 // Parses https://github.com/minitest-reporters/minitest-reporters/blob/73eea31b1e8b6af88c87f969cfa464d917f00cbb/lib/minitest/reporters/junit_reporter.rb#L16

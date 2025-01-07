@@ -1,4 +1,4 @@
-package v1
+package testresultsschema
 
 type OtherError struct {
 	Backtrace []string       `json:"backtrace,omitempty"`

@@ -8,7 +8,7 @@ import (
 	"github.com/bradleyjkemp/cupaloy"
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -7,7 +7,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/templating"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 )
 
 type JSONSubstitution struct {

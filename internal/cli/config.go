@@ -10,7 +10,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 )
 
 // RunConfig holds the configuration for running a test suite (used by `RunSuite`)

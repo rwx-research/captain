@@ -15,7 +15,7 @@ import (
 	"github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/test/helpers"
 
-	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+	v1 "github.com/rwx-research/captain-cli/pkg/testresultsschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

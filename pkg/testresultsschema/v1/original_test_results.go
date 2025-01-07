@@ -1,4 +1,4 @@
-package v1
+package testresultsschema
 
 type OriginalTestResults struct {
 	OriginalFilePath string `json:"originalFilePath"`
