@@ -165,7 +165,7 @@ func (t Test) Tag(key string, value any) Test {
 }
 
 func (t Test) Matches(other Test) bool {
-	if !stringPointerEquals(t.Scope, other.Scope) {
+	if !stringPointerEqualsTreatingEmptyAsNil(t.Scope, other.Scope) {
 		return false
 	}
 	if !stringPointerEquals(t.ID, other.ID) {
@@ -299,6 +299,20 @@ func stringPointerEquals(left *string, right *string) bool {
 	}
 
 	return *left == *right
+}
+
+func stringPointerEqualsTreatingEmptyAsNil(left *string, right *string) bool {
+	leftStr := ""
+	if left != nil {
+		leftStr = *left
+	}
+
+	rightStr := ""
+	if right != nil {
+		rightStr = *right
+	}
+
+	return leftStr == rightStr
 }
 
 func intPointerEquals(left *int, right *int) bool {
