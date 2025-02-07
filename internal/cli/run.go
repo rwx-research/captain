@@ -732,9 +732,10 @@ func (s Service) runCommand(
 
 func (s Service) isIdentifiedIn(test v1.Test, identifiedTests []backend.Test) bool {
 	for _, identifiedTest := range identifiedTests {
-		compositeIdentifier, err := test.Identify(
-			identifiedTest.IdentityComponents,
-			identifiedTest.StrictIdentity,
+		compositeIdentifier, err := test.Identify(v1.TestIdentityRecipe{
+			Components: identifiedTest.IdentityComponents,
+			Strict:     identifiedTest.StrictIdentity,
+		},
 		)
 		if err != nil {
 			s.Log.Debugf("%v does not identify %v because %v", identifiedTest, test, err.Error())

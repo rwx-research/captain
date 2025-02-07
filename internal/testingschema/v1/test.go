@@ -28,6 +28,11 @@ const (
 	TestStatusTodo    TestStatusKind = "todo"
 )
 
+type TestIdentityRecipe struct {
+	Components []string
+	Strict     bool
+}
+
 type TestStatus struct {
 	Kind           TestStatusKind `json:"kind"`
 	OriginalStatus *TestStatus    `json:"originalStatus,omitempty"`
@@ -191,10 +196,10 @@ func (t Test) Matches(other Test) bool {
 }
 
 // Calculates the composite identifier of a Test given the components which determine it
-func (t Test) Identify(withComponents []string, strictly bool) (string, error) {
+func (t Test) Identify(recipe TestIdentityRecipe) (string, error) {
 	foundComponents := make([]string, 0)
 
-	for _, component := range withComponents {
+	for _, component := range recipe.Components {
 		var getter func() (*string, error)
 		switch component {
 		case "description":
@@ -207,7 +212,7 @@ func (t Test) Identify(withComponents []string, strictly bool) (string, error) {
 			getter = t.metaGetter(component)
 		}
 
-		component, err := t.componentValue(strictly, getter)
+		component, err := t.componentValue(recipe.Strict, getter)
 		if err != nil {
 			return "", err
 		}

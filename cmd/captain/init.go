@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"path/filepath"
 	"regexp"
 
@@ -109,15 +110,22 @@ func initCliServiceWithConfig(
 			return errors.Wrap(err, "unable to create API client")
 		}
 
+		recipes, err := fetchRecipes(logger, cfg)
+		if err != nil {
+			return errors.Wrap(err, "unable to fetch test identity recipes")
+		}
+
 		var parseConfig parsing.Config
 		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
 			parseConfig = parsing.Config{
 				ProvidedFrameworkKind:     suiteConfig.Results.Framework,
 				ProvidedFrameworkLanguage: suiteConfig.Results.Language,
+				FailOnDuplicateTestID:     suiteConfig.FailOnDuplicateTestID,
 				MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
 				FrameworkParsers:          frameworkParsers,
 				GenericParsers:            genericParsers,
 				Logger:                    logger,
+				IdentityRecipes:           recipes,
 			}
 		}
 
@@ -148,7 +156,6 @@ func initCliServiceWithConfig(
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running
 // `captain parse`, but not for any other operation.
 // It is considered unsafe since the captain CLI service might still expect a configured API at one point.
-
 func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		err := func() error {
@@ -167,15 +174,22 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 				logger = logging.NewDebugLogger()
 			}
 
+			recipes, err := fetchRecipes(logger, cfg)
+			if err != nil {
+				return errors.Wrap(err, "unable to fetch test identity recipes")
+			}
+
 			var parseConfig parsing.Config
 			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 				parseConfig = parsing.Config{
 					ProvidedFrameworkKind:     suiteConfig.Results.Framework,
 					ProvidedFrameworkLanguage: suiteConfig.Results.Language,
+					FailOnDuplicateTestID:     suiteConfig.FailOnDuplicateTestID,
 					MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
 					FrameworkParsers:          frameworkParsers,
 					GenericParsers:            genericParsers,
 					Logger:                    logger,
+					IdentityRecipes:           recipes,
 				}
 			}
 
@@ -269,4 +283,32 @@ func makeAPIClient(
 	}
 
 	return wrapError(local.NewClient(fs.Local{}, flakesFilePath, quarantinesFilePath, timingsFilePath))
+}
+
+func fetchRecipes(logger *zap.SugaredLogger, cfg Config) (map[string]v1.TestIdentityRecipe, error) {
+	client, err := remote.NewClient(remote.ClientConfig{
+		Debug:    cfg.Output.Debug,
+		Host:     cfg.Cloud.APIHost,
+		Insecure: cfg.Cloud.Insecure,
+		Log:      logger,
+		Token:    "none", // Can't be empty. We rely on implementation details here that `GetIdentityRecipes` will not use it
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "Unable to initialize API client")
+	}
+
+	recipeList, err := client.GetIdentityRecipes(context.Background())
+	if err != nil {
+		return nil, errors.Wrap(err, "Unable to fetch test identity recipes")
+	}
+
+	recipes := make(map[string]v1.TestIdentityRecipe)
+	for _, identityRecipe := range recipeList {
+		recipes[v1.CoerceFramework(identityRecipe.Language, identityRecipe.Kind).String()] = v1.TestIdentityRecipe{
+			Components: identityRecipe.Recipe.Components,
+			Strict:     identityRecipe.Recipe.Strict,
+		}
+	}
+
+	return recipes, nil
 }

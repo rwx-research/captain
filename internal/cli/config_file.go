@@ -46,10 +46,11 @@ type SuiteConfigPartition struct {
 
 // SuiteConfig holds options that can be customized per suite
 type SuiteConfig struct {
-	Command           string
-	FailOnUploadError bool `yaml:"fail-on-upload-error"`
-	Output            SuiteConfigOutput
-	Results           SuiteConfigResults
-	Retries           SuiteConfigRetries
-	Partition         SuiteConfigPartition
+	Command               string
+	FailOnUploadError     bool `yaml:"fail-on-upload-error"`
+	FailOnDuplicateTestID bool `yaml:"fail-on-duplicate-test-id"`
+	Output                SuiteConfigOutput
+	Results               SuiteConfigResults
+	Retries               SuiteConfigRetries
+	Partition             SuiteConfigPartition
 }

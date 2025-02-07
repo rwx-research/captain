@@ -22,6 +22,7 @@ type CliArgs struct {
 	command                   string
 	testResults               string
 	failOnUploadError         bool
+	failOnDuplicateTestID     bool
 	failRetriesFast           bool
 	flakyRetries              int
 	intermediateArtifactsPath string
@@ -189,6 +190,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		"fail-on-upload-error",
 		false,
 		"return a non-zero exit code in case the test results upload fails",
+	)
+
+	runCmd.Flags().BoolVar(
+		&cliArgs.failOnDuplicateTestID,
+		"fail-on-duplicate-test-id",
+		false,
+		"return a non-zero exit code in case the identifiers in test results are not unique",
 	)
 
 	runCmd.Flags().StringVar(
@@ -359,6 +367,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 
 		if cliArgs.failOnUploadError {
 			suiteConfig.FailOnUploadError = true
+		}
+
+		if cliArgs.failOnDuplicateTestID {
+			suiteConfig.FailOnDuplicateTestID = true
 		}
 
 		if cliArgs.testResults != "" {
