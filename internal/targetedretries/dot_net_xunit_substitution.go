@@ -56,9 +56,6 @@ func (s DotNetxUnitSubstitution) SubstitutionsFor(
 	tests := make([]string, 0)
 
 	for _, test := range testResults.Tests {
-		if !test.Attempt.Status.ImpliesFailure() {
-			continue
-		}
 		if !filter(test) {
 			continue
 		}

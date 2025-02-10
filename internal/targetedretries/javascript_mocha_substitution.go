@@ -52,9 +52,6 @@ func (s JavaScriptMochaSubstitution) SubstitutionsFor(
 	testsSeenByFile := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
-		if !test.Attempt.Status.ImpliesFailure() {
-			continue
-		}
 		if !filter(test) {
 			continue
 		}

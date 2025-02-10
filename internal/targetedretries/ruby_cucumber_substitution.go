@@ -50,7 +50,7 @@ func (s RubyCucumberSubstitution) SubstitutionsFor(
 	scenariosSeen := map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
-		if test.Attempt.Status.ImpliesFailure() && filter(test) {
+		if filter(test) {
 			scenarioLocation := test.Location.File
 			if test.Location.Line != nil {
 				scenarioLocation = fmt.Sprintf("%s:%v", test.Location.File, *test.Location.Line)

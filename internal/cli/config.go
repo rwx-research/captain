@@ -20,6 +20,7 @@ type RunConfig struct {
 	Command                     string
 	TestResultsFileGlob         string
 	FailOnUploadError           bool
+	FailOnMisconfiguredRetry    bool
 	FailRetriesFast             bool
 	FlakyRetries                int
 	IntermediateArtifactsPath   string
