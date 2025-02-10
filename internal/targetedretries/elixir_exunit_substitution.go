@@ -48,9 +48,6 @@ func (s ElixirExUnitSubstitution) SubstitutionsFor(
 	testLinesByFile := map[string][]string{}
 
 	for _, test := range testResults.Tests {
-		if !test.Attempt.Status.ImpliesFailure() {
-			continue
-		}
 		if !filter(test) {
 			continue
 		}

@@ -503,6 +503,10 @@ func (s Service) attemptRetries(
 		}
 
 		filter := func(test v1.Test) bool {
+			if !test.Attempt.Status.ImpliesFailure() {
+				return false
+			}
+
 			testIsFlaky := false
 			for _, remainingFlakyFailure := range remainingFlakyFailures {
 				if test.Matches(remainingFlakyFailure) {
@@ -635,6 +639,32 @@ func (s Service) attemptRetries(
 				s.Log.Warn(err)
 			}
 		}
+
+	FLATTENED_TEST_RESULTS:
+		for _, originalTest := range flattenedTestResults.Tests {
+			if !filter(originalTest) {
+				continue
+			}
+
+			for _, retriedResult := range allNewTestResults {
+				for _, retriedTest := range retriedResult.Tests {
+					if originalTest.Matches(retriedTest) {
+						continue FLATTENED_TEST_RESULTS
+					}
+				}
+			}
+
+			missingTestResult := fmt.Sprintf(
+				"The retry command of suite %q appears to be misconfigured. "+
+					"Captain could not identify the original (failed) test in the output of the retry command.",
+				cfg.SuiteID,
+			)
+			if cfg.FailOnMisconfiguredRetry {
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.NewInputError(missingTestResult)
+			}
+			s.Log.Warn(missingTestResult)
+		}
+
 		mergedTestResults := v1.Merge([]v1.TestResults{*flattenedTestResults}, allNewTestResults)
 		flattenedTestResults = &mergedTestResults
 

@@ -39,7 +39,6 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						// stderr may start showing deprecation warnings
 						Expect(result.stderr).To(BeEmpty())
 					})
 					Expect(result.exitCode).To(Equal(0))
@@ -101,7 +100,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
+						Expect(result.stderr).To(ContainSubstring("The retry command of suite \"captain-cli-quarantine-test\" appears to be misconfigured."))
 					})
 					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(0))
@@ -122,7 +121,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
+						Expect(result.stderr).To(ContainSubstring("The retry command of suite \"captain-cli-functional-tests\" appears to be misconfigured."))
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					})
 					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(123))

@@ -47,7 +47,7 @@ func (s RubyRSpecSubstitution) SubstitutionsFor(
 	testIdentifiers := make([]string, 0)
 
 	for _, test := range testResults.Tests {
-		if test.Attempt.Status.ImpliesFailure() && filter(test) {
+		if filter(test) {
 			testIdentifiers = append(
 				testIdentifiers,
 				fmt.Sprintf("'%v'", templating.ShellEscape(*test.ID)),
