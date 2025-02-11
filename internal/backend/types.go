@@ -36,12 +36,3 @@ type TestResultsUploadResult struct {
 	OriginalPaths []string
 	Uploaded      bool
 }
-
-type IdentityRecipe struct {
-	Language string
-	Kind     string
-	Recipe   struct {
-		Components []string
-		Strict     bool
-	}
-}

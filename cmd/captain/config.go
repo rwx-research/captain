@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -10,11 +11,14 @@ import (
 
 	"github.com/caarlos0/env/v7"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
 
+	"github.com/rwx-research/captain-cli/internal/backend/remote"
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/providers"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
 // Config is the internal representation of the configuration.
@@ -213,4 +217,75 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 	}
 
 	return cfg, nil
+}
+
+func getRecipes(logger *zap.SugaredLogger, cfg Config) (map[string]v1.TestIdentityRecipe, error) {
+	var recipeBuffer []byte
+
+	existingCaptainDir, err := findInParentDir(captainDirectory)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return nil, err
+		}
+
+		if err = os.Mkdir(captainDirectory, 0o755); err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		existingCaptainDir = captainDirectory
+	}
+
+	recipesFile, err := findInParentDir(filepath.Join(captainDirectory, "recipes.json"))
+	if err == nil {
+		recipeBuffer, err = os.ReadFile(recipesFile)
+	}
+	if err != nil {
+		if recipesFile == "" {
+			recipesFile = filepath.Join(existingCaptainDir, "recipes.json")
+		}
+
+		client, err := remote.NewClient(remote.ClientConfig{
+			Debug:    cfg.Output.Debug,
+			Host:     cfg.Cloud.APIHost,
+			Insecure: cfg.Cloud.Insecure,
+			Log:      logger,
+			Token:    "none", // Can't be empty. We rely on implementation details here that `GetIdentityRecipes` will not use it
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "Unable to initialize API client")
+		}
+
+		recipeBuffer, err = client.GetIdentityRecipes(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "Unable to fetch test identity recipes from API")
+		}
+
+		if err = os.WriteFile(recipesFile, recipeBuffer, 0o600); err != nil {
+			logger.Warnf("unable to cache identity recipes on disk: %s", err.Error())
+		}
+	}
+
+	type IdentityRecipe struct {
+		Language string
+		Kind     string
+		Recipe   struct {
+			Components []string
+			Strict     bool
+		}
+	}
+
+	recipeList := []IdentityRecipe{}
+	if err := json.Unmarshal(recipeBuffer, &recipeList); err != nil {
+		return nil, errors.NewInternalError("unable to parse identiy recipes: %s", err.Error())
+	}
+
+	recipes := make(map[string]v1.TestIdentityRecipe)
+	for _, identityRecipe := range recipeList {
+		recipes[v1.CoerceFramework(identityRecipe.Language, identityRecipe.Kind).String()] = v1.TestIdentityRecipe{
+			Components: identityRecipe.Recipe.Components,
+			Strict:     identityRecipe.Recipe.Strict,
+		}
+	}
+
+	return recipes, nil
 }

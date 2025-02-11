@@ -215,7 +215,7 @@ func (c Client) GetRunConfiguration(
 	return runConfiguration, nil
 }
 
-func (c Client) GetIdentityRecipes(ctx context.Context) ([]backend.IdentityRecipe, error) {
+func (c Client) GetIdentityRecipes(ctx context.Context) ([]byte, error) {
 	endpoint := hostEndpointCompat(c, "/api/recipes")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
@@ -237,17 +237,17 @@ func (c Client) GetIdentityRecipes(ctx context.Context) ([]backend.IdentityRecip
 		)
 	}
 
-	recipes := []backend.IdentityRecipe{}
-	if err := json.NewDecoder(resp.Body).Decode(&recipes); err != nil {
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	_, err = buffer.ReadFrom(resp.Body)
+	if err != nil {
 		return nil, errors.NewInternalError(
-			"unable to parse the response body. Endpoint was %q, Content-Type %q. Original Error: %s",
+			"Unable to read HTTP response body from API. Endpoint was %q, Status Code %d",
 			endpoint,
-			resp.Header.Get(headerContentType),
-			err,
+			resp.StatusCode,
 		)
 	}
 
-	return recipes, nil
+	return buffer.Bytes(), nil
 }
 
 // TODO(TS): Remove this once we're no longer testing against versions that use captain.build
