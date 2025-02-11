@@ -129,6 +129,9 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			largestGroupNumberPreviouslySeen-1,
 		)
 		if err != nil {
+			if _, ok := errors.AsRetryError(err); ok {
+				return errors.WithStack(err)
+			}
 			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
 		}
 	} else {
@@ -187,6 +190,9 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			0,
 		)
 		if err != nil {
+			if _, ok := errors.AsRetryError(err); ok {
+				return errors.WithStack(err)
+			}
 			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
 		}
 	}
@@ -660,7 +666,7 @@ func (s Service) attemptRetries(
 				cfg.SuiteID,
 			)
 			if cfg.FailOnMisconfiguredRetry {
-				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.NewInputError(missingTestResult)
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.NewRetryError(missingTestResult)
 			}
 			s.Log.Warn(missingTestResult)
 		}

@@ -128,3 +128,24 @@ func AsSystemError(err error) (SystemError, bool) {
 	ok := As(err, &e)
 	return e, ok
 }
+
+// RetryError is an error related to retries. This error type is used in conjunction with the --fail-on-misconfigured-retry flag.
+type RetryError struct {
+	E error
+}
+
+func (e RetryError) Error() string {
+	return e.E.Error()
+}
+
+// RetryError returns a new RetryError
+func NewRetryError(msg string, a ...any) error {
+	return WithStack(RetryError{errors.Errorf(msg, a...)})
+}
+
+// AsRetryError checks whether the error is an internal error
+func AsRetryError(err error) (RetryError, bool) {
+	var e RetryError
+	ok := As(err, &e)
+	return e, ok
+}
