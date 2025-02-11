@@ -2,6 +2,7 @@ package parsing_test
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -387,6 +388,132 @@ var _ = Describe("Parse", func() {
 			Expect(results).To(BeNil())
 			Expect(err).NotTo(BeNil())
 			Expect(err.Error()).To(ContainSubstring("No parsers were provided"))
+		})
+	})
+
+	Describe("when the test results contain duplicate entries", func() {
+		It("emits a warning", func() {
+			fixture, err := os.Open("../../test/fixtures/jest_with_duplicates.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			results, err := parsing.Parse(
+				fixture,
+				1,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "Javascript",
+					ProvidedFrameworkKind:     "Jest",
+					FrameworkParsers: map[v1.Framework][]parsing.Parser{
+						v1.JavaScriptJestFramework: {parsing.JavaScriptJestParser{}},
+					},
+					Logger: log,
+				},
+			)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results).NotTo(BeNil())
+			Expect(results.Summary.Tests).To(Equal(20))
+			Expect(results.Framework).To(Equal(v1.JavaScriptJestFramework))
+
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.All() {
+				logMessages = append(logMessages, log.Message)
+			}
+
+			Expect(logMessages).To(ContainElement(ContainSubstring(fmt.Sprintf(
+				"Test result file %q contains two or more tests that share the same metadata",
+				"../../test/fixtures/jest_with_duplicates.json",
+			))))
+		})
+
+		It("returns an error when configured to fail hard", func() {
+			fixture, err := os.Open("../../test/fixtures/jest_with_duplicates.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			results, err := parsing.Parse(
+				fixture,
+				1,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "Javascript",
+					ProvidedFrameworkKind:     "Jest",
+					FrameworkParsers: map[v1.Framework][]parsing.Parser{
+						v1.JavaScriptJestFramework: {parsing.JavaScriptJestParser{}},
+					},
+					FailOnDuplicateTestID: true,
+					Logger:                log,
+				},
+			)
+
+			Expect(results).To(BeNil())
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(
+				"Test result file %q contains two or more tests that share the same metadata",
+				"../../test/fixtures/jest_with_duplicates.json",
+			)))
+		})
+	})
+
+	Describe("when the test results contain tests that share the same identity", func() {
+		It("it succeeds if identity recipes are not provided", func() {
+			fixture, err := os.Open("../../test/fixtures/mocha_with_duplicates.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			results, err := parsing.Parse(
+				fixture,
+				1,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "Javascript",
+					ProvidedFrameworkKind:     "Mocha",
+					FrameworkParsers: map[v1.Framework][]parsing.Parser{
+						v1.JavaScriptMochaFramework: {parsing.JavaScriptMochaParser{}},
+					},
+					Logger:                log,
+					FailOnDuplicateTestID: true,
+				},
+			)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results).NotTo(BeNil())
+			Expect(results.Summary.Tests).To(Equal(10))
+			Expect(results.Framework).To(Equal(v1.JavaScriptMochaFramework))
+		})
+
+		It("it warns if identity recipes are provided", func() {
+			fixture, err := os.Open("../../test/fixtures/mocha_with_duplicates.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			results, err := parsing.Parse(
+				fixture,
+				1,
+				parsing.Config{
+					ProvidedFrameworkLanguage: "Javascript",
+					ProvidedFrameworkKind:     "Mocha",
+					FrameworkParsers: map[v1.Framework][]parsing.Parser{
+						v1.JavaScriptMochaFramework: {parsing.JavaScriptMochaParser{}},
+					},
+					Logger: log,
+					IdentityRecipes: map[string]v1.TestIdentityRecipe{
+						v1.JavaScriptMochaFramework.String(): {
+							Components: []string{"file", "description"},
+							Strict:     true,
+						},
+					},
+				},
+			)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results).NotTo(BeNil())
+			Expect(results.Summary.Tests).To(Equal(10))
+			Expect(results.Framework).To(Equal(v1.JavaScriptMochaFramework))
+
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.All() {
+				logMessages = append(logMessages, log.Message)
+			}
+
+			Expect(logMessages).To(ContainElement(ContainSubstring(fmt.Sprintf(
+				"Test result file %q contains two or more tests that share the same metadata",
+				"../../test/fixtures/mocha_with_duplicates.json",
+			))))
 		})
 	})
 })
