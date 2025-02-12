@@ -221,6 +221,7 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 
 func getRecipes(logger *zap.SugaredLogger, cfg Config) (map[string]v1.TestIdentityRecipe, error) {
 	var recipeBuffer []byte
+	var newRecipesFile bool
 
 	existingCaptainDir, err := findInParentDir(captainDirectory)
 	if err != nil {
@@ -241,6 +242,7 @@ func getRecipes(logger *zap.SugaredLogger, cfg Config) (map[string]v1.TestIdenti
 	}
 	if err != nil {
 		if recipesFile == "" {
+			newRecipesFile = true
 			recipesFile = filepath.Join(existingCaptainDir, "recipes.json")
 		}
 
@@ -258,10 +260,6 @@ func getRecipes(logger *zap.SugaredLogger, cfg Config) (map[string]v1.TestIdenti
 		recipeBuffer, err = client.GetIdentityRecipes(context.Background())
 		if err != nil {
 			return nil, errors.Wrap(err, "Unable to fetch test identity recipes from API")
-		}
-
-		if err = os.WriteFile(recipesFile, recipeBuffer, 0o600); err != nil {
-			logger.Warnf("unable to cache identity recipes on disk: %s", err.Error())
 		}
 	}
 
@@ -284,6 +282,13 @@ func getRecipes(logger *zap.SugaredLogger, cfg Config) (map[string]v1.TestIdenti
 		recipes[v1.CoerceFramework(identityRecipe.Language, identityRecipe.Kind).String()] = v1.TestIdentityRecipe{
 			Components: identityRecipe.Recipe.Components,
 			Strict:     identityRecipe.Recipe.Strict,
+		}
+	}
+
+	// Do this last so we can be sure that the buffer can actually be parsed correctly
+	if newRecipesFile {
+		if err = os.WriteFile(recipesFile, recipeBuffer, 0o600); err != nil {
+			logger.Warnf("unable to cache identity recipes on disk: %s", err.Error())
 		}
 	}
 
