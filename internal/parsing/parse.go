@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"reflect"
 
 	"go.uber.org/zap"
 
@@ -141,7 +140,7 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 	finalResults := parsedTestResults[0]
 	cfg.Logger.Debugf("%T was ultimately responsible for parsing the test results", firstParser)
 
-	testIDsAreUnique, err := checkIfTestIDsAreUnique(firstParser, finalResults.Tests, cfg)
+	testIDsAreUnique, err := checkIfTestIDsAreUnique(finalResults, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -182,30 +181,14 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 	return &finalResults, nil
 }
 
-func checkIfTestIDsAreUnique(parser Parser, tests []v1.Test, cfg Config) (bool, error) {
-	var identityRecipe *v1.TestIdentityRecipe
+func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) (bool, error) {
 	uniqueTestIdentifiers := make(map[string]struct{})
-
-FRAMEWORKS:
-	for framework, frameworkParsers := range cfg.FrameworkParsers {
-		for _, frameworkParser := range frameworkParsers {
-			if reflect.TypeOf(frameworkParser) != reflect.TypeOf(parser) {
-				continue
-			}
-
-			// TODO: What about "other" frameworks (i.e. when we don't match here)
-			if recipe, ok := cfg.IdentityRecipes[framework.String()]; ok {
-				identityRecipe = &recipe
-			}
-
-			break FRAMEWORKS
-		}
-	}
+	identityRecipe, recipeFound := cfg.IdentityRecipes[testResult.Framework.String()]
 
 	// Populate `uniqueTestIdentifiers` with the ID of the last test as the for-loop that follows will
 	// not cover it.
-	if identityRecipe != nil {
-		id, err := tests[len(tests)-1].Identify(*identityRecipe)
+	if recipeFound {
+		id, err := testResult.Tests[len(testResult.Tests)-1].Identify(identityRecipe)
 		if err != nil {
 			return false, errors.Wrap(err, "Unable to construct identity from test")
 		}
@@ -213,11 +196,11 @@ FRAMEWORKS:
 		uniqueTestIdentifiers[id] = struct{}{}
 	}
 
-	for i := 0; i < len(tests)-1; i++ {
-		test := tests[i]
+	for i := 0; i < len(testResult.Tests)-1; i++ {
+		test := testResult.Tests[i]
 
-		if identityRecipe != nil {
-			id, err := test.Identify(*identityRecipe)
+		if recipeFound {
+			id, err := test.Identify(identityRecipe)
 			if err != nil {
 				return false, errors.Wrap(err, "Unable to construct identity from test")
 			}
@@ -229,8 +212,8 @@ FRAMEWORKS:
 			uniqueTestIdentifiers[id] = struct{}{}
 		}
 
-		for j := i + 1; j < len(tests); j++ {
-			if test.Matches(tests[j]) {
+		for j := i + 1; j < len(testResult.Tests); j++ {
+			if test.Matches(testResult.Tests[j]) {
 				return false, nil
 			}
 		}
