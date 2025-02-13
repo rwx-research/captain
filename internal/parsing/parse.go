@@ -190,10 +190,10 @@ func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) (bool, error
 	if recipeFound {
 		id, err := testResult.Tests[len(testResult.Tests)-1].Identify(identityRecipe)
 		if err != nil {
-			return false, errors.Wrap(err, "Unable to construct identity from test")
+			cfg.Logger.Warnf("Unable to construct identity from test: %s", err.Error())
+		} else {
+			uniqueTestIdentifiers[id] = struct{}{}
 		}
-
-		uniqueTestIdentifiers[id] = struct{}{}
 	}
 
 	for i := 0; i < len(testResult.Tests)-1; i++ {
@@ -202,14 +202,13 @@ func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) (bool, error
 		if recipeFound {
 			id, err := test.Identify(identityRecipe)
 			if err != nil {
-				return false, errors.Wrap(err, "Unable to construct identity from test")
+				cfg.Logger.Warnf("Unable to construct identity from test: %s", err.Error())
+			} else {
+				if _, ok := uniqueTestIdentifiers[id]; ok {
+					return false, nil
+				}
+				uniqueTestIdentifiers[id] = struct{}{}
 			}
-
-			if _, ok := uniqueTestIdentifiers[id]; ok {
-				return false, nil
-			}
-
-			uniqueTestIdentifiers[id] = struct{}{}
 		}
 
 		for j := i + 1; j < len(testResult.Tests); j++ {
