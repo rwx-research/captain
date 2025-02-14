@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -140,14 +141,15 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 	finalResults := parsedTestResults[0]
 	cfg.Logger.Debugf("%T was ultimately responsible for parsing the test results", firstParser)
 
-	testIDsAreUnique, err := checkIfTestIDsAreUnique(finalResults, cfg)
+	duplicateTestIDs, err := checkIfTestIDsAreUnique(finalResults, cfg)
 	if err != nil {
 		return nil, err
 	}
-	if !testIDsAreUnique {
+	if len(duplicateTestIDs) != 0 {
 		duplicateTestIDWarningMsg := fmt.Sprintf(
-			"Test result file %q contains two or more tests that share the same metadata (such as name or identifier). %s",
+			"Test result file %q contains two or more tests that share the same metadata:\n\n\t%s\n\n%s",
 			file.Name(),
+			strings.Join(duplicateTestIDs, "\n\t"),
 			"Please make sure test identifiers are unique.",
 		)
 		if cfg.FailOnDuplicateTestID {
@@ -181,9 +183,17 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 	return &finalResults, nil
 }
 
-func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) (bool, error) {
+func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) ([]string, error) {
 	uniqueTestIdentifiers := make(map[string]struct{})
+	duplicateTestIDs := make([]string, 0)
 	identityRecipe, recipeFound := cfg.IdentityRecipes[testResult.Framework.String()]
+
+	if !recipeFound && (cfg.ProvidedFrameworkKind != "" || cfg.ProvidedFrameworkLanguage != "") {
+		identityRecipe, recipeFound = cfg.IdentityRecipes[v1.CoerceFramework(
+			string(v1.FrameworkLanguageOther),
+			string(v1.FrameworkKindOther),
+		).String()]
+	}
 
 	// Populate `uniqueTestIdentifiers` with the ID of the last test as the for-loop that follows will
 	// not cover it.
@@ -205,7 +215,8 @@ func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) (bool, error
 				cfg.Logger.Warnf("Unable to construct identity from test: %s", err.Error())
 			} else {
 				if _, ok := uniqueTestIdentifiers[id]; ok {
-					return false, nil
+					duplicateTestIDs = append(duplicateTestIDs, id)
+					continue
 				}
 				uniqueTestIdentifiers[id] = struct{}{}
 			}
@@ -213,12 +224,19 @@ func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) (bool, error
 
 		for j := i + 1; j < len(testResult.Tests); j++ {
 			if test.Matches(testResult.Tests[j]) {
-				return false, nil
+				if recipeFound {
+					if id, err := test.Identify(identityRecipe); err == nil {
+						duplicateTestIDs = append(duplicateTestIDs, id)
+						continue
+					}
+				}
+
+				duplicateTestIDs = append(duplicateTestIDs, test.Name)
 			}
 		}
 	}
 
-	return true, nil
+	return duplicateTestIDs, nil
 }
 
 func rewindFile(file fs.File) error {
