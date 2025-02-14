@@ -315,7 +315,12 @@ var _ = Describe("JavaScriptVitestParser", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(testResults).NotTo(BeNil())
-			Expect(testResults.OtherErrors[0]).To(Equal(v1.OtherError{Location: &v1.Location{File: "/some/path/to/name/of/file.js"}, Message: "the reason it failed"}))
+			Expect(testResults.OtherErrors[0]).To(Equal(
+				v1.OtherError{
+					Location: &v1.Location{File: "/some/path/to/name/of/file.js"},
+					Message:  "the reason it failed",
+				},
+			))
 			Expect(testResults.OtherErrors[1]).To(Equal(v1.OtherError{Message: "no name"}))
 			Expect(testResults.Tests[0]).NotTo(BeNil())
 		})
