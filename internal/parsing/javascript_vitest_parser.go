@@ -165,7 +165,14 @@ func (p JavaScriptVitestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 
 		if !sawFailedTest && testResult.Status == "failed" {
-			otherErrors = append(otherErrors, v1.OtherError{Message: testResult.Message})
+			if len(testResult.Name) > 0 {
+				otherErrors = append(otherErrors, v1.OtherError{
+					Message:  testResult.Message,
+					Location: &v1.Location{File: testResult.Name},
+				})
+			} else {
+				otherErrors = append(otherErrors, v1.OtherError{Message: testResult.Message})
+			}
 		}
 	}
 

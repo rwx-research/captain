@@ -388,6 +388,17 @@ var _ = Describe("JavaScriptJestParser", func() {
 							},
 						},
 					},
+					{
+						Name:    "",
+						Status:  "failed",
+						Message: "no name",
+						AssertionResults: []parsing.JavaScriptJestAssertionResult{
+							{
+								Status: "passed",
+								Title:  "title",
+							},
+						},
+					},
 				},
 			}
 			data, err := json.Marshal(jestResults)
@@ -397,7 +408,13 @@ var _ = Describe("JavaScriptJestParser", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(testResults).NotTo(BeNil())
-			Expect(testResults.OtherErrors[0]).To(Equal(v1.OtherError{Message: "the reason it failed"}))
+			Expect(testResults.OtherErrors[0]).To(Equal(
+				v1.OtherError{
+					Location: &v1.Location{File: "/some/path/to/name/of/file.js"},
+					Message:  "the reason it failed",
+				},
+			))
+			Expect(testResults.OtherErrors[1]).To(Equal(v1.OtherError{Message: "no name"}))
 			Expect(testResults.Tests[0]).NotTo(BeNil())
 		})
 
