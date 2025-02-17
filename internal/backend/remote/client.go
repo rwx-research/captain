@@ -215,6 +215,41 @@ func (c Client) GetRunConfiguration(
 	return runConfiguration, nil
 }
 
+func (c Client) GetIdentityRecipes(ctx context.Context) ([]byte, error) {
+	endpoint := hostEndpointCompat(c, "/api/recipes")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, errors.NewInternalError("unable to construct HTTP request: %s", err)
+	}
+
+	resp, err := c.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, errors.NewInternalError(
+			"API backend encountered an error. Endpoint was %q, Status Code %d",
+			endpoint,
+			resp.StatusCode,
+		)
+	}
+
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	_, err = buffer.ReadFrom(resp.Body)
+	if err != nil {
+		return nil, errors.NewInternalError(
+			"Unable to read HTTP response body from API. Endpoint was %q, Status Code %d",
+			endpoint,
+			resp.StatusCode,
+		)
+	}
+
+	return buffer.Bytes(), nil
+}
+
 // TODO(TS): Remove this once we're no longer testing against versions that use captain.build
 func hostEndpointCompat(c Client, endpoint string) string {
 	remoteHost := c.ClientConfig.Host

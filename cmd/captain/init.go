@@ -109,15 +109,22 @@ func initCliServiceWithConfig(
 			return errors.Wrap(err, "unable to create API client")
 		}
 
+		recipes, err := getRecipes(logger, cfg)
+		if err != nil {
+			return errors.Wrap(err, "unable to retrieve test identity recipes")
+		}
+
 		var parseConfig parsing.Config
 		if suiteConfig, ok := cfg.TestSuites[suiteID]; ok {
 			parseConfig = parsing.Config{
 				ProvidedFrameworkKind:     suiteConfig.Results.Framework,
 				ProvidedFrameworkLanguage: suiteConfig.Results.Language,
+				FailOnDuplicateTestID:     suiteConfig.FailOnDuplicateTestID,
 				MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
 				FrameworkParsers:          frameworkParsers,
 				GenericParsers:            genericParsers,
 				Logger:                    logger,
+				IdentityRecipes:           recipes,
 			}
 		}
 
@@ -148,7 +155,6 @@ func initCliServiceWithConfig(
 // unsafeInitParsingOnly initializes an incomplete `captain` CLI service. This service is sufficient for running
 // `captain parse`, but not for any other operation.
 // It is considered unsafe since the captain CLI service might still expect a configured API at one point.
-
 func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		err := func() error {
@@ -167,15 +173,22 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 				logger = logging.NewDebugLogger()
 			}
 
+			recipes, err := getRecipes(logger, cfg)
+			if err != nil {
+				return errors.Wrap(err, "unable to retrieve test identity recipes")
+			}
+
 			var parseConfig parsing.Config
 			if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 				parseConfig = parsing.Config{
 					ProvidedFrameworkKind:     suiteConfig.Results.Framework,
 					ProvidedFrameworkLanguage: suiteConfig.Results.Language,
+					FailOnDuplicateTestID:     suiteConfig.FailOnDuplicateTestID,
 					MutuallyExclusiveParsers:  mutuallyExclusiveParsers,
 					FrameworkParsers:          frameworkParsers,
 					GenericParsers:            genericParsers,
 					Logger:                    logger,
+					IdentityRecipes:           recipes,
 				}
 			}
 

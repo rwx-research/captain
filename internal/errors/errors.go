@@ -128,3 +128,46 @@ func AsSystemError(err error) (SystemError, bool) {
 	ok := As(err, &e)
 	return e, ok
 }
+
+// RetryError is an error related to retries. This error type is used in conjunction with the --fail-on-misconfigured-retry flag.
+type RetryError struct {
+	E error
+}
+
+func (e RetryError) Error() string {
+	return e.E.Error()
+}
+
+// RetryError returns a new RetryError
+func NewRetryError(msg string, a ...any) error {
+	return WithStack(RetryError{errors.Errorf(msg, a...)})
+}
+
+// AsRetryError checks whether the error is a retry error
+func AsRetryError(err error) (RetryError, bool) {
+	var e RetryError
+	ok := As(err, &e)
+	return e, ok
+}
+
+// CacheError is returned when the CLI encountered a cache error. It's intended that the application catches these errors and
+// handles them gracefully
+type CacheError struct {
+	E error
+}
+
+func (e CacheError) Error() string {
+	return e.E.Error()
+}
+
+// CacheError returns a new CacheError
+func NewCacheError(msg string, a ...any) error {
+	return WithStack(CacheError{errors.Errorf(msg, a...)})
+}
+
+// AsCacheError checks whether the error is a cache error
+func AsCacheError(err error) (CacheError, bool) {
+	var e CacheError
+	ok := As(err, &e)
+	return e, ok
+}

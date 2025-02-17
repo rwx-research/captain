@@ -422,7 +422,7 @@ var _ = Describe("Test", func() {
 				compositeIdentifier, err := v1.Test{
 					Name:    "the-description",
 					Attempt: v1.TestAttempt{},
-				}.Identify([]string{"description", "something_from_meta"}, true)
+				}.Identify(v1.TestIdentityRecipe{Components: []string{"description", "something_from_meta"}, Strict: true})
 
 				Expect(compositeIdentifier).To(Equal(""))
 				Expect(err.Error()).To(ContainSubstring("Meta is not defined"))
@@ -434,7 +434,7 @@ var _ = Describe("Test", func() {
 					Attempt: v1.TestAttempt{
 						Meta: map[string]any{"something_else_in_meta": 1},
 					},
-				}.Identify([]string{"description", "something_from_meta"}, true)
+				}.Identify(v1.TestIdentityRecipe{Components: []string{"description", "something_from_meta"}, Strict: true})
 
 				Expect(compositeIdentifier).To(Equal(""))
 				Expect(err.Error()).To(ContainSubstring("it was not there"))
@@ -443,7 +443,7 @@ var _ = Describe("Test", func() {
 			It("returns an error when the fetching the file without a location", func() {
 				compositeIdentifier, err := v1.Test{
 					Name: "the-description",
-				}.Identify([]string{"description", "file"}, true)
+				}.Identify(v1.TestIdentityRecipe{Components: []string{"description", "file"}, Strict: true})
 
 				Expect(compositeIdentifier).To(Equal(""))
 				Expect(err.Error()).To(ContainSubstring("Location is not defined"))
@@ -452,7 +452,7 @@ var _ = Describe("Test", func() {
 			It("returns an error when the fetching the ID when it's not there", func() {
 				compositeIdentifier, err := v1.Test{
 					Name: "the-description",
-				}.Identify([]string{"description", "id"}, true)
+				}.Identify(v1.TestIdentityRecipe{Components: []string{"description", "id"}, Strict: true})
 
 				Expect(compositeIdentifier).To(Equal(""))
 				Expect(err.Error()).To(ContainSubstring("ID is not defined"))
@@ -472,7 +472,10 @@ var _ = Describe("Test", func() {
 							"nil": nil,
 						},
 					},
-				}.Identify([]string{"id", "description", "file", "foo", "bar", "baz", "nil"}, true)
+				}.Identify(v1.TestIdentityRecipe{
+					Components: []string{"id", "description", "file", "foo", "bar", "baz", "nil"},
+					Strict:     true,
+				})
 
 				Expect(compositeIdentifier).To(Equal(
 					"the-id -captain- the-description -captain- the-file -captain-" +
@@ -487,7 +490,7 @@ var _ = Describe("Test", func() {
 				compositeIdentifier, err := v1.Test{
 					Name:    "the-description",
 					Attempt: v1.TestAttempt{},
-				}.Identify([]string{"description", "something_from_meta"}, false)
+				}.Identify(v1.TestIdentityRecipe{Components: []string{"description", "something_from_meta"}, Strict: false})
 
 				Expect(compositeIdentifier).To(Equal("the-description -captain- MISSING_IDENTITY_COMPONENT"))
 				Expect(err).To(BeNil())
@@ -499,7 +502,7 @@ var _ = Describe("Test", func() {
 					Attempt: v1.TestAttempt{
 						Meta: map[string]any{"something_else_in_meta": 1},
 					},
-				}.Identify([]string{"description", "something_from_meta"}, false)
+				}.Identify(v1.TestIdentityRecipe{Components: []string{"description", "something_from_meta"}, Strict: false})
 
 				Expect(compositeIdentifier).To(Equal("the-description -captain- MISSING_IDENTITY_COMPONENT"))
 				Expect(err).To(BeNil())
@@ -508,7 +511,7 @@ var _ = Describe("Test", func() {
 			It("returns a composite identifier when fetching the file without a location", func() {
 				compositeIdentifier, err := v1.Test{
 					Name: "the-description",
-				}.Identify([]string{"description", "file"}, false)
+				}.Identify(v1.TestIdentityRecipe{Components: []string{"description", "file"}, Strict: false})
 
 				Expect(compositeIdentifier).To(Equal("the-description -captain- MISSING_IDENTITY_COMPONENT"))
 				Expect(err).To(BeNil())
@@ -517,7 +520,7 @@ var _ = Describe("Test", func() {
 			It("returns a composite identifier when fetching the ID when it's not there", func() {
 				compositeIdentifier, err := v1.Test{
 					Name: "the-description",
-				}.Identify([]string{"description", "id"}, false)
+				}.Identify(v1.TestIdentityRecipe{Components: []string{"description", "id"}, Strict: false})
 
 				Expect(compositeIdentifier).To(Equal("the-description -captain- MISSING_IDENTITY_COMPONENT"))
 				Expect(err).To(BeNil())
@@ -537,7 +540,10 @@ var _ = Describe("Test", func() {
 							"nil": nil,
 						},
 					},
-				}.Identify([]string{"id", "description", "file", "foo", "bar", "baz", "nil"}, false)
+				}.Identify(v1.TestIdentityRecipe{
+					Components: []string{"id", "description", "file", "foo", "bar", "baz", "nil"},
+					Strict:     false,
+				})
 
 				Expect(compositeIdentifier).To(Equal(
 					"the-id -captain- the-description -captain- the-file -captain-" +

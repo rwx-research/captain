@@ -85,7 +85,7 @@ func (s RubyMinitestSubstitution) allTestsSubstitutions(
 	tests := make([]string, 0)
 
 	for _, test := range testResults.Tests {
-		if test.Attempt.Status.ImpliesFailure() && filter(test) {
+		if filter(test) {
 			tests = append(
 				tests,
 				fmt.Sprintf("'%v:%v'", templating.ShellEscape(test.Location.File), *test.Location.Line),

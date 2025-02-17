@@ -22,6 +22,8 @@ type CliArgs struct {
 	command                   string
 	testResults               string
 	failOnUploadError         bool
+	failOnDuplicateTestID     bool
+	failOnMisconfiguredRetry  bool
 	failRetriesFast           bool
 	flakyRetries              int
 	intermediateArtifactsPath string
@@ -122,6 +124,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						CloudOrganizationSlug:     "deep_link",
 						Command:                   suiteConfig.Command,
 						FailOnUploadError:         suiteConfig.FailOnUploadError,
+						FailOnMisconfiguredRetry:  suiteConfig.Retries.FailOnMisconfiguration,
 						FailRetriesFast:           suiteConfig.Retries.FailFast,
 						FlakyRetries:              suiteConfig.Retries.FlakyAttempts,
 						IntermediateArtifactsPath: suiteConfig.Retries.IntermediateArtifactsPath,
@@ -189,6 +192,20 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		"fail-on-upload-error",
 		false,
 		"return a non-zero exit code in case the test results upload fails",
+	)
+
+	runCmd.Flags().BoolVar(
+		&cliArgs.failOnDuplicateTestID,
+		"fail-on-duplicate-test-id",
+		false,
+		"return a non-zero exit code in case the identifiers in test results are not unique",
+	)
+
+	runCmd.Flags().BoolVar(
+		&cliArgs.failOnMisconfiguredRetry,
+		"fail-on-misconfigured-retry",
+		false,
+		"return a non-zero exit code in case the retry command isn't producing the expect test result output",
 	)
 
 	runCmd.Flags().StringVar(
@@ -359,6 +376,14 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 
 		if cliArgs.failOnUploadError {
 			suiteConfig.FailOnUploadError = true
+		}
+
+		if cliArgs.failOnDuplicateTestID {
+			suiteConfig.FailOnDuplicateTestID = true
+		}
+
+		if cliArgs.failOnMisconfiguredRetry {
+			suiteConfig.Retries.FailOnMisconfiguration = true
 		}
 
 		if cliArgs.testResults != "" {

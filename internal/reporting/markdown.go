@@ -378,7 +378,7 @@ func writeMarkdownSection(
 			substitutions, _ := substitution.SubstitutionsFor(
 				*retryTemplate,
 				*v1.NewTestResults(framework, []v1.Test{test}, nil),
-				func(_ v1.Test) bool { return true },
+				func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
 			)
 
 			if len(substitutions) >= 1 {

@@ -5,7 +5,9 @@ package parsing
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -17,9 +19,11 @@ import (
 type Config struct {
 	ProvidedFrameworkKind     string
 	ProvidedFrameworkLanguage string
+	FailOnDuplicateTestID     bool
 	MutuallyExclusiveParsers  []Parser
 	GenericParsers            []Parser
 	FrameworkParsers          map[v1.Framework][]Parser
+	IdentityRecipes           map[string]v1.TestIdentityRecipe
 	Logger                    *zap.SugaredLogger
 }
 
@@ -82,7 +86,7 @@ func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
 		coercedFramework = &framework
 	}
 
-	results, err := parseWith(file, parsers, groupNumber, cfg.Logger)
+	results, err := parseWith(file, parsers, groupNumber, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +105,7 @@ func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
 	return results, nil
 }
 
-func parseWith(file fs.File, parsers []Parser, groupNumber int, log *zap.SugaredLogger) (*v1.TestResults, error) {
+func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1.TestResults, error) {
 	if len(parsers) == 0 {
 		return nil, errors.NewInternalError("No parsers were provided")
 	}
@@ -115,13 +119,14 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, log *zap.Sugared
 
 		parsedTestResult, err := parser.Parse(file)
 		if err != nil {
-			log.Debugf("%T was not capable of parsing the test results. Error: %v", parser, err)
+			cfg.Logger.Debugf("%T was not capable of parsing the test results. Error: %v", parser, err)
 			continue
 		}
 		if parsedTestResult == nil {
 			return nil, errors.NewInternalError("%T did not error and did not return a test result", parser)
 		}
-		log.Debugf("%T was capable of parsing the test results.", parser)
+
+		cfg.Logger.Debugf("%T was capable of parsing the test results.", parser)
 
 		if firstParser == nil {
 			firstParser = parser
@@ -134,7 +139,24 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, log *zap.Sugared
 	}
 
 	finalResults := parsedTestResults[0]
-	log.Debugf("%T was ultimately responsible for parsing the test results", firstParser)
+	cfg.Logger.Debugf("%T was ultimately responsible for parsing the test results", firstParser)
+
+	duplicateTestIDs, err := checkIfTestIDsAreUnique(finalResults, cfg)
+	if err != nil {
+		return nil, err
+	}
+	if len(duplicateTestIDs) != 0 {
+		duplicateTestIDWarningMsg := fmt.Sprintf(
+			"Test result file %q contains two or more tests that share the same metadata:\n\n\t%s\n\n%s",
+			file.Name(),
+			strings.Join(duplicateTestIDs, "\n\t"),
+			"Please make sure test identifiers are unique.",
+		)
+		if cfg.FailOnDuplicateTestID {
+			return nil, errors.NewInputError(duplicateTestIDWarningMsg)
+		}
+		cfg.Logger.Warn(duplicateTestIDWarningMsg)
+	}
 
 	if err := rewindFile(file); err != nil {
 		return nil, err
@@ -159,6 +181,62 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, log *zap.Sugared
 	}
 
 	return &finalResults, nil
+}
+
+func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) ([]string, error) {
+	uniqueTestIdentifiers := make(map[string]struct{})
+	duplicateTestIDs := make([]string, 0)
+	identityRecipe, recipeFound := cfg.IdentityRecipes[testResult.Framework.String()]
+
+	if !recipeFound && (cfg.ProvidedFrameworkKind != "" || cfg.ProvidedFrameworkLanguage != "") {
+		identityRecipe, recipeFound = cfg.IdentityRecipes[v1.CoerceFramework(
+			string(v1.FrameworkLanguageOther),
+			string(v1.FrameworkKindOther),
+		).String()]
+	}
+
+	// Populate `uniqueTestIdentifiers` with the ID of the last test as the for-loop that follows will
+	// not cover it.
+	if recipeFound {
+		id, err := testResult.Tests[len(testResult.Tests)-1].Identify(identityRecipe)
+		if err != nil {
+			cfg.Logger.Warnf("Unable to construct identity from test: %s", err.Error())
+		} else {
+			uniqueTestIdentifiers[id] = struct{}{}
+		}
+	}
+
+	for i := 0; i < len(testResult.Tests)-1; i++ {
+		test := testResult.Tests[i]
+
+		if recipeFound {
+			id, err := test.Identify(identityRecipe)
+			if err != nil {
+				cfg.Logger.Warnf("Unable to construct identity from test: %s", err.Error())
+			} else {
+				if _, ok := uniqueTestIdentifiers[id]; ok {
+					duplicateTestIDs = append(duplicateTestIDs, id)
+					continue
+				}
+				uniqueTestIdentifiers[id] = struct{}{}
+			}
+		}
+
+		for j := i + 1; j < len(testResult.Tests); j++ {
+			if test.Matches(testResult.Tests[j]) {
+				if recipeFound {
+					if id, err := test.Identify(identityRecipe); err == nil {
+						duplicateTestIDs = append(duplicateTestIDs, id)
+						continue
+					}
+				}
+
+				duplicateTestIDs = append(duplicateTestIDs, test.Name)
+			}
+		}
+	}
+
+	return duplicateTestIDs, nil
 }
 
 func rewindFile(file fs.File) error {

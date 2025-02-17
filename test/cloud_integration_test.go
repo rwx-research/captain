@@ -39,7 +39,6 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						// stderr may start showing deprecation warnings
 						Expect(result.stderr).To(BeEmpty())
 					})
 					Expect(result.exitCode).To(Equal(0))
@@ -101,7 +100,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
+						Expect(result.stderr).To(ContainSubstring("The retry command of suite \"captain-cli-quarantine-test\" appears to be misconfigured."))
 					})
 					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(0))
@@ -122,10 +121,57 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
+						Expect(result.stderr).To(ContainSubstring("The retry command of suite \"captain-cli-functional-tests\" appears to be misconfigured."))
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					})
 					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(123))
+				})
+
+				It("fails on misconfigured retry command", func() {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-quarantine-test",
+							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
+							"--fail-on-upload-error",
+							"--fail-on-misconfigured-retry",
+							"--retries", "1",
+							"--retry-command", `echo "{{ tests }}"`,
+							"-c", "bash -c 'exit 123'",
+						},
+						env: getEnvWithAccessToken(),
+					})
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(ContainSubstring("The retry command of suite \"captain-cli-quarantine-test\" appears to be misconfigured."))
+					})
+					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
+					Expect(result.exitCode).To(Equal(1))
+				})
+
+				It("succeeds with 'misconfigured-retry' flag when configured correctly", func() {
+					testResultsPath := symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
+
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							"captain-cli-functional-tests",
+							"--test-results", testResultsPath,
+							"--fail-on-upload-error",
+							"--fail-on-misconfigured-retry",
+							"--retries", "1",
+							"--retry-command", fmt.Sprintf("ln -sf ../rspec-passed-not-quarantined.json %s; echo \"{{ tests }}\"", testResultsPath),
+							"-c", "bash -c 'exit 123'",
+						},
+						env: getEnvWithAccessToken(),
+					})
+
+					withoutBackwardsCompatibility(func() {
+						Expect(result.stderr).To(BeEmpty())
+					})
+					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
+					Expect(result.exitCode).To(Equal(0))
 				})
 			})
 

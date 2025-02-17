@@ -52,7 +52,7 @@ func (s JSONSubstitution) SubstitutionsFor(
 	testsToRetry := make([]v1.Test, 0)
 
 	for _, test := range testResults.Tests {
-		if test.Attempt.Status.ImpliesFailure() && filter(test) {
+		if filter(test) {
 			testsToRetry = append(testsToRetry, test)
 		}
 	}
