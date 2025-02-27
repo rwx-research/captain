@@ -75,7 +75,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 				mint.RetryFailedTestsLabel(),
 			)
 			_ = mint.WriteError(s.FileSystem, errorMessage)
-			return errors.NewInputError(errorMessage)
+			return errors.NewInputError("%s", errorMessage)
 		}
 
 		testResults, err = mint.ReadFailedTestResults(s.FileSystem)
@@ -90,7 +90,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 				mint.RetryFailedTestsLabel(),
 			)
 			_ = mint.WriteError(s.FileSystem, errorMessage)
-			return errors.NewInputError(errorMessage)
+			return errors.NewInputError("%s", errorMessage)
 		}
 
 		// Wait until run configuration was fetched. Ignore any errors.
@@ -666,7 +666,7 @@ func (s Service) attemptRetries(
 				cfg.SuiteID,
 			)
 			if cfg.FailOnMisconfiguredRetry {
-				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.NewRetryError(missingTestResult)
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.NewRetryError("%s", missingTestResult)
 			}
 			s.Log.Warn(missingTestResult)
 		}

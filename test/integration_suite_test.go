@@ -45,7 +45,7 @@ type captainResult struct {
 }
 
 func print(output string) {
-	fmt.Fprintf(GinkgoWriter, output)
+	fmt.Fprintf(GinkgoWriter, "%s", output)
 }
 
 // used to debug tests
