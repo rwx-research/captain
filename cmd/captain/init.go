@@ -109,7 +109,7 @@ func initCliServiceWithConfig(
 			return errors.Wrap(err, "unable to create API client")
 		}
 
-		recipes, err := getRecipes(logger, cfg)
+		recipes, err := getRecipes()
 		if err != nil {
 			return errors.Wrap(err, "unable to retrieve test identity recipes")
 		}
@@ -173,7 +173,7 @@ func unsafeInitParsingOnly(cliArgs *CliArgs) func(*cobra.Command, []string) erro
 				logger = logging.NewDebugLogger()
 			}
 
-			recipes, err := getRecipes(logger, cfg)
+			recipes, err := getRecipes()
 			if err != nil {
 				return errors.Wrap(err, "unable to retrieve test identity recipes")
 			}

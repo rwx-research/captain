@@ -1,0 +1,95 @@
+[
+  {
+    "language": ".NET",
+    "kind": "xUnit",
+    "recipe": { "components": ["assembly", "description"], "strict": true }
+  },
+  {
+    "language": "Elixir",
+    "kind": "ExUnit",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "Go",
+    "kind": "Ginkgo",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "Go",
+    "kind": "go test",
+    "recipe": { "components": ["package", "description"], "strict": true }
+  },
+  {
+    "language": "JavaScript",
+    "kind": "Cucumber",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "JavaScript",
+    "kind": "Cypress",
+    "recipe": { "components": ["description"], "strict": true }
+  },
+  {
+    "language": "JavaScript",
+    "kind": "Jest",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "JavaScript",
+    "kind": "Karma",
+    "recipe": { "components": ["browserName", "description"], "strict": true }
+  },
+  {
+    "language": "JavaScript",
+    "kind": "Mocha",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "JavaScript",
+    "kind": "Playwright",
+    "recipe": {
+      "components": ["project", "file", "description"],
+      "strict": true
+    }
+  },
+  {
+    "language": "JavaScript",
+    "kind": "Vitest",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "PHP",
+    "kind": "PHPUnit",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "Python",
+    "kind": "pytest",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "Python",
+    "kind": "unittest",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "Ruby",
+    "kind": "Cucumber",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "Ruby",
+    "kind": "minitest",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "Ruby",
+    "kind": "RSpec",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "other",
+    "kind": "other",
+    "recipe": { "components": ["file", "description"], "strict": false }
+  }
+]
