@@ -1,6 +1,6 @@
 module github.com/rwx-research/captain-cli
 
-go 1.20
+go 1.24
 
 require (
 	github.com/bradleyjkemp/cupaloy v2.3.0+incompatible
