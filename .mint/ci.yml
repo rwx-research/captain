@@ -14,29 +14,29 @@ concurrency-pools:
 
 tasks:
   - key: test
-    call: ${{ run.mint-dir }}/test.yaml
+    call: ${{ run.mint-dir }}/test.yml
     init:
       commit-sha: ${{ init.commit-sha }}
 
   - key: buildkite-tests
-    call: ${{ run.mint-dir }}/buildkite.yaml
+    call: ${{ run.mint-dir }}/buildkite.yml
     init:
       commit-sha: ${{ init.commit-sha }}
 
   - key: backwards-compatibility-tests
-    call: ${{ run.mint-dir }}/generate_backwards_compatibility_tests.yaml
+    call: ${{ run.mint-dir }}/generate-backwards-compatibility-tests.yml
     init:
       commit-sha: ${{ init.commit-sha }}
 
   - key: lint
-    call: ${{ run.mint-dir }}/lint.yaml
+    call: ${{ run.mint-dir }}/lint.yml
     init:
       commit-sha: ${{ init.commit-sha }}
 
   - key: release-unstable
     after: test
     if: ${{ init.branch == 'main' }}
-    call: ${{ run.mint-dir }}/release.yaml
+    call: ${{ run.mint-dir }}/release.yml
     init:
       commit-sha: ${{ init.commit-sha }}
       kind: unstable

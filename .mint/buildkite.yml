@@ -1,26 +1,25 @@
 tasks:
-  - key: captain-source
-    call: mint/git-clone 1.2.4
+  - key: code
+    call: mint/git-clone 1.6.1
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
       github-access-token: ${{ github.token }}
-      preserve-git-dir: true
 
   - key: tool-versions
-    use: captain-source
+    use: code
     run: |
       grep "golang " .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
       grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
       grep ginkgo .tool-versions | awk '{print $2}' | tee $MINT_VALUES/ginkgo
 
   - key: golang
-    call: mint/install-go 1.0.6
+    call: mint/install-go 1.1.0
     with:
       go-version: ${{ tasks.tool-versions.values.golang }}
 
   - key: mage-source
-    call: mint/git-clone 1.2.4
+    call: mint/git-clone 1.6.1
     with:
       repository: https://github.com/magefile/mage.git
       ref: v${{ tasks.tool-versions.values.mage }}
@@ -63,7 +62,7 @@ tasks:
       BUILDKITE_AGENT_TOKEN: ${{ secrets.BUILDKITE_AGENT_TOKEN }}
 
   - key: ginkgo-source
-    call: mint/git-clone 1.2.4
+    call: mint/git-clone 1.6.1
     with:
       repository: https://github.com/onsi/ginkgo.git
       ref: v${{ tasks.tool-versions.values.ginkgo }}
@@ -77,7 +76,7 @@ tasks:
       echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
 
   - key: integration-test
-    use: [configure-buildkite-agent, captain-source, mage, ginkgo]
+    use: [configure-buildkite-agent, code, mage, ginkgo]
     background-processes:
       - key: buildkite-agent
         run: sudo buildkite-agent start
