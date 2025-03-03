@@ -159,7 +159,7 @@ func findTagsWithChangesInTest() ([]string, error) {
 		tagVersion, err := semver.ParseTolerant(tag)
 		if err == nil && // only include the tag if it parses...
 			len(tagVersion.Pre) == 0 && // and is not pre-release...
-			tagVersion.GTE(semver.Version{Major: 1, Minor: 10, Patch: 1}) { // and is >= 1.10.1 (backwards compatibility tests start after 1.10.2. We include 1.10.1 for a baseline but never include it in the output)
+			tagVersion.GTE(semver.Version{Major: 1, Minor: 15, Patch: 0}) { // and is >= 1.17.4
 
 			versionTags = append(versionTags, tagVersion)
 		}

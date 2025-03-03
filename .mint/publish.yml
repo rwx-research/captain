@@ -1,9 +1,9 @@
 tasks:
   - key: github-cli
-    call: github/install-cli 1.0.0
+    call: github/install-cli 1.0.1
 
-  - key: captain-source
-    call: mint/git-clone 1.2.4
+  - key: code
+    call: mint/git-clone 1.6.1
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
@@ -11,26 +11,24 @@ tasks:
       preserve-git-dir: true
 
   - key: publish-github-release
-    use: [captain-source, github-cli]
+    use: [code, github-cli]
+    run: gh release edit ${{ init.full-version }} --draft=false --latest
     env:
       GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
-    run: gh release edit ${{ init.full-version }} --draft=false --latest
 
   - key: push-tags
     if: ${{ init.aliased-version != '' }}
-    use: captain-source
-    env:
-      GITHUB_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
+    use: code
     run: |
       git tag --force ${{ init.aliased-version }}
       git push --force origin ${{ init.aliased-version }}
+    env:
+      GITHUB_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
 
   - key: create-release
     if: ${{ init.aliased-version != '' }}
     after: [push-tags]
-    use: [captain-source, github-cli]
-    env:
-      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
+    use: [code, github-cli]
     run: |
       gh release view ${{ init.full-version }} || \
         gh release create ${{ init.full-version }} \
@@ -39,26 +37,26 @@ tasks:
         --prerelease=false \
         --notes "The Captain ${{ init.aliased-version }} release and tag exist to provide an easy way to download the latest ${{ init.aliased-version }}.x.x release of Captain. For example, you can always download the latest Linux x86 ${{ init.aliased-version }} release at this URL: https://github.com/rwx-research/captain/releases/download/${{ init.aliased-version }}/captain-linux-x86_64. (Look at the assets attached to this release to find the other available downloads.) This release and its assets are updated whenever a new ${{ init.aliased-version }}.x.x version of Captain is released." \
         --title "Captain ${{ init.aliased-version }}"
+    env:
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
 
   - key: copy-assets-to-aliased-release
     if: ${{ init.aliased-version != '' }}
     after: [create-release]
-    use: [captain-source, github-cli]
-    env:
-      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
+    use: [code, github-cli]
     run: |
       gh release download ${{ init.full-version }}
       gh release upload ${{ init.aliased-version }} captain-* --clobber
+    env:
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
 
   - key: aws-cli
     call: aws/install-cli 1.0.1
 
   - key: configure-aws
     use: aws-cli
-    after: copy-assets-to-aliased-release
-    call: aws/assume-role 1.1.1
+    call: aws/assume-role 1.1.4
     with:
-      oidc-token: ${{ vaults.captain_main.oidc.aws_token }}
       region: us-east-1
       role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd-through-mint
 
@@ -113,3 +111,5 @@ tasks:
         # shellcheck disable=SC2086,SC2090
         aws cloudfront create-invalidation --distribution-id ${{ vaults.captain_main.secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths $updatedPaths
       fi
+    env:
+      AWS_OIDC_TOKEN: ${{ vaults.captain_main.oidc.aws_token }}
