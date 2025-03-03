@@ -1,26 +1,26 @@
 tasks:
-  - key: captain-source
-    call: mint/git-clone 1.2.4
+  - key: code
+    call: mint/git-clone 1.6.1
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
       github-access-token: ${{ github.token }}
-      preserve-git-dir: true
 
   - key: tool-versions
-    use: captain-source
-    filter: [.tool-versions]
+    use: code
     run: |
       grep "golang " .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
       grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
+    filter:
+      - .tool-versions
 
   - key: golang
-    call: mint/install-go 1.0.6
+    call: mint/install-go 1.1.0
     with:
       go-version: ${{ tasks.tool-versions.values.golang }}
 
   - key: mage-source
-    call: mint/git-clone 1.2.4
+    call: mint/git-clone 1.6.1
     with:
       repository: https://github.com/magefile/mage.git
       ref: v${{ tasks.tool-versions.values.mage }}
@@ -35,8 +35,8 @@ tasks:
       echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
 
   - key: build-binary
-    use: [captain-source, mage]
-    run: mage
+    use: [code, mage]
+    run: mage build
     env:
       GOOS: ${{ init.os }}
       GOARCH: ${{ init.arch }}
@@ -44,13 +44,11 @@ tasks:
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=${{ init.full-version }}
 
   - key: github-cli
-    call: github/install-cli 1.0.0
+    call: github/install-cli 1.0.1
 
   - key: upload
     if: ${{ init.os != 'darwin' }}
     use: [build-binary, github-cli]
-    env:
-      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
     run: |
       if [[ "${{ init.os }}" == "windows" ]]; then
         extension=".exe"
@@ -63,7 +61,9 @@ tasks:
       fi
       github_asset_name=$(echo "captain-${{ init.os }}-$arch$extension" | tr '[:upper:]' '[:lower:]')
       mv "captain$extension" "$github_asset_name"
-      gh release upload ${{ init.full-version }} "$github_asset_name" --clobber
+      gh release upload ${{ init.full-version }} "$github_asset_name" --clobber --repo rwx-research/captain
+    env:
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
 
   - key: zip
     run: sudo apt-get update && sudo apt-get install -y zip
@@ -90,8 +90,6 @@ tasks:
   - key: upload-darwin
     if: ${{ init.os == 'darwin' }}
     use: [notarize, github-cli]
-    env:
-      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
     run: |
       if [[ "${{ init.arch }}" == "arm64" ]]; then
         arch="aarch64"
@@ -101,5 +99,6 @@ tasks:
       fi
       github_asset_name=$(echo "captain-${{ init.os }}-$arch" | tr '[:upper:]' '[:lower:]')
       mv "captain" "$github_asset_name"
-      gh release upload ${{ init.full-version }} "$github_asset_name" --clobber
-
+      gh release upload ${{ init.full-version }} "$github_asset_name" --clobber --repo rwx-research/captain
+    env:
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}

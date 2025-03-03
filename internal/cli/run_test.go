@@ -1374,10 +1374,10 @@ var _ = Describe("Run", func() {
 				}
 				service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
 
-				mockRename := func(old, new string) error {
+				mockRename := func(old, newName string) error {
 					Expect(old).To(Equal(testResultsFilePath))
-					Expect(new).To(ContainSubstring(runConfig.IntermediateArtifactsPath))
-					intermediateTestResults = append(intermediateTestResults, new)
+					Expect(newName).To(ContainSubstring(runConfig.IntermediateArtifactsPath))
+					intermediateTestResults = append(intermediateTestResults, newName)
 					return nil
 				}
 				service.FileSystem.(*mocks.FileSystem).MockRename = mockRename

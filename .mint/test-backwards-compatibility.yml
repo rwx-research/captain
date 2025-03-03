@@ -1,0 +1,113 @@
+concurrency-pools:
+  - id: test-captain-backwards-compatibility
+    capacity: 2
+    on-overflow: queue
+
+tasks:
+  - key: new-code
+    call: mint/git-clone 1.6.1
+    with:
+      repository: https://github.com/rwx-research/captain.git
+      ref: ${{ init.commit-sha }}
+      github-access-token: ${{ github.token }}
+
+  - key: tool-versions-for-new-code
+    use: new-code
+    run: |
+      grep "golang " .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
+      grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
+    filter:
+      - .tool-versions
+
+  - key: golang-for-new-code
+    call: mint/install-go 1.1.0
+    with:
+      go-version: ${{ tasks.tool-versions-for-new-code.values.golang }}
+
+  - key: mage-source-for-new-code
+    call: mint/git-clone 1.6.1
+    with:
+      repository: https://github.com/magefile/mage.git
+      ref: v${{ tasks.tool-versions-for-new-code.values.mage }}
+      path: /tmp/mage
+
+  - key: mage-for-new-code
+    use: [mage-source-for-new-code, golang-for-new-code]
+    run: |
+      cd /tmp/mage
+      mkdir $HOME/go # Mage assumes this already exists
+      go run bootstrap.go
+      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
+
+  - key: build-new-code
+    use: [new-code, mage-for-new-code]
+    run: mage build
+    env:
+      CGO_ENABLED: 0
+      LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
+    outputs:
+      artifacts:
+        - key: captain
+          path: ./captain
+
+  - key: legacy-code
+    call: mint/git-clone 1.6.1
+    with:
+      repository: https://github.com/rwx-research/captain.git
+      ref: ${{ init.legacy-version }}
+      github-access-token: ${{ github.token }}
+
+  - key: tool-versions-for-legacy-code
+    use: legacy-code
+    run: |
+      grep "golang " .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
+      grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
+      grep ginkgo .tool-versions | awk '{print $2}' | tee $MINT_VALUES/ginkgo
+    filter:
+      - .tool-versions
+
+  - key: golang-for-legacy-code
+    call: mint/install-go 1.1.0
+    with:
+      go-version: ${{ tasks.tool-versions-for-legacy-code.values.golang }}
+
+  - key: mage-source-for-legacy-code
+    call: mint/git-clone 1.6.1
+    with:
+      repository: https://github.com/magefile/mage.git
+      ref: v${{ tasks.tool-versions-for-legacy-code.values.mage }}
+      path: /tmp/mage
+
+  - key: mage-for-legacy-code
+    use: [mage-source-for-legacy-code, golang-for-legacy-code]
+    run: |
+      cd /tmp/mage
+      mkdir $HOME/go # Mage assumes this already exists
+      go run bootstrap.go
+      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
+
+  - key: ginkgo-source-for-legacy-code
+    call: mint/git-clone 1.6.1
+    with:
+      repository: https://github.com/onsi/ginkgo.git
+      ref: v${{ tasks.tool-versions-for-legacy-code.values.ginkgo }}
+      path: /tmp/ginkgo
+
+  - key: ginkgo-for-legacy-code
+    use: [ginkgo-source-for-legacy-code, golang-for-legacy-code]
+    run: |
+      cd /tmp/ginkgo
+      go install ./ginkgo
+      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
+
+  - key: test
+    use: [mage-for-legacy-code, ginkgo-for-legacy-code, legacy-code]
+    run: |
+      cp ${{ tasks.build-new-code.artifacts.captain }} ./captain
+      ./captain run captain-cli-backwards-compatibility
+    env:
+      CGO_ENABLED: 0
+      LEGACY_VERSION_TO_TEST: ${{ init.legacy-version }}
+      LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=testing-${{ init.commit-sha }}
+      REPORT: true
+      RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
