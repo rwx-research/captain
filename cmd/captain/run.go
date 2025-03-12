@@ -327,7 +327,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		"partition-round-robin",
 		false,
 		"Whether to naively round robin tests across partitions. When false, historical test timing data will be used to"+
-			"evenly balance the partitions.",
+			" evenly balance the partitions.",
 	)
 
 	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",
