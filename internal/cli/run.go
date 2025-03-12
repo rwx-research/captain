@@ -147,16 +147,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 
 		// Run sub-command
-		ctx, cmdErr := s.runCommand(ctx, runCommand.commandArgs, stdout, true, []string{})
-		defer func() {
-			if abqErr := s.setAbqExitCode(ctx, finalErr); abqErr != nil {
-				finalErr = errors.Wrap(finalErr, abqErr.Error())
-				if finalErr == nil {
-					finalErr = abqErr
-				}
-				s.Log.Errorf("Error setting ABQ exit code: %v", finalErr)
-			}
-		}()
+		ctx, cmdErr := s.runCommand(ctx, runCommand.commandArgs, stdout, []string{})
 		testResults, testResultsFiles, runErr, err = s.handleCommandOutcome(cfg, cmdErr, 1)
 		if err != nil {
 			return err
@@ -391,16 +382,6 @@ func (s Service) attemptRetries(
 		flakyRetries = nonFlakyRetries
 	}
 
-	if didRun, err := s.didAbqRun(ctx); didRun || err != nil {
-		if err != nil {
-			return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
-		}
-
-		return originalTestResults, newlyExecutedTestResults, false, errors.NewInputError(
-			"Captain retries cannot be used with ABQ",
-		)
-	}
-
 	if originalTestResults == nil {
 		return originalTestResults, newlyExecutedTestResults, false, errors.NewInternalError("No test results detected")
 	}
@@ -597,7 +578,7 @@ func (s Service) attemptRetries(
 					)
 				}
 
-				if _, err := s.runCommand(ctx, preRetryArgs, stdout, false, env); err != nil {
+				if _, err := s.runCommand(ctx, preRetryArgs, stdout, env); err != nil {
 					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
 						err,
 						"Error while executing %q",
@@ -606,7 +587,7 @@ func (s Service) attemptRetries(
 				}
 			}
 
-			_, cmdErr := s.runCommand(ctx, args, stdout, false, env)
+			_, cmdErr := s.runCommand(ctx, args, stdout, env)
 
 			for _, postRetryCommand := range cfg.PostRetryCommands {
 				postRetryArgs, err := shellwords.Parse(postRetryCommand)
@@ -618,7 +599,7 @@ func (s Service) attemptRetries(
 					)
 				}
 
-				if _, err := s.runCommand(ctx, postRetryArgs, stdout, false, env); err != nil {
+				if _, err := s.runCommand(ctx, postRetryArgs, stdout, env); err != nil {
 					return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.Wrapf(
 						err,
 						"Error while executing %q",
@@ -727,17 +708,8 @@ func (s Service) runCommand(
 	ctx context.Context,
 	args []string,
 	stdout io.Writer,
-	setAbqEnviron bool,
 	env []string,
 ) (context.Context, error) {
-	if setAbqEnviron {
-		newCtx, environ := s.applyAbqEnvironment(ctx)
-		ctx = newCtx
-		if len(environ) > 0 {
-			env = append(env, environ...)
-		}
-	}
-
 	cmd, err := s.TaskRunner.NewCommand(ctx, exec.CommandConfig{
 		Name:   args[0],
 		Args:   args[1:],

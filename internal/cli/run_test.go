@@ -41,14 +41,9 @@ var _ = Describe("Run", func() {
 		core                zapcore.Core
 		recordedLogs        *observer.ObservedLogs
 		filesOpened         []string
-		mockAbqCommand      *mocks.Command
-		mockAbqCommandArgs  []string
-		abqStateJSON        string
-		abqExecutable       string
 		runConfig           cli.RunConfig
 
 		testResultsFileUploaded, commandStarted, commandFinished, fetchedRunConfiguration bool
-		abqStateFileExists, abqCommandStarted, abqCommandFinished                         bool
 	)
 
 	BeforeEach(func() {
@@ -59,12 +54,6 @@ var _ = Describe("Run", func() {
 		commandFinished = false
 		fetchedRunConfiguration = false
 		filesOpened = make([]string, 0)
-		mockAbqCommandArgs = make([]string, 0)
-		abqExecutable = "/path/to/abq"
-		abqStateJSON = ""
-		abqStateFileExists = false
-		abqCommandStarted = false
-		abqCommandFinished = false
 
 		core, recordedLogs = observer.New(zapcore.InfoLevel)
 		log := zaptest.NewLogger(GinkgoT(), zaptest.WrapOptions(
@@ -87,22 +76,8 @@ var _ = Describe("Run", func() {
 			return nil
 		}
 
-		mockAbqCommand = new(mocks.Command)
-		mockAbqCommand.MockStart = func() error {
-			abqCommandStarted = true
-			return nil
-		}
-		mockAbqCommand.MockWait = func() error {
-			abqCommandFinished = true
-			return nil
-		}
-
 		newCommand := func(_ context.Context, cfg exec.CommandConfig) (exec.Command, error) {
 			switch cfg.Name {
-			case abqExecutable:
-				mockAbqCommandArgs = cfg.Args
-				Expect(cfg.Env).To(HaveLen(0))
-				return mockAbqCommand, nil
 			case "retry":
 				mockBundle := new(mocks.Command)
 				mockBundle.MockStart = func() error {
@@ -112,9 +87,7 @@ var _ = Describe("Run", func() {
 			default:
 				Expect(cfg.Args).To(HaveLen(0))
 				Expect(cfg.Name).To(Equal(arg))
-				Expect(cfg.Env).To(HaveLen(2))
-				Expect(cfg.Env).To(ContainElement("ABQ_SET_EXIT_CODE=false"))
-				Expect(cfg.Env).To(ContainElement(ContainSubstring("ABQ_STATE_FILE=tmp/captain-abq-")))
+				Expect(cfg.Env).To(HaveLen(0))
 				return mockCommand, nil
 			}
 		}
@@ -135,26 +108,11 @@ var _ = Describe("Run", func() {
 			return []string{testResultsFilePath}, nil
 		}
 		mockOpen := func(name string) (fs.File, error) {
-			const abqStateSubstring string = "tmp/captain-abq-"
-
-			Expect(name).To(SatisfyAny(
-				Equal(testResultsFilePath),
-				ContainSubstring(abqStateSubstring),
-			))
+			Expect(name).To(Equal(testResultsFilePath))
 			filesOpened = append(filesOpened, name)
 
-			isAbqStateFile := strings.Contains(name, abqStateSubstring)
 			file := new(mocks.File)
-
-			if isAbqStateFile {
-				if !abqStateFileExists {
-					return nil, os.ErrNotExist
-				}
-
-				file.Reader = strings.NewReader(abqStateJSON)
-			} else {
-				file.Reader = strings.NewReader("")
-			}
+			file.Reader = strings.NewReader("")
 			return file, nil
 		}
 		service.FileSystem.(*mocks.FileSystem).MockOpen = mockOpen
@@ -252,158 +210,6 @@ var _ = Describe("Run", func() {
 			Expect(logMessages).To(ContainElement(ContainSubstring(
 				fmt.Sprintf("- Updated Captain with results from %v", testResultsFilePath),
 			)))
-		})
-
-		Context("ABQ", func() {
-			It("attempts to read the ABQ state file", func() {
-				Expect(filesOpened).To(ContainElement(ContainSubstring("tmp/captain-abq-")))
-			})
-
-			Context("when state file doesn't exist", func() {
-				BeforeEach(func() {
-					abqStateFileExists = false
-				})
-
-				It("does not call abq", func() {
-					Expect(abqCommandStarted).To(BeFalse())
-					Expect(abqCommandFinished).To(BeFalse())
-				})
-			})
-
-			Context("with a supervisor ABQ state file", func() {
-				BeforeEach(func() {
-					abqStateFileExists = true
-					abqStateJSON = fmt.Sprintf(`{
-          "abq_version": "1.1.2",
-          "abq_executable": "%s",
-          "run_id": "not-a-real-run-id",
-          "supervisor": true
-        }`, abqExecutable)
-				})
-
-				It("calls abq set-exit-code", func() {
-					Expect(abqCommandStarted).To(BeTrue())
-					Expect(abqCommandFinished).To(BeTrue())
-					Expect(mockAbqCommandArgs).To(Equal([]string{
-						"set-exit-code",
-						"--run-id", "not-a-real-run-id",
-						"--exit-code", "0",
-					}))
-					Expect(err).NotTo(HaveOccurred())
-				})
-
-				Context("when `abq set-exit-code` fails to start", func() {
-					BeforeEach(func() {
-						mockAbqCommand.MockStart = func() error {
-							abqCommandStarted = true
-							return errors.NewSystemError("abq set-exit-code failed to start (forced)")
-						}
-					})
-
-					It("logs an error", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeFalse())
-						Expect(err).To(HaveOccurred())
-						_, ok := errors.AsSystemError(err)
-						Expect(ok).To(BeTrue(), "Error is a system error")
-
-						logMessages := make([]string, 0)
-
-						for _, log := range recordedLogs.All() {
-							logMessages = append(logMessages, log.Message)
-						}
-
-						Expect(logMessages).To(ContainElement(ContainSubstring(
-							"Error setting ABQ exit code: unable to execute sub-command: abq set-exit-code failed to start (forced)",
-						)))
-					})
-				})
-
-				Context("when `abq set-exit-code` returns an error", func() {
-					BeforeEach(func() {
-						mockAbqCommand.MockWait = func() error {
-							abqCommandFinished = true
-							return errors.NewExecutionError(1, "abq set-exit-code returned an error (forced)")
-						}
-					})
-
-					It("logs an error", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeTrue())
-						Expect(err).To(HaveOccurred())
-
-						logMessages := make([]string, 0)
-
-						for _, log := range recordedLogs.All() {
-							logMessages = append(logMessages, log.Message)
-						}
-
-						Expect(logMessages).To(ContainElement(ContainSubstring(
-							"Error setting ABQ exit code: Error during program execution: abq set-exit-code returned an error (forced)",
-						)))
-					})
-				})
-			})
-
-			Context("with a non-supervisor ABQ state file", func() {
-				BeforeEach(func() {
-					abqStateFileExists = true
-					abqStateJSON = fmt.Sprintf(`{
-          "abq_version": "1.1.2",
-          "abq_executable": "%s",
-          "run_id": "not-a-real-run-id",
-          "supervisor": false
-        }`, abqExecutable)
-				})
-
-				It("does not call abq", func() {
-					Expect(abqCommandStarted).To(BeFalse())
-					Expect(abqCommandFinished).To(BeFalse())
-				})
-			})
-
-			Context("with a empty, existent ABQ state file", func() {
-				BeforeEach(func() {
-					abqStateFileExists = true
-					abqStateJSON = ""
-				})
-
-				It("does not call abq", func() {
-					Expect(abqCommandStarted).To(BeFalse())
-					Expect(abqCommandFinished).To(BeFalse())
-				})
-
-				It("logs an ABQ error", func() {
-					logMessages := make([]string, 0)
-
-					for _, log := range recordedLogs.All() {
-						logMessages = append(logMessages, log.Message)
-					}
-
-					Expect(logMessages).To(ContainElement(ContainSubstring("Error decoding ABQ state file")))
-				})
-
-				Context("with a non-existent ABQ state file", func() {
-					BeforeEach(func() {
-						abqStateFileExists = false
-					})
-
-					It("does not call abq", func() {
-						Expect(abqCommandStarted).To(BeFalse())
-						Expect(abqCommandFinished).To(BeFalse())
-					})
-
-					It("does not log an ABQ error", func() {
-						logMessages := make([]string, 0)
-
-						for _, log := range recordedLogs.All() {
-							logMessages = append(logMessages, log.Message)
-						}
-
-						Expect(logMessages).NotTo(ContainElement(ContainSubstring("ABQ")))
-					})
-				})
-			})
 		})
 
 		Context("With updating disabled and a local client", func() {
@@ -591,31 +397,6 @@ var _ = Describe("Run", func() {
 				Expect(logMessages).To(ContainElement("- Unable to update Captain with results from ./fake/path/1.json"))
 				Expect(logMessages).To(ContainElement("- Unable to update Captain with results from ./fake/path/2.json"))
 			})
-
-			Context("ABQ", func() {
-				Context("with a supervisor ABQ state file", func() {
-					BeforeEach(func() {
-						abqStateFileExists = true
-						abqStateJSON = fmt.Sprintf(`{
-              "abq_version": "1.1.2",
-              "abq_executable": "%s",
-              "run_id": "not-a-real-run-id",
-              "supervisor": true
-            }`, abqExecutable)
-					})
-
-					It("calls abq set-exit-code", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeTrue())
-						Expect(mockAbqCommandArgs).To(Equal([]string{
-							"set-exit-code",
-							"--run-id", "not-a-real-run-id",
-							"--exit-code", "1",
-						}))
-						Expect(err).To(HaveOccurred())
-					})
-				})
-			})
 		})
 
 		Context("other unknown tests quarantined", func() {
@@ -644,31 +425,6 @@ var _ = Describe("Run", func() {
 				executionError, ok := errors.AsExecutionError(err)
 				Expect(ok).To(BeTrue(), "Error is an execution error")
 				Expect(executionError.Code).To(Equal(exitCode))
-			})
-
-			Context("ABQ", func() {
-				Context("with a supervisor ABQ state file", func() {
-					BeforeEach(func() {
-						abqStateFileExists = true
-						abqStateJSON = fmt.Sprintf(`{
-              "abq_version": "1.1.2",
-              "abq_executable": "%s",
-              "run_id": "not-a-real-run-id",
-              "supervisor": true
-            }`, abqExecutable)
-					})
-
-					It("calls abq set-exit-code", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeTrue())
-						Expect(mockAbqCommandArgs).To(Equal([]string{
-							"set-exit-code",
-							"--run-id", "not-a-real-run-id",
-							"--exit-code", "1",
-						}))
-						Expect(err).To(HaveOccurred())
-					})
-				})
 			})
 		})
 
@@ -712,31 +468,6 @@ var _ = Describe("Run", func() {
 				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
 				Expect(logMessages).NotTo(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
 			})
-
-			Context("ABQ", func() {
-				Context("with a supervisor ABQ state file", func() {
-					BeforeEach(func() {
-						abqStateFileExists = true
-						abqStateJSON = fmt.Sprintf(`{
-              "abq_version": "1.1.2",
-              "abq_executable": "%s",
-              "run_id": "not-a-real-run-id",
-              "supervisor": true
-            }`, abqExecutable)
-					})
-
-					It("calls abq set-exit-code", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeTrue())
-						Expect(mockAbqCommandArgs).To(Equal([]string{
-							"set-exit-code",
-							"--run-id", "not-a-real-run-id",
-							"--exit-code", "1",
-						}))
-						Expect(err).To(HaveOccurred())
-					})
-				})
-			})
 		})
 
 		Context("some tests quarantined", func() {
@@ -778,31 +509,6 @@ var _ = Describe("Run", func() {
 				Expect(logMessages).To(ContainElement(ContainSubstring("1 remaining actionable failure")))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", firstFailedTestDescription)))
 				Expect(logMessages).To(ContainElement(fmt.Sprintf("- %v", secondFailedTestDescription)))
-			})
-
-			Context("ABQ", func() {
-				Context("with a supervisor ABQ state file", func() {
-					BeforeEach(func() {
-						abqStateFileExists = true
-						abqStateJSON = fmt.Sprintf(`{
-              "abq_version": "1.1.2",
-              "abq_executable": "%s",
-              "run_id": "not-a-real-run-id",
-              "supervisor": true
-            }`, abqExecutable)
-					})
-
-					It("calls abq set-exit-code", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeTrue())
-						Expect(mockAbqCommandArgs).To(Equal([]string{
-							"set-exit-code",
-							"--run-id", "not-a-real-run-id",
-							"--exit-code", "1",
-						}))
-						Expect(err).To(HaveOccurred())
-					})
-				})
 			})
 		})
 
@@ -859,31 +565,6 @@ var _ = Describe("Run", func() {
 
 				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
 				Expect(uploadedTestResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
-			})
-
-			Context("ABQ", func() {
-				Context("with a supervisor ABQ state file", func() {
-					BeforeEach(func() {
-						abqStateFileExists = true
-						abqStateJSON = fmt.Sprintf(`{
-              "abq_version": "1.1.2",
-              "abq_executable": "%s",
-              "run_id": "not-a-real-run-id",
-              "supervisor": true
-            }`, abqExecutable)
-					})
-
-					It("calls abq set-exit-code", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeTrue())
-						Expect(mockAbqCommandArgs).To(Equal([]string{
-							"set-exit-code",
-							"--run-id", "not-a-real-run-id",
-							"--exit-code", "0",
-						}))
-						Expect(err).NotTo(HaveOccurred())
-					})
-				})
 			})
 		})
 
@@ -946,31 +627,6 @@ var _ = Describe("Run", func() {
 
 				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
 				Expect(uploadedTestResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
-			})
-
-			Context("ABQ", func() {
-				Context("with a supervisor ABQ state file", func() {
-					BeforeEach(func() {
-						abqStateFileExists = true
-						abqStateJSON = fmt.Sprintf(`{
-              "abq_version": "1.1.2",
-              "abq_executable": "%s",
-              "run_id": "not-a-real-run-id",
-              "supervisor": true
-            }`, abqExecutable)
-					})
-
-					It("calls abq set-exit-code", func() {
-						Expect(abqCommandStarted).To(BeTrue())
-						Expect(abqCommandFinished).To(BeTrue())
-						Expect(mockAbqCommandArgs).To(Equal([]string{
-							"set-exit-code",
-							"--run-id", "not-a-real-run-id",
-							"--exit-code", "0",
-						}))
-						Expect(err).NotTo(HaveOccurred())
-					})
-				})
 			})
 		})
 	})
@@ -1143,7 +799,6 @@ var _ = Describe("Run", func() {
 			service.FileSystem.(*mocks.FileSystem).MockMkdirTemp = mockMkdirTemp
 
 			mockStat := func(string) (iofs.FileInfo, error) {
-				// abq state file
 				return nil, iofs.ErrNotExist
 			}
 			service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
@@ -2006,30 +1661,6 @@ var _ = Describe("Run", func() {
 				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
 				Expect(uploadedTestResults.Summary.Successful).To(Equal(3))
 				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
-				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
-			})
-		})
-
-		Context("when abq has run", func() {
-			BeforeEach(func() {
-				mockStat := func(name string) (iofs.FileInfo, error) {
-					const abqStateSubstring string = "tmp/captain-abq-"
-
-					Expect(name).To(ContainSubstring(abqStateSubstring))
-					mockedFile := new(mocks.File)
-					return mockedFile, nil
-				}
-
-				service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
-			})
-
-			It("does not retry", func() {
-				Expect(err).To(HaveOccurred())
-
-				Expect(uploadedTestResults).ToNot(BeNil())
-				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
-				Expect(uploadedTestResults.Summary.Successful).To(Equal(0))
-				Expect(uploadedTestResults.Summary.Failed).To(Equal(3))
 				Expect(uploadedTestResults.Summary.Retries).To(Equal(0))
 			})
 		})
