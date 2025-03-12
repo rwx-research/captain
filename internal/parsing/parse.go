@@ -153,7 +153,7 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 			"Please make sure test identifiers are unique.",
 		)
 		if cfg.FailOnDuplicateTestID {
-			return nil, errors.NewInputError("%s", duplicateTestIDWarningMsg)
+			return nil, errors.NewDuplicateTestIDError("%s", duplicateTestIDWarningMsg)
 		}
 		cfg.Logger.Warn(duplicateTestIDWarningMsg)
 	}

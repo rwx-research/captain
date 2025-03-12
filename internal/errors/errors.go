@@ -171,3 +171,24 @@ func AsCacheError(err error) (CacheError, bool) {
 	ok := As(err, &e)
 	return e, ok
 }
+
+// DuplicateTestIDError is an error caused by duplicate test IDs
+type DuplicateTestIDError struct {
+	E error
+}
+
+func (e DuplicateTestIDError) Error() string {
+	return e.E.Error()
+}
+
+// DuplicateTestIDError returns a new DuplicateTestIDError
+func NewDuplicateTestIDError(msg string, a ...any) error {
+	return WithStack(DuplicateTestIDError{errors.Errorf(msg, a...)})
+}
+
+// AsDuplicateTestIDError checks whether the error is a duplicate test ID error
+func AsDuplicateTestIDError(err error) (DuplicateTestIDError, bool) {
+	var e DuplicateTestIDError
+	ok := As(err, &e)
+	return e, ok
+}
