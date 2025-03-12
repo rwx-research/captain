@@ -206,7 +206,7 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 
 	cfg = bindRootCmdFlags(cfg, cliArgs.RootCliArgs)
 	cfg = bindFrameworkFlags(cfg, cliArgs.frameworkParams, cliArgs.RootCliArgs.suiteID)
-	cfg = bindRunCmdFlags(cfg, cliArgs)
+	cfg = bindRunCmdFlags(cfg, cliArgs, cmd)
 
 	if err = setConfigContext(cmd, cfg); err != nil {
 		return cfg, errors.WithStack(err)

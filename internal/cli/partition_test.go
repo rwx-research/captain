@@ -20,20 +20,25 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func cfgWithArgs(index int, total int, args []string, delimiter string) cli.PartitionConfig {
+func cfgWithArgs(index int, total int, args []string, delimiter string, roundRobin bool) cli.PartitionConfig {
 	return cli.PartitionConfig{
 		TestFilePaths: args,
 		PartitionNodes: config.PartitionNodes{
 			Index: index,
 			Total: total,
 		},
-		SuiteID:   "captain-cli-test",
-		Delimiter: delimiter,
+		SuiteID:    "captain-cli-test",
+		Delimiter:  delimiter,
+		RoundRobin: roundRobin,
 	}
 }
 
 func cfgWithGlob(index int, total int, glob string) cli.PartitionConfig {
-	return cfgWithArgs(index, total, []string{glob}, " ")
+	return cfgWithArgs(index, total, []string{glob}, " ", false)
+}
+
+func cfgWithGlobAndRoundRobin(index int, total int, glob string) cli.PartitionConfig {
+	return cfgWithArgs(index, total, []string{glob}, " ", true)
 }
 
 var _ = Describe("Partition", func() {
@@ -77,7 +82,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("must specify filepath args", func() {
-			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}, " "))
+			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}, " ", false))
 			Expect(err.Error()).To(ContainSubstring("Missing test file paths"))
 		})
 	})
@@ -95,7 +100,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("only considers unique filepaths", func() {
-			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test", "*.test"}, " "))
+			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test", "*.test"}, " ", false))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -168,6 +173,57 @@ var _ = Describe("Partition", func() {
 				logMessages = append(logMessages, log.Message)
 			}
 			Expect(logMessages).To(ContainElement("b.test c.test"))
+		})
+	})
+
+	Context("when round robin is specified", func() {
+		BeforeEach(func() {
+			mockGlob := func(_ string) ([]string, error) {
+				return []string{"a.test", "b.test", "c.test", "d.test"}, nil
+			}
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+		})
+
+		It("doesnt return an error", func() {
+			err = service.Partition(ctx, cfgWithGlobAndRoundRobin(0, 2, "*.test"))
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("uses round-robin strategy", func() {
+			_ = service.Partition(ctx, cfgWithGlobAndRoundRobin(1, 2, "*.test"))
+
+			assignments := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
+				assignments = append(assignments, log.Message)
+			}
+			Expect(assignments).To(Equal([]string{
+				"Total Capacity: 0s",
+				"Target Partition Capacity: 0s",
+				"[PART 0 (NaN)]: Assigned 'a.test' using round robin strategy",
+				"[PART 1 (NaN)]: Assigned 'b.test' using round robin strategy",
+				"[PART 0 (NaN)]: Assigned 'c.test' using round robin strategy",
+				"[PART 1 (NaN)]: Assigned 'd.test' using round robin strategy",
+			}))
+		})
+
+		It("logs files for partition 0", func() {
+			_ = service.Partition(ctx, cfgWithGlobAndRoundRobin(0, 2, "*.test"))
+
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+				logMessages = append(logMessages, log.Message)
+			}
+			Expect(logMessages).To(ContainElement("a.test c.test"))
+		})
+
+		It("logs files for partition 1", func() {
+			_ = service.Partition(ctx, cfgWithGlobAndRoundRobin(1, 2, "*.test"))
+
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+				logMessages = append(logMessages, log.Message)
+			}
+			Expect(logMessages).To(ContainElement("b.test d.test"))
 		})
 	})
 
@@ -595,7 +651,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("raises an error because partitioning one index and round-robining another is problematic ", func() {
-			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test"}, ","))
+			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test"}, ",", false))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)

@@ -40,9 +40,10 @@ type SuiteConfigRetries struct {
 }
 
 type SuiteConfigPartition struct {
-	Command   string
-	Globs     []string
-	Delimiter string
+	Command    string
+	Globs      []string
+	Delimiter  string
+	RoundRobin bool `yaml:"round-robin"`
 }
 
 // SuiteConfig holds options that can be customized per suite

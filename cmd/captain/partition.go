@@ -12,8 +12,9 @@ import (
 )
 
 type partitionArgs struct {
-	nodes     config.PartitionNodes
-	delimiter string
+	nodes      config.PartitionNodes
+	delimiter  string
+	roundRobin bool
 }
 
 func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
@@ -96,6 +97,7 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 				TestFilePaths:  args,
 				PartitionNodes: pArgs.nodes,
 				Delimiter:      pArgs.delimiter,
+				RoundRobin:     pArgs.roundRobin,
 			})
 			return errors.WithStack(err)
 		},
@@ -118,6 +120,14 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	partitionCmd.Flags().StringVar(&pArgs.delimiter, "delimiter", defaultDelimiter,
 		"the delimiter used to separate partitioned files.\n"+
 			"It can also be set using the env var CAPTAIN_DELIMITER.")
+
+	partitionCmd.Flags().BoolVar(
+		&pArgs.roundRobin,
+		"round-robin",
+		false,
+		"Whether to naively round robin tests across partitions. When false, historical test timing data will be used to"+
+			"evenly balance the partitions.",
+	)
 
 	rootCmd.AddCommand(partitionCmd)
 	return nil
