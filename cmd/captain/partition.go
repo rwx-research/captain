@@ -126,7 +126,7 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		"round-robin",
 		false,
 		"Whether to naively round robin tests across partitions. When false, historical test timing data will be used to"+
-			"evenly balance the partitions.",
+			" evenly balance the partitions.",
 	)
 
 	rootCmd.AddCommand(partitionCmd)
