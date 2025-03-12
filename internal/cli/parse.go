@@ -50,6 +50,10 @@ func (s Service) parse(filepaths []string, group int) (*v1.TestResults, error) {
 
 		results, err := parsing.Parse(fd, group, s.ParseConfig)
 		if err != nil {
+			if _, ok := errors.AsDuplicateTestIDError(err); ok {
+				return nil, errors.WithStack(err)
+			}
+
 			return nil, errors.NewInputError("Unable to parse %q with the available parsers", testResultsFilePath)
 		}
 

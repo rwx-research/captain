@@ -23,7 +23,12 @@ func configureParseCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
+
 			err = captain.Parse(cmd.Context(), artifacts)
+			if _, ok := errors.AsConfigurationError(err); !ok {
+				cmd.SilenceUsage = true
+			}
+
 			return errors.WithStack(err)
 		},
 	}
