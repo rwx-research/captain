@@ -38,6 +38,7 @@ type RunConfig struct {
 	UploadResults               bool
 	PartitionCommandTemplate    string
 	PartitionConfig             PartitionConfig
+	PartitionRoundRobin         bool
 	WriteRetryFailedTestsAction bool
 	DidRetryFailedTestsInMint   bool
 }
@@ -149,6 +150,7 @@ type PartitionConfig struct {
 	TestFilePaths  []string
 	Delimiter      string
 	PartitionNodes config.PartitionNodes
+	RoundRobin     bool
 }
 
 func (pc PartitionConfig) Validate() error {

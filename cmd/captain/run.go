@@ -44,6 +44,7 @@ type CliArgs struct {
 	partitionDelimiter        string
 	partitionCommandTemplate  string
 	partitionGlobs            []string
+	partitionRoundRobin       bool
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -149,8 +150,10 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 								Index: partitionIndex,
 								Total: partitionTotal,
 							},
-							Delimiter: suiteConfig.Partition.Delimiter,
+							Delimiter:  suiteConfig.Partition.Delimiter,
+							RoundRobin: suiteConfig.Partition.RoundRobin,
 						},
+						PartitionRoundRobin:         suiteConfig.Partition.RoundRobin,
 						WriteRetryFailedTestsAction: mint.IsMint(),
 						DidRetryFailedTestsInMint:   mint.DidRetryFailedTests(),
 					}
@@ -319,6 +322,14 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		),
 	)
 
+	runCmd.Flags().BoolVar(
+		&cliArgs.partitionRoundRobin,
+		"partition-round-robin",
+		false,
+		"Whether to naively round robin tests across partitions. When false, historical test timing data will be used to"+
+			"evenly balance the partitions.",
+	)
+
 	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",
 		"the name of the current Github Job")
 	if err := runCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
@@ -368,7 +379,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 
 // this should be run _last_ as it has the highest precedence, and the assignments we make here overwrite settings
 // from other parts of the app (e.g. config files, env vars)
-func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
+func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 	if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
 		if cliArgs.command != "" {
 			suiteConfig.Command = cliArgs.command
@@ -455,6 +466,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs) Config {
 
 		if len(cliArgs.partitionGlobs) != 0 {
 			suiteConfig.Partition.Globs = cliArgs.partitionGlobs
+		}
+
+		if cmd.Flags().Changed("partition-round-robin") {
+			suiteConfig.Partition.RoundRobin = cliArgs.partitionRoundRobin
 		}
 
 		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suiteConfig

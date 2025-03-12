@@ -26,60 +26,65 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 }
 
 func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (PartitionResult, error) {
-	fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
-	if err != nil {
-		return PartitionResult{}, errors.WithStack(err)
-	}
-
+	fileTimingMatches := make([]testing.FileTimingMatch, 0)
+	unmatchedFilepaths := make([]string, 0)
 	testFilePaths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
 	if err != nil {
 		return PartitionResult{}, errors.NewSystemError("unable to expand filepath glob: %s", err)
 	}
-	// Compare expanded client file paths w/ expanded server file paths
-	// taking care to always use the client path and sort by duration desc
-	fileTimingMatches := make([]testing.FileTimingMatch, 0)
-	unmatchedFilepaths := make([]string, 0)
-	for _, clientTestFile := range testFilePaths {
-		match := false
-		var fileTimingMatch testing.FileTimingMatch
-		clientExpandedFilepath, err := filepath.Abs(clientTestFile)
+
+	if cfg.RoundRobin {
+		unmatchedFilepaths = append(unmatchedFilepaths, testFilePaths...)
+	} else {
+		fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
 		if err != nil {
-			s.Log.Warnf("failed to expand path of test file: %s", clientTestFile)
-			unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)
-			continue
+			return PartitionResult{}, errors.WithStack(err)
 		}
 
-		for _, serverTiming := range fileTimings {
-			serverExpandedFilepath, err := filepath.Abs(serverTiming.Filepath)
+		// Compare expanded client file paths w/ expanded server file paths
+		// taking care to always use the client path and sort by duration desc
+		for _, clientTestFile := range testFilePaths {
+			match := false
+			var fileTimingMatch testing.FileTimingMatch
+			clientExpandedFilepath, err := filepath.Abs(clientTestFile)
 			if err != nil {
-				s.Log.Warnf("failed to expand filepath of timing file: %s", serverTiming.Filepath)
-				break
+				s.Log.Warnf("failed to expand path of test file: %s", clientTestFile)
+				unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)
+				continue
 			}
-			if clientExpandedFilepath == serverExpandedFilepath {
-				match = true
-				fileTimingMatch = testing.FileTimingMatch{
-					FileTiming:     serverTiming,
-					ClientFilepath: clientTestFile,
+
+			for _, serverTiming := range fileTimings {
+				serverExpandedFilepath, err := filepath.Abs(serverTiming.Filepath)
+				if err != nil {
+					s.Log.Warnf("failed to expand filepath of timing file: %s", serverTiming.Filepath)
+					break
 				}
-				break
+				if clientExpandedFilepath == serverExpandedFilepath {
+					match = true
+					fileTimingMatch = testing.FileTimingMatch{
+						FileTiming:     serverTiming,
+						ClientFilepath: clientTestFile,
+					}
+					break
+				}
+			}
+			if match {
+				fileTimingMatches = append(fileTimingMatches, fileTimingMatch)
+			} else {
+				unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)
 			}
 		}
-		if match {
-			fileTimingMatches = append(fileTimingMatches, fileTimingMatch)
-		} else {
-			unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)
-		}
-	}
-	sort.SliceStable(fileTimingMatches, func(i, j int) bool {
-		if fileTimingMatches[i].Duration() == fileTimingMatches[j].Duration() {
-			return fileTimingMatches[i].ClientFilepath > fileTimingMatches[j].ClientFilepath
-		}
+		sort.SliceStable(fileTimingMatches, func(i, j int) bool {
+			if fileTimingMatches[i].Duration() == fileTimingMatches[j].Duration() {
+				return fileTimingMatches[i].ClientFilepath > fileTimingMatches[j].ClientFilepath
+			}
 
-		return fileTimingMatches[i].Duration() > fileTimingMatches[j].Duration()
-	})
+			return fileTimingMatches[i].Duration() > fileTimingMatches[j].Duration()
+		})
 
-	if len(fileTimingMatches) == 0 {
-		s.Log.Warnln("No test file timings were matched. Using naive round-robin strategy.")
+		if len(fileTimingMatches) == 0 {
+			s.Log.Warnln("No test file timings were matched. Using naive round-robin strategy.")
+		}
 	}
 
 	partitions := make([]testing.TestPartition, 0)
