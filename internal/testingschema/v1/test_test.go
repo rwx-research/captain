@@ -416,6 +416,43 @@ var _ = Describe("Test", func() {
 		})
 	})
 
+	Describe("IdentityForMatching", func() {
+		It("constructs a string based on all of the attributes used for matching", func() {
+			scope1_1 := "scope1"
+			id1_1 := "id1"
+			name1_1 := "name1"
+			lineage1_1 := []string{"name", "1"}
+			file1_1 := "file1"
+			column := 1
+			line := 2
+			location1_1 := v1.Location{File: file1_1, Column: &column, Line: &line}
+
+			test := v1.Test{
+				Scope:    &scope1_1,
+				ID:       &id1_1,
+				Name:     name1_1,
+				Lineage:  lineage1_1,
+				Location: &location1_1,
+			}
+
+			//nolint:lll
+			Expect(test.IdentityForMatching()).To(Equal("scope=scope1 :: id=id1 :: name=name1 :: locationFile=file1 :: locationColumn=1 :: locationLine=2 :: lineage=____name____1"))
+		})
+
+		It("uses 'nil' for some nil values and empty string for others", func() {
+			name1_1 := "name1"
+			lineage1_1 := []string{}
+
+			test := v1.Test{
+				Name:    name1_1,
+				Lineage: lineage1_1,
+			}
+
+			//nolint:lll
+			Expect(test.IdentityForMatching()).To(Equal("scope= :: id=nil :: name=name1 :: locationFile=nil :: locationColumn=nil :: locationLine=nil :: lineage="))
+		})
+	})
+
 	Describe("Identify", func() {
 		Context("with strict identification", func() {
 			It("returns an error when fetching from meta of a test without meta", func() {
