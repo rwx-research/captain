@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -170,29 +171,42 @@ func (t Test) Tag(key string, value any) Test {
 }
 
 func (t Test) Matches(other Test) bool {
-	if !stringPointerEqualsTreatingEmptyAsNil(t.Scope, other.Scope) {
-		return false
+	return t.IdentityForMatching() == other.IdentityForMatching()
+}
+
+func (t Test) IdentityForMatching() string {
+	scopeStr := ""
+	if t.Scope != nil {
+		scopeStr = *t.Scope
 	}
-	if !stringPointerEquals(t.ID, other.ID) {
-		return false
+
+	idStr := "nil"
+	if t.ID != nil {
+		idStr = *t.ID
 	}
-	if t.Name != other.Name {
-		return false
+
+	locationFileStr := "nil"
+	if t.Location != nil {
+		locationFileStr = t.Location.File
 	}
-	if !locationPointerEquals(t.Location, other.Location) {
-		return false
+
+	locationColumnStr := "nil"
+	if t.Location != nil && t.Location.Column != nil {
+		locationColumnStr = strconv.Itoa(*t.Location.Column)
 	}
-	if len(t.Lineage) != len(other.Lineage) {
-		return false
+
+	locationLineStr := "nil"
+	if t.Location != nil && t.Location.Line != nil {
+		locationLineStr = strconv.Itoa(*t.Location.Line)
 	}
-	lineageMatches := true
-	for i, component := range t.Lineage {
-		if other.Lineage[i] != component {
-			lineageMatches = false
-			break
-		}
+
+	lineageStr := ""
+	for _, component := range t.Lineage {
+		lineageStr = lineageStr + "____" + component
 	}
-	return lineageMatches
+
+	//nolint:lll
+	return fmt.Sprintf("scope=%s :: id=%s :: name=%s :: locationFile=%s :: locationColumn=%s :: locationLine=%s :: lineage=%s", scopeStr, idStr, t.Name, locationFileStr, locationColumnStr, locationLineStr, lineageStr)
 }
 
 // Calculates the composite identifier of a Test given the components which determine it
@@ -292,56 +306,4 @@ func (t Test) metaGetter(component string) func() (*string, error) {
 		formatted := fmt.Sprintf("%v", value)
 		return &formatted, nil
 	}
-}
-
-func stringPointerEquals(left *string, right *string) bool {
-	if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	}
-
-	if left == nil && right == nil {
-		return true
-	}
-
-	return *left == *right
-}
-
-func stringPointerEqualsTreatingEmptyAsNil(left *string, right *string) bool {
-	leftStr := ""
-	if left != nil {
-		leftStr = *left
-	}
-
-	rightStr := ""
-	if right != nil {
-		rightStr = *right
-	}
-
-	return leftStr == rightStr
-}
-
-func intPointerEquals(left *int, right *int) bool {
-	if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	}
-
-	if left == nil && right == nil {
-		return true
-	}
-
-	return *left == *right
-}
-
-func locationPointerEquals(left *Location, right *Location) bool {
-	if (left == nil && right != nil) || (left != nil && right == nil) {
-		return false
-	}
-
-	if left == nil && right == nil {
-		return true
-	}
-
-	return left.File == right.File &&
-		intPointerEquals(left.Line, right.Line) &&
-		intPointerEquals(left.Column, right.Column)
 }

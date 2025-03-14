@@ -185,6 +185,7 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 
 func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) ([]string, error) {
 	uniqueTestIdentifiers := make(map[string]struct{})
+	uniqueTestMatchingIdentities := make(map[string]struct{})
 	duplicateTestIDs := make([]string, 0)
 	identityRecipe, recipeFound := cfg.IdentityRecipes[testResult.Framework.String()]
 
@@ -195,44 +196,34 @@ func checkIfTestIDsAreUnique(testResult v1.TestResults, cfg Config) ([]string, e
 		).String()]
 	}
 
-	// Populate `uniqueTestIdentifiers` with the ID of the last test as the for-loop that follows will
-	// not cover it.
-	if recipeFound {
-		id, err := testResult.Tests[len(testResult.Tests)-1].Identify(identityRecipe)
-		if err != nil {
-			cfg.Logger.Warnf("Unable to construct identity from test: %s", err.Error())
-		} else {
-			uniqueTestIdentifiers[id] = struct{}{}
-		}
-	}
+	for _, test := range testResult.Tests {
+		var id string
+		var err error
 
-	for i := 0; i < len(testResult.Tests)-1; i++ {
-		test := testResult.Tests[i]
-
+		// Check the identity based on the identity recipe for duplicates
 		if recipeFound {
-			id, err := test.Identify(identityRecipe)
+			id, err = test.Identify(identityRecipe)
 			if err != nil {
 				cfg.Logger.Warnf("Unable to construct identity from test: %s", err.Error())
 			} else {
 				if _, ok := uniqueTestIdentifiers[id]; ok {
 					duplicateTestIDs = append(duplicateTestIDs, id)
-					continue
+				} else {
+					uniqueTestIdentifiers[id] = struct{}{}
 				}
-				uniqueTestIdentifiers[id] = struct{}{}
 			}
 		}
 
-		for j := i + 1; j < len(testResult.Tests); j++ {
-			if test.Matches(testResult.Tests[j]) {
-				if recipeFound {
-					if id, err := test.Identify(identityRecipe); err == nil {
-						duplicateTestIDs = append(duplicateTestIDs, id)
-						continue
-					}
-				}
-
+		// Check the identity used for matching for duplicates
+		identityForMatching := test.IdentityForMatching()
+		if _, ok := uniqueTestMatchingIdentities[identityForMatching]; ok {
+			if id != "" {
+				duplicateTestIDs = append(duplicateTestIDs, id)
+			} else {
 				duplicateTestIDs = append(duplicateTestIDs, test.Name)
 			}
+		} else {
+			uniqueTestMatchingIdentities[identityForMatching] = struct{}{}
 		}
 	}
 
