@@ -14,6 +14,7 @@ type TestResults struct {
 	Tests       []Test                `json:"tests"`
 	OtherErrors []OtherError          `json:"otherErrors,omitempty"`
 	DerivedFrom []OriginalTestResults `json:"derivedFrom,omitempty"`
+	Meta        map[string]any        `json:"meta,omitempty"`
 }
 
 func (tr TestResults) MarshalJSON() ([]byte, error) {
@@ -36,6 +37,7 @@ func NewTestResults(framework Framework, tests []Test, otherErrors []OtherError)
 		Summary:     NewSummary(tests, otherErrors),
 		Tests:       tests,
 		OtherErrors: otherErrors,
+		Meta:        map[string]any{},
 	}
 }
 
@@ -59,6 +61,7 @@ func (tr *TestResults) UnmarshalJSON(b []byte) error {
 		Tests:       a.Tests,
 		OtherErrors: a.OtherErrors,
 		DerivedFrom: a.DerivedFrom,
+		Meta:        a.Meta,
 	}
 
 	return nil

@@ -211,6 +211,10 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			}
 		}
 		testResults.Summary = v1.NewSummary(testResults.Tests, testResults.OtherErrors)
+		if testResults.Meta == nil {
+			testResults.Meta = map[string]any{}
+		}
+		testResults.Meta["captain_suite_id"] = cfg.SuiteID
 	}
 
 	if newlyExecutedTestResults != nil {
@@ -225,6 +229,10 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			}
 		}
 		newlyExecutedTestResults.Summary = v1.NewSummary(newlyExecutedTestResults.Tests, newlyExecutedTestResults.OtherErrors)
+		if newlyExecutedTestResults.Meta == nil {
+			newlyExecutedTestResults.Meta = map[string]any{}
+		}
+		newlyExecutedTestResults.Meta["captain_suite_id"] = cfg.SuiteID
 	}
 
 	var uploadResults []backend.TestResultsUploadResult
