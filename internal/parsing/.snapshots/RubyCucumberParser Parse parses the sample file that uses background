@@ -1,0 +1,183 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Ruby",
+    "kind": "Cucumber"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 7,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 3,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 3,
+    "successful": 1,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "Background Sample \u003e A passing example",
+      "lineage": [
+        "Background Sample",
+        "A passing example"
+      ],
+      "location": {
+        "file": "features/background.feature",
+        "line": 6
+      },
+      "attempt": {
+        "durationInNanoseconds": 584000,
+        "meta": {
+          "tags": null
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "Background Sample \u003e A failing example",
+      "lineage": [
+        "Background Sample",
+        "A failing example"
+      ],
+      "location": {
+        "file": "features/background.feature",
+        "line": 12
+      },
+      "attempt": {
+        "durationInNanoseconds": 19087000,
+        "meta": {
+          "tags": [
+            {
+              "name": "@failing",
+              "line": 11
+            }
+          ]
+        },
+        "status": {
+          "kind": "failed",
+          "message": "\nexpected true\n     got false\n (RSpec::Expectations::ExpectationNotMetError)\n./features/step_definitions/steps.rb:17:in `\"some results should be there\"'\nfeatures/background.feature:15:in `some results should be there'"
+        }
+      }
+    },
+    {
+      "name": "Background Sample \u003e A pending example",
+      "lineage": [
+        "Background Sample",
+        "A pending example"
+      ],
+      "location": {
+        "file": "features/background.feature",
+        "line": 17
+      },
+      "attempt": {
+        "durationInNanoseconds": 60000,
+        "meta": {
+          "tags": null
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Background Sample \u003e A skipped example",
+      "lineage": [
+        "Background Sample",
+        "A skipped example"
+      ],
+      "location": {
+        "file": "features/background.feature",
+        "line": 22
+      },
+      "attempt": {
+        "durationInNanoseconds": 55000,
+        "meta": {
+          "tags": null
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Background Sample \u003e An undefined example",
+      "lineage": [
+        "Background Sample",
+        "An undefined example"
+      ],
+      "location": {
+        "file": "features/background.feature",
+        "line": 27
+      },
+      "attempt": {
+        "durationInNanoseconds": 4000,
+        "meta": {
+          "tags": null
+        },
+        "status": {
+          "kind": "skipped"
+        }
+      }
+    },
+    {
+      "name": "Background Sample \u003e With a failing before hook",
+      "lineage": [
+        "Background Sample",
+        "With a failing before hook"
+      ],
+      "location": {
+        "file": "features/background.feature",
+        "line": 33
+      },
+      "attempt": {
+        "durationInNanoseconds": 64000,
+        "meta": {
+          "tags": [
+            {
+              "name": "@failing_before_hook",
+              "line": 32
+            }
+          ]
+        },
+        "status": {
+          "kind": "failed",
+          "message": "failed in before hook (RuntimeError)\n./features/step_definitions/steps.rb:29:in `Before'"
+        }
+      }
+    },
+    {
+      "name": "Background Sample \u003e With a failing after hook",
+      "lineage": [
+        "Background Sample",
+        "With a failing after hook"
+      ],
+      "location": {
+        "file": "features/background.feature",
+        "line": 39
+      },
+      "attempt": {
+        "durationInNanoseconds": 65000,
+        "meta": {
+          "tags": [
+            {
+              "name": "@failing_after_hook",
+              "line": 38
+            }
+          ]
+        },
+        "status": {
+          "kind": "failed",
+          "message": "failed in after hook (RuntimeError)\n./features/step_definitions/steps.rb:33:in `After'"
+        }
+      }
+    }
+  ]
+}

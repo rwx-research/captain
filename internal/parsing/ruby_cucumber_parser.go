@@ -133,7 +133,23 @@ outer:
 	}
 
 	for _, feature := range cucumberFeatures {
-		for _, element := range feature.Elements {
+		for i := 0; i < len(feature.Elements); i++ {
+			element := feature.Elements[i]
+
+			// Merge Background into the next Scenario
+			if element.Type == "background" {
+				if i+1 >= len(feature.Elements) || feature.Elements[i+1].Type != "scenario" {
+					return nil, errors.NewInputError("Background must be followed by a Scenario in feature '%s'", feature.Name)
+				}
+
+				nextElement := &feature.Elements[i+1]
+
+				nextElement.Steps = append(element.Steps, nextElement.Steps...)
+				nextElement.Before = append(element.Before, nextElement.Before...)
+				nextElement.After = append(element.After, nextElement.After...)
+				continue
+			}
+
 			duration := time.Duration(0)
 			allResults := make([]RubyCucumberResult, 0)
 
@@ -161,7 +177,7 @@ outer:
 				allResults = append(allResults, *step.Result)
 			}
 
-			for _, hook := range element.Before {
+			for _, hook := range element.After {
 				if hook.Result.Duration != nil {
 					duration += time.Duration(*hook.Result.Duration * int(time.Nanosecond))
 				}
@@ -200,7 +216,6 @@ outer:
 				}
 			}
 
-			element := element
 			location := v1.Location{File: feature.URI, Line: &element.Line}
 			attempt := v1.TestAttempt{
 				Duration: &duration,

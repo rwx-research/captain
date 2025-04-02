@@ -27,6 +27,17 @@ var _ = Describe("RubyCucumberParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("parses the sample file that uses background", func() {
+			fixture, err := os.Open("../../test/fixtures/cucumber/background_integration.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.RubyCucumberParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
+			Expect(err).ToNot(HaveOccurred())
+			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
+		})
+
 		It("parses a passing element", func() {
 			fixture, err := os.Open("../../test/fixtures/cucumber/passing.json")
 			Expect(err).ToNot(HaveOccurred())

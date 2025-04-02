@@ -12,11 +12,11 @@
     "otherErrors": 0,
     "retries": 0,
     "canceled": 0,
-    "failed": 2,
+    "failed": 3,
     "pended": 0,
     "quarantined": 0,
     "skipped": 3,
-    "successful": 2,
+    "successful": 1,
     "timedOut": 0,
     "todo": 0
   },
@@ -182,7 +182,7 @@
         "line": 34
       },
       "attempt": {
-        "durationInNanoseconds": 282000,
+        "durationInNanoseconds": 141000,
         "meta": {
           "tags": [
             {
@@ -216,7 +216,7 @@
         "line": 41
       },
       "attempt": {
-        "durationInNanoseconds": 49000,
+        "durationInNanoseconds": 178000,
         "meta": {
           "tags": [
             {
@@ -234,7 +234,8 @@
           ]
         },
         "status": {
-          "kind": "successful"
+          "kind": "failed",
+          "message": "failed in after hook (RuntimeError)\n./features/step_definitions/steps.rb:29:in `After'"
         }
       }
     }
