@@ -161,7 +161,7 @@ outer:
 				allResults = append(allResults, *step.Result)
 			}
 
-			for _, hook := range element.Before {
+			for _, hook := range element.After {
 				if hook.Result.Duration != nil {
 					duration += time.Duration(*hook.Result.Duration * int(time.Nanosecond))
 				}
