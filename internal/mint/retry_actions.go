@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	retryActionKey   = "retry-failed-tests"
-	retryActionLabel = "Retry failed tests"
-	retryActionEnv   = "CAPTAIN_MINT_RETRY_FAILED_TESTS"
+	retryActionKey         = "retry-failed-tests"
+	retryActionLabel       = "Retry failed tests"
+	retryActionDescription = "Only the tests that failed will be run again."
+	retryActionEnv         = "CAPTAIN_MINT_RETRY_FAILED_TESTS"
 )
 
 func IsMint() bool {
@@ -35,6 +36,11 @@ func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults) e
 	err = writeLabel(fs)
 	if err != nil {
 		return errors.Wrap(err, "unable to write the Mint retry action label file")
+	}
+
+	err = writeDescription(fs)
+	if err != nil {
+		return errors.Wrap(err, "unable to write the Mint retry action description file")
 	}
 
 	err = writeTestResults(fs, testResults)
@@ -125,6 +131,23 @@ func writeLabel(fs fs.FileSystem) error {
 	_, err = labelFile.Write([]byte(RetryFailedTestsLabel()))
 	if err != nil {
 		return errors.Wrap(err, "unable to write to label file")
+	}
+
+	return nil
+}
+
+func writeDescription(fs fs.FileSystem) error {
+	var err error
+
+	descriptionFile, err := fs.Create(filepath.Join(retryActionDirectory(), "description"))
+	if err != nil {
+		return errors.Wrap(err, "unable to create description file")
+	}
+	defer descriptionFile.Close()
+
+	_, err = descriptionFile.Write([]byte(retryActionDescription))
+	if err != nil {
+		return errors.Wrap(err, "unable to write to description file")
 	}
 
 	return nil
