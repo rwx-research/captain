@@ -100,9 +100,6 @@ func (p JavaScriptVitestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	if testResults.Snapshot == nil {
 		return nil, errors.NewInputError("No snapshot was found in the JSON")
 	}
-	if len(testResults.TestResults) > 0 && testResults.TestResults[0].AssertionResults == nil {
-		return nil, errors.NewInputError("The test results in the JSON do not appear to match Vitest JSON")
-	}
 
 	tests := make([]v1.Test, 0)
 	otherErrors := make([]v1.OtherError, 0)

@@ -29,6 +29,12 @@ var _ = Describe("JavaScriptVitestParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("parses empty files", func() {
+			testResults, err := parsing.JavaScriptVitestParser{}.Parse(strings.NewReader(`{"testResults": [], "snapshot": {}}`))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(testResults.Tests).To(HaveLen(0))
+		})
+
 		It("errors on malformed JSON", func() {
 			testResults, err := parsing.JavaScriptVitestParser{}.Parse(strings.NewReader(`{`))
 			Expect(err).To(HaveOccurred())
@@ -48,15 +54,6 @@ var _ = Describe("JavaScriptVitestParser", func() {
 			testResults, err = parsing.JavaScriptVitestParser{}.Parse(strings.NewReader(`{"testResults": []}`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("No snapshot was found in the JSON"))
-			Expect(testResults).To(BeNil())
-
-			testResults, err = parsing.JavaScriptVitestParser{}.Parse(
-				strings.NewReader(`{"testResults": [{}], "snapshot": {}}`),
-			)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(
-				ContainSubstring("The test results in the JSON do not appear to match Vitest JSON"),
-			)
 			Expect(testResults).To(BeNil())
 		})
 

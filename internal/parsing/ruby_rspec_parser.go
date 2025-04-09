@@ -62,9 +62,6 @@ func (p RubyRSpecParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	if testResults.Summary == nil {
 		return nil, errors.NewInputError("No summary was found in the JSON")
 	}
-	if len(testResults.Examples) > 0 && testResults.Examples[0].FullDescription == "" {
-		return nil, errors.NewInputError("The examples in the JSON do not appear to match RSpec JSON")
-	}
 
 	tests := make([]v1.Test, 0)
 	for _, example := range testResults.Examples {

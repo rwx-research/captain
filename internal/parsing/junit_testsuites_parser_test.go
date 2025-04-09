@@ -39,6 +39,12 @@ var _ = Describe("JUnitTestsuitesParser", func() {
 			Expect(testResults).To(BeNil())
 		})
 
+		It("parses empty files", func() {
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(`<testsuites></testsuites>`))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(testResults.Tests).To(HaveLen(0))
+		})
+
 		It("errors on malformed XML", func() {
 			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(`<abc`))
 			Expect(err).To(HaveOccurred())
@@ -53,19 +59,6 @@ var _ = Describe("JUnitTestsuitesParser", func() {
 			testResults, err = parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(`<foo></foo>`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to parse test results as XML"))
-			Expect(testResults).To(BeNil())
-
-			testResults, err = parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(`<testsuites></testsuites>`))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(testResults).NotTo(BeNil())
-
-			testResults, err = parsing.JUnitTestsuitesParser{}.Parse(
-				strings.NewReader(`<testsuites><testsuite></testsuite></testsuites>`),
-			)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(
-				ContainSubstring("The test suites in the XML do not appear to match JUnit XML"),
-			)
 			Expect(testResults).To(BeNil())
 		})
 

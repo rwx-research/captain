@@ -126,9 +126,6 @@ func (p JavaScriptJestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	if testResults.NumRuntimeErrorTestSuites == nil {
 		return nil, errors.NewInputError("No number of runtime error test suites was found in the JSON")
 	}
-	if len(testResults.TestResults) > 0 && testResults.TestResults[0].AssertionResults == nil {
-		return nil, errors.NewInputError("The test results in the JSON do not appear to match Jest JSON")
-	}
 
 	tests := make([]v1.Test, 0)
 	otherErrors := make([]v1.OtherError, 0)

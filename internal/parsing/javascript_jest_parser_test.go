@@ -29,6 +29,14 @@ var _ = Describe("JavaScriptJestParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("parses empty files", func() {
+			testResults, err := parsing.JavaScriptVitestParser{}.Parse(
+				strings.NewReader(`{"testResults": [], "numRuntimeErrorTestSuites": 0, "snapshot": {}}`),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(testResults.Tests).To(HaveLen(0))
+		})
+
 		It("errors on malformed JSON", func() {
 			testResults, err := parsing.JavaScriptJestParser{}.Parse(strings.NewReader(`{`))
 			Expect(err).To(HaveOccurred())
@@ -56,15 +64,6 @@ var _ = Describe("JavaScriptJestParser", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(
 				ContainSubstring("No number of runtime error test suites was found in the JSON"),
-			)
-			Expect(testResults).To(BeNil())
-
-			testResults, err = parsing.JavaScriptJestParser{}.Parse(
-				strings.NewReader(`{"testResults": [{}], "numRuntimeErrorTestSuites": 0, "snapshot": {}}`),
-			)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(
-				ContainSubstring("The test results in the JSON do not appear to match Jest JSON"),
 			)
 			Expect(testResults).To(BeNil())
 		})
