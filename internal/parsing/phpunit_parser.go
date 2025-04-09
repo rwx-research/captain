@@ -64,9 +64,6 @@ func (p PHPUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	if err := xml.NewDecoder(data).Decode(&testResults); err != nil {
 		return nil, errors.NewInputError("Unable to parse test results as XML: %s", err)
 	}
-	if len(testResults.TestSuites) == 0 || testResults.TestSuites[0].Tests == nil {
-		return nil, errors.NewInputError("The test suites in the XML do not appear to match PHPUnit XML")
-	}
 
 	tests := make([]v1.Test, 0)
 	for _, suite := range testResults.TestSuites {

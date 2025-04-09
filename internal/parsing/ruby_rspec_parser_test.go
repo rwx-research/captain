@@ -29,6 +29,12 @@ var _ = Describe("RubyRSpecParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("parses empty files", func() {
+			testResults, err := parsing.RubyRSpecParser{}.Parse(strings.NewReader(`{"examples": [], "summary": {}}`))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(testResults.Tests).To(HaveLen(0))
+		})
+
 		It("errors on malformed JSON", func() {
 			testResults, err := parsing.RubyRSpecParser{}.Parse(strings.NewReader(`{"examples":[`))
 			Expect(err).To(HaveOccurred())
@@ -48,13 +54,6 @@ var _ = Describe("RubyRSpecParser", func() {
 			testResults, err = parsing.RubyRSpecParser{}.Parse(strings.NewReader(`{"examples": []}`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("No summary was found in the JSON"))
-			Expect(testResults).To(BeNil())
-
-			testResults, err = parsing.RubyRSpecParser{}.Parse(
-				strings.NewReader(`{"examples": [{}], "summary": {}}`),
-			)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("The examples in the JSON do not appear to match RSpec JSON"))
 			Expect(testResults).To(BeNil())
 		})
 
