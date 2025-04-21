@@ -10,12 +10,11 @@ import (
 )
 
 var _ = Describe("TestPartition.Add", func() {
-	It("appends matching test file path and updates remaining capacity", func() {
+	It("appends matching test file path and updates the runtime", func() {
 		partition := testing.TestPartition{
-			RemainingCapacity: time.Duration(10),
-			Index:             0,
-			TestFilePaths:     []string{},
-			TotalCapacity:     time.Duration(100),
+			Index:         0,
+			TestFilePaths: []string{},
+			Runtime:       time.Duration(10),
 		}
 		testFileTiming := testing.TestFileTiming{
 			Filepath: "./spec/a_spec.rb",
@@ -27,24 +26,22 @@ var _ = Describe("TestPartition.Add", func() {
 		}
 		partition = partition.Add(fileTimingMatch)
 
-		Expect(partition.RemainingCapacity).To(Equal(time.Duration(8)))
+		Expect(partition.Runtime).To(Equal(time.Duration(12)))
 		Expect(partition.TestFilePaths).To(Equal([]string{"spec/a_spec.rb"}))
 	})
 })
 
 var _ = Describe("TestPartition.AddFilePath", func() {
-	It("appends filepath to the but doesn't update remaining capacity", func() {
-		remainingCapacity := time.Duration(10)
+	It("appends filepath to the but doesn't update the runtime", func() {
 		clientTestFilepath := "spec/a_spec.rb"
 		partition := testing.TestPartition{
-			RemainingCapacity: remainingCapacity,
-			Index:             0,
-			TestFilePaths:     []string{},
-			TotalCapacity:     time.Duration(100),
+			Index:         0,
+			TestFilePaths: []string{},
+			Runtime:       time.Duration(10),
 		}
 		partition = partition.AddFilePath(clientTestFilepath)
 
-		Expect(partition.RemainingCapacity).To(Equal(remainingCapacity))
+		Expect(partition.Runtime).To(Equal(time.Duration(10)))
 		Expect(partition.TestFilePaths).To(Equal([]string{clientTestFilepath}))
 	})
 })
