@@ -1,3 +1,20 @@
+on:
+  dispatch:
+    - key: release-captain
+      init:
+        commit-sha: ${{ event.git.sha }}
+        kind: ${{ event.dispatch.params.kind }}
+        version: ${{ event.dispatch.params.version }}
+      params:
+        - key: kind
+          name: Release Kind
+          description: Which kind of deployment is this? (production, unstable, or testing)
+          default: production
+          required: true
+        - key: version
+          name: Release Version
+          description: Which version should this be (only required for production releases)? (e.g. v1.0.0)
+
 concurrency-pools:
   - id: release-captain-${{ init.kind }}
     capacity: 1
