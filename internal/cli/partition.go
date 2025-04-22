@@ -124,15 +124,20 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 }
 
 func partitionWithLeastRuntime(partitions []testing.TestPartition) testing.TestPartition {
-	partition := partitions[0]
+	selected := partitions[0]
 
-	for _, p := range partitions {
-		if p.Runtime < partition.Runtime {
-			partition = p
+	for _, candidate := range partitions {
+		if candidate.Runtime < selected.Runtime {
+			selected = candidate
+			continue
+		}
+
+		if candidate.Runtime == selected.Runtime && len(candidate.TestFilePaths) < len(selected.TestFilePaths) {
+			selected = candidate
 		}
 	}
 
-	return partition
+	return selected
 }
 
 func utilizedPartitionCount(partitions []testing.TestPartition) int {
