@@ -88,36 +88,27 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 	}
 
 	partitions := make([]testing.TestPartition, 0)
-	var totalCapacity time.Duration
+	var totalRuntime time.Duration
 	for _, fileTimingMatch := range fileTimingMatches {
-		totalCapacity += fileTimingMatch.Duration()
+		totalRuntime += fileTimingMatch.Duration()
 	}
-	partitionCapacity := totalCapacity / time.Duration(cfg.PartitionNodes.Total)
+	partitionRuntime := totalRuntime / time.Duration(cfg.PartitionNodes.Total)
 
-	s.Log.Debugf("Total Capacity: %s", totalCapacity)
-	s.Log.Debugf("Target Partition Capacity: %s", partitionCapacity)
+	s.Log.Debugf("Total Runtime: %s", totalRuntime)
+	s.Log.Debugf("Target Partition Runtime: %s", partitionRuntime)
 
 	for i := 0; i < cfg.PartitionNodes.Total; i++ {
 		partitions = append(partitions, testing.TestPartition{
-			Index:             i,
-			TestFilePaths:     make([]string, 0),
-			RemainingCapacity: partitionCapacity,
-			TotalCapacity:     partitionCapacity,
+			Index:         i,
+			TestFilePaths: make([]string, 0),
+			Runtime:       time.Duration(0),
 		})
 	}
 
 	for _, fileTimingMatch := range fileTimingMatches {
-		fits, partition := partitionWithFirstFit(partitions, fileTimingMatch)
-		if fits {
-			partition = partition.Add(fileTimingMatch)
-			partitions[partition.Index] = partition
-			s.Log.Debugf("%s: Assigned %s using first fit strategy", partition, fileTimingMatch)
-			continue
-		}
-		partition = partitionWithMostRemainingCapacity(partitions)
-		partition = partition.Add(fileTimingMatch)
+		partition := partitionWithLeastRuntime(partitions).Add(fileTimingMatch)
 		partitions[partition.Index] = partition
-		s.Log.Debugf("%s: Assigned %s using most remaining capacity strategy", partition, fileTimingMatch)
+		s.Log.Debugf("%s: Assigned %s using least runtime strategy", partition, fileTimingMatch)
 	}
 
 	for i, testFilepath := range unmatchedFilepaths {
@@ -132,27 +123,21 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 	}, nil
 }
 
-func partitionWithFirstFit(
-	partitions []testing.TestPartition,
-	fileTimingMatch testing.FileTimingMatch,
-) (fit bool, result testing.TestPartition) {
-	for _, p := range partitions {
-		if p.RemainingCapacity >= fileTimingMatch.Duration() {
-			return true, p
-		}
-	}
-	return false, result
-}
+func partitionWithLeastRuntime(partitions []testing.TestPartition) testing.TestPartition {
+	selected := partitions[0]
 
-func partitionWithMostRemainingCapacity(partitions []testing.TestPartition) testing.TestPartition {
-	result := partitions[0]
-	for i := 1; i < len(partitions); i++ {
-		p := partitions[i]
-		if p.RemainingCapacity > result.RemainingCapacity {
-			result = p
+	for _, candidate := range partitions {
+		if candidate.Runtime < selected.Runtime {
+			selected = candidate
+			continue
+		}
+
+		if candidate.Runtime == selected.Runtime && len(candidate.TestFilePaths) < len(selected.TestFilePaths) {
+			selected = candidate
 		}
 	}
-	return result
+
+	return selected
 }
 
 func utilizedPartitionCount(partitions []testing.TestPartition) int {

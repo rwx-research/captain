@@ -1,3 +1,7 @@
+base:
+  os: ubuntu 24.04
+  tag: 1.1
+
 tasks:
   - key: code
     call: mint/git-clone 1.6.1

@@ -6,15 +6,14 @@ import (
 )
 
 type TestPartition struct {
-	RemainingCapacity time.Duration
-	Index             int
-	TestFilePaths     []string
-	TotalCapacity     time.Duration
+	Index         int
+	Runtime       time.Duration
+	TestFilePaths []string
 }
 
 func (p TestPartition) Add(matchedTiming FileTimingMatch) TestPartition {
 	p = p.AddFilePath(matchedTiming.ClientFilepath)
-	p.RemainingCapacity -= matchedTiming.Duration()
+	p.Runtime += matchedTiming.Duration()
 	return p
 }
 
@@ -24,6 +23,5 @@ func (p TestPartition) AddFilePath(filepath string) TestPartition {
 }
 
 func (p TestPartition) String() string {
-	percent := 100 - (float64(p.RemainingCapacity) / float64(p.TotalCapacity) * 100)
-	return fmt.Sprintf("[PART %d (%0.2f)]", p.Index, percent)
+	return fmt.Sprintf("[PART %d (%0.2fs)]", p.Index, p.Runtime.Seconds())
 }

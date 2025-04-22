@@ -140,7 +140,7 @@ var _ = Describe("Partition", func() {
 			Expect(fetchedTimingManifest).To(BeTrue())
 		})
 
-		It("uses first fit strategy", func() {
+		It("uses least runtime strategy", func() {
 			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
@@ -148,12 +148,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements([]string{
-				"Total Capacity: 10ns",
-				"Target Partition Capacity: 5ns",
-				"[PART 0 (80.00)]: Assigned 'a.test' (4ns) using first fit strategy",
-				"[PART 1 (60.00)]: Assigned 'b.test' (3ns) using first fit strategy",
-				"[PART 1 (100.00)]: Assigned 'c.test' (2ns) using first fit strategy",
-				"[PART 0 (100.00)]: Assigned 'd.test' (1ns) using first fit strategy",
+				"Total Runtime: 10ns",
+				"Target Partition Runtime: 5ns",
+				"[PART 0 (0.00s)]: Assigned 'a.test' (4ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' (3ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'c.test' (2ns) using least runtime strategy",
+				"[PART 0 (0.00s)]: Assigned 'd.test' (1ns) using least runtime strategy",
 			}))
 		})
 
@@ -197,12 +197,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(Equal([]string{
-				"Total Capacity: 0s",
-				"Target Partition Capacity: 0s",
-				"[PART 0 (NaN)]: Assigned 'a.test' using round robin strategy",
-				"[PART 1 (NaN)]: Assigned 'b.test' using round robin strategy",
-				"[PART 0 (NaN)]: Assigned 'c.test' using round robin strategy",
-				"[PART 1 (NaN)]: Assigned 'd.test' using round robin strategy",
+				"Total Runtime: 0s",
+				"Target Partition Runtime: 0s",
+				"[PART 0 (0.00s)]: Assigned 'a.test' using round robin strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' using round robin strategy",
+				"[PART 0 (0.00s)]: Assigned 'c.test' using round robin strategy",
+				"[PART 1 (0.00s)]: Assigned 'd.test' using round robin strategy",
 			}))
 		})
 
@@ -263,12 +263,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(Equal([]string{
-				"Total Capacity: 0s",
-				"Target Partition Capacity: 0s",
-				"[PART 0 (NaN)]: Assigned 'a.test' using round robin strategy",
-				"[PART 1 (NaN)]: Assigned 'b.test' using round robin strategy",
-				"[PART 0 (NaN)]: Assigned 'c.test' using round robin strategy",
-				"[PART 1 (NaN)]: Assigned 'd.test' using round robin strategy",
+				"Total Runtime: 0s",
+				"Target Partition Runtime: 0s",
+				"[PART 0 (0.00s)]: Assigned 'a.test' using round robin strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' using round robin strategy",
+				"[PART 0 (0.00s)]: Assigned 'c.test' using round robin strategy",
+				"[PART 1 (0.00s)]: Assigned 'd.test' using round robin strategy",
 			}))
 		})
 
@@ -324,7 +324,7 @@ var _ = Describe("Partition", func() {
 			Expect(fetchedTimingManifest).To(BeTrue())
 		})
 
-		It("uses first fit strategy, falling back to most remaining when it can't fit", func() {
+		It("uses least runtime strategy, falling back to most remaining when it can't fit", func() {
 			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
 			assignments := make([]string, 0)
@@ -332,12 +332,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements([]string{
-				"Total Capacity: 13ns",
-				"Target Partition Capacity: 6ns",
-				"[PART 0 (83.33)]: Assigned 'a.test' (5ns) using first fit strategy",
-				"[PART 1 (66.67)]: Assigned 'b.test' (4ns) using first fit strategy",
-				"[PART 1 (116.67)]: Assigned 'c.test' (3ns) using most remaining capacity strategy",
-				"[PART 0 (100.00)]: Assigned 'd.test' (1ns) using first fit strategy",
+				"Total Runtime: 13ns",
+				"Target Partition Runtime: 6ns",
+				"[PART 0 (0.00s)]: Assigned 'a.test' (5ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' (4ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'c.test' (3ns) using least runtime strategy",
+				"[PART 0 (0.00s)]: Assigned 'd.test' (1ns) using least runtime strategy",
 			}))
 		})
 
@@ -398,12 +398,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements([]string{
-				"Total Capacity: 13ns",
-				"Target Partition Capacity: 6ns",
-				"[PART 0 (100.00)]: Assigned 'a.test' (6ns) using first fit strategy",
-				"[PART 1 (66.67)]: Assigned 'b.test' (4ns) using first fit strategy",
-				"[PART 1 (116.67)]: Assigned 'c.test' (3ns) using most remaining capacity strategy",
-				"[PART 0 (100.00)]: Assigned 'd.test' using round robin strategy",
+				"Total Runtime: 13ns",
+				"Target Partition Runtime: 6ns",
+				"[PART 0 (0.00s)]: Assigned 'a.test' (6ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' (4ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'c.test' (3ns) using least runtime strategy",
+				"[PART 0 (0.00s)]: Assigned 'd.test' using round robin strategy",
 			}))
 		})
 
@@ -455,12 +455,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements([]string{
-				"Total Capacity: 10ns",
-				"Target Partition Capacity: 5ns",
-				"[PART 0 (80.00)]: Assigned 'd.test' (4ns) using first fit strategy",
-				"[PART 1 (60.00)]: Assigned 'c.test' (3ns) using first fit strategy",
-				"[PART 1 (100.00)]: Assigned 'b.test' (2ns) using first fit strategy",
-				"[PART 0 (100.00)]: Assigned 'a.test' (1ns) using first fit strategy",
+				"Total Runtime: 10ns",
+				"Target Partition Runtime: 5ns",
+				"[PART 0 (0.00s)]: Assigned 'd.test' (4ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'c.test' (3ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' (2ns) using least runtime strategy",
+				"[PART 0 (0.00s)]: Assigned 'a.test' (1ns) using least runtime strategy",
 			}))
 		})
 	})
@@ -494,12 +494,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements([]string{
-				"Total Capacity: 10ns",
-				"Target Partition Capacity: 3ns",
-				"[PART 0 (133.33)]: Assigned 'a.test' (4ns) using most remaining capacity strategy",
-				"[PART 1 (100.00)]: Assigned 'b.test' (3ns) using first fit strategy",
-				"[PART 2 (66.67)]: Assigned 'c.test' (2ns) using first fit strategy",
-				"[PART 2 (100.00)]: Assigned 'd.test' (1ns) using first fit strategy",
+				"Total Runtime: 10ns",
+				"Target Partition Runtime: 3ns",
+				"[PART 0 (0.00s)]: Assigned 'a.test' (4ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' (3ns) using least runtime strategy",
+				"[PART 2 (0.00s)]: Assigned 'c.test' (2ns) using least runtime strategy",
+				"[PART 2 (0.00s)]: Assigned 'd.test' (1ns) using least runtime strategy",
 			}))
 		})
 	})
@@ -533,12 +533,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements([]string{
-				"Total Capacity: 10ns",
-				"Target Partition Capacity: 5ns",
-				"[PART 0 (80.00)]: Assigned 'a.test' (4ns) using first fit strategy",
-				"[PART 1 (60.00)]: Assigned 'b.test' (3ns) using first fit strategy",
-				"[PART 1 (100.00)]: Assigned 'c.test' (2ns) using first fit strategy",
-				"[PART 0 (100.00)]: Assigned 'd.test' (1ns) using first fit strategy",
+				"Total Runtime: 10ns",
+				"Target Partition Runtime: 5ns",
+				"[PART 0 (0.00s)]: Assigned 'a.test' (4ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' (3ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'c.test' (2ns) using least runtime strategy",
+				"[PART 0 (0.00s)]: Assigned 'd.test' (1ns) using least runtime strategy",
 			}))
 		})
 	})
@@ -576,12 +576,12 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements(
-				"Total Capacity: 10ns",
-				"Target Partition Capacity: 5ns",
-				"[PART 0 (80.00)]: Assigned 'a.test' (4ns) using first fit strategy",
-				"[PART 1 (60.00)]: Assigned 'b.test' (3ns) using first fit strategy",
-				"[PART 1 (100.00)]: Assigned 'c.test' (2ns) using first fit strategy",
-				"[PART 0 (100.00)]: Assigned 'd.test' (1ns) using first fit strategy",
+				"Total Runtime: 10ns",
+				"Target Partition Runtime: 5ns",
+				"[PART 0 (0.00s)]: Assigned 'a.test' (4ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'b.test' (3ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'c.test' (2ns) using least runtime strategy",
+				"[PART 0 (0.00s)]: Assigned 'd.test' (1ns) using least runtime strategy",
 			))
 		})
 
