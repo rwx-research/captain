@@ -37,6 +37,10 @@ tasks:
     run: |
       if [[ "${{ init.kind }}" == "production" ]]; then
         cat << EOF | tee extract-version-details.yml
+          base:
+            os: ubuntu 24.04
+            tag: 1.1
+
           tasks:
             - key: extract-version-details
               run: |
@@ -47,6 +51,10 @@ tasks:
       fi
       if [[ "${{ init.kind }}" == "unstable" ]]; then
         cat << EOF | tee extract-version-details.yml
+          base:
+            os: ubuntu 24.04
+            tag: 1.1
+
           tasks:
             - key: extract-version-details
               run: |
@@ -56,6 +64,10 @@ tasks:
       fi
       if [[ "${{ init.kind }}" == "testing" ]]; then
         cat << EOF | tee extract-version-details.yml
+          base:
+            os: ubuntu 24.04
+            tag: 1.1
+
           tasks:
             - key: extract-version-details
               run: |
