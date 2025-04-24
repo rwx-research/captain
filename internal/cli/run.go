@@ -332,22 +332,32 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 
 	// Return the original exit code if there was a non-test error
 	if runErr != nil && otherErrorCount > 0 {
-		return errors.WithStack(runErr)
+		err = errors.WithStack(runErr)
 	}
 
 	// Return the original exit code if we didn't detect any failures
 	// (perhaps an error in parsing, failure of the framework to output an artifact, or coverage requirement)
 	if runErr != nil && len(quarantinedFailedTests)+len(unquarantinedFailedTests) == 0 && !didRetry {
-		return errors.WithStack(runErr)
+		err = errors.WithStack(runErr)
 	}
 
 	// Return the original exit code if we didn't quarantine all of the failures we saw
 	if runErr != nil && len(unquarantinedFailedTests) > 0 {
-		return errors.WithStack(runErr)
+		err = errors.WithStack(runErr)
 	}
 
 	if uploadError != nil && cfg.FailOnUploadError {
-		return uploadError
+		err = uploadError
+	}
+
+	if err != nil {
+		if apiConfiguration.IsSuiteQuarantined {
+			s.Log.Error(err)
+			s.Log.Infoln("Exiting with exit code 0 because the test suite is quarantined")
+
+			return nil
+		}
+		return err
 	}
 
 	return nil
