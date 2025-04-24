@@ -20,10 +20,11 @@ type QuarantinedTest struct {
 }
 
 type RunConfiguration struct {
-	GeneratedAt      string            `json:"generated_at,omitempty"`
-	QuarantinedTests []QuarantinedTest `json:"quarantined_tests,omitempty"`
-	FlakyTests       []Test            `json:"flaky_tests,omitempty"`
-	OrganizationSlug string            `json:"organization_slug,omitempty"`
+	GeneratedAt        string            `json:"generated_at,omitempty"`
+	QuarantinedTests   []QuarantinedTest `json:"quarantined_tests,omitempty"`
+	FlakyTests         []Test            `json:"flaky_tests,omitempty"`
+	OrganizationSlug   string            `json:"organization_slug,omitempty"`
+	IsSuiteQuarantined bool              `json:"is_suite_quarantined,omitempty"`
 }
 
 type Test struct {

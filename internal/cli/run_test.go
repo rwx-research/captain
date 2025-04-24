@@ -629,6 +629,43 @@ var _ = Describe("Run", func() {
 				Expect(uploadedTestResults.Tests[2].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusTimedOut))
 			})
 		})
+
+		Context("test suite is quarantined", func() {
+			BeforeEach(func() {
+				mockGetRunConfiguration := func(
+					_ context.Context,
+					_ string,
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						IsSuiteQuarantined: true,
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+			})
+
+			It("doesn't return an error", func() {
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("logs the failing tests", func() {
+				logMessages := make([]string, 0)
+
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).To(ContainElement(ContainSubstring("test suite exited with non-zero exit code")))
+				Expect(logMessages).To(ContainElement(
+					ContainSubstring("Exiting with exit code 0 because the test suite is quarantined"),
+				))
+
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Quarantined).To(Equal(0))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusTimedOut))
+			})
+		})
 	})
 
 	Context("with other errors", func() {
@@ -879,6 +916,15 @@ var _ = Describe("Run", func() {
 					},
 				}, nil
 			}
+
+			mockGetRunConfiguration := func(
+				_ context.Context,
+				_ string,
+			) (backend.RunConfiguration, error) {
+				fetchedRunConfiguration = true
+				return backend.RunConfiguration{}, nil
+			}
+			service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
 
 			runConfig = cli.RunConfig{
 				Command:              arg,
