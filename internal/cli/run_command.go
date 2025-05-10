@@ -73,7 +73,7 @@ func (s Service) makeRunCommand(ctx context.Context, cfg RunConfig) (RunCommand,
 	}
 	partitionCommand := compiledPartitionTemplate.Substitute(substitutionValueLookup)
 
-	commandArgs, err := commandArgs(partitionCommand, nil)
+	commandArgs, err := commandArgs(partitionCommand, cfg.Args)
 	if err != nil {
 		return RunCommand{}, err
 	}
