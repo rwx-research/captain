@@ -1,9 +1,6 @@
 # <img src="https://www.rwx.com/captain.svg" height="60" alt="captain">
 
-:globe_with_meridians: [website](https://rwx.com/captain) &ensp;
-:bird: [@rwx_research](https://twitter.com/rwx_research) &ensp;
-:speech_balloon: [discord](https://discord.gg/h4ha5Cue7j) &ensp;
-:books: [documentation](https://www.rwx.com/docs/captain)
+:globe_with_meridians: [website](https://rwx.com/captain) &ensp; :heavy_multiplication_x: [@rwx_research](https://x.com/rwx_research) &ensp; :speech_balloon: [discord](https://discord.gg/h4ha5Cue7j) &ensp; :books: [documentation](https://www.rwx.com/docs/captain)
 
 Captain is an open source CLI that can:
 - detect and quarantine flaky tests
