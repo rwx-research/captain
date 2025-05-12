@@ -25,6 +25,23 @@ func DidRetryFailedTests() bool {
 	return os.Getenv(retryActionEnv) == "true"
 }
 
+func WriteConfigureRetryCommandTip(fs fs.FileSystem) error {
+	var err error
+
+	tipFile, err := fs.Create(filepath.Join(os.Getenv("MINT_TIPS"), "configure-captain-retry-command"))
+	if err != nil {
+		return errors.Wrap(err, "unable to create tip file")
+	}
+	defer tipFile.Close()
+
+	_, err = tipFile.Write([]byte("Configure Captain retry command to enable Mint to retry only failed tests."))
+	if err != nil {
+		return errors.Wrap(err, "unable to write to tip file")
+	}
+
+	return nil
+}
+
 func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults) error {
 	var err error
 
