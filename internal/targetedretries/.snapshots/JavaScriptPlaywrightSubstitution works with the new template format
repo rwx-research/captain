@@ -1,0 +1,10 @@
+([]map[string]string) (len=2) {
+  (map[string]string) (len=2) {
+    (string) (len=7) "project": (string) (len=8) "chromium",
+    (string) (len=5) "tests": (string) (len=172) "example.spec.ts:37 example.spec.ts:42 example.spec.ts:47 example.spec.ts:82 example.spec.ts:94 nested/example.spec.ts:37 nested/example.spec.ts:72 nested/example.spec.ts:84"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=7) "project": (string) (len=7) "firefox",
+    (string) (len=5) "tests": (string) (len=172) "example.spec.ts:37 example.spec.ts:42 example.spec.ts:47 example.spec.ts:82 example.spec.ts:94 nested/example.spec.ts:37 nested/example.spec.ts:72 nested/example.spec.ts:84"
+  }
+}

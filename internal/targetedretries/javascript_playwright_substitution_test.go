@@ -21,9 +21,41 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 		Expect(substitution).NotTo(BeNil())
 	})
 
-	It("works with a real file", func() {
+	It("works with the example template", func() {
 		substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
 		compiledTemplate, compileErr := templating.CompileTemplate(substitution.Example())
+		Expect(compileErr).NotTo(HaveOccurred())
+
+		err := substitution.ValidateTemplate(compiledTemplate)
+		Expect(err).NotTo(HaveOccurred())
+
+		fixture, err := os.Open("../../test/fixtures/playwright.json")
+		Expect(err).ToNot(HaveOccurred())
+
+		testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(fixture)
+		Expect(err).ToNot(HaveOccurred())
+
+		substitutions, err := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*testResults,
+			func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+		)
+		Expect(err).NotTo(HaveOccurred())
+		sort.SliceStable(substitutions, func(i int, j int) bool {
+			if substitutions[i]["tests"] != substitutions[j]["tests"] {
+				return substitutions[i]["tests"] < substitutions[j]["tests"]
+			}
+
+			return substitutions[i]["project"] < substitutions[j]["project"]
+		})
+		cupaloy.SnapshotT(GinkgoT(), substitutions)
+	})
+
+	It("works with the old template format", func() {
+		substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+		compiledTemplate, compileErr := templating.CompileTemplate(
+			"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
+		)
 		Expect(compileErr).NotTo(HaveOccurred())
 
 		err := substitution.ValidateTemplate(compiledTemplate)
@@ -51,6 +83,38 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 			}
 
 			return substitutions[i]["grep"] < substitutions[j]["grep"]
+		})
+		cupaloy.SnapshotT(GinkgoT(), substitutions)
+	})
+
+	It("works with the new template format", func() {
+		substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+		compiledTemplate, compileErr := templating.CompileTemplate(
+			"npx playwright test {{ tests }} --project '{{ project }}'",
+		)
+		Expect(compileErr).NotTo(HaveOccurred())
+
+		err := substitution.ValidateTemplate(compiledTemplate)
+		Expect(err).NotTo(HaveOccurred())
+
+		fixture, err := os.Open("../../test/fixtures/playwright.json")
+		Expect(err).ToNot(HaveOccurred())
+
+		testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(fixture)
+		Expect(err).ToNot(HaveOccurred())
+
+		substitutions, err := substitution.SubstitutionsFor(
+			compiledTemplate,
+			*testResults,
+			func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+		)
+		Expect(err).NotTo(HaveOccurred())
+		sort.SliceStable(substitutions, func(i int, j int) bool {
+			if substitutions[i]["tests"] != substitutions[j]["tests"] {
+				return substitutions[i]["tests"] < substitutions[j]["tests"]
+			}
+
+			return substitutions[i]["project"] < substitutions[j]["project"]
 		})
 		cupaloy.SnapshotT(GinkgoT(), substitutions)
 	})
@@ -98,10 +162,21 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 			Expect(err).To(HaveOccurred())
 		})
 
-		It("is invalid for a template with incorrect placeholders", func() {
+		It("is invalid for a template with incorrect placeholders for the old format", func() {
 			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
 			compiledTemplate, compileErr := templating.CompileTemplate(
 				"npx playwright test '{{ wat }}' --project '{{ who }}' --grep '{{ foo }}'",
+			)
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			err := substitution.ValidateTemplate(compiledTemplate)
+			Expect(err).To(HaveOccurred())
+		})
+
+		It("is invalid for a template with incorrect placeholders for the new format", func() {
+			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+			compiledTemplate, compileErr := templating.CompileTemplate(
+				"npx playwright test {{ wat }} --project '{{ who }}'",
 			)
 			Expect(compileErr).NotTo(HaveOccurred())
 
@@ -119,190 +194,391 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 			err := substitution.ValidateTemplate(compiledTemplate)
 			Expect(err).NotTo(HaveOccurred())
 		})
+
+		It("is valid for a template with the tests and project placeholders", func() {
+			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+			compiledTemplate, compileErr := templating.CompileTemplate(
+				"npx playwright test {{ tests }} --project '{{ project }}'",
+			)
+			Expect(compileErr).NotTo(HaveOccurred())
+
+			err := substitution.ValidateTemplate(compiledTemplate)
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 
 	Describe("Substitutions", func() {
-		It("returns tests grouped by file and project", func() {
-			compiledTemplate, compileErr := templating.CompileTemplate(
-				"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
-			)
-			Expect(compileErr).NotTo(HaveOccurred())
+		Describe("the old template format", func() {
+			It("returns tests grouped by file and project", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
 
-			file1 := "path/to/file1.js"
-			file2 := "path/to/file with '.js"
+				file1 := "path/to/file1.js"
+				file2 := "path/to/file with '.js"
 
-			project1 := "project1"
-			project2 := "project with ' 2"
+				project1 := "project1"
+				project2 := "project with ' 2"
 
-			name1 := "name of describe test 'one' + 1"
-			name2 := "name of describe test 2"
+				name1 := "name of describe test 'one' + 1"
+				name2 := "name of describe test 2"
 
-			testResults := v1.TestResults{
-				Tests: []v1.Test{
-					{
-						Name:     name1,
-						Location: &v1.Location{File: file1},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project1},
-							Status: v1.NewFailedTestStatus(nil, nil, nil),
+				testResults := v1.TestResults{
+					Tests: []v1.Test{
+						{
+							Name:     name1,
+							Location: &v1.Location{File: file1},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewFailedTestStatus(nil, nil, nil),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file1},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewCanceledTestStatus(),
+							},
+						},
+						{
+							Name:     name1,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewTimedOutTestStatus(),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewPendedTestStatus(nil),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file1},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewSuccessfulTestStatus(),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewSkippedTestStatus(nil),
+							},
 						},
 					},
-					{
-						Name:     name2,
-						Location: &v1.Location{File: file1},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project1},
-							Status: v1.NewCanceledTestStatus(),
-						},
-					},
-					{
-						Name:     name1,
-						Location: &v1.Location{File: file2},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project2},
-							Status: v1.NewTimedOutTestStatus(),
-						},
-					},
-					{
-						Name:     name2,
-						Location: &v1.Location{File: file2},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project2},
-							Status: v1.NewPendedTestStatus(nil),
-						},
-					},
-					{
-						Name:     name2,
-						Location: &v1.Location{File: file1},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project2},
-							Status: v1.NewSuccessfulTestStatus(),
-						},
-					},
-					{
-						Name:     name2,
-						Location: &v1.Location{File: file2},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project1},
-							Status: v1.NewSkippedTestStatus(nil),
-						},
-					},
-				},
-			}
+				}
 
-			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-			substitutions, err := substitution.SubstitutionsFor(
-				compiledTemplate,
-				testResults,
-				func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
-			)
-			Expect(err).NotTo(HaveOccurred())
-			sort.SliceStable(substitutions, func(i int, j int) bool {
-				return substitutions[i]["file"] < substitutions[j]["file"]
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					testResults,
+					func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				sort.SliceStable(substitutions, func(i int, j int) bool {
+					return substitutions[i]["file"] < substitutions[j]["file"]
+				})
+				Expect(substitutions).To(Equal(
+					[]map[string]string{
+						{
+							"file":    `path/to/file with '"'"'.js`,
+							"project": `project with '"'"' 2`,
+							"grep":    `name of describe test '"'"'one'"'"' \+ 1`,
+						},
+						{
+							"file":    "path/to/file1.js",
+							"project": "project1",
+							"grep":    `name of describe test '"'"'one'"'"' \+ 1|name of describe test 2`,
+						},
+					},
+				))
 			})
-			Expect(substitutions).To(Equal(
-				[]map[string]string{
-					{
-						"file":    `path/to/file with '"'"'.js`,
-						"project": `project with '"'"' 2`,
-						"grep":    `name of describe test '"'"'one'"'"' \+ 1`,
+
+			It("filters the tests with the provided function", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
+
+				file1 := "path/to/file1.js"
+				file2 := "path/to/file with '.js"
+
+				project1 := "project1"
+				project2 := "project with ' 2"
+
+				name1 := "name of describe test 'one' + 1"
+				name2 := "name of describe test 2"
+
+				testResults := v1.TestResults{
+					Tests: []v1.Test{
+						{
+							Name:     name1,
+							Location: &v1.Location{File: file1},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewFailedTestStatus(nil, nil, nil),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file1},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewCanceledTestStatus(),
+							},
+						},
+						{
+							Name:     name1,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewTimedOutTestStatus(),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewPendedTestStatus(nil),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file1},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewSuccessfulTestStatus(),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewSkippedTestStatus(nil),
+							},
+						},
 					},
-					{
-						"file":    "path/to/file1.js",
-						"project": "project1",
-						"grep":    `name of describe test '"'"'one'"'"' \+ 1|name of describe test 2`,
+				}
+
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					testResults,
+					func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				sort.SliceStable(substitutions, func(i int, j int) bool {
+					return substitutions[i]["file"] < substitutions[j]["file"]
+				})
+				Expect(substitutions).To(Equal(
+					[]map[string]string{
+						{
+							"file":    "path/to/file1.js",
+							"project": "project1",
+							"grep":    `name of describe test '"'"'one'"'"' \+ 1`,
+						},
 					},
-				},
-			))
+				))
+			})
 		})
 
-		It("filters the tests with the provided function", func() {
-			compiledTemplate, compileErr := templating.CompileTemplate(
-				"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
-			)
-			Expect(compileErr).NotTo(HaveOccurred())
+		Describe("the new template format", func() {
+			It("returns tests grouped by file and project", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test {{ tests }} --project '{{ project }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
 
-			file1 := "path/to/file1.js"
-			file2 := "path/to/file with '.js"
+				file1 := "path/to/file1.js"
+				file2 := "path/to/file with '.js"
 
-			project1 := "project1"
-			project2 := "project with ' 2"
+				project1 := "project1"
+				project2 := "project with ' 2"
 
-			name1 := "name of describe test 'one' + 1"
-			name2 := "name of describe test 2"
+				name1 := "name of describe test 'one' + 1"
+				name2 := "name of describe test 2"
 
-			testResults := v1.TestResults{
-				Tests: []v1.Test{
-					{
-						Name:     name1,
-						Location: &v1.Location{File: file1},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project1},
-							Status: v1.NewFailedTestStatus(nil, nil, nil),
-						},
-					},
-					{
-						Name:     name2,
-						Location: &v1.Location{File: file1},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project1},
-							Status: v1.NewCanceledTestStatus(),
-						},
-					},
-					{
-						Name:     name1,
-						Location: &v1.Location{File: file2},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project2},
-							Status: v1.NewTimedOutTestStatus(),
-						},
-					},
-					{
-						Name:     name2,
-						Location: &v1.Location{File: file2},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project2},
-							Status: v1.NewPendedTestStatus(nil),
-						},
-					},
-					{
-						Name:     name2,
-						Location: &v1.Location{File: file1},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project2},
-							Status: v1.NewSuccessfulTestStatus(),
-						},
-					},
-					{
-						Name:     name2,
-						Location: &v1.Location{File: file2},
-						Attempt: v1.TestAttempt{
-							Meta:   map[string]any{"project": project1},
-							Status: v1.NewSkippedTestStatus(nil),
-						},
-					},
-				},
-			}
+				lineOne := 1
+				lineTen := 10
 
-			substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
-			substitutions, err := substitution.SubstitutionsFor(
-				compiledTemplate,
-				testResults,
-				func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
-			)
-			Expect(err).NotTo(HaveOccurred())
-			sort.SliceStable(substitutions, func(i int, j int) bool {
-				return substitutions[i]["file"] < substitutions[j]["file"]
+				testResults := v1.TestResults{
+					Tests: []v1.Test{
+						{
+							Name:     name1,
+							Location: &v1.Location{File: file1, Line: &lineOne},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewFailedTestStatus(nil, nil, nil),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file1, Line: &lineTen},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewCanceledTestStatus(),
+							},
+						},
+						{
+							Name:     name1,
+							Location: &v1.Location{File: file2, Line: &lineTen},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewTimedOutTestStatus(),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewPendedTestStatus(nil),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file1},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewSuccessfulTestStatus(),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewSkippedTestStatus(nil),
+							},
+						},
+					},
+				}
+
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					testResults,
+					func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				sort.SliceStable(substitutions, func(i int, j int) bool {
+					return substitutions[i]["tests"] < substitutions[j]["tests"]
+				})
+				Expect(substitutions).To(Equal(
+					[]map[string]string{
+						{
+							"project": "project with '\"'\"' 2",
+							"tests":   "path/to/file with '\"'\"'.js:10",
+						},
+						{
+							"project": "project1",
+							"tests":   "path/to/file1.js:1 path/to/file1.js:10",
+						},
+					},
+				))
 			})
-			Expect(substitutions).To(Equal(
-				[]map[string]string{
-					{
-						"file":    "path/to/file1.js",
-						"project": "project1",
-						"grep":    `name of describe test '"'"'one'"'"' \+ 1`,
+
+			It("filters the tests with the provided function", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test {{ tests }} --project '{{ project }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
+
+				file1 := "path/to/file1.js"
+				file2 := "path/to/file with '.js"
+
+				project1 := "project1"
+				project2 := "project with ' 2"
+
+				name1 := "name of describe test 'one' + 1"
+				name2 := "name of describe test 2"
+
+				lineOne := 1
+				lineTen := 10
+
+				testResults := v1.TestResults{
+					Tests: []v1.Test{
+						{
+							Name:     name1,
+							Location: &v1.Location{File: file1, Line: &lineOne},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewFailedTestStatus(nil, nil, nil),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file1, Line: &lineTen},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewCanceledTestStatus(),
+							},
+						},
+						{
+							Name:     name1,
+							Location: &v1.Location{File: file2, Line: &lineTen},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewTimedOutTestStatus(),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewPendedTestStatus(nil),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file1},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project2},
+								Status: v1.NewSuccessfulTestStatus(),
+							},
+						},
+						{
+							Name:     name2,
+							Location: &v1.Location{File: file2},
+							Attempt: v1.TestAttempt{
+								Meta:   map[string]any{"project": project1},
+								Status: v1.NewSkippedTestStatus(nil),
+							},
+						},
 					},
-				},
-			))
+				}
+
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					testResults,
+					func(test v1.Test) bool { return test.Attempt.Status.Kind == v1.TestStatusFailed },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				sort.SliceStable(substitutions, func(i int, j int) bool {
+					return substitutions[i]["tests"] < substitutions[j]["tests"]
+				})
+				Expect(substitutions).To(Equal(
+					[]map[string]string{
+						{
+							"project": "project1",
+							"tests":   "path/to/file1.js:1",
+						},
+					},
+				))
+			})
 		})
 	})
 })
