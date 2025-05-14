@@ -46,7 +46,18 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 		for _, clientTestFile := range testFilePaths {
 			match := false
 			var fileTimingMatch testing.FileTimingMatch
-			clientExpandedFilepath, err := filepath.Abs(clientTestFile)
+			clientExpandedFilepath := clientTestFile
+			if cfg.TrimPrefix != "" {
+				trimmedClientExpandedFilepath := strings.TrimPrefix(clientTestFile, cfg.TrimPrefix)
+				s.Log.Debugf(
+					"Trimming prefix '%s' from '%s' resulting in '%s' for comparison",
+					cfg.TrimPrefix,
+					clientTestFile,
+					trimmedClientExpandedFilepath,
+				)
+				clientExpandedFilepath = trimmedClientExpandedFilepath
+			}
+			clientExpandedFilepath, err = filepath.Abs(clientExpandedFilepath)
 			if err != nil {
 				s.Log.Warnf("failed to expand path of test file: %s", clientTestFile)
 				unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)

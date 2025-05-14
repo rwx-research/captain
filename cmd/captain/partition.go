@@ -15,6 +15,7 @@ type partitionArgs struct {
 	nodes      config.PartitionNodes
 	delimiter  string
 	roundRobin bool
+	trimPrefix string
 }
 
 func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
@@ -98,6 +99,7 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 				PartitionNodes: pArgs.nodes,
 				Delimiter:      pArgs.delimiter,
 				RoundRobin:     pArgs.roundRobin,
+				TrimPrefix:     pArgs.trimPrefix,
 			})
 			return errors.WithStack(err)
 		},
@@ -127,6 +129,13 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		false,
 		"Whether to naively round robin tests across partitions. When false, historical test timing data will be used to"+
 			" evenly balance the partitions.",
+	)
+
+	partitionCmd.Flags().StringVar(
+		&pArgs.trimPrefix,
+		"trim-prefix",
+		"",
+		"A prefix to trim from the beginning of local test file paths when comparing them to historical timing data.",
 	)
 
 	rootCmd.AddCommand(partitionCmd)
