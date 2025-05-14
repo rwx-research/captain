@@ -44,6 +44,7 @@ type SuiteConfigPartition struct {
 	Globs      []string
 	Delimiter  string
 	RoundRobin bool `yaml:"round-robin"`
+	OmitPrefix string
 }
 
 // SuiteConfig holds options that can be customized per suite

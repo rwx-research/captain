@@ -45,6 +45,7 @@ type CliArgs struct {
 	partitionCommandTemplate  string
 	partitionGlobs            []string
 	partitionRoundRobin       bool
+	partitionOmitPrefix       string
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -152,8 +153,10 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 							},
 							Delimiter:  suiteConfig.Partition.Delimiter,
 							RoundRobin: suiteConfig.Partition.RoundRobin,
+							OmitPrefix: suiteConfig.Partition.OmitPrefix,
 						},
 						PartitionRoundRobin:         suiteConfig.Partition.RoundRobin,
+						PartitionOmitPrefix:         suiteConfig.Partition.OmitPrefix,
 						WriteRetryFailedTestsAction: mint.IsMint(),
 						DidRetryFailedTestsInMint:   mint.DidRetryFailedTests(),
 					}
@@ -330,6 +333,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			" evenly balance the partitions.",
 	)
 
+	runCmd.Flags().StringVar(
+		&cliArgs.partitionOmitPrefix,
+		"partition-omit-prefix",
+		"",
+		"A string prefix to remove from the beginning of local test file paths when comparing them to historical timing data.",
+	)
+
 	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",
 		"the name of the current Github Job")
 	if err := runCmd.Flags().MarkDeprecated("github-job-name", "the value will be ignored"); err != nil {
@@ -470,6 +480,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 
 		if cmd.Flags().Changed("partition-round-robin") {
 			suiteConfig.Partition.RoundRobin = cliArgs.partitionRoundRobin
+		}
+
+		if cmd.Flags().Changed("partition-round-robin") {
+			suiteConfig.Partition.OmitPrefix = cliArgs.partitionOmitPrefix
 		}
 
 		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suiteConfig

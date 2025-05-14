@@ -20,7 +20,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func cfgWithArgs(index int, total int, args []string, delimiter string, roundRobin bool) cli.PartitionConfig {
+func cfgWithArgs(index int, total int, args []string, delimiter string, roundRobin bool, omitPrefix string) cli.PartitionConfig {
 	return cli.PartitionConfig{
 		TestFilePaths: args,
 		PartitionNodes: config.PartitionNodes{
@@ -30,15 +30,16 @@ func cfgWithArgs(index int, total int, args []string, delimiter string, roundRob
 		SuiteID:    "captain-cli-test",
 		Delimiter:  delimiter,
 		RoundRobin: roundRobin,
+		OmitPrefix: omitPrefix,
 	}
 }
 
 func cfgWithGlob(index int, total int, glob string) cli.PartitionConfig {
-	return cfgWithArgs(index, total, []string{glob}, " ", false)
+	return cfgWithArgs(index, total, []string{glob}, " ", false, "")
 }
 
 func cfgWithGlobAndRoundRobin(index int, total int, glob string) cli.PartitionConfig {
-	return cfgWithArgs(index, total, []string{glob}, " ", true)
+	return cfgWithArgs(index, total, []string{glob}, " ", true, "")
 }
 
 var _ = Describe("Partition", func() {
@@ -82,7 +83,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("must specify filepath args", func() {
-			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}, " ", false))
+			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}, " ", false, ""))
 			Expect(err.Error()).To(ContainSubstring("Missing test file paths"))
 		})
 	})
@@ -100,7 +101,7 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("only considers unique filepaths", func() {
-			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test", "*.test"}, " ", false))
+			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test", "*.test"}, " ", false, ""))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
@@ -651,12 +652,78 @@ var _ = Describe("Partition", func() {
 		})
 
 		It("raises an error because partitioning one index and round-robining another is problematic ", func() {
-			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test"}, ",", false))
+			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test"}, ",", false, ""))
 			logMessages := make([]string, 0)
 			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
 				logMessages = append(logMessages, log.Message)
 			}
 			Expect(logMessages).To(ContainElement("a.test,b.test,c.test,d.test"))
+		})
+	})
+
+	Context("when using an omit prefix", func() {
+		BeforeEach(func() {
+			mockGlob := func(_ string) ([]string, error) {
+				return []string{"test/a.test", "test/b.test", "test/c.test", "test/d.test"}, nil
+			}
+			mockGetTimingManifest := func(
+				_ context.Context,
+				_ string,
+			) ([]testing.TestFileTiming, error) {
+				fetchedTimingManifest = true
+				a, _ := filepath.Abs("a.test")
+				b, _ := filepath.Abs("b.test")
+				c, _ := filepath.Abs("c.test")
+				d, _ := filepath.Abs("d.test")
+				return []testing.TestFileTiming{
+					{Filepath: a, Duration: 4},
+					{Filepath: b, Duration: 3},
+					{Filepath: c, Duration: 2},
+					{Filepath: d, Duration: 1},
+				}, nil
+			}
+			service.API.(*mocks.API).MockGetTestTimingManifest = mockGetTimingManifest
+			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+		})
+
+		It("still matches because it first trims the omit-prefix", func() {
+			globConfig := cfgWithArgs(1, 2, []string{"tests/*.test"}, " ", false, "test/")
+			_ = service.Partition(ctx, globConfig)
+
+			assignments := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
+				assignments = append(assignments, log.Message)
+			}
+			Expect(assignments).To(ContainElements(
+				"Omitting prefix 'test/' from 'test/a.test' resulting in 'a.test' for comparison",
+				"Omitting prefix 'test/' from 'test/b.test' resulting in 'b.test' for comparison",
+				"Omitting prefix 'test/' from 'test/c.test' resulting in 'c.test' for comparison",
+				"Omitting prefix 'test/' from 'test/d.test' resulting in 'd.test' for comparison",
+				"Total Runtime: 10ns",
+				"Target Partition Runtime: 5ns",
+				"[PART 0 (0.00s)]: Assigned 'test/a.test' (4ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'test/b.test' (3ns) using least runtime strategy",
+				"[PART 1 (0.00s)]: Assigned 'test/c.test' (2ns) using least runtime strategy",
+				"[PART 0 (0.00s)]: Assigned 'test/d.test' (1ns) using least runtime strategy",
+			))
+		})
+
+		It("logs the partitioned files for index 0 using client test file paths", func() {
+			_ = service.Partition(ctx, cfgWithArgs(0, 2, []string{"tests/*.test"}, " ", false, "test/"))
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+				logMessages = append(logMessages, log.Message)
+			}
+			Expect(logMessages).To(ContainElement("test/a.test test/d.test"))
+		})
+
+		It("logs the partitioned files for index 1 using client test file paths", func() {
+			_ = service.Partition(ctx, cfgWithArgs(1, 2, []string{"tests/*.test"}, " ", false, "test/"))
+			logMessages := make([]string, 0)
+			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+				logMessages = append(logMessages, log.Message)
+			}
+			Expect(logMessages).To(ContainElement("test/b.test test/c.test"))
 		})
 	})
 })
