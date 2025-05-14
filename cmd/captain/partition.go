@@ -15,7 +15,7 @@ type partitionArgs struct {
 	nodes      config.PartitionNodes
 	delimiter  string
 	roundRobin bool
-	omitPrefix string
+	trimPrefix string
 }
 
 func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
@@ -99,7 +99,7 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 				PartitionNodes: pArgs.nodes,
 				Delimiter:      pArgs.delimiter,
 				RoundRobin:     pArgs.roundRobin,
-				OmitPrefix:     pArgs.omitPrefix,
+				TrimPrefix:     pArgs.trimPrefix,
 			})
 			return errors.WithStack(err)
 		},
@@ -132,10 +132,10 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	)
 
 	partitionCmd.Flags().StringVar(
-		&pArgs.omitPrefix,
-		"omit-prefix",
+		&pArgs.trimPrefix,
+		"trim-prefix",
 		"",
-		"A prefix to remove from the beginning of local test file paths when comparing them to historical timing data.",
+		"A prefix to trim from the beginning of local test file paths when comparing them to historical timing data.",
 	)
 
 	rootCmd.AddCommand(partitionCmd)

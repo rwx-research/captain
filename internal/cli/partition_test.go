@@ -26,7 +26,7 @@ func cfgWithArgs(
 	args []string,
 	delimiter string,
 	roundRobin bool,
-	omitPrefix string,
+	trimPrefix string,
 ) cli.PartitionConfig {
 	return cli.PartitionConfig{
 		TestFilePaths: args,
@@ -37,7 +37,7 @@ func cfgWithArgs(
 		SuiteID:    "captain-cli-test",
 		Delimiter:  delimiter,
 		RoundRobin: roundRobin,
-		OmitPrefix: omitPrefix,
+		TrimPrefix: trimPrefix,
 	}
 }
 
@@ -693,7 +693,7 @@ var _ = Describe("Partition", func() {
 			service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
 		})
 
-		It("still matches because it first trims the omit-prefix", func() {
+		It("still matches because it first trims the trim-prefix", func() {
 			globConfig := cfgWithArgs(1, 2, []string{"tests/*.test"}, " ", false, "test/")
 			_ = service.Partition(ctx, globConfig)
 
@@ -702,10 +702,10 @@ var _ = Describe("Partition", func() {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements(
-				"Omitting prefix 'test/' from 'test/a.test' resulting in 'a.test' for comparison",
-				"Omitting prefix 'test/' from 'test/b.test' resulting in 'b.test' for comparison",
-				"Omitting prefix 'test/' from 'test/c.test' resulting in 'c.test' for comparison",
-				"Omitting prefix 'test/' from 'test/d.test' resulting in 'd.test' for comparison",
+				"Trimming prefix 'test/' from 'test/a.test' resulting in 'a.test' for comparison",
+				"Trimming prefix 'test/' from 'test/b.test' resulting in 'b.test' for comparison",
+				"Trimming prefix 'test/' from 'test/c.test' resulting in 'c.test' for comparison",
+				"Trimming prefix 'test/' from 'test/d.test' resulting in 'd.test' for comparison",
 				"Total Runtime: 10ns",
 				"Target Partition Runtime: 5ns",
 				"[PART 0 (0.00s)]: Assigned 'test/a.test' (4ns) using least runtime strategy",

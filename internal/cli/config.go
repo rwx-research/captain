@@ -39,7 +39,7 @@ type RunConfig struct {
 	PartitionCommandTemplate    string
 	PartitionConfig             PartitionConfig
 	PartitionRoundRobin         bool
-	PartitionOmitPrefix         string
+	PartitionTrimPrefix         string
 	WriteRetryFailedTestsAction bool
 	DidRetryFailedTestsInMint   bool
 }
@@ -152,7 +152,7 @@ type PartitionConfig struct {
 	Delimiter      string
 	PartitionNodes config.PartitionNodes
 	RoundRobin     bool
-	OmitPrefix     string
+	TrimPrefix     string
 }
 
 func (pc PartitionConfig) Validate() error {
