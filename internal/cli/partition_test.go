@@ -20,7 +20,14 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func cfgWithArgs(index int, total int, args []string, delimiter string, roundRobin bool, omitPrefix string) cli.PartitionConfig {
+func cfgWithArgs(
+	index int,
+	total int,
+	args []string,
+	delimiter string,
+	roundRobin bool,
+	omitPrefix string,
+) cli.PartitionConfig {
 	return cli.PartitionConfig{
 		TestFilePaths: args,
 		PartitionNodes: config.PartitionNodes{

@@ -337,7 +337,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		&cliArgs.partitionOmitPrefix,
 		"partition-omit-prefix",
 		"",
-		"A string prefix to remove from the beginning of local test file paths when comparing them to historical timing data.",
+		"A prefix to remove from the beginning of local test file paths when comparing them to historical timing data.",
 	)
 
 	runCmd.Flags().StringVar(&cliArgs.RootCliArgs.githubJobName, "github-job-name", "",

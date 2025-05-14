@@ -135,7 +135,7 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		&pArgs.omitPrefix,
 		"omit-prefix",
 		"",
-		"A string prefix to remove from the beginning of local test file paths when comparing them to historical timing data.",
+		"A prefix to remove from the beginning of local test file paths when comparing them to historical timing data.",
 	)
 
 	rootCmd.AddCommand(partitionCmd)

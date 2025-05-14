@@ -49,7 +49,12 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 			clientExpandedFilepath := clientTestFile
 			if cfg.OmitPrefix != "" {
 				trimmedClientExpandedFilepath := strings.TrimPrefix(clientTestFile, cfg.OmitPrefix)
-				s.Log.Debugf("Omitting prefix '%s' from '%s' resulting in '%s' for comparison", cfg.OmitPrefix, clientTestFile, trimmedClientExpandedFilepath)
+				s.Log.Debugf(
+					"Omitting prefix '%s' from '%s' resulting in '%s' for comparison",
+					cfg.OmitPrefix,
+					clientTestFile,
+					trimmedClientExpandedFilepath,
+				)
 				clientExpandedFilepath = trimmedClientExpandedFilepath
 			}
 			clientExpandedFilepath, err = filepath.Abs(clientExpandedFilepath)
