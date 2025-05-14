@@ -68,16 +68,6 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	var testResultsFiles []string
 
 	if cfg.DidRetryFailedTestsInMint {
-		if cfg.RetryCommandTemplate == "" {
-			errorMessage := fmt.Sprintf(
-				"You cannot use %q unless you have a Captain retry command configured.\n\n"+
-					"See https://www.rwx.com/docs/captain/cli-configuration/config-yaml#test-suites-retries-command",
-				mint.RetryFailedTestsLabel(),
-			)
-			_ = mint.WriteError(s.FileSystem, errorMessage)
-			return errors.NewInputError("%s", errorMessage)
-		}
-
 		testResults, err = mint.ReadFailedTestResults(s.FileSystem)
 		if err != nil {
 			return errors.Wrap(err, "Could not load the failed tests from the previous attempt")
@@ -807,9 +797,16 @@ func (s Service) reportTestResults(
 		}
 
 		if hasFailedTests {
-			err := mint.WriteRetryFailedTestsAction(s.FileSystem, testResults)
-			if err != nil {
-				return nil, errors.Wrap(err, "unable to write Mint retry failed tests action")
+			if cfg.RetryCommandTemplate == "" {
+				err := mint.WriteConfigureRetryCommandTip(s.FileSystem)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to write configure-captain-retry-command tip")
+				}
+			} else {
+				err := mint.WriteRetryFailedTestsAction(s.FileSystem, testResults)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to write Mint retry failed tests action")
+				}
 			}
 		}
 	}
