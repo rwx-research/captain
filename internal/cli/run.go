@@ -841,6 +841,7 @@ func (s Service) reportTestResults(
 	}
 
 	if cfg.PrintSummary {
+		fmt.Fprintf(os.Stdout, "\n")
 		if err := reporting.WriteTextSummary(os.Stdout, newlyExecutedTestResults, reportingConfiguration); err != nil {
 			s.Log.Warnf("Unable to write text summary to stdout: %s", err.Error())
 		} else {

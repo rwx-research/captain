@@ -987,6 +987,53 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 		})
 	})
 
+	Describe("captain merge", func() {
+		It("parses and merges provided results", func() {
+			result := runCaptain(captainArgs{
+				args: []string{"merge", "fixtures/merge/rspec-one.json", "fixtures/merge/rspec-two.json", "--print-summary"},
+				env:  make(map[string]string),
+			})
+
+			Expect(result.exitCode).To(Equal(0))
+			withoutBackwardsCompatibility(func() {
+				cupaloy.SnapshotT(GinkgoT(), result.stdout)
+			})
+		})
+
+		It("reports to specified paths", func() {
+			tmp, err := os.MkdirTemp("", "*")
+			Expect(err).NotTo(HaveOccurred())
+
+			os.Remove(filepath.Join(tmp, "rwx-v1.json"))
+
+			result := runCaptain(captainArgs{
+				args: []string{"merge", "fixtures/merge/rspec-one.json", "fixtures/merge/rspec-two.json", "--reporter", fmt.Sprintf("rwx-v1-json=%v", filepath.Join(tmp, "rwx-v1.json"))},
+				env:  make(map[string]string),
+			})
+
+			Expect(result.exitCode).To(Equal(0))
+
+			data, err := ioutil.ReadFile(filepath.Join(tmp, "rwx-v1.json"))
+			Expect(err).ToNot(HaveOccurred())
+
+			withoutBackwardsCompatibility(func() {
+				cupaloy.SnapshotT(GinkgoT(), data)
+			})
+		})
+
+		It("supports globs", func() {
+			result := runCaptain(captainArgs{
+				args: []string{"merge", "fixtures/merge/rspec-*.json", "--print-summary"},
+				env:  make(map[string]string),
+			})
+
+			Expect(result.exitCode).To(Equal(0))
+			withoutBackwardsCompatibility(func() {
+				cupaloy.SnapshotT(GinkgoT(), result.stdout)
+			})
+		})
+	})
+
 	withoutBackwardsCompatibility(func() {
 		// `captain parse results` is a hidden command and not part of our public interface, so we don't
 		// assure backwards compatibility

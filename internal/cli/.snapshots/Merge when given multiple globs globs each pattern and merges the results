@@ -1,0 +1,143 @@
+(v1.TestResults) {
+  Framework: (v1.Framework) Other: one (one),
+  Summary: (v1.Summary) {
+    Status: (v1.SummaryStatus) (len=10) "successful",
+    Tests: (int) 4,
+    OtherErrors: (int) 0,
+    Retries: (int) 0,
+    Canceled: (int) 0,
+    Failed: (int) 0,
+    Pended: (int) 0,
+    Quarantined: (int) 0,
+    Skipped: (int) 0,
+    Successful: (int) 0,
+    TimedOut: (int) 0,
+    Todo: (int) 0
+  },
+  Tests: ([]v1.Test) (len=4) {
+    (v1.Test) {
+      Scope: (*string)(<nil>),
+      ID: (*string)((len=7) "test-id"),
+      Name: (string) (len=9) "test-name",
+      Lineage: ([]string) {
+      },
+      Location: (*v1.Location)(test-file),
+      Attempt: (v1.TestAttempt) {
+        Duration: (*time.Duration)(<nil>),
+        Meta: (map[string]interface {}) <nil>,
+        Status: (v1.TestStatus) {
+          Kind: (v1.TestStatusKind) "",
+          OriginalStatus: (*v1.TestStatus)(<nil>),
+          Message: (*string)(<nil>),
+          Exception: (*string)(<nil>),
+          Backtrace: ([]string) <nil>
+        },
+        Stderr: (*string)(<nil>),
+        Stdout: (*string)(<nil>),
+        StartedAt: (*time.Time)(<nil>),
+        FinishedAt: (*time.Time)(<nil>)
+      },
+      PastAttempts: ([]v1.TestAttempt) {
+      }
+    },
+    (v1.Test) {
+      Scope: (*string)(<nil>),
+      ID: (*string)((len=7) "test-id"),
+      Name: (string) (len=9) "test-name",
+      Lineage: ([]string) {
+      },
+      Location: (*v1.Location)(test-file),
+      Attempt: (v1.TestAttempt) {
+        Duration: (*time.Duration)(<nil>),
+        Meta: (map[string]interface {}) <nil>,
+        Status: (v1.TestStatus) {
+          Kind: (v1.TestStatusKind) "",
+          OriginalStatus: (*v1.TestStatus)(<nil>),
+          Message: (*string)(<nil>),
+          Exception: (*string)(<nil>),
+          Backtrace: ([]string) <nil>
+        },
+        Stderr: (*string)(<nil>),
+        Stdout: (*string)(<nil>),
+        StartedAt: (*time.Time)(<nil>),
+        FinishedAt: (*time.Time)(<nil>)
+      },
+      PastAttempts: ([]v1.TestAttempt) {
+      }
+    },
+    (v1.Test) {
+      Scope: (*string)(<nil>),
+      ID: (*string)((len=7) "test-id"),
+      Name: (string) (len=9) "test-name",
+      Lineage: ([]string) {
+      },
+      Location: (*v1.Location)(test-file),
+      Attempt: (v1.TestAttempt) {
+        Duration: (*time.Duration)(<nil>),
+        Meta: (map[string]interface {}) <nil>,
+        Status: (v1.TestStatus) {
+          Kind: (v1.TestStatusKind) "",
+          OriginalStatus: (*v1.TestStatus)(<nil>),
+          Message: (*string)(<nil>),
+          Exception: (*string)(<nil>),
+          Backtrace: ([]string) <nil>
+        },
+        Stderr: (*string)(<nil>),
+        Stdout: (*string)(<nil>),
+        StartedAt: (*time.Time)(<nil>),
+        FinishedAt: (*time.Time)(<nil>)
+      },
+      PastAttempts: ([]v1.TestAttempt) {
+      }
+    },
+    (v1.Test) {
+      Scope: (*string)(<nil>),
+      ID: (*string)((len=7) "test-id"),
+      Name: (string) (len=9) "test-name",
+      Lineage: ([]string) {
+      },
+      Location: (*v1.Location)(test-file),
+      Attempt: (v1.TestAttempt) {
+        Duration: (*time.Duration)(<nil>),
+        Meta: (map[string]interface {}) <nil>,
+        Status: (v1.TestStatus) {
+          Kind: (v1.TestStatusKind) "",
+          OriginalStatus: (*v1.TestStatus)(<nil>),
+          Message: (*string)(<nil>),
+          Exception: (*string)(<nil>),
+          Backtrace: ([]string) <nil>
+        },
+        Stderr: (*string)(<nil>),
+        Stdout: (*string)(<nil>),
+        StartedAt: (*time.Time)(<nil>),
+        FinishedAt: (*time.Time)(<nil>)
+      },
+      PastAttempts: ([]v1.TestAttempt) {
+      }
+    }
+  },
+  OtherErrors: ([]v1.OtherError) <nil>,
+  DerivedFrom: ([]v1.OriginalTestResults) (len=4) {
+    (v1.OriginalTestResults) {
+      OriginalFilePath: (string) "",
+      Contents: (string) "",
+      GroupNumber: (int) 1
+    },
+    (v1.OriginalTestResults) {
+      OriginalFilePath: (string) "",
+      Contents: (string) "",
+      GroupNumber: (int) 1
+    },
+    (v1.OriginalTestResults) {
+      OriginalFilePath: (string) "",
+      Contents: (string) "",
+      GroupNumber: (int) 1
+    },
+    (v1.OriginalTestResults) {
+      OriginalFilePath: (string) "",
+      Contents: (string) "",
+      GroupNumber: (int) 1
+    }
+  },
+  Meta: (map[string]interface {}) <nil>
+}

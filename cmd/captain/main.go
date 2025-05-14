@@ -52,6 +52,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	mergeCmd := createMergeCommand(&cliArgs)
+	rootCmd.AddCommand(mergeCmd)
+
 	runCmd.SetHelpTemplate(helpTemplate)
 	runCmd.SetUsageTemplate(shortUsageTemplate)
 	rootCmd.AddCommand(runCmd)

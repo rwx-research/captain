@@ -136,7 +136,15 @@ func CoerceFramework(providedLanguage string, providedKind string) Framework {
 }
 
 func (f Framework) Equal(f2 Framework) bool {
-	return f.Kind == f2.Kind && f.Language == f2.Language
+	if f.IsOther() && f2.IsOther() {
+		if f.IsProvided() && f2.IsProvided() {
+			return *f.ProvidedLanguage == *f2.ProvidedLanguage && *f.ProvidedKind == *f2.ProvidedKind
+		}
+
+		return !f.IsProvided() && !f2.IsProvided()
+	}
+
+	return !f.IsOther() && !f2.IsOther() && f.Kind == f2.Kind && f.Language == f2.Language
 }
 
 func (f Framework) IsOther() bool {
