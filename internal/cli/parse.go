@@ -59,7 +59,7 @@ func (s Service) parse(filepaths []string, group int) (*v1.TestResults, error) {
 
 		if framework == nil {
 			framework = &results.Framework
-		} else if *framework != results.Framework {
+		} else if !framework.Equal(results.Framework) {
 			return nil, errors.NewInputError(
 				"Multiple frameworks detected. The captain CLI only works with one framework at a time",
 			)

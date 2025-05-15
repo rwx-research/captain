@@ -220,3 +220,9 @@ type QuarantineConfig struct {
 	SuiteID             string
 	UpdateStoredResults bool
 }
+
+type MergeConfig struct {
+	ResultsGlobs []string
+	PrintSummary bool
+	Reporters    map[string]Reporter
+}
