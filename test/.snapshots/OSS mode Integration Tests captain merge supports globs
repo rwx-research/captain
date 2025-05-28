@@ -1,4 +1,3 @@
-Captain detected a total of 72 tests.
 
 Failed (36):
 - Tests::Case within a context behaves like shared examples has top-level aggregated failing tests
@@ -38,28 +37,4 @@ Failed (36):
 - Tests::Case within a context has passing pended tests
 - Tests::Case within a context behaves like shared examples has top-level failing tests
 
-Pended (24):
-- Tests::Case within a context behaves like shared examples has top-level skipped tests
-- Tests::Case within a context behaves like shared examples has top-level failing pended tests
-- Tests::Case within a context behaves like shared examples within a context has skipped tests
-- Tests::Case within a context behaves like shared examples within a context has failing pended tests
-- some string has top-level skipped tests
-- some string has top-level failing pended tests
-- some string behaves like shared examples has top-level skipped tests
-- some string behaves like shared examples has top-level failing pended tests
-- some string behaves like shared examples within a context has skipped tests
-- some string behaves like shared examples within a context has failing pended tests
-- some string within a context has skipped tests
-- some string within a context has failing pended tests
-- some string within a context behaves like shared examples has top-level skipped tests
-- some string within a context behaves like shared examples has top-level failing pended tests
-- some string within a context behaves like shared examples within a context has skipped tests
-- some string within a context behaves like shared examples within a context has failing pended tests
-- Tests::Case has top-level skipped tests
-- Tests::Case has top-level failing pended tests
-- Tests::Case behaves like shared examples has top-level skipped tests
-- Tests::Case behaves like shared examples has top-level failing pended tests
-- Tests::Case behaves like shared examples within a context has skipped tests
-- Tests::Case behaves like shared examples within a context has failing pended tests
-- Tests::Case within a context has skipped tests
-- Tests::Case within a context has failing pended tests
+72 total tests: 12 successful, 36 failed, 24 pended
