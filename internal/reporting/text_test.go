@@ -67,9 +67,9 @@ var _ = Describe("Text Report", func() {
 		Expect(reporting.WriteTextSummary(mockFile, testResults, reporting.Configuration{})).To(Succeed())
 		summary := mockFile.Builder.String()
 
-		Expect(summary).To(ContainSubstring("total of 4 tests"))
-		Expect(summary).To(ContainSubstring("Failed (1)"))
-		Expect(summary).To(ContainSubstring("Skipped (1)"))
-		Expect(summary).To(ContainSubstring("TimedOut (1)"))
+		Expect(summary).To(ContainSubstring("Failed (1):"))
+		Expect(summary).To(ContainSubstring("Timed Out (1):"))
+		Expect(summary).NotTo(ContainSubstring("Skipped (1):"))
+		Expect(summary).To(ContainSubstring("4 total tests: 1 successful, 1 failed, 1 timed out, 1 skipped"))
 	})
 })
