@@ -190,6 +190,33 @@ func ReadFailedTestResults(fs fs.FileSystem) (*v1.TestResults, error) {
 	return &testResults, nil
 }
 
+func RestoreIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath string) error {
+	if intermediateArtifactsPath == "" {
+		return nil
+	}
+
+	// Check if intermediate artifacts exist in the mint retry data directory
+	srcPath := filepath.Join(retryDataDirectory(), "intermediate-artifacts")
+	info, err := fs.Stat(srcPath)
+	if os.IsNotExist(err) {
+		return nil // No artifacts to restore
+	}
+	if err != nil {
+		return errors.Wrap(err, "unable to check mint retry data artifacts directory")
+	}
+	if !info.IsDir() {
+		return nil // Not a directory, nothing to restore
+	}
+
+	// Copy the artifacts from mint retry data directory to the intermediate artifacts path
+	err = copyDirectory(fs, srcPath, intermediateArtifactsPath)
+	if err != nil {
+		return errors.Wrap(err, "unable to restore intermediate artifacts from mint retry data")
+	}
+
+	return nil
+}
+
 func WriteError(fs fs.FileSystem, errorMessage string) error {
 	var err error
 

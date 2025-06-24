@@ -73,6 +73,11 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			return errors.Wrap(err, "Could not load the failed tests from the previous attempt")
 		}
 
+		err = mint.RestoreIntermediateArtifacts(s.FileSystem, cfg.IntermediateArtifactsPath)
+		if err != nil {
+			return errors.Wrap(err, "Could not restore intermediate artifacts from the previous attempt")
+		}
+
 		if testResults.Summary.OtherErrors > 0 {
 			errorMessage := fmt.Sprintf(
 				"The previous execution of this test suite had errors that occurred outside the test suite. "+
