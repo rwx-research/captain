@@ -117,8 +117,21 @@ func makeTestTask(args ...string) func(ctx context.Context) error {
 		}
 		args = append([]string{"-ldflags", ldflags}, args...)
 
+		// Check if this is an integration test run
+		isIntegrationTest := false
+		for _, arg := range args {
+			if arg == "integration" || arg == "./test/" {
+				isIntegrationTest = true
+				break
+			}
+		}
+
 		if report := os.Getenv("REPORT"); report != "" {
-			return sh.RunV("ginkgo", append([]string{"-p", "--junit-report=report.xml"}, args...)...)
+			if isIntegrationTest {
+				return sh.RunV("ginkgo", append([]string{"--junit-report=report.xml"}, args...)...)
+			} else {
+				return sh.RunV("ginkgo", append([]string{"-p", "--junit-report=report.xml"}, args...)...)
+			}
 		}
 
 		cmd := exec.Command("command", "-v", "ginkgo")
@@ -126,7 +139,11 @@ func makeTestTask(args ...string) func(ctx context.Context) error {
 			return sh.RunV("go", append([]string{"test"}, args...)...)
 		}
 
-		return sh.RunV("ginkgo", append([]string{"-p"}, args...)...)
+		if isIntegrationTest {
+			return sh.RunV("ginkgo", args...)
+		} else {
+			return sh.RunV("ginkgo", append([]string{"-p"}, args...)...)
+		}
 	}
 }
 
