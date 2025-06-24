@@ -1100,13 +1100,16 @@ var _ = Describe("Run", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(mkdirCalled).To(BeTrue())
 				Expect(intermediateTestResults).To(ContainElement(
-					fmt.Sprintf("%s/original-attempt/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
 				)
 				Expect(intermediateTestResults).To(ContainElement(
-					fmt.Sprintf("%s/retry-1/command-1/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+					fmt.Sprintf("%s/retry-1/command-1/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
 				)
 				Expect(intermediateTestResults).To(ContainElement(
-					fmt.Sprintf("%s/retry-2/command-1/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+					fmt.Sprintf("%s/retry-2/command-1/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
 				)
 			})
 		})

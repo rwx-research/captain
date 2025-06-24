@@ -417,6 +417,9 @@ func (s Service) attemptRetries(
 	if err := ias.moveTestResults(originalTestResultsFiles); err != nil {
 		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
+	if err := ias.moveAdditionalArtifacts(cfg.AdditionalArtifactPaths); err != nil {
+		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
+	}
 
 	maxTestsToRetryCount, err := cfg.MaxTestsToRetryCount()
 	if err != nil {
@@ -628,6 +631,9 @@ func (s Service) attemptRetries(
 			if err := ias.moveTestResults(newTestResultsFiles); err != nil {
 				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.WithStack(err)
 			}
+			if err := ias.moveAdditionalArtifacts(cfg.AdditionalArtifactPaths); err != nil {
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.WithStack(err)
+			}
 		}
 		if jsonSubstitution, ok := substitution.(targetedretries.JSONSubstitution); ok {
 			if err := jsonSubstitution.CleanUp(allSubstitutions); err != nil {
@@ -806,6 +812,11 @@ func (s Service) reportTestResults(
 				err := mint.WriteRetryFailedTestsAction(s.FileSystem, testResults)
 				if err != nil {
 					return nil, errors.Wrap(err, "unable to write Mint retry failed tests action")
+				}
+
+				err = mint.WriteIntermediateArtifacts(s.FileSystem, cfg.IntermediateArtifactsPath)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to copy intermediate artifacts to Mint retry action")
 				}
 			}
 		}

@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
@@ -67,7 +68,52 @@ func (s Service) newIntermediateArtifactStorage(path string) (*intermediateArtif
 }
 
 func (ias *intermediateArtifactStorage) moveTestResults(artifacts []string) error {
-	var err error
+	attemptPath := filepath.Join(ias.basePath, ias.retryID)
+	if ias.commandID != "" {
+		attemptPath = filepath.Join(attemptPath, ias.commandID)
+	}
+
+	for _, artifact := range artifacts {
+		dir, filename := filepath.Split(artifact)
+
+		var targetDir string
+		if filepath.IsAbs(dir) {
+			// For absolute paths outside working directory, preserve full structure
+			relDir, err := filepath.Rel(ias.workingDir, dir)
+			if err != nil || !fs.IsLocal(relDir) {
+				// Path is outside working directory, use full absolute path
+				targetDir = filepath.Join(attemptPath, strings.TrimPrefix(dir, "/"))
+			} else {
+				// Path is inside working directory, use __captain_working_directory prefix
+				targetDir = filepath.Join(attemptPath, "__captain_working_directory", relDir)
+			}
+		} else {
+			// Relative paths go under __captain_working_directory
+			targetDir = filepath.Join(attemptPath, "__captain_working_directory", dir)
+		}
+
+		if err := ias.fs.MkdirAll(targetDir, 0o750); err != nil {
+			return errors.WithStack(err)
+		}
+
+		if err := ias.moveFile(artifact, filepath.Join(targetDir, filename)); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	return nil
+}
+
+func (ias *intermediateArtifactStorage) moveAdditionalArtifacts(artifactPatterns []string) error {
+	if len(artifactPatterns) == 0 {
+		return nil
+	}
+
+	// Find all artifacts matching the patterns
+	artifacts, err := ias.fs.GlobMany(artifactPatterns)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
 	attemptPath := filepath.Join(ias.basePath, ias.retryID)
 	if ias.commandID != "" {
@@ -77,33 +123,27 @@ func (ias *intermediateArtifactStorage) moveTestResults(artifacts []string) erro
 	for _, artifact := range artifacts {
 		dir, filename := filepath.Split(artifact)
 
+		var targetDir string
 		if filepath.IsAbs(dir) {
-			dir, err = filepath.Rel(ias.workingDir, dir)
-			if err != nil {
-				return errors.WithStack(err)
+			// For absolute paths outside working directory, preserve full structure
+			relDir, err := filepath.Rel(ias.workingDir, dir)
+			if err != nil || !fs.IsLocal(relDir) {
+				// Path is outside working directory, use full absolute path
+				targetDir = filepath.Join(attemptPath, strings.TrimPrefix(dir, "/"))
+			} else {
+				// Path is inside working directory, use __captain_working_directory prefix
+				targetDir = filepath.Join(attemptPath, "__captain_working_directory", relDir)
 			}
+		} else {
+			// Relative paths go under __captain_working_directory
+			targetDir = filepath.Join(attemptPath, "__captain_working_directory", dir)
 		}
 
-		if dir != "" && !fs.IsLocal(dir) {
-			return errors.NewConfigurationError(
-				"Test results are outside of working directory",
-				fmt.Sprintf(
-					"Captain found a test result at %q, which appears to be outside of the current working directory (%q). "+
-						"Unfortunately this is an unsupported edge-case when using --intermediate-artifiacts-path "+
-						"as Captain is unable to construct the necessary directory structure in %q.",
-					artifact, ias.workingDir, ias.basePath,
-				),
-				"Please make sure that your test-results are all inside the current working directory. Alternatively, try "+
-					"Captain from a parent directory.",
-			)
-		}
-
-		targetPath := filepath.Join(attemptPath, dir)
-		if err := ias.fs.MkdirAll(targetPath, 0o750); err != nil {
+		if err := ias.fs.MkdirAll(targetDir, 0o750); err != nil {
 			return errors.WithStack(err)
 		}
 
-		if err := ias.moveFile(artifact, filepath.Join(targetPath, filename)); err != nil {
+		if err := ias.moveFile(artifact, filepath.Join(targetDir, filename)); err != nil {
 			return errors.WithStack(err)
 		}
 	}

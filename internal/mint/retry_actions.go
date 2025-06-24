@@ -2,6 +2,7 @@ package mint
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -66,6 +67,109 @@ func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults) e
 	}
 
 	return nil
+}
+
+func WriteIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath string) error {
+	if intermediateArtifactsPath == "" {
+		return nil
+	}
+
+	// Check if intermediate artifacts directory exists
+	info, err := fs.Stat(intermediateArtifactsPath)
+	if os.IsNotExist(err) {
+		return nil // No artifacts to copy
+	}
+	if err != nil {
+		return errors.Wrap(err, "unable to check intermediate artifacts directory")
+	}
+	if !info.IsDir() {
+		return nil // Not a directory, nothing to copy
+	}
+
+	// Copy the entire intermediate artifacts directory to the Mint retry action data directory
+	srcPath := intermediateArtifactsPath
+	dstPath := filepath.Join(retryActionDirectory(), "data", "intermediate-artifacts")
+
+	err = copyDirectory(fs, srcPath, dstPath)
+	if err != nil {
+		return errors.Wrap(err, "unable to copy intermediate artifacts to Mint retry action directory")
+	}
+
+	return nil
+}
+
+func copyDirectory(fs fs.FileSystem, src, dst string) error {
+	// Create destination directory
+	err := fs.MkdirAll(dst, 0o750)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Use glob to find all files recursively
+	pattern := filepath.Join(src, "**", "*")
+	allPaths, err := fs.Glob(pattern)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	for _, srcPath := range allPaths {
+		// Calculate relative path and destination
+		relPath, err := filepath.Rel(src, srcPath)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		dstPath := filepath.Join(dst, relPath)
+
+		// Check if it's a directory or file
+		info, err := fs.Stat(srcPath)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if info.IsDir() {
+			// Create directory
+			err = fs.MkdirAll(dstPath, 0o750)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		} else {
+			// Ensure parent directory exists
+			parentDir := filepath.Dir(dstPath)
+			err = fs.MkdirAll(parentDir, 0o750)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			// Copy file
+			err = copyFile(fs, srcPath, dstPath)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func copyFile(fs fs.FileSystem, src, dst string) error {
+	srcFile, err := fs.Open(src)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer srcFile.Close()
+
+	dstFile, err := fs.Create(dst)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return errors.WithStack(dstFile.Sync())
 }
 
 func ReadFailedTestResults(fs fs.FileSystem) (*v1.TestResults, error) {

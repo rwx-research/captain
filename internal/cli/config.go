@@ -24,6 +24,7 @@ type RunConfig struct {
 	FailRetriesFast             bool
 	FlakyRetries                int
 	IntermediateArtifactsPath   string
+	AdditionalArtifactPaths     []string
 	MaxTestsToRetry             string
 	PostRetryCommands           []string
 	PreRetryCommands            []string
@@ -73,6 +74,15 @@ func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
 
 	if rc.MaxTestsToRetry != "" && !(rc.Retries > 0 || rc.FlakyRetries > 0) {
 		log.Warn("The --max-tests-to-retry flag has no effect as no retries are otherwise configured.")
+	}
+
+	if len(rc.AdditionalArtifactPaths) > 0 && rc.IntermediateArtifactsPath == "" {
+		return errors.NewConfigurationError(
+			"Missing intermediate artifacts path",
+			"You have specified additional artifact paths, but no intermediate artifacts path is configured.",
+			"The intermediate artifacts path is required when using additional artifact paths. "+
+				"Set it using the --intermediate-artifacts-path flag.",
+		)
 	}
 
 	if rc.PartitionCommandTemplate != "" && rc.PartitionConfig.PartitionNodes.Total <= 1 {

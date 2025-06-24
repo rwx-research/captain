@@ -104,6 +104,31 @@ var _ = Describe("RunConfig", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
+		It("errs when additional artifact paths are provided without intermediate artifacts path", func() {
+			err := cli.RunConfig{
+				AdditionalArtifactPaths:   []string{"coverage/**/*"},
+				IntermediateArtifactsPath: "",
+			}.Validate(logger)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Missing intermediate artifacts path"))
+		})
+
+		It("is valid when additional artifact paths are provided with intermediate artifacts path", func() {
+			err := cli.RunConfig{
+				AdditionalArtifactPaths:   []string{"coverage/**/*"},
+				IntermediateArtifactsPath: "/tmp/artifacts",
+			}.Validate(logger)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("is valid when no additional artifact paths are provided", func() {
+			err := cli.RunConfig{
+				AdditionalArtifactPaths:   []string{},
+				IntermediateArtifactsPath: "",
+			}.Validate(logger)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
 		It("errs when partitioning and partition config is missing suite id", func() {
 			err := cli.RunConfig{
 				PartitionCommandTemplate: "something {{ testFiles }}",
