@@ -1064,6 +1064,7 @@ var _ = Describe("Run", func() {
 
 			BeforeEach(func() {
 				runConfig.IntermediateArtifactsPath = fmt.Sprintf("intermediate-results-%d", GinkgoRandomSeed())
+				runConfig.AdditionalArtifactPaths = []string{"coverage/**/*", "reports/**/*", "/tmp/external/**/*"}
 				runConfig.Retries = 2
 
 				mkdirCalled = false
@@ -1775,6 +1776,173 @@ var _ = Describe("Run", func() {
 				executionError, ok := errors.AsExecutionError(err)
 				Expect(ok).To(BeTrue(), "Error is an execution error")
 				Expect(executionError.Code).To(Equal(exitCode))
+			})
+		})
+
+		Context("when additional artifacts are configured", func() {
+			var (
+				intermediateTestResults     []string
+				intermediateAdditionalFiles []string
+				globManyCalled              bool
+				additionalArtifactFiles     []string
+			)
+
+			BeforeEach(func() {
+				runConfig.IntermediateArtifactsPath = fmt.Sprintf("intermediate-results-%d", GinkgoRandomSeed())
+				runConfig.AdditionalArtifactPaths = []string{"coverage/**/*", "reports/**/*", "/tmp/external/**/*"}
+				runConfig.Retries = 2
+
+				intermediateTestResults = make([]string, 0)
+				intermediateAdditionalFiles = make([]string, 0)
+				globManyCalled = false
+
+				// Mock additional artifact files that will be found by GlobMany
+				additionalArtifactFiles = []string{
+					"coverage/lcov.info",
+					"coverage/coverage.json",
+					"reports/junit.xml",
+					"/tmp/external/performance.json",
+				}
+
+				// Set mocks after parent BeforeEach to override them
+				mockMkdirAll := func(_ string, _ os.FileMode) error {
+					// if strings.Contains(dir, runConfig.IntermediateArtifactsPath) {
+					//	mkdirCalled = true
+					// }
+					return nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
+
+				mockRename := func(old, newName string) error {
+					if old == testResultsFilePath {
+						// This is a test result file
+						if strings.Contains(newName, runConfig.IntermediateArtifactsPath) {
+							intermediateTestResults = append(intermediateTestResults, newName)
+						}
+					} else {
+						// This is an additional artifact file
+						if strings.Contains(newName, runConfig.IntermediateArtifactsPath) {
+							intermediateAdditionalFiles = append(intermediateAdditionalFiles, newName)
+						}
+					}
+					return nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockRename = mockRename
+
+				mockGlobMany := func(patterns []string) ([]string, error) {
+					// Return our mock additional artifact files
+					globManyCalled = true
+					if len(patterns) > 0 && patterns[0] == runConfig.AdditionalArtifactPaths[0] {
+						return additionalArtifactFiles, nil
+					}
+					return []string{}, nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockGlobMany = mockGlobMany
+
+				mockStat := func(name string) (iofs.FileInfo, error) {
+					if name == runConfig.IntermediateArtifactsPath {
+						return mocks.FileInfo{Dir: true}, nil
+					}
+					return nil, iofs.ErrNotExist
+				}
+				service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
+
+				mockGetwd := func() (string, error) {
+					return "/test/working", nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockGetwd = mockGetwd
+			})
+
+			It("moves both test results and additional artifacts to intermediate directory", func() {
+				Expect(err).ToNot(HaveOccurred())
+				// Expect(mkdirCalled).To(BeTrue())
+				Expect(globManyCalled).To(BeTrue())
+
+				// Verify test results are moved for original attempt and retries
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/retry-1/command-1/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/retry-2/command-1/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
+
+				// Verify additional artifacts are moved for original attempt
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/coverage/lcov.info",
+						runConfig.IntermediateArtifactsPath)),
+				)
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/coverage/coverage.json",
+						runConfig.IntermediateArtifactsPath)),
+				)
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/reports/junit.xml",
+						runConfig.IntermediateArtifactsPath)),
+				)
+
+				// Verify external files preserve full path structure for original attempt
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/tmp/external/performance.json",
+						runConfig.IntermediateArtifactsPath)),
+				)
+
+				// Verify additional artifacts are moved for retry attempts too
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/retry-1/command-1/__captain_working_directory/coverage/lcov.info",
+						runConfig.IntermediateArtifactsPath)),
+				)
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/retry-2/command-1/__captain_working_directory/coverage/lcov.info",
+						runConfig.IntermediateArtifactsPath)),
+				)
+
+				// Verify external files are moved for retries too
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/retry-1/command-1/tmp/external/performance.json",
+						runConfig.IntermediateArtifactsPath)),
+				)
+			})
+
+			Context("when no additional artifacts are found", func() {
+				BeforeEach(func() {
+					additionalArtifactFiles = []string{} // No files found
+				})
+
+				It("still moves test results but no additional artifacts", func() {
+					Expect(err).ToNot(HaveOccurred())
+
+					// Test results should still be moved
+					Expect(intermediateTestResults).To(ContainElement(
+						fmt.Sprintf("%s/original-attempt/__captain_working_directory/%s",
+							runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+					)
+
+					// But no additional artifacts should be moved
+					Expect(intermediateAdditionalFiles).To(BeEmpty())
+				})
+			})
+
+			Context("validation", func() {
+				It("requires intermediate artifacts path when additional artifact paths are specified", func() {
+					invalidConfig := cli.RunConfig{
+						Command:                 arg,
+						TestResultsFileGlob:     testResultsFilePath,
+						SuiteID:                 "test",
+						AdditionalArtifactPaths: []string{"coverage/**/*"},
+						// Missing IntermediateArtifactsPath
+					}
+
+					logger := zaptest.NewLogger(GinkgoT()).Sugar()
+					err := invalidConfig.Validate(logger)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("Missing intermediate artifacts path"))
+				})
 			})
 		})
 	})

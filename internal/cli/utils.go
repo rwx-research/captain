@@ -11,7 +11,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/fs"
 )
 
-type intermediateArtifactStorage struct {
+type IntermediateArtifactStorage struct {
 	basePath   string
 	commandID  string
 	fs         fs.FileSystem
@@ -19,13 +19,13 @@ type intermediateArtifactStorage struct {
 	workingDir string
 }
 
-func (s Service) newIntermediateArtifactStorage(path string) (*intermediateArtifactStorage, error) {
+func (s Service) NewIntermediateArtifactStorage(path string) (*IntermediateArtifactStorage, error) {
 	wd, err := s.FileSystem.Getwd()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	ias := &intermediateArtifactStorage{
+	ias := &IntermediateArtifactStorage{
 		basePath:   path,
 		fs:         s.FileSystem,
 		workingDir: wd,
@@ -67,7 +67,7 @@ func (s Service) newIntermediateArtifactStorage(path string) (*intermediateArtif
 	return ias, nil
 }
 
-func (ias *intermediateArtifactStorage) moveTestResults(artifacts []string) error {
+func (ias *IntermediateArtifactStorage) moveTestResults(artifacts []string) error {
 	attemptPath := filepath.Join(ias.basePath, ias.retryID)
 	if ias.commandID != "" {
 		attemptPath = filepath.Join(attemptPath, ias.commandID)
@@ -104,7 +104,7 @@ func (ias *intermediateArtifactStorage) moveTestResults(artifacts []string) erro
 	return nil
 }
 
-func (ias *intermediateArtifactStorage) moveAdditionalArtifacts(artifactPatterns []string) error {
+func (ias *IntermediateArtifactStorage) MoveAdditionalArtifacts(artifactPatterns []string) error {
 	if len(artifactPatterns) == 0 {
 		return nil
 	}
@@ -151,7 +151,7 @@ func (ias *intermediateArtifactStorage) moveAdditionalArtifacts(artifactPatterns
 	return nil
 }
 
-func (ias *intermediateArtifactStorage) moveFile(srcPath, dstPath string) error {
+func (ias *IntermediateArtifactStorage) moveFile(srcPath, dstPath string) error {
 	// Renaming only works if both paths are on the same file-system. We'll fall back to
 	// copy & delete instead if this is not the case.
 	if err := ias.fs.Rename(srcPath, dstPath); err == nil {
@@ -192,14 +192,14 @@ func (ias *intermediateArtifactStorage) moveFile(srcPath, dstPath string) error 
 	return nil
 }
 
-func (ias *intermediateArtifactStorage) delete() error {
+func (ias *IntermediateArtifactStorage) delete() error {
 	return errors.WithStack(ias.fs.RemoveAll(ias.basePath))
 }
 
-func (ias *intermediateArtifactStorage) setCommandID(n int) {
+func (ias *IntermediateArtifactStorage) SetCommandID(n int) {
 	ias.commandID = fmt.Sprintf("command-%d", n)
 }
 
-func (ias *intermediateArtifactStorage) setRetryID(n int) {
+func (ias *IntermediateArtifactStorage) SetRetryID(n int) {
 	ias.retryID = fmt.Sprintf("retry-%d", n)
 }

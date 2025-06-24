@@ -369,7 +369,7 @@ func (s Service) attemptRetries(
 		return originalTestResults, newlyExecutedTestResults, false, nil
 	}
 
-	ias, err := s.newIntermediateArtifactStorage(cfg.IntermediateArtifactsPath)
+	ias, err := s.NewIntermediateArtifactStorage(cfg.IntermediateArtifactsPath)
 	if err != nil {
 		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
@@ -417,7 +417,7 @@ func (s Service) attemptRetries(
 	if err := ias.moveTestResults(originalTestResultsFiles); err != nil {
 		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
-	if err := ias.moveAdditionalArtifacts(cfg.AdditionalArtifactPaths); err != nil {
+	if err := ias.MoveAdditionalArtifacts(cfg.AdditionalArtifactPaths); err != nil {
 		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
 
@@ -447,7 +447,7 @@ func (s Service) attemptRetries(
 		remainingFlakyFailures := make([]v1.Test, 0)
 		remainingNonFlakyFailures := make([]v1.Test, 0)
 
-		ias.setRetryID(retries + 1)
+		ias.SetRetryID(retries + 1)
 
 		for _, test := range flattenedTestResults.Tests {
 			if !test.Attempt.Status.ImpliesFailure() {
@@ -545,7 +545,7 @@ func (s Service) attemptRetries(
 				)
 			}
 
-			ias.setCommandID(i + 1)
+			ias.SetCommandID(i + 1)
 			env := []string{
 				fmt.Sprintf("CAPTAIN_RETRY_ATTEMPT_NUMBER=%v", retries+1),
 				fmt.Sprintf("CAPTAIN_RETRY_INVOCATION_NUMBER=%v", i+1),
@@ -631,7 +631,7 @@ func (s Service) attemptRetries(
 			if err := ias.moveTestResults(newTestResultsFiles); err != nil {
 				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.WithStack(err)
 			}
-			if err := ias.moveAdditionalArtifacts(cfg.AdditionalArtifactPaths); err != nil {
+			if err := ias.MoveAdditionalArtifacts(cfg.AdditionalArtifactPaths); err != nil {
 				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.WithStack(err)
 			}
 		}
