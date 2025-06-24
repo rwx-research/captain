@@ -64,33 +64,33 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 			})
 
 			Context("retries", func() {
-				var _symlinkDestPath string
-				var _symlinkSrcPath string
-
 				// retry tests delete test results between retries.
 				// this function ensures a symlink exists to the test results file
 				// that can be freely removed
 				// the symlink will be resuscitated after the test in the AfterEach
-				symlinkToNewPath := func(srcPath string, prefix string) string {
-					var err error
-					_symlinkDestPath = fmt.Sprintf("fixtures/integration-tests/retries/%s-%s", prefix, filepath.Base(srcPath))
-					_symlinkSrcPath = fmt.Sprintf("../%s", filepath.Base(srcPath))
-					Expect(err).ToNot(HaveOccurred())
+				symlinkToNewPath := func(srcPath string, prefix string) (string, func()) {
+					symlinkDestPath := fmt.Sprintf("fixtures/integration-tests/retries/%s-%s-%d", prefix, filepath.Base(srcPath), GinkgoParallelProcess())
+					symlinkSrcPath := fmt.Sprintf("../%s", filepath.Base(srcPath))
 
-					os.Symlink(_symlinkSrcPath, _symlinkDestPath)
-					return _symlinkDestPath
+					os.Symlink(symlinkSrcPath, symlinkDestPath)
+					
+					cleanup := func() {
+						os.Remove(symlinkDestPath)
+						os.Symlink(symlinkSrcPath, symlinkDestPath)
+					}
+					
+					return symlinkDestPath, cleanup
 				}
 
-				AfterEach(func() {
-					os.Symlink(_symlinkSrcPath, _symlinkDestPath)
-				})
-
 				It("succeeds when all failures quarantined", func() {
+					testResultsPath, cleanup := symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix)
+					defer cleanup()
+					
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-quarantine-test",
-							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
+							"--test-results", testResultsPath,
 							"--fail-on-upload-error",
 							"--retries", "1",
 							"--retry-command", `echo "{{ tests }}"`,
@@ -107,11 +107,14 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				It("fails & passes through exit code on failure", func() {
+					testResultsPath, cleanup := symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
+					defer cleanup()
+					
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-functional-tests",
-							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix),
+							"--test-results", testResultsPath,
 							"--fail-on-upload-error",
 							"--retries", "1",
 							"--retry-command", `echo "{{ tests }}"`,
@@ -129,11 +132,14 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				It("fails on misconfigured retry command", func() {
+					testResultsPath, cleanup := symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix)
+					defer cleanup()
+					
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-quarantine-test",
-							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
+							"--test-results", testResultsPath,
 							"--fail-on-upload-error",
 							"--fail-on-misconfigured-retry",
 							"--retries", "1",
@@ -151,7 +157,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				It("succeeds with 'misconfigured-retry' flag when configured correctly", func() {
-					testResultsPath := symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
+					testResultsPath, cleanup := symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
+					defer cleanup()
 
 					result := runCaptain(captainArgs{
 						args: []string{
