@@ -43,7 +43,7 @@ func WriteConfigureRetryCommandTip(fs fs.FileSystem) error {
 	return nil
 }
 
-func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults) error {
+func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults, intermediateArtifactsPath string) error {
 	var err error
 
 	err = writeEnv(fs)
@@ -66,10 +66,15 @@ func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults) e
 		return errors.Wrap(err, "unable to write the Mint retry action test results file")
 	}
 
+	err = writeIntermediateArtifacts(fs, intermediateArtifactsPath)
+	if err != nil {
+		return errors.Wrap(err, "unable to write the Mint retry action intermediate artifacts")
+	}
+
 	return nil
 }
 
-func WriteIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath string) error {
+func writeIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath string) error {
 	if intermediateArtifactsPath == "" {
 		return nil
 	}
