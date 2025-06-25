@@ -109,7 +109,6 @@ func (ias *IntermediateArtifactStorage) MoveAdditionalArtifacts(artifactPatterns
 		return nil
 	}
 
-	// Find all artifacts matching the patterns
 	artifacts, err := ias.fs.GlobMany(artifactPatterns)
 	if err != nil {
 		return errors.WithStack(err)
@@ -125,17 +124,13 @@ func (ias *IntermediateArtifactStorage) MoveAdditionalArtifacts(artifactPatterns
 
 		var targetDir string
 		if filepath.IsAbs(dir) {
-			// For absolute paths outside working directory, preserve full structure
 			relDir, err := filepath.Rel(ias.workingDir, dir)
 			if err != nil || !fs.IsLocal(relDir) {
-				// Path is outside working directory, use full absolute path
 				targetDir = filepath.Join(attemptPath, strings.TrimPrefix(dir, "/"))
 			} else {
-				// Path is inside working directory, use __captain_working_directory prefix
 				targetDir = filepath.Join(attemptPath, "__captain_working_directory", relDir)
 			}
 		} else {
-			// Relative paths go under __captain_working_directory
 			targetDir = filepath.Join(attemptPath, "__captain_working_directory", dir)
 		}
 

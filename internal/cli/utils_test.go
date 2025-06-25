@@ -47,7 +47,7 @@ var _ = ginkgo.Describe("IntermediateArtifactStorage", func() {
 
 		mockFS.MockStat = func(name string) (os.FileInfo, error) {
 			if name == basePath {
-				return nil, os.ErrNotExist // Path doesn't exist, will be created
+				return nil, os.ErrNotExist
 			}
 			return nil, os.ErrNotExist
 		}
@@ -138,7 +138,6 @@ var _ = ginkgo.Describe("IntermediateArtifactStorage", func() {
 				err := ias.MoveAdditionalArtifacts(patterns)
 				gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-				// Should create one directory per artifact file
 				gomega.Expect(createdDirs).To(gomega.HaveLen(4))
 				expectedDir0 := filepath.Join(basePath, "original-attempt", "__captain_working_directory", "coverage")
 				gomega.Expect(createdDirs).To(gomega.ContainElement(expectedDir0))
@@ -162,7 +161,6 @@ var _ = ginkgo.Describe("IntermediateArtifactStorage", func() {
 				err := ias.MoveAdditionalArtifacts(patterns)
 				gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-				// Should use retry-2 instead of original-attempt
 				gomega.Expect(renamedPaths[0][1]).To(gomega.ContainSubstring("retry-2"))
 				gomega.Expect(renamedPaths[0][1]).NotTo(gomega.ContainSubstring("original-attempt"))
 			})
@@ -179,12 +177,10 @@ var _ = ginkgo.Describe("IntermediateArtifactStorage", func() {
 				err := ias.MoveAdditionalArtifacts(patterns)
 				gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-				// Should include command-3 in the path
 				gomega.Expect(renamedPaths[0][1]).To(gomega.ContainSubstring("command-3"))
 			})
 
 			ginkgo.It("falls back to copy+delete when rename fails", func() {
-				// Mock rename to fail (simulating cross-device link)
 				mockFS.MockRename = func(_, _ string) error {
 					return errCrossDeviceLink
 				}
@@ -217,17 +213,14 @@ var _ = ginkgo.Describe("IntermediateArtifactStorage", func() {
 				err := ias.MoveAdditionalArtifacts(patterns)
 				gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-				// Should open source files for copying
 				gomega.Expect(openedFiles).To(gomega.HaveLen(4))
 				gomega.Expect(openedFiles).To(gomega.ContainElement("coverage/lcov.info"))
 				gomega.Expect(openedFiles).To(gomega.ContainElement("reports/junit.xml"))
 				gomega.Expect(openedFiles).To(gomega.ContainElement("/tmp/external/debug.log"))
 				gomega.Expect(openedFiles).To(gomega.ContainElement("/working/dir/subdir/artifact.txt"))
 
-				// Should create destination files
 				gomega.Expect(createdFiles).To(gomega.HaveLen(4))
 
-				// Should remove source files after copying
 				gomega.Expect(removedFiles).To(gomega.HaveLen(4))
 				gomega.Expect(removedFiles).To(gomega.ContainElement("coverage/lcov.info"))
 				gomega.Expect(removedFiles).To(gomega.ContainElement("reports/junit.xml"))
@@ -296,7 +289,7 @@ var _ = ginkgo.Describe("IntermediateArtifactStorage", func() {
 
 				mockFS.MockStat = func(name string) (os.FileInfo, error) {
 					gomega.Expect(name).To(gomega.Equal(providedPath))
-					return nil, os.ErrNotExist // Simulate path doesn't exist
+					return nil, os.ErrNotExist
 				}
 
 				mockFS.MockMkdirAll = func(path string, _ os.FileMode) error {
@@ -307,14 +300,12 @@ var _ = ginkgo.Describe("IntermediateArtifactStorage", func() {
 				storage, err := service.NewIntermediateArtifactStorage(providedPath)
 				gomega.Expect(err).NotTo(gomega.HaveOccurred())
 				gomega.Expect(storage).NotTo(gomega.BeNil())
-				// Note: These fields are now unexported, so we can't directly test them
-				// The functionality is tested through the public methods
 			})
 
 			ginkgo.It("validates that the path is not a file", func() {
 				providedPath := "/custom/artifacts/path"
 
-				mockFileInfo := mocks.FileInfo{Dir: false} // Is a file, not a directory
+				mockFileInfo := mocks.FileInfo{Dir: false}
 
 				mockFS.MockStat = func(_ string) (os.FileInfo, error) {
 					return mockFileInfo, nil
@@ -338,7 +329,6 @@ var _ = ginkgo.Describe("IntermediateArtifactStorage", func() {
 				storage, err := service.NewIntermediateArtifactStorage("")
 				gomega.Expect(err).NotTo(gomega.HaveOccurred())
 				gomega.Expect(storage).NotTo(gomega.BeNil())
-				// Note: basePath is now unexported, functionality tested through public methods
 			})
 		})
 

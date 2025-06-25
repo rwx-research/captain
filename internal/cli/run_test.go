@@ -1800,7 +1800,6 @@ var _ = Describe("Run", func() {
 				intermediateAdditionalFiles = make([]string, 0)
 				globManyCalled = false
 
-				// Mock additional artifact files that will be found by GlobMany
 				additionalArtifactFiles = []string{
 					"coverage/lcov.info",
 					"coverage/coverage.json",
@@ -1808,11 +1807,7 @@ var _ = Describe("Run", func() {
 					"/tmp/external/performance.json",
 				}
 
-				// Set mocks after parent BeforeEach to override them
 				mockMkdirAll := func(_ string, _ os.FileMode) error {
-					// if strings.Contains(dir, runConfig.IntermediateArtifactsPath) {
-					//	mkdirCalled = true
-					// }
 					return nil
 				}
 				service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
@@ -1834,7 +1829,6 @@ var _ = Describe("Run", func() {
 				service.FileSystem.(*mocks.FileSystem).MockRename = mockRename
 
 				mockGlobMany := func(patterns []string) ([]string, error) {
-					// Return our mock additional artifact files
 					globManyCalled = true
 					if len(patterns) > 0 && patterns[0] == runConfig.AdditionalArtifactPaths[0] {
 						return additionalArtifactFiles, nil
@@ -1859,10 +1853,8 @@ var _ = Describe("Run", func() {
 
 			It("moves both test results and additional artifacts to intermediate directory", func() {
 				Expect(err).ToNot(HaveOccurred())
-				// Expect(mkdirCalled).To(BeTrue())
 				Expect(globManyCalled).To(BeTrue())
 
-				// Verify test results are moved for original attempt and retries
 				Expect(intermediateTestResults).To(ContainElement(
 					fmt.Sprintf("%s/original-attempt/__captain_working_directory/%s",
 						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
@@ -1876,7 +1868,6 @@ var _ = Describe("Run", func() {
 						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
 				)
 
-				// Verify additional artifacts are moved for original attempt
 				Expect(intermediateAdditionalFiles).To(ContainElement(
 					fmt.Sprintf("%s/original-attempt/__captain_working_directory/coverage/lcov.info",
 						runConfig.IntermediateArtifactsPath)),
@@ -1890,13 +1881,11 @@ var _ = Describe("Run", func() {
 						runConfig.IntermediateArtifactsPath)),
 				)
 
-				// Verify external files preserve full path structure for original attempt
 				Expect(intermediateAdditionalFiles).To(ContainElement(
 					fmt.Sprintf("%s/original-attempt/tmp/external/performance.json",
 						runConfig.IntermediateArtifactsPath)),
 				)
 
-				// Verify additional artifacts are moved for retry attempts too
 				Expect(intermediateAdditionalFiles).To(ContainElement(
 					fmt.Sprintf("%s/retry-1/command-1/__captain_working_directory/coverage/lcov.info",
 						runConfig.IntermediateArtifactsPath)),
@@ -1906,7 +1895,6 @@ var _ = Describe("Run", func() {
 						runConfig.IntermediateArtifactsPath)),
 				)
 
-				// Verify external files are moved for retries too
 				Expect(intermediateAdditionalFiles).To(ContainElement(
 					fmt.Sprintf("%s/retry-1/command-1/tmp/external/performance.json",
 						runConfig.IntermediateArtifactsPath)),
@@ -1915,19 +1903,17 @@ var _ = Describe("Run", func() {
 
 			Context("when no additional artifacts are found", func() {
 				BeforeEach(func() {
-					additionalArtifactFiles = []string{} // No files found
+					additionalArtifactFiles = []string{}
 				})
 
 				It("still moves test results but no additional artifacts", func() {
 					Expect(err).ToNot(HaveOccurred())
 
-					// Test results should still be moved
 					Expect(intermediateTestResults).To(ContainElement(
 						fmt.Sprintf("%s/original-attempt/__captain_working_directory/%s",
 							runConfig.IntermediateArtifactsPath, testResultsFilePath)),
 					)
 
-					// But no additional artifacts should be moved
 					Expect(intermediateAdditionalFiles).To(BeEmpty())
 				})
 			})
@@ -1939,7 +1925,6 @@ var _ = Describe("Run", func() {
 						TestResultsFileGlob:     testResultsFilePath,
 						SuiteID:                 "test",
 						AdditionalArtifactPaths: []string{"coverage/**/*"},
-						// Missing IntermediateArtifactsPath
 					}
 
 					logger := zaptest.NewLogger(GinkgoT()).Sugar()

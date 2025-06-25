@@ -79,19 +79,17 @@ func writeIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath stri
 		return nil
 	}
 
-	// Check if intermediate artifacts directory exists
 	info, err := fs.Stat(intermediateArtifactsPath)
 	if os.IsNotExist(err) {
-		return nil // No artifacts to copy
+		return nil
 	}
 	if err != nil {
 		return errors.Wrap(err, "unable to check intermediate artifacts directory")
 	}
 	if !info.IsDir() {
-		return nil // Not a directory, nothing to copy
+		return nil
 	}
 
-	// Copy the entire intermediate artifacts directory to the Mint retry action data directory
 	srcPath := intermediateArtifactsPath
 	dstPath := filepath.Join(retryActionDirectory(), "data", "intermediate-artifacts")
 
@@ -104,13 +102,11 @@ func writeIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath stri
 }
 
 func copyDirectory(fs fs.FileSystem, src, dst string) error {
-	// Create destination directory
 	err := fs.MkdirAll(dst, 0o750)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	// Use glob to find all files recursively
 	pattern := filepath.Join(src, "**", "*")
 	allPaths, err := fs.Glob(pattern)
 	if err != nil {
@@ -118,34 +114,29 @@ func copyDirectory(fs fs.FileSystem, src, dst string) error {
 	}
 
 	for _, srcPath := range allPaths {
-		// Calculate relative path and destination
 		relPath, err := filepath.Rel(src, srcPath)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 		dstPath := filepath.Join(dst, relPath)
 
-		// Check if it's a directory or file
 		info, err := fs.Stat(srcPath)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
 		if info.IsDir() {
-			// Create directory
 			err = fs.MkdirAll(dstPath, 0o750)
 			if err != nil {
 				return errors.WithStack(err)
 			}
 		} else {
-			// Ensure parent directory exists
 			parentDir := filepath.Dir(dstPath)
 			err = fs.MkdirAll(parentDir, 0o750)
 			if err != nil {
 				return errors.WithStack(err)
 			}
 
-			// Copy file
 			err = copyFile(fs, srcPath, dstPath)
 			if err != nil {
 				return errors.WithStack(err)
@@ -200,20 +191,18 @@ func RestoreIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath st
 		return nil
 	}
 
-	// Check if intermediate artifacts exist in the mint retry data directory
 	srcPath := filepath.Join(retryDataDirectory(), "intermediate-artifacts")
 	info, err := fs.Stat(srcPath)
 	if os.IsNotExist(err) {
-		return nil // No artifacts to restore
+		return nil
 	}
 	if err != nil {
 		return errors.Wrap(err, "unable to check mint retry data artifacts directory")
 	}
 	if !info.IsDir() {
-		return nil // Not a directory, nothing to restore
+		return nil
 	}
 
-	// Copy the artifacts from mint retry data directory to the intermediate artifacts path
 	err = copyDirectory(fs, srcPath, intermediateArtifactsPath)
 	if err != nil {
 		return errors.Wrap(err, "unable to restore intermediate artifacts from mint retry data")
