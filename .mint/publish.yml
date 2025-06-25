@@ -4,10 +4,10 @@ base:
 
 tasks:
   - key: github-cli
-    call: github/install-cli 1.0.1
+    call: github/install-cli 1.0.5
 
   - key: code
-    call: mint/git-clone 1.6.1
+    call: mint/git-clone 1.6.4
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
@@ -55,11 +55,11 @@ tasks:
       GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
 
   - key: aws-cli
-    call: aws/install-cli 1.0.1
+    call: aws/install-cli 1.0.4
 
   - key: configure-aws
     use: aws-cli
-    call: aws/assume-role 2.0.0
+    call: aws/assume-role 2.0.3
     with:
       region: us-east-1
       role-to-assume: arn:aws:iam::152560469324:role/captain-cli-cd-through-mint

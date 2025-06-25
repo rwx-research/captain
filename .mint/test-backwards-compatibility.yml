@@ -9,7 +9,7 @@ base:
 
 tasks:
   - key: new-code
-    call: mint/git-clone 1.6.1
+    call: mint/git-clone 1.6.4
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
@@ -24,12 +24,12 @@ tasks:
       - .tool-versions
 
   - key: golang-for-new-code
-    call: mint/install-go 1.1.0
+    call: mint/install-go 1.1.1
     with:
       go-version: ${{ tasks.tool-versions-for-new-code.values.golang }}
 
   - key: mage-source-for-new-code
-    call: mint/git-clone 1.6.1
+    call: mint/git-clone 1.6.4
     with:
       repository: https://github.com/magefile/mage.git
       ref: v${{ tasks.tool-versions-for-new-code.values.mage }}
@@ -55,7 +55,7 @@ tasks:
           path: ./captain
 
   - key: legacy-code
-    call: mint/git-clone 1.6.1
+    call: mint/git-clone 1.6.4
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.legacy-version }}
@@ -71,12 +71,12 @@ tasks:
       - .tool-versions
 
   - key: golang-for-legacy-code
-    call: mint/install-go 1.1.0
+    call: mint/install-go 1.1.1
     with:
       go-version: ${{ tasks.tool-versions-for-legacy-code.values.golang }}
 
   - key: mage-source-for-legacy-code
-    call: mint/git-clone 1.6.1
+    call: mint/git-clone 1.6.4
     with:
       repository: https://github.com/magefile/mage.git
       ref: v${{ tasks.tool-versions-for-legacy-code.values.mage }}
@@ -91,7 +91,7 @@ tasks:
       echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
 
   - key: ginkgo-source-for-legacy-code
-    call: mint/git-clone 1.6.1
+    call: mint/git-clone 1.6.4
     with:
       repository: https://github.com/onsi/ginkgo.git
       ref: v${{ tasks.tool-versions-for-legacy-code.values.ginkgo }}
