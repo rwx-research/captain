@@ -115,8 +115,32 @@ var _ = Describe("Run", func() {
 			file.Reader = strings.NewReader("")
 			return file, nil
 		}
+		mockGetwd := func() (string, error) {
+			return "/go/github.com/rwx-research/captain-cli", nil
+		}
+		mockMkdirTemp := func(_, _ string) (string, error) {
+			return "/tmp/captain-test", nil
+		}
+		mockMkdirAll := func(_ string, _ os.FileMode) error {
+			return nil
+		}
+		mockCreate := func(_ string) (fs.File, error) {
+			return &mocks.File{
+				Builder: new(strings.Builder),
+				Reader:  strings.NewReader(""),
+			}, nil
+		}
+		mockRemove := func(string) error {
+			return nil
+		}
+
 		service.FileSystem.(*mocks.FileSystem).MockOpen = mockOpen
 		service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+		service.FileSystem.(*mocks.FileSystem).MockGetwd = mockGetwd
+		service.FileSystem.(*mocks.FileSystem).MockMkdirTemp = mockMkdirTemp
+		service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
+		service.FileSystem.(*mocks.FileSystem).MockCreate = mockCreate
+		service.FileSystem.(*mocks.FileSystem).MockRemove = mockRemove
 
 		arg = fmt.Sprintf("fake-command-%d", GinkgoRandomSeed())
 		runConfig = cli.RunConfig{
@@ -815,35 +839,15 @@ var _ = Describe("Run", func() {
 			secondInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
 			thirdInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
 
-			mockGetwd := func() (string, error) {
-				return "/go/github.com/rwx-research/captain-cli", nil
-			}
-			service.FileSystem.(*mocks.FileSystem).MockGetwd = mockGetwd
-
-			mockMkdirAll := func(_ string, _ os.FileMode) error {
-				return nil
-			}
-			service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
-
 			mockRename := func(_, _ string) error {
 				return nil
 			}
 			service.FileSystem.(*mocks.FileSystem).MockRename = mockRename
 
-			mockMkdirTemp := func(_, _ string) (string, error) {
-				return "/tmp/captain-test", nil
-			}
-			service.FileSystem.(*mocks.FileSystem).MockMkdirTemp = mockMkdirTemp
-
 			mockStat := func(string) (iofs.FileInfo, error) {
 				return nil, iofs.ErrNotExist
 			}
 			service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
-
-			mockRemove := func(string) error {
-				return nil
-			}
-			service.FileSystem.(*mocks.FileSystem).MockRemove = mockRemove
 
 			mockGetExitStatusFromError := func(error) (int, error) {
 				return exitCode, nil
@@ -1064,6 +1068,7 @@ var _ = Describe("Run", func() {
 
 			BeforeEach(func() {
 				runConfig.IntermediateArtifactsPath = fmt.Sprintf("intermediate-results-%d", GinkgoRandomSeed())
+				runConfig.AdditionalArtifactPaths = []string{"coverage/**/*", "reports/**/*", "/tmp/external/**/*"}
 				runConfig.Retries = 2
 
 				mkdirCalled = false
@@ -1100,13 +1105,16 @@ var _ = Describe("Run", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(mkdirCalled).To(BeTrue())
 				Expect(intermediateTestResults).To(ContainElement(
-					fmt.Sprintf("%s/original-attempt/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
 				)
 				Expect(intermediateTestResults).To(ContainElement(
-					fmt.Sprintf("%s/retry-1/command-1/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+					fmt.Sprintf("%s/retry-1/command-1/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
 				)
 				Expect(intermediateTestResults).To(ContainElement(
-					fmt.Sprintf("%s/retry-2/command-1/%s", runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+					fmt.Sprintf("%s/retry-2/command-1/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
 				)
 			})
 		})
@@ -1772,6 +1780,158 @@ var _ = Describe("Run", func() {
 				executionError, ok := errors.AsExecutionError(err)
 				Expect(ok).To(BeTrue(), "Error is an execution error")
 				Expect(executionError.Code).To(Equal(exitCode))
+			})
+		})
+
+		Context("when additional artifacts are configured", func() {
+			var (
+				intermediateTestResults     []string
+				intermediateAdditionalFiles []string
+				globManyCalled              bool
+				additionalArtifactFiles     []string
+			)
+
+			BeforeEach(func() {
+				runConfig.IntermediateArtifactsPath = fmt.Sprintf("intermediate-results-%d", GinkgoRandomSeed())
+				runConfig.AdditionalArtifactPaths = []string{"coverage/**/*", "reports/**/*", "/tmp/external/**/*"}
+				runConfig.Retries = 2
+
+				intermediateTestResults = make([]string, 0)
+				intermediateAdditionalFiles = make([]string, 0)
+				globManyCalled = false
+
+				additionalArtifactFiles = []string{
+					"coverage/lcov.info",
+					"coverage/coverage.json",
+					"reports/junit.xml",
+					"/tmp/external/performance.json",
+				}
+
+				mockMkdirAll := func(_ string, _ os.FileMode) error {
+					return nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
+
+				mockRename := func(old, newName string) error {
+					if old == testResultsFilePath {
+						// This is a test result file
+						if strings.Contains(newName, runConfig.IntermediateArtifactsPath) {
+							intermediateTestResults = append(intermediateTestResults, newName)
+						}
+					} else {
+						// This is an additional artifact file
+						if strings.Contains(newName, runConfig.IntermediateArtifactsPath) {
+							intermediateAdditionalFiles = append(intermediateAdditionalFiles, newName)
+						}
+					}
+					return nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockRename = mockRename
+
+				mockGlobMany := func(patterns []string) ([]string, error) {
+					globManyCalled = true
+					if len(patterns) > 0 && patterns[0] == runConfig.AdditionalArtifactPaths[0] {
+						return additionalArtifactFiles, nil
+					}
+					return []string{}, nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockGlobMany = mockGlobMany
+
+				mockStat := func(name string) (iofs.FileInfo, error) {
+					if name == runConfig.IntermediateArtifactsPath {
+						return mocks.FileInfo{Dir: true}, nil
+					}
+					return nil, iofs.ErrNotExist
+				}
+				service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
+
+				mockGetwd := func() (string, error) {
+					return "/test/working", nil
+				}
+				service.FileSystem.(*mocks.FileSystem).MockGetwd = mockGetwd
+			})
+
+			It("moves both test results and additional artifacts to intermediate directory", func() {
+				Expect(err).ToNot(HaveOccurred())
+				Expect(globManyCalled).To(BeTrue())
+
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/retry-1/command-1/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
+				Expect(intermediateTestResults).To(ContainElement(
+					fmt.Sprintf("%s/retry-2/command-1/__captain_working_directory/%s",
+						runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+				)
+
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/coverage/lcov.info",
+						runConfig.IntermediateArtifactsPath)),
+				)
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/coverage/coverage.json",
+						runConfig.IntermediateArtifactsPath)),
+				)
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/__captain_working_directory/reports/junit.xml",
+						runConfig.IntermediateArtifactsPath)),
+				)
+
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/original-attempt/tmp/external/performance.json",
+						runConfig.IntermediateArtifactsPath)),
+				)
+
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/retry-1/command-1/__captain_working_directory/coverage/lcov.info",
+						runConfig.IntermediateArtifactsPath)),
+				)
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/retry-2/command-1/__captain_working_directory/coverage/lcov.info",
+						runConfig.IntermediateArtifactsPath)),
+				)
+
+				Expect(intermediateAdditionalFiles).To(ContainElement(
+					fmt.Sprintf("%s/retry-1/command-1/tmp/external/performance.json",
+						runConfig.IntermediateArtifactsPath)),
+				)
+			})
+
+			Context("when no additional artifacts are found", func() {
+				BeforeEach(func() {
+					additionalArtifactFiles = []string{}
+				})
+
+				It("still moves test results but no additional artifacts", func() {
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(intermediateTestResults).To(ContainElement(
+						fmt.Sprintf("%s/original-attempt/__captain_working_directory/%s",
+							runConfig.IntermediateArtifactsPath, testResultsFilePath)),
+					)
+
+					Expect(intermediateAdditionalFiles).To(BeEmpty())
+				})
+			})
+
+			Context("validation", func() {
+				It("requires intermediate artifacts path when additional artifact paths are specified", func() {
+					invalidConfig := cli.RunConfig{
+						Command:                 arg,
+						TestResultsFileGlob:     testResultsFilePath,
+						SuiteID:                 "test",
+						AdditionalArtifactPaths: []string{"coverage/**/*"},
+					}
+
+					logger := zaptest.NewLogger(GinkgoT()).Sugar()
+					err := invalidConfig.Validate(logger)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("Missing intermediate artifacts path"))
+				})
 			})
 		})
 	})

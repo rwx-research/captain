@@ -27,6 +27,7 @@ type CliArgs struct {
 	failRetriesFast           bool
 	flakyRetries              int
 	intermediateArtifactsPath string
+	additionalArtifactPaths   []string
 	maxTestsToRetry           string
 	postRetryCommands         []string
 	preRetryCommands          []string
@@ -130,6 +131,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						FailRetriesFast:           suiteConfig.Retries.FailFast,
 						FlakyRetries:              suiteConfig.Retries.FlakyAttempts,
 						IntermediateArtifactsPath: suiteConfig.Retries.IntermediateArtifactsPath,
+						AdditionalArtifactPaths:   suiteConfig.Retries.AdditionalArtifactPaths,
 						MaxTestsToRetry:           suiteConfig.Retries.MaxTests,
 						PostRetryCommands:         suiteConfig.Retries.PostRetryCommands,
 						PreRetryCommands:          suiteConfig.Retries.PreRetryCommands,
@@ -219,6 +221,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		"intermediate-artifacts-path",
 		"",
 		"the path to store intermediate artifacts under. Intermediate artifacts will be removed if not set.",
+	)
+
+	runCmd.Flags().StringArrayVar(
+		&cliArgs.additionalArtifactPaths,
+		"additional-artifact-paths",
+		[]string{},
+		"additional artifact paths (globs) to preserve across retries. Requires --intermediate-artifacts-path to be set.",
 	)
 
 	runCmd.Flags().StringArrayVar(
@@ -464,6 +473,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 
 		if cliArgs.intermediateArtifactsPath != "" {
 			suiteConfig.Retries.IntermediateArtifactsPath = cliArgs.intermediateArtifactsPath
+		}
+
+		if len(cliArgs.additionalArtifactPaths) > 0 {
+			suiteConfig.Retries.AdditionalArtifactPaths = cliArgs.additionalArtifactPaths
 		}
 
 		if suiteConfig.Partition.Delimiter == "" {

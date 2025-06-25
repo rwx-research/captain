@@ -73,6 +73,11 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			return errors.Wrap(err, "Could not load the failed tests from the previous attempt")
 		}
 
+		err = mint.RestoreIntermediateArtifacts(s.FileSystem, cfg.IntermediateArtifactsPath)
+		if err != nil {
+			return errors.Wrap(err, "Could not restore intermediate artifacts from the previous attempt")
+		}
+
 		if testResults.Summary.OtherErrors > 0 {
 			errorMessage := fmt.Sprintf(
 				"The previous execution of this test suite had errors that occurred outside the test suite. "+
@@ -113,7 +118,6 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			ctx,
 			testResults,
 			newlyExecutedTestResults,
-			[]string{}, // testResultsFiles
 			cfg,
 			apiConfiguration,
 			largestGroupNumberPreviouslySeen-1,
@@ -161,11 +165,26 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
 		}
 
+		// Always move artifacts to IAS after original attempt when intermediate artifacts path is configured
+		if testResults != nil && len(testResultsFiles) > 0 {
+			ias, err := s.NewIntermediateArtifactStorage(cfg.IntermediateArtifactsPath)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			// Original attempt uses default "original-attempt" retryID
+			if err := ias.moveTestResults(testResultsFiles); err != nil {
+				return errors.WithStack(err)
+			}
+			if err := ias.MoveAdditionalArtifacts(cfg.AdditionalArtifactPaths); err != nil {
+				return errors.WithStack(err)
+			}
+		}
+
 		testResults, newlyExecutedTestResults, didRetry, err = s.attemptRetries(
 			ctx,
 			testResults,
 			newlyExecutedTestResults,
-			testResultsFiles,
 			cfg,
 			apiConfiguration,
 			0,
@@ -357,7 +376,6 @@ func (s Service) attemptRetries(
 	ctx context.Context,
 	originalTestResults *v1.TestResults,
 	newlyExecutedTestResults *v1.TestResults,
-	originalTestResultsFiles []string,
 	cfg RunConfig,
 	apiConfiguration backend.RunConfiguration,
 	groupNumberOffset int,
@@ -369,7 +387,7 @@ func (s Service) attemptRetries(
 		return originalTestResults, newlyExecutedTestResults, false, nil
 	}
 
-	ias, err := s.newIntermediateArtifactStorage(cfg.IntermediateArtifactsPath)
+	ias, err := s.NewIntermediateArtifactStorage(cfg.IntermediateArtifactsPath)
 	if err != nil {
 		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
 	}
@@ -414,10 +432,6 @@ func (s Service) attemptRetries(
 		substitution = frameworkSubstitution
 	}
 
-	if err := ias.moveTestResults(originalTestResultsFiles); err != nil {
-		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
-	}
-
 	maxTestsToRetryCount, err := cfg.MaxTestsToRetryCount()
 	if err != nil {
 		return originalTestResults, newlyExecutedTestResults, false, errors.WithStack(err)
@@ -444,7 +458,7 @@ func (s Service) attemptRetries(
 		remainingFlakyFailures := make([]v1.Test, 0)
 		remainingNonFlakyFailures := make([]v1.Test, 0)
 
-		ias.setRetryID(retries + 1)
+		ias.SetRetryID(retries + 1)
 
 		for _, test := range flattenedTestResults.Tests {
 			if !test.Attempt.Status.ImpliesFailure() {
@@ -542,7 +556,7 @@ func (s Service) attemptRetries(
 				)
 			}
 
-			ias.setCommandID(i + 1)
+			ias.SetCommandID(i + 1)
 			env := []string{
 				fmt.Sprintf("CAPTAIN_RETRY_ATTEMPT_NUMBER=%v", retries+1),
 				fmt.Sprintf("CAPTAIN_RETRY_INVOCATION_NUMBER=%v", i+1),
@@ -626,6 +640,9 @@ func (s Service) attemptRetries(
 				allNewTestResults = append(allNewTestResults, *newTestResults)
 			}
 			if err := ias.moveTestResults(newTestResultsFiles); err != nil {
+				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.WithStack(err)
+			}
+			if err := ias.MoveAdditionalArtifacts(cfg.AdditionalArtifactPaths); err != nil {
 				return flattenedTestResults, flattenedNewlyExecutedTestResults, true, errors.WithStack(err)
 			}
 		}
@@ -803,7 +820,7 @@ func (s Service) reportTestResults(
 					return nil, errors.Wrap(err, "unable to write configure-captain-retry-command tip")
 				}
 			} else {
-				err := mint.WriteRetryFailedTestsAction(s.FileSystem, testResults)
+				err := mint.WriteRetryFailedTestsAction(s.FileSystem, testResults, cfg.IntermediateArtifactsPath)
 				if err != nil {
 					return nil, errors.Wrap(err, "unable to write Mint retry failed tests action")
 				}

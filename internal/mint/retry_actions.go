@@ -2,6 +2,7 @@ package mint
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -42,7 +43,7 @@ func WriteConfigureRetryCommandTip(fs fs.FileSystem) error {
 	return nil
 }
 
-func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults) error {
+func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults, intermediateArtifactsPath string) error {
 	var err error
 
 	err = writeEnv(fs)
@@ -65,7 +66,106 @@ func WriteRetryFailedTestsAction(fs fs.FileSystem, testResults v1.TestResults) e
 		return errors.Wrap(err, "unable to write the Mint retry action test results file")
 	}
 
+	err = writeIntermediateArtifacts(fs, intermediateArtifactsPath)
+	if err != nil {
+		return errors.Wrap(err, "unable to write the Mint retry action intermediate artifacts")
+	}
+
 	return nil
+}
+
+func writeIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath string) error {
+	if intermediateArtifactsPath == "" {
+		return nil
+	}
+
+	info, err := fs.Stat(intermediateArtifactsPath)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return errors.Wrap(err, "unable to check intermediate artifacts directory")
+	}
+	if !info.IsDir() {
+		return nil
+	}
+
+	srcPath := intermediateArtifactsPath
+	dstPath := filepath.Join(retryActionDirectory(), "data", "intermediate-artifacts")
+
+	err = copyDirectory(fs, srcPath, dstPath)
+	if err != nil {
+		return errors.Wrap(err, "unable to copy intermediate artifacts to Mint retry action directory")
+	}
+
+	return nil
+}
+
+func copyDirectory(fs fs.FileSystem, src, dst string) error {
+	err := fs.MkdirAll(dst, 0o750)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	pattern := filepath.Join(src, "**", "*")
+	allPaths, err := fs.Glob(pattern)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	for _, srcPath := range allPaths {
+		relPath, err := filepath.Rel(src, srcPath)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		dstPath := filepath.Join(dst, relPath)
+
+		info, err := fs.Stat(srcPath)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if info.IsDir() {
+			err = fs.MkdirAll(dstPath, 0o750)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		} else {
+			parentDir := filepath.Dir(dstPath)
+			err = fs.MkdirAll(parentDir, 0o750)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+
+			err = copyFile(fs, srcPath, dstPath)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func copyFile(fs fs.FileSystem, src, dst string) error {
+	srcFile, err := fs.Open(src)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer srcFile.Close()
+
+	dstFile, err := fs.Create(dst)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return errors.WithStack(dstFile.Sync())
 }
 
 func ReadFailedTestResults(fs fs.FileSystem) (*v1.TestResults, error) {
@@ -84,6 +184,31 @@ func ReadFailedTestResults(fs fs.FileSystem) (*v1.TestResults, error) {
 	}
 
 	return &testResults, nil
+}
+
+func RestoreIntermediateArtifacts(fs fs.FileSystem, intermediateArtifactsPath string) error {
+	if intermediateArtifactsPath == "" {
+		return nil
+	}
+
+	srcPath := filepath.Join(retryDataDirectory(), "intermediate-artifacts")
+	info, err := fs.Stat(srcPath)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return errors.Wrap(err, "unable to check mint retry data artifacts directory")
+	}
+	if !info.IsDir() {
+		return nil
+	}
+
+	err = copyDirectory(fs, srcPath, intermediateArtifactsPath)
+	if err != nil {
+		return errors.Wrap(err, "unable to restore intermediate artifacts from mint retry data")
+	}
+
+	return nil
 }
 
 func WriteError(fs fs.FileSystem, errorMessage string) error {

@@ -4,7 +4,7 @@ base:
 
 tasks:
   - key: code
-    call: mint/git-clone 1.6.1
+    call: mint/git-clone 1.6.4
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
@@ -19,12 +19,12 @@ tasks:
       - .tool-versions
 
   - key: golang
-    call: mint/install-go 1.1.0
+    call: mint/install-go 1.1.1
     with:
       go-version: ${{ tasks.tool-versions.values.golang }}
 
   - key: mage-source
-    call: mint/git-clone 1.6.1
+    call: mint/git-clone 1.6.4
     with:
       repository: https://github.com/magefile/mage.git
       ref: v${{ tasks.tool-versions.values.mage }}
@@ -48,7 +48,7 @@ tasks:
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=${{ init.full-version }}
 
   - key: github-cli
-    call: github/install-cli 1.0.1
+    call: github/install-cli 1.0.5
 
   - key: upload
     if: ${{ init.os != 'darwin' }}

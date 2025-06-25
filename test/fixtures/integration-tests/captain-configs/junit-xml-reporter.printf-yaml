@@ -17,7 +17,7 @@ test-suites:
     results:
       framework: ""
       language: ""
-      path: fixtures/integration-tests/rspec-failed-not-quarantined.json
+      path: fixtures/integration-tests/oss-rspec-failed-not-quarantined.json-UNIQUE-*
     retries:
       attempts: 0
       command: ""

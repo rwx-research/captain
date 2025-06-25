@@ -60,6 +60,10 @@ func (f *FileSystem) Glob(pattern string) ([]string, error) {
 }
 
 func (f *FileSystem) GlobMany(patterns []string) ([]string, error) {
+	if f.MockGlobMany != nil {
+		return f.MockGlobMany(patterns)
+	}
+
 	if f.MockGlob != nil {
 		return f.MockGlob(patterns[0])
 	}
