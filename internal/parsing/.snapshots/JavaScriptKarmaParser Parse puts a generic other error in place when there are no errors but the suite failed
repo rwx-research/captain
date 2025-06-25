@@ -24,6 +24,7 @@
     {
       "id": "spec3",
       "name": "Some test context is a contextual passing test",
+      "scope": "Mozilla/5.0 ",
       "lineage": [
         "Some test",
         "context",

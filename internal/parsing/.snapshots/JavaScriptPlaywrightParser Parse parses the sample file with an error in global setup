@@ -23,6 +23,7 @@
   "tests": [
     {
       "name": "Auth Flow You can signup and login with GitHub",
+      "scope": "chromium",
       "lineage": [
         "Auth Flow",
         "You can signup and login with GitHub"
@@ -46,6 +47,7 @@
     },
     {
       "name": "Deep links work across domains when choosing an organization",
+      "scope": "chromium",
       "lineage": [
         "Deep links",
         "work across domains when choosing an organization"
@@ -69,6 +71,7 @@
     },
     {
       "name": "Feedback submission functionality Allows the submission of feedback to the support email address",
+      "scope": "chromium",
       "lineage": [
         "Feedback submission functionality",
         "Allows the submission of feedback to the support email address"
@@ -92,6 +95,7 @@
     },
     {
       "name": "Forgot Password Flow You can sign up with email, forget your password, ask to reset it, reset it, and sign in with the new password",
+      "scope": "chromium",
       "lineage": [
         "Forgot Password Flow",
         "You can sign up with email, forget your password, ask to reset it, reset it, and sign in with the new password"
@@ -115,6 +119,7 @@
     },
     {
       "name": "Login Flow When you are logged out and visit an authenticated path, you are redirected to the authenticated path after login",
+      "scope": "chromium",
       "lineage": [
         "Login Flow",
         "When you are logged out and visit an authenticated path, you are redirected to the authenticated path after login"
@@ -138,6 +143,7 @@
     },
     {
       "name": "Login Flow When you are logged out and visit an authenticated path, you are redirected to the authenticated path after signup",
+      "scope": "chromium",
       "lineage": [
         "Login Flow",
         "When you are logged out and visit an authenticated path, you are redirected to the authenticated path after signup"
@@ -161,6 +167,7 @@
     },
     {
       "name": "Onboarding Flow You can sign up to captain with email, create an organization, invite someone to that organization, and then they can signup with the invite code and automatically be added to the organization.",
+      "scope": "chromium",
       "lineage": [
         "Onboarding Flow",
         "You can sign up to captain with email, create an organization, invite someone to that organization, and then they can signup with the invite code and automatically be added to the organization."
@@ -184,6 +191,7 @@
     },
     {
       "name": "Onboarding Flow You can sign up to captain with email, create an organization, invite someone who already has an account to that organization, and then they can be deeplink logged in and added to the organization.",
+      "scope": "chromium",
       "lineage": [
         "Onboarding Flow",
         "You can sign up to captain with email, create an organization, invite someone who already has an account to that organization, and then they can be deeplink logged in and added to the organization."
@@ -207,6 +215,7 @@
     },
     {
       "name": "Onboarding Flow You can sign up for abq with email and create an organization.",
+      "scope": "chromium",
       "lineage": [
         "Onboarding Flow",
         "You can sign up for abq with email and create an organization."
@@ -230,6 +239,7 @@
     },
     {
       "name": "One Click Onboarding Flow You can sign up with Github through the one click flow",
+      "scope": "chromium",
       "lineage": [
         "One Click Onboarding Flow",
         "You can sign up with Github through the one click flow"
@@ -253,6 +263,7 @@
     },
     {
       "name": "One Click Onboarding Flow You can see the unsupported message and form for non-Github selections in the one click flow",
+      "scope": "chromium",
       "lineage": [
         "One Click Onboarding Flow",
         "You can see the unsupported message and form for non-Github selections in the one click flow"
@@ -276,6 +287,7 @@
     },
     {
       "name": "One Click Onboarding Flow You can see the unsupported message and form for not-listed selections in the one click flow",
+      "scope": "chromium",
       "lineage": [
         "One Click Onboarding Flow",
         "You can see the unsupported message and form for not-listed selections in the one click flow"
@@ -299,6 +311,7 @@
     },
     {
       "name": "Telemetry functionality Telemetry is enabled by default but can be opted out of",
+      "scope": "chromium",
       "lineage": [
         "Telemetry functionality",
         "Telemetry is enabled by default but can be opted out of"
@@ -322,6 +335,7 @@
     },
     {
       "name": "Automatic time zone detection Initially sets user's time zones to the browser's and lets them change it",
+      "scope": "chromium",
       "lineage": [
         "Automatic time zone detection",
         "Initially sets user's time zones to the browser's and lets them change it"

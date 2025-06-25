@@ -102,14 +102,9 @@ type TestAttempt struct {
 }
 
 type Test struct {
-	// Used to disambiguate tests during the merge process, this should align
-	// with any fields that are used for test identity, but are not top-level
-	// fields (i.e. any identity components that come from the attempt meta).
-	// Not included in the JSON output nor the schema.
-	Scope *string `json:"-"`
-
 	ID           *string       `json:"id,omitempty"`
 	Name         string        `json:"name"`
+	Scope        *string       `json:"scope,omitempty"`
 	Lineage      []string      `json:"lineage,omitempty"`
 	Location     *Location     `json:"location,omitempty"`
 	Attempt      TestAttempt   `json:"attempt"`

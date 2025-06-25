@@ -23,6 +23,7 @@
   "tests": [
     {
       "name": "FuzzHex",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -36,6 +37,7 @@
     },
     {
       "name": "FuzzHex/seed#0",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -49,6 +51,7 @@
     },
     {
       "name": "FuzzHex/seed#1",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -62,6 +65,7 @@
     },
     {
       "name": "FuzzHex/seed#2",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -75,6 +79,7 @@
     },
     {
       "name": "FuzzHex/seed#3",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -88,6 +93,7 @@
     },
     {
       "name": "FuzzHex/seed#4",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -101,6 +107,7 @@
     },
     {
       "name": "FuzzHex/seed#5",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -114,6 +121,7 @@
     },
     {
       "name": "TestBar",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -127,6 +135,7 @@
     },
     {
       "name": "TestBarFailing",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -140,6 +149,7 @@
     },
     {
       "name": "TestFoo",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -153,6 +163,7 @@
     },
     {
       "name": "TestFoo",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -166,6 +177,7 @@
     },
     {
       "name": "TestFooFailing",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -179,6 +191,7 @@
     },
     {
       "name": "TestFooParallelTable",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -192,6 +205,7 @@
     },
     {
       "name": "TestFooParallelTable/0",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -205,6 +219,7 @@
     },
     {
       "name": "TestFooParallelTable/1",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -218,6 +233,7 @@
     },
     {
       "name": "TestFooParallelTable/2",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -231,6 +247,7 @@
     },
     {
       "name": "TestFooParallelTable/3",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -244,6 +261,7 @@
     },
     {
       "name": "TestFooParallelTable/4",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -257,6 +275,7 @@
     },
     {
       "name": "TestFooTable",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -270,6 +289,7 @@
     },
     {
       "name": "TestFooTable/0",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -283,6 +303,7 @@
     },
     {
       "name": "TestFooTable/1",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -296,6 +317,7 @@
     },
     {
       "name": "TestFooTable/2",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -309,6 +331,7 @@
     },
     {
       "name": "TestFooTable/3",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -322,6 +345,7 @@
     },
     {
       "name": "TestFooTable/4",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -335,6 +359,7 @@
     },
     {
       "name": "TestSkipNoReason",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -348,6 +373,7 @@
     },
     {
       "name": "TestSkipReason",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -361,6 +387,7 @@
     },
     {
       "name": "TestSlow",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 1500000000,
         "meta": {
@@ -374,6 +401,7 @@
     },
     {
       "name": "TestTableFailing",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -387,6 +415,7 @@
     },
     {
       "name": "TestTableFailing/0",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -400,6 +429,7 @@
     },
     {
       "name": "TestTableFailing/1",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -413,6 +443,7 @@
     },
     {
       "name": "TestTableFailing/2",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -426,6 +457,7 @@
     },
     {
       "name": "TestTableFailing/3",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -439,6 +471,7 @@
     },
     {
       "name": "TestTableFailing/4",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg1",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -452,6 +485,7 @@
     },
     {
       "name": "TestWhatever",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {
@@ -465,6 +499,7 @@
     },
     {
       "name": "TestWhateverFailing",
+      "scope": "github.com/captain-examples/go-testing/internal/pkg2",
       "attempt": {
         "durationInNanoseconds": 0,
         "meta": {

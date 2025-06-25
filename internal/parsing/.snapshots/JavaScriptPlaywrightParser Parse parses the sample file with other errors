@@ -23,6 +23,7 @@
   "tests": [
     {
       "name": "homepage has title and links to intro page",
+      "scope": "chromium",
       "lineage": [
         "homepage has title and links to intro page"
       ],
@@ -45,6 +46,7 @@
     },
     {
       "name": "homepage has title and links to intro page",
+      "scope": "firefox",
       "lineage": [
         "homepage has title and links to intro page"
       ],
@@ -67,6 +69,7 @@
     },
     {
       "name": "homepage has title and links to intro page",
+      "scope": "webkit",
       "lineage": [
         "homepage has title and links to intro page"
       ],
@@ -89,6 +92,7 @@
     },
     {
       "name": "homepage has title and links to intro page",
+      "scope": "Mobile Chrome",
       "lineage": [
         "homepage has title and links to intro page"
       ],
@@ -111,6 +115,7 @@
     },
     {
       "name": "homepage has title and links to intro page",
+      "scope": "Mobile Safari",
       "lineage": [
         "homepage has title and links to intro page"
       ],
@@ -133,6 +138,7 @@
     },
     {
       "name": "homepage has title and links to intro page",
+      "scope": "Microsoft Edge",
       "lineage": [
         "homepage has title and links to intro page"
       ],
@@ -155,6 +161,7 @@
     },
     {
       "name": "homepage has title and links to intro page",
+      "scope": "Google Chrome",
       "lineage": [
         "homepage has title and links to intro page"
       ],

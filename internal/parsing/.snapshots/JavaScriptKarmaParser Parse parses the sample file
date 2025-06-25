@@ -24,6 +24,7 @@
     {
       "id": "spec3",
       "name": "Some test context is a contextual passing test",
+      "scope": "Chrome macOS",
       "lineage": [
         "Some test",
         "context",
@@ -44,6 +45,7 @@
     {
       "id": "spec0",
       "name": "Some test is a passing test",
+      "scope": "Chrome macOS",
       "lineage": [
         "Some test",
         "is a passing test"
@@ -63,6 +65,7 @@
     {
       "id": "spec1",
       "name": "Some test is a skipped test",
+      "scope": "Chrome macOS",
       "lineage": [
         "Some test",
         "is a skipped test"
@@ -82,6 +85,7 @@
     {
       "id": "spec2",
       "name": "Some test is a failing test",
+      "scope": "Chrome macOS",
       "lineage": [
         "Some test",
         "is a failing test"
