@@ -16,9 +16,9 @@
   },
   Tests: ([]v1.Test) (len=4) {
     (v1.Test) {
-      Scope: (*string)(<nil>),
       ID: (*string)((len=7) "test-id"),
       Name: (string) (len=9) "test-name",
+      Scope: (*string)(<nil>),
       Lineage: ([]string) {
       },
       Location: (*v1.Location)(test-file),
@@ -41,9 +41,9 @@
       }
     },
     (v1.Test) {
-      Scope: (*string)(<nil>),
       ID: (*string)((len=7) "test-id"),
       Name: (string) (len=9) "test-name",
+      Scope: (*string)(<nil>),
       Lineage: ([]string) {
       },
       Location: (*v1.Location)(test-file),
@@ -66,9 +66,9 @@
       }
     },
     (v1.Test) {
-      Scope: (*string)(<nil>),
       ID: (*string)((len=7) "test-id"),
       Name: (string) (len=9) "test-name",
+      Scope: (*string)(<nil>),
       Lineage: ([]string) {
       },
       Location: (*v1.Location)(test-file),
@@ -91,9 +91,9 @@
       }
     },
     (v1.Test) {
-      Scope: (*string)(<nil>),
       ID: (*string)((len=7) "test-id"),
       Name: (string) (len=9) "test-name",
+      Scope: (*string)(<nil>),
       Lineage: ([]string) {
       },
       Location: (*v1.Location)(test-file),

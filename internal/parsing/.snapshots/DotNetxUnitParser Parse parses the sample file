@@ -23,6 +23,7 @@
   "tests": [
     {
       "name": "NullAssertsTests+Null.Success",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 6370900,
         "meta": {
@@ -38,6 +39,7 @@
     },
     {
       "name": "NullAssertsTests+Null.Failure",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 11433500,
         "meta": {
@@ -53,6 +55,7 @@
     },
     {
       "name": "RangeAssertsTests+InRange.DoubleNotWithinRange",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 2485800,
         "meta": {
@@ -68,6 +71,7 @@
     },
     {
       "name": "RangeAssertsTests+InRange.IntValueWithinRange",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 559500,
         "meta": {
@@ -83,6 +87,7 @@
     },
     {
       "name": "RangeAssertsTests+InRange.DoubleValueWithinRange",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 104400,
         "meta": {
@@ -98,6 +103,7 @@
     },
     {
       "name": "RangeAssertsTests+InRange.IntNotWithinRangeWithZeroMinimum",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 307700,
         "meta": {
@@ -114,6 +120,7 @@
     },
     {
       "name": "RangeAssertsTests+InRange.IntNotWithinRangeWithZeroActual",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 299900,
         "meta": {
@@ -129,6 +136,7 @@
     },
     {
       "name": "RangeAssertsTests+InRange.StringNotWithinRange",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 1059900,
         "meta": {
@@ -144,6 +152,7 @@
     },
     {
       "name": "RangeAssertsTests+InRange.StringValueWithinRange",
+      "scope": "test.xunit.assert.dll",
       "attempt": {
         "durationInNanoseconds": 129800,
         "meta": {
@@ -159,6 +168,7 @@
     },
     {
       "name": "CommandLineTests+MethodArgument.MultipleValidMethodArguments",
+      "scope": "test.xunit.console.dll",
       "attempt": {
         "durationInNanoseconds": 11454300,
         "meta": {
@@ -174,6 +184,7 @@
     },
     {
       "name": "CommandLineTests+MethodArgument.MethodArgumentNotPassed",
+      "scope": "test.xunit.console.dll",
       "attempt": {
         "durationInNanoseconds": 323400,
         "meta": {
@@ -194,6 +205,7 @@
     },
     {
       "name": "CommandLineTests+MethodArgument.SingleValidMethodArgument",
+      "scope": "test.xunit.console.dll",
       "attempt": {
         "durationInNanoseconds": 425700,
         "meta": {
@@ -209,6 +221,7 @@
     },
     {
       "name": "CommandLineTests+MethodArgument.MissingOptionValue",
+      "scope": "test.xunit.console.dll",
       "attempt": {
         "durationInNanoseconds": 2254700,
         "meta": {
@@ -224,6 +237,7 @@
     },
     {
       "name": "CommandLineTests+SerializeOption.SerializeSetSerializeIsTrue",
+      "scope": "test.xunit.console.dll",
       "attempt": {
         "durationInNanoseconds": 288600,
         "meta": {
@@ -239,6 +253,7 @@
     },
     {
       "name": "CommandLineTests+SerializeOption.SerializeNotSetSerializeIsFalse",
+      "scope": "test.xunit.console.dll",
       "attempt": {
         "durationInNanoseconds": 403900,
         "meta": {
