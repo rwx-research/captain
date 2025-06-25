@@ -5,7 +5,7 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/retries/with-config-buildkite-rspec-failed-not-quarantined.json*
+      path: ./fixtures/integration-tests/with-config-buildkite-rspec-failed-not-quarantined.json-UNIQUE-*
     retries:
       attempts: 2
       command: echo "{{ tests }}"
@@ -15,7 +15,7 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/retries/with-config-circleci-rspec-failed-not-quarantined.json*
+      path: ./fixtures/integration-tests/with-config-circleci-rspec-failed-not-quarantined.json-UNIQUE-*
     retries:
       attempts: 2
       command: echo "{{ tests }}"
@@ -25,7 +25,7 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/retries/with-config-github-actions-rspec-failed-not-quarantined.json*
+      path: ./fixtures/integration-tests/with-config-github-actions-rspec-failed-not-quarantined.json-UNIQUE-*
     retries:
       attempts: 2
       command: echo "{{ tests }}"
@@ -35,7 +35,7 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/retries/with-config-gitlab-ci-rspec-failed-not-quarantined.json*
+      path: ./fixtures/integration-tests/with-config-gitlab-ci-rspec-failed-not-quarantined.json-UNIQUE-*
     retries:
       attempts: 2
       command: echo "{{ tests }}"
@@ -45,7 +45,7 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/retries/with-config-generic-rspec-failed-not-quarantined.json*
+      path: ./fixtures/integration-tests/with-config-generic-rspec-failed-not-quarantined.json-UNIQUE-*
     retries:
       attempts: 2
       command: echo "{{ tests }}"
@@ -55,7 +55,7 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/retries/with-config-inherited-env-rspec-failed-not-quarantined.json*
+      path: ./fixtures/integration-tests/with-config-inherited-env-rspec-failed-not-quarantined.json-UNIQUE-*
     retries:
       attempts: 2
       command: echo "{{ tests }}"
@@ -65,7 +65,7 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/retries/with-config-oss-rspec-failed-not-quarantined.json*
+      path: ./fixtures/integration-tests/with-config-oss-rspec-failed-not-quarantined.json-UNIQUE-*
     retries:
       attempts: 2
       command: echo "{{ tests }}"

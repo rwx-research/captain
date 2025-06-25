@@ -5,11 +5,11 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/rspec-passed.json
+      path: ./fixtures/integration-tests/rspec-passed.json-UNIQUE-*
     partition:
       command: echo "test {{ testFiles }}"
       globs:
-      - ./fixtures/integration-tests/partition/*.rb
+        - ./fixtures/integration-tests/partition/*.rb
 
   oss-run-with-partition-with-multiple-globs:
     command: bash -c 'exit 123'
@@ -17,12 +17,12 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/rspec-passed.json
+      path: ./fixtures/integration-tests/rspec-passed.json-UNIQUE-*
     partition:
       command: echo "test {{ testFiles }}"
       globs:
-      - ./fixtures/integration-tests/partition/*_spec.rb
-      - ./fixtures/integration-tests/partition/*.rb
+        - ./fixtures/integration-tests/partition/*_spec.rb
+        - ./fixtures/integration-tests/partition/*.rb
 
   oss-run-with-partition-with-custom-delimiter:
     command: bash -c 'exit 123'
@@ -30,10 +30,10 @@ test-suites:
     results:
       language: Ruby
       framework: RSpec
-      path: ./fixtures/integration-tests/rspec-passed.json
+      path: ./fixtures/integration-tests/rspec-passed.json-UNIQUE-*
     partition:
       command: echo "test {{ testFiles }}"
       delimiter: " -hi- "
       globs:
-      - ./fixtures/integration-tests/partition/*_spec.rb
-      - ./fixtures/integration-tests/partition/*.rb
+        - ./fixtures/integration-tests/partition/*_spec.rb
+        - ./fixtures/integration-tests/partition/*.rb

@@ -5,7 +5,6 @@ package integration_test
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -27,11 +26,14 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 		Describe("captain run", func() {
 			Context("quarantining", func() {
 				It("succeeds when all failures quarantined", func() {
+					testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-quarantine.json", prefix)
+					defer cleanup()
+
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-quarantine-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+							"--test-results", testResultsPath,
 							"--fail-on-upload-error",
 							"-c", "bash -c 'exit 2'",
 						},
@@ -45,11 +47,14 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				It("fails & passes through exit code when not all failures quarantined", func() {
+					testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-quarantined-with-other-errors.json", prefix)
+					defer cleanup()
+
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-quarantine-test",
-							"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
+							"--test-results", testResultsPath,
 							"--fail-on-upload-error",
 							"-c", "bash -c 'exit 123'",
 						},
@@ -64,33 +69,15 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 			})
 
 			Context("retries", func() {
-				var _symlinkDestPath string
-				var _symlinkSrcPath string
-
-				// retry tests delete test results between retries.
-				// this function ensures a symlink exists to the test results file
-				// that can be freely removed
-				// the symlink will be resuscitated after the test in the AfterEach
-				symlinkToNewPath := func(srcPath string, prefix string) string {
-					var err error
-					_symlinkDestPath = fmt.Sprintf("fixtures/integration-tests/retries/%s-%s", prefix, filepath.Base(srcPath))
-					_symlinkSrcPath = fmt.Sprintf("../%s", filepath.Base(srcPath))
-					Expect(err).ToNot(HaveOccurred())
-
-					os.Symlink(_symlinkSrcPath, _symlinkDestPath)
-					return _symlinkDestPath
-				}
-
-				AfterEach(func() {
-					os.Symlink(_symlinkSrcPath, _symlinkDestPath)
-				})
-
 				It("succeeds when all failures quarantined", func() {
+					testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-quarantine.json", prefix)
+					defer cleanup()
+
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-quarantine-test",
-							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
+							"--test-results", testResultsPath,
 							"--fail-on-upload-error",
 							"--retries", "1",
 							"--retry-command", `echo "{{ tests }}"`,
@@ -107,11 +94,14 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				It("fails & passes through exit code on failure", func() {
+					testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
+					defer cleanup()
+
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-functional-tests",
-							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix),
+							"--test-results", testResultsPath,
 							"--fail-on-upload-error",
 							"--retries", "1",
 							"--retry-command", `echo "{{ tests }}"`,
@@ -129,11 +119,14 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				It("fails on misconfigured retry command", func() {
+					testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-quarantine.json", prefix)
+					defer cleanup()
+
 					result := runCaptain(captainArgs{
 						args: []string{
 							"run",
 							"captain-cli-quarantine-test",
-							"--test-results", symlinkToNewPath("fixtures/integration-tests/rspec-quarantine.json", prefix),
+							"--test-results", testResultsPath,
 							"--fail-on-upload-error",
 							"--fail-on-misconfigured-retry",
 							"--retries", "1",
@@ -151,7 +144,8 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				It("succeeds with 'misconfigured-retry' flag when configured correctly", func() {
-					testResultsPath := symlinkToNewPath("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
+					testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
+					defer cleanup()
 
 					result := runCaptain(captainArgs{
 						args: []string{
@@ -161,7 +155,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 							"--fail-on-upload-error",
 							"--fail-on-misconfigured-retry",
 							"--retries", "1",
-							"--retry-command", fmt.Sprintf("ln -sf ../rspec-passed-not-quarantined.json %s; echo \"{{ tests }}\"", testResultsPath),
+							"--retry-command", fmt.Sprintf("cp fixtures/integration-tests/rspec-passed-not-quarantined.json %s; echo \"{{ tests }}\"", testResultsPath),
 							"-c", "bash -c 'exit 123'",
 						},
 						env: getEnvWithAccessToken(),
@@ -178,12 +172,15 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 			Context("partition", func() {
 				Context("without timings", func() {
 					It("sets partition 1 correctly", func() {
+						testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passing.json", prefix)
+						defer cleanup()
+
 						result := runCaptain(captainArgs{
 							args: []string{
 								"run",
 								"captain-cli-functional-tests",
 								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
-								"--test-results", "fixtures/integration-tests/rspec-passing.json",
+								"--test-results", testResultsPath,
 								"--partition-globs", "fixtures/integration-tests/partition/x.rb",
 								"--partition-globs", "fixtures/integration-tests/partition/y.rb",
 								"--partition-globs", "fixtures/integration-tests/partition/z.rb",
@@ -202,12 +199,15 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					It("sets partition 2 correctly", func() {
+						testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passing.json", prefix)
+						defer cleanup()
+
 						result := runCaptain(captainArgs{
 							args: []string{
 								"run",
 								"captain-cli-functional-tests",
 								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
-								"--test-results", "fixtures/integration-tests/rspec-passing.json",
+								"--test-results", testResultsPath,
 								"--partition-globs", "fixtures/integration-tests/partition/x.rb",
 								"--partition-globs", "fixtures/integration-tests/partition/y.rb",
 								"--partition-globs", "fixtures/integration-tests/partition/z.rb",
@@ -240,12 +240,15 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					It("sets partition 1 correctly", func() {
+						testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passing.json", prefix)
+						defer cleanup()
+
 						result := runCaptain(captainArgs{
 							args: []string{
 								"run",
 								"captain-cli-functional-tests",
 								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
-								"--test-results", "fixtures/integration-tests/rspec-passing.json",
+								"--test-results", testResultsPath,
 								"--partition-globs", "fixtures/integration-tests/partition/*_spec.rb",
 								"--partition-index", "0",
 								"--partition-total", "2",
@@ -262,12 +265,15 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					It("sets partition 2 correctly", func() {
+						testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passing.json", prefix)
+						defer cleanup()
+
 						result := runCaptain(captainArgs{
 							args: []string{
 								"run",
 								"captain-cli-functional-tests",
 								"--partition-command", "echo 'bin/rspec {{ testFiles }}'",
-								"--test-results", "fixtures/integration-tests/rspec-passing.json",
+								"--test-results", testResultsPath,
 								"--partition-globs", "fixtures/integration-tests/partition/*_spec.rb",
 								"--partition-index", "1",
 								"--partition-total", "2",
@@ -288,11 +294,14 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 
 		Describe("captain quarantine", func() {
 			It("succeeds when all failures quarantined", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-quarantine.json", prefix)
+				defer cleanup()
+
 				result := runCaptain(captainArgs{
 					args: []string{
 						"quarantine",
 						"captain-cli-quarantine-test",
-						"--test-results", "fixtures/integration-tests/rspec-quarantine.json",
+						"--test-results", testResultsPath,
 						"-c", "bash -c 'exit 2'",
 					},
 					env: getEnvWithAccessToken(),
@@ -305,11 +314,14 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 			})
 
 			It("fails & passes through exit code when not all failures quarantined", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-quarantined-with-other-errors.json", prefix)
+				defer cleanup()
+
 				result := runCaptain(captainArgs{
 					args: []string{
 						"quarantine",
 						"captain-cli-quarantine-test",
-						"--test-results", "fixtures/integration-tests/rspec-quarantined-with-other-errors.json",
+						"--test-results", testResultsPath,
 						"-c", "bash -c 'exit 123'",
 					},
 					env: getEnvWithAccessToken(),
