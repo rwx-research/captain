@@ -115,8 +115,32 @@ var _ = Describe("Run", func() {
 			file.Reader = strings.NewReader("")
 			return file, nil
 		}
+		mockGetwd := func() (string, error) {
+			return "/go/github.com/rwx-research/captain-cli", nil
+		}
+		mockMkdirTemp := func(_, _ string) (string, error) {
+			return "/tmp/captain-test", nil
+		}
+		mockMkdirAll := func(_ string, _ os.FileMode) error {
+			return nil
+		}
+		mockCreate := func(_ string) (fs.File, error) {
+			return &mocks.File{
+				Builder: new(strings.Builder),
+				Reader:  strings.NewReader(""),
+			}, nil
+		}
+		mockRemove := func(string) error {
+			return nil
+		}
+
 		service.FileSystem.(*mocks.FileSystem).MockOpen = mockOpen
 		service.FileSystem.(*mocks.FileSystem).MockGlob = mockGlob
+		service.FileSystem.(*mocks.FileSystem).MockGetwd = mockGetwd
+		service.FileSystem.(*mocks.FileSystem).MockMkdirTemp = mockMkdirTemp
+		service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
+		service.FileSystem.(*mocks.FileSystem).MockCreate = mockCreate
+		service.FileSystem.(*mocks.FileSystem).MockRemove = mockRemove
 
 		arg = fmt.Sprintf("fake-command-%d", GinkgoRandomSeed())
 		runConfig = cli.RunConfig{
@@ -815,35 +839,15 @@ var _ = Describe("Run", func() {
 			secondInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
 			thirdInitialStatus = v1.NewFailedTestStatus(nil, nil, nil)
 
-			mockGetwd := func() (string, error) {
-				return "/go/github.com/rwx-research/captain-cli", nil
-			}
-			service.FileSystem.(*mocks.FileSystem).MockGetwd = mockGetwd
-
-			mockMkdirAll := func(_ string, _ os.FileMode) error {
-				return nil
-			}
-			service.FileSystem.(*mocks.FileSystem).MockMkdirAll = mockMkdirAll
-
 			mockRename := func(_, _ string) error {
 				return nil
 			}
 			service.FileSystem.(*mocks.FileSystem).MockRename = mockRename
 
-			mockMkdirTemp := func(_, _ string) (string, error) {
-				return "/tmp/captain-test", nil
-			}
-			service.FileSystem.(*mocks.FileSystem).MockMkdirTemp = mockMkdirTemp
-
 			mockStat := func(string) (iofs.FileInfo, error) {
 				return nil, iofs.ErrNotExist
 			}
 			service.FileSystem.(*mocks.FileSystem).MockStat = mockStat
-
-			mockRemove := func(string) error {
-				return nil
-			}
-			service.FileSystem.(*mocks.FileSystem).MockRemove = mockRemove
 
 			mockGetExitStatusFromError := func(error) (int, error) {
 				return exitCode, nil

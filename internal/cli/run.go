@@ -166,7 +166,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		}
 
 		// Always move artifacts to IAS after original attempt when intermediate artifacts path is configured
-		if testResults != nil && len(testResultsFiles) > 0 && cfg.IntermediateArtifactsPath != "" {
+		if testResults != nil && len(testResultsFiles) > 0 {
 			ias, err := s.NewIntermediateArtifactStorage(cfg.IntermediateArtifactsPath)
 			if err != nil {
 				return errors.WithStack(err)
