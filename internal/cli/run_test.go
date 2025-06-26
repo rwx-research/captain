@@ -1706,6 +1706,10 @@ var _ = Describe("Run", func() {
 				firstInitialStatus = v1.NewSuccessfulTestStatus()
 				secondInitialStatus = v1.NewSuccessfulTestStatus()
 				thirdInitialStatus = v1.NewSuccessfulTestStatus()
+				mockCommand.MockWait = func() error {
+					commandFinished = true
+					return nil
+				}
 			})
 
 			It("does not retry", func() {
