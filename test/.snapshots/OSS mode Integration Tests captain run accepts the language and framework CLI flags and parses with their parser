@@ -92,7 +92,8 @@
     }
   ],
   "meta": {
-    "captain_suite_id": "captain-cli-functional-tests"
+    "captain_suite_id": "captain-cli-functional-tests",
+    "last_retry_id": 0
   }
 }
 
