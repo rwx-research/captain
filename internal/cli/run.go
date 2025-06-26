@@ -458,7 +458,7 @@ func (s Service) attemptRetries(
 		remainingFlakyFailures := make([]v1.Test, 0)
 		remainingNonFlakyFailures := make([]v1.Test, 0)
 
-		ias.SetRetryID(retries + 1)
+		ias.SetRetryID(groupNumberOffset + retries + 1)
 
 		for _, test := range flattenedTestResults.Tests {
 			if !test.Attempt.Status.ImpliesFailure() {
