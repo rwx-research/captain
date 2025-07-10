@@ -125,6 +125,7 @@ var _ = Describe("Summary", func() {
 					Status:     v1.SummaryStatusSuccessful,
 					Tests:      2,
 					Retries:    2,
+					Flaky:      2,
 					Successful: 2,
 				},
 			))

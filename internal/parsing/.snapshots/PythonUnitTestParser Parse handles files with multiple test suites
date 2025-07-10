@@ -9,6 +9,7 @@
       "kind": "successful"
     },
     "tests": 2,
+    "flaky": 0,
     "otherErrors": 0,
     "retries": 0,
     "canceled": 0,

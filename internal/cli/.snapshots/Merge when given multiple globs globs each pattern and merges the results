@@ -3,6 +3,7 @@
   Summary: (v1.Summary) {
     Status: (v1.SummaryStatus) (len=10) "successful",
     Tests: (int) 4,
+    Flaky: (int) 0,
     OtherErrors: (int) 0,
     Retries: (int) 0,
     Canceled: (int) 0,
