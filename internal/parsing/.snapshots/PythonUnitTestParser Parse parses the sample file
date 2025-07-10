@@ -9,6 +9,7 @@
       "kind": "failed"
     },
     "tests": 5,
+    "flaky": 0,
     "otherErrors": 0,
     "retries": 0,
     "canceled": 0,

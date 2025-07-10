@@ -153,14 +153,7 @@ func writeMarkdownSummaryLine(markdown *strings.Builder, testResults v1.TestResu
 		return errors.WithStack(err)
 	}
 
-	flaky := 0
-	for _, test := range testResults.Tests {
-		if test.Flaky() {
-			flaky++
-		}
-	}
-
-	if err := writeMarkdownSummaryStatus(markdown, flaky, "flaky", "flaky"); err != nil {
+	if err := writeMarkdownSummaryStatus(markdown, summary.Flaky, "flaky", "flaky"); err != nil {
 		return errors.WithStack(err)
 	}
 

@@ -100,6 +100,7 @@ var _ = Describe("Merge", func() {
 				Summary: v1.Summary{
 					Status:      v1.SummaryStatusFailed,
 					Tests:       6,
+					Flaky:       2,
 					OtherErrors: 3,
 					Successful:  3,
 					Failed:      1,
@@ -270,6 +271,7 @@ var _ = Describe("Merge", func() {
 					Status:     v1.SummaryStatusFailed,
 					Tests:      8,
 					Retries:    5,
+					Flaky:      2,
 					Failed:     4,
 					Successful: 4,
 				},
@@ -589,6 +591,7 @@ var _ = Describe("Merge", func() {
 				Summary: v1.Summary{
 					Status:     v1.SummaryStatusFailed,
 					Tests:      2,
+					Flaky:      1,
 					Successful: 1,
 					Canceled:   1,
 					Retries:    1,

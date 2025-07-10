@@ -37,6 +37,7 @@ func (ss *SummaryStatus) UnmarshalJSON(b []byte) error {
 type Summary struct {
 	Status      SummaryStatus `json:"status"`
 	Tests       int           `json:"tests"`
+	Flaky       int           `json:"flaky"`
 	OtherErrors int           `json:"otherErrors"`
 	Retries     int           `json:"retries"`
 	Canceled    int           `json:"canceled"`
@@ -60,6 +61,10 @@ func NewSummary(tests []Test, otherErrors []OtherError) Summary {
 	for _, test := range tests {
 		if len(test.PastAttempts) > 0 {
 			summary.Retries++
+		}
+
+		if test.Flaky() {
+			summary.Flaky++
 		}
 
 		if test.Attempt.Status.ImpliesFailure() {
