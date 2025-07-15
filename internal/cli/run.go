@@ -231,13 +231,17 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	unquarantinedFailedTests := make([]v1.Test, 0)
 	otherErrorCount := 0
 
+	quarantinedTests, err := s.API.GetQuarantinedTests(ctx, cfg.SuiteID)
+	if err != nil {
+		// Fallback to quarantined tests from run configuration
+		quarantinedTests = make([]backend.Test, len(apiConfiguration.QuarantinedTests))
+		for i, qt := range apiConfiguration.QuarantinedTests {
+			quarantinedTests[i] = qt.Test
+		}
+	}
+
 	if testResults != nil {
 		otherErrorCount = testResults.Summary.OtherErrors
-
-		quarantinedTests := make([]backend.Test, len(apiConfiguration.QuarantinedTests))
-		for i, quarantinedTest := range apiConfiguration.QuarantinedTests {
-			quarantinedTests[i] = quarantinedTest.Test
-		}
 
 		for i, test := range testResults.Tests {
 			if s.isIdentifiedIn(test, quarantinedTests) && test.Attempt.Status.PotentiallyFlaky() {
@@ -258,11 +262,6 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	}
 
 	if newlyExecutedTestResults != nil {
-		quarantinedTests := make([]backend.Test, len(apiConfiguration.QuarantinedTests))
-		for i, quarantinedTest := range apiConfiguration.QuarantinedTests {
-			quarantinedTests[i] = quarantinedTest.Test
-		}
-
 		for i, test := range newlyExecutedTestResults.Tests {
 			if s.isIdentifiedIn(test, quarantinedTests) && test.Attempt.Status.PotentiallyFlaky() {
 				newlyExecutedTestResults.Tests[i] = test.Quarantine()

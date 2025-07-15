@@ -70,6 +70,15 @@ var _ = Describe("Run", func() {
 			},
 		}
 
+		// Set up default mock for GetQuarantinedTests that returns empty slice
+		mockGetQuarantinedTests := func(
+			_ context.Context,
+			_ string,
+		) ([]backend.Test, error) {
+			return []backend.Test{}, nil
+		}
+		service.API.(*mocks.API).MockGetQuarantinedTests = mockGetQuarantinedTests
+
 		mockCommand = new(mocks.Command)
 		mockCommand.MockStart = func() error {
 			commandStarted = true
@@ -291,9 +300,13 @@ var _ = Describe("Run", func() {
 					var resp http.Response
 
 					Expect(req.Method).To(Equal(http.MethodGet))
-					Expect(req.URL.Path).To(HaveSuffix("run_configuration"))
 
-					resp.Body = io.NopCloser(strings.NewReader(`{}`))
+					if strings.HasSuffix(req.URL.Path, "quarantined_tests") {
+						resp.Body = io.NopCloser(strings.NewReader(`[]`))
+					} else {
+						Expect(req.URL.Path).To(HaveSuffix("run_configuration"))
+						resp.Body = io.NopCloser(strings.NewReader(`{}`))
+					}
 
 					return &resp, nil
 				}
@@ -513,6 +526,21 @@ var _ = Describe("Run", func() {
 					}, nil
 				}
 				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+
+				// Also set up GetQuarantinedTests to return the same quarantined tests
+				mockGetQuarantinedTests := func(
+					_ context.Context,
+					_ string,
+				) ([]backend.Test, error) {
+					return []backend.Test{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTests = mockGetQuarantinedTests
 			})
 
 			It("returns the error code of the command", func() {
@@ -562,6 +590,26 @@ var _ = Describe("Run", func() {
 					}, nil
 				}
 				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+
+				// Also set up GetQuarantinedTests to return the same quarantined tests
+				mockGetQuarantinedTests := func(
+					_ context.Context,
+					_ string,
+				) ([]backend.Test, error) {
+					return []backend.Test{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTests = mockGetQuarantinedTests
 			})
 
 			It("doesn't return an error", func() {
@@ -594,37 +642,29 @@ var _ = Describe("Run", func() {
 
 		Context("some quarantined tests successful", func() {
 			BeforeEach(func() {
-				mockGetRunConfiguration := func(
+				mockGetQuarantinedTests := func(
 					_ context.Context,
 					_ string,
-				) (backend.RunConfiguration, error) {
-					return backend.RunConfiguration{
-						QuarantinedTests: []backend.QuarantinedTest{
-							{
-								Test: backend.Test{
-									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
-									IdentityComponents:  []string{"description", "file"},
-									StrictIdentity:      true,
-								},
-							},
-							{
-								Test: backend.Test{
-									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
-									IdentityComponents:  []string{"description", "file"},
-									StrictIdentity:      true,
-								},
-							},
-							{
-								Test: backend.Test{
-									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstSuccessfulTestDescription, "/path/to/file.test"),
-									IdentityComponents:  []string{"description", "file"},
-									StrictIdentity:      true,
-								},
-							},
+				) ([]backend.Test, error) {
+					return []backend.Test{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstSuccessfulTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
 						},
 					}, nil
 				}
-				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+				service.API.(*mocks.API).MockGetQuarantinedTests = mockGetQuarantinedTests
 			})
 
 			It("doesn't return an error", func() {
@@ -762,30 +802,24 @@ var _ = Describe("Run", func() {
 			}
 			service.API.(*mocks.API).MockUpdateTestResults = mockUploadTestResults
 
-			mockGetRunConfiguration := func(
+			mockGetQuarantinedTests := func(
 				_ context.Context,
 				_ string,
-			) (backend.RunConfiguration, error) {
-				return backend.RunConfiguration{
-					QuarantinedTests: []backend.QuarantinedTest{
-						{
-							Test: backend.Test{
-								CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
-								IdentityComponents:  []string{"description", "file"},
-								StrictIdentity:      true,
-							},
-						},
-						{
-							Test: backend.Test{
-								CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
-								IdentityComponents:  []string{"description", "file"},
-								StrictIdentity:      true,
-							},
-						},
+			) ([]backend.Test, error) {
+				return []backend.Test{
+					{
+						CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstFailedTestDescription, "/path/to/file.test"),
+						IdentityComponents:  []string{"description", "file"},
+						StrictIdentity:      true,
+					},
+					{
+						CompositeIdentifier: fmt.Sprintf("%v -captain- %v", secondFailedTestDescription, "/other/path/to/file.test"),
+						IdentityComponents:  []string{"description", "file"},
+						StrictIdentity:      true,
 					},
 				}, nil
 			}
-			service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+			service.API.(*mocks.API).MockGetQuarantinedTests = mockGetQuarantinedTests
 		})
 
 		It("returns the error code of the command", func() {
@@ -1154,24 +1188,20 @@ var _ = Describe("Run", func() {
 			BeforeEach(func() {
 				runConfig.Retries = 1
 
-				mockGetRunConfiguration := func(
+				mockGetQuarantinedTests := func(
 					_ context.Context,
 					_ string,
-				) (backend.RunConfiguration, error) {
-					return backend.RunConfiguration{
-						QuarantinedTests: []backend.QuarantinedTest{
-							{
-								Test: backend.Test{
-									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstTestDescription, "/path/to/file.test"),
-									IdentityComponents:  []string{"description", "file"},
-									StrictIdentity:      true,
-								},
-							},
+				) ([]backend.Test, error) {
+					return []backend.Test{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
 						},
 					}, nil
 				}
 
-				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+				service.API.(*mocks.API).MockGetQuarantinedTests = mockGetQuarantinedTests
 			})
 
 			It("quarantines any remaining failures that are marked as such", func() {

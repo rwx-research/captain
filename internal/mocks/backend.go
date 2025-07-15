@@ -12,6 +12,7 @@ import (
 // API is a mocked implementation of 'backend.Client'.
 type API struct {
 	MockGetRunConfiguration   func(context.Context, string) (backend.RunConfiguration, error)
+	MockGetQuarantinedTests   func(context.Context, string) ([]backend.Test, error)
 	MockGetTestTimingManifest func(context.Context, string) ([]testing.TestFileTiming, error)
 	MockUpdateTestResults     func(context.Context, string, v1.TestResults, bool) (
 		[]backend.TestResultsUploadResult, error,
@@ -28,6 +29,18 @@ func (a *API) GetRunConfiguration(
 	}
 
 	return backend.RunConfiguration{}, errors.NewInternalError("MockGetRunConfiguration was not configured")
+}
+
+// GetQuarantinedTests either calls the configured mock of itself or returns an error if that doesn't exist.
+func (a *API) GetQuarantinedTests(
+	ctx context.Context,
+	testSuiteIdentifier string,
+) ([]backend.Test, error) {
+	if a.MockGetQuarantinedTests != nil {
+		return a.MockGetQuarantinedTests(ctx, testSuiteIdentifier)
+	}
+
+	return nil, errors.NewInternalError("MockGetQuarantinedTests was not configured")
 }
 
 // GetTestTimingManifest either calls the configured mock of itself or returns an error if that doesn't exist.

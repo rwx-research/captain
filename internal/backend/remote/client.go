@@ -215,6 +215,52 @@ func (c Client) GetRunConfiguration(
 	return runConfiguration, nil
 }
 
+// GetQuarantinedTests returns only the list of quarantined tests
+func (c Client) GetQuarantinedTests(
+	ctx context.Context,
+	testSuiteIdentifier string,
+) ([]backend.Test, error) {
+	endpoint := hostEndpointCompat(c, "/api/test_suites/quarantined_tests")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, errors.NewInternalError("unable to construct HTTP request: %s", err)
+	}
+
+	queryValues := req.URL.Query()
+	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
+	req.URL.RawQuery = queryValues.Encode()
+
+	resp, err := c.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, errors.NewInternalError(
+			"API backend encountered an error. Endpoint was %q, Status Code %d",
+			endpoint,
+			resp.StatusCode,
+		)
+	}
+
+	respBody := struct {
+		QuarantinedTests []backend.Test `json:"quarantined_tests"`
+	}{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+		return nil, errors.NewInternalError(
+			"unable to parse the response body. Endpoint was %q, Content-Type %q. Original Error: %s",
+			endpoint,
+			resp.Header.Get(headerContentType),
+			err,
+		)
+	}
+
+	return respBody.QuarantinedTests, nil
+}
+
 func (c Client) GetIdentityRecipes(ctx context.Context) ([]byte, error) {
 	endpoint := hostEndpointCompat(c, "/api/recipes")
 

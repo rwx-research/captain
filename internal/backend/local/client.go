@@ -141,6 +141,22 @@ func (c Client) GetRunConfiguration(_ context.Context, _ string) (backend.RunCon
 	return makeRunConfiguration(c.Flakes, c.Quarantines, c.quarantinesTime)
 }
 
+func (c Client) GetQuarantinedTests(_ context.Context, _ string) ([]backend.Test, error) {
+	quarantinedTests := make([]backend.Test, len(c.Quarantines))
+
+	for i, quarantine := range c.Quarantines {
+		identity, strict := NewMapFromYAML(quarantine).withoutKey("strict")
+
+		quarantinedTests[i] = backend.Test{
+			CompositeIdentifier: newCompositeID(identity),
+			IdentityComponents:  identity.Order,
+			StrictIdentity:      strict == "true",
+		}
+	}
+
+	return quarantinedTests, nil
+}
+
 func (c Client) UpdateTestResults(
 	_ context.Context,
 	_ string,

@@ -10,6 +10,7 @@ import (
 // Client is the interface of our API layer.
 type Client interface {
 	GetRunConfiguration(ctx context.Context, testSuiteIdentifier string) (RunConfiguration, error)
+	GetQuarantinedTests(ctx context.Context, testSuiteIdentifier string) ([]Test, error)
 	GetTestTimingManifest(context.Context, string) ([]testing.TestFileTiming, error)
 	UpdateTestResults(context.Context, string, v1.TestResults, bool) ([]TestResultsUploadResult, error)
 }
