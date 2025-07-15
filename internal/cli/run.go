@@ -107,37 +107,55 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			return errors.NewInputError("%s", errorMessage)
 		}
 
-		// Wait until run configuration was fetched. Ignore any errors.
-		if err := eg.Wait(); err != nil {
-			s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
-		}
+		hasFailures := false
 
-		cfg.Retries++
-		if cfg.Retries < 1 {
-			cfg.Retries = 1
-		}
-		cfg.FlakyRetries++
-		if cfg.FlakyRetries < 1 {
-			cfg.FlakyRetries = 1
-		}
-
-		// start with runErr in an error state to represent the error from the previous task attempt
-		runErr = errors.NewExecutionError(1, "test suite had failed tests")
-
-		newlyExecutedTestResults = v1.NewTestResults(testResults.Framework, []v1.Test{}, []v1.OtherError{})
-		testResults, newlyExecutedTestResults, lastRetryID, err = s.attemptRetries(
-			ctx,
-			testResults,
-			newlyExecutedTestResults,
-			cfg,
-			apiConfiguration,
-			startingRetryID,
-		)
-		if err != nil {
-			if _, ok := errors.AsRetryError(err); ok {
-				return errors.WithStack(err)
+		for _, test := range testResults.Tests {
+			if test.Attempt.Status.ImpliesFailure() {
+				hasFailures = true
+				break
 			}
-			s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
+		}
+
+		if !hasFailures {
+			if os.Getenv("CAPTAIN_RETRY_FAILED_TESTS_PASS_ON_NO_TESTS") == "true" {
+				s.Log.Infoln("No tests to retry detected")
+				newlyExecutedTestResults = v1.NewTestResults(testResults.Framework, []v1.Test{}, []v1.OtherError{})
+			} else {
+				return errors.NewRetryError("No tests to retry detected")
+			}
+		} else {
+			// Wait until run configuration was fetched. Ignore any errors.
+			if err := eg.Wait(); err != nil {
+				s.Log.Warnf("Unable to fetch run configuration from Captain: %s", err)
+			}
+
+			cfg.Retries++
+			if cfg.Retries < 1 {
+				cfg.Retries = 1
+			}
+			cfg.FlakyRetries++
+			if cfg.FlakyRetries < 1 {
+				cfg.FlakyRetries = 1
+			}
+
+			// start with runErr in an error state to represent the error from the previous task attempt
+			runErr = errors.NewExecutionError(1, "test suite had failed tests")
+
+			newlyExecutedTestResults = v1.NewTestResults(testResults.Framework, []v1.Test{}, []v1.OtherError{})
+			testResults, newlyExecutedTestResults, lastRetryID, err = s.attemptRetries(
+				ctx,
+				testResults,
+				newlyExecutedTestResults,
+				cfg,
+				apiConfiguration,
+				startingRetryID,
+			)
+			if err != nil {
+				if _, ok := errors.AsRetryError(err); ok {
+					return errors.WithStack(err)
+				}
+				s.Log.Warnf("An issue occurred while retrying your tests: %v", err)
+			}
 		}
 	} else {
 		runCommand, err := s.makeRunCommand(ctx, cfg)
