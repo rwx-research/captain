@@ -116,4 +116,90 @@ var _ = Describe("local backend client", func() {
 			Expect(result[fmt.Sprintf("%d", GinkgoRandomSeed())]).To(Equal(time.Second * time.Duration(GinkgoRandomSeed())))
 		})
 	})
+
+	Describe("GetQuarantinedTests", func() {
+		var (
+			quarantinedTests []backend.Test
+			quarantineTime   time.Time
+		)
+
+		Context("when there are quarantined tests", func() {
+			BeforeEach(func() {
+				quarantineTime = time.Now().Truncate(time.Second)
+				quarantines.Reader = strings.NewReader(`- name: Test 1
+  file: test1.js
+  strict: "true"
+- name: Test 2
+  file: test2.js
+  strict: "false"`)
+
+				quarantines.MockModTime = func() time.Time {
+					return quarantineTime
+				}
+
+				fileSystem.MockOpen = func(name string) (fs.File, error) {
+					switch name {
+					case flakesPath:
+						return &flakes, nil
+					case quarantinesPath:
+						return &quarantines, nil
+					case timingsPath:
+						return &timings, nil
+					default:
+						return nil, os.ErrNotExist
+					}
+				}
+
+				client, err = local.NewClient(&fileSystem, flakesPath, quarantinesPath, timingsPath)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("returns the quarantined tests", func() {
+				quarantinedTests, err = client.GetQuarantinedTests(context.Background(), "test-suite-id")
+				Expect(err).ToNot(HaveOccurred())
+				Expect(quarantinedTests).To(HaveLen(2))
+
+				Expect(quarantinedTests[0].CompositeIdentifier).To(Equal("Test 1 -captain- test1.js"))
+				Expect(quarantinedTests[0].IdentityComponents).To(Equal([]string{"name", "file"}))
+				Expect(quarantinedTests[0].StrictIdentity).To(BeTrue())
+
+				Expect(quarantinedTests[1].CompositeIdentifier).To(Equal("Test 2 -captain- test2.js"))
+				Expect(quarantinedTests[1].IdentityComponents).To(Equal([]string{"name", "file"}))
+				Expect(quarantinedTests[1].StrictIdentity).To(BeFalse())
+			})
+		})
+
+		Context("when there are no quarantined tests", func() {
+			BeforeEach(func() {
+				quarantineTime = time.Now().Truncate(time.Second)
+				quarantines.Reader = strings.NewReader("")
+
+				quarantines.MockModTime = func() time.Time {
+					return quarantineTime
+				}
+
+				fileSystem.MockOpen = func(name string) (fs.File, error) {
+					switch name {
+					case flakesPath:
+						return &flakes, nil
+					case quarantinesPath:
+						return &quarantines, nil
+					case timingsPath:
+						return &timings, nil
+					default:
+						return nil, os.ErrNotExist
+					}
+				}
+
+				client, err = local.NewClient(&fileSystem, flakesPath, quarantinesPath, timingsPath)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("returns an empty list", func() {
+				quarantinedTests, err = client.GetQuarantinedTests(context.Background(), "test-suite-id")
+				Expect(err).ToNot(HaveOccurred())
+				Expect(quarantinedTests).To(BeEmpty())
+			})
+		})
+	})
 })
