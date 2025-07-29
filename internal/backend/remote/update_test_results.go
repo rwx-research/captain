@@ -3,6 +3,7 @@ package remote
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -13,6 +14,11 @@ import (
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+)
+
+const (
+	fileSizeThresholdBytes = 25 * 1024 * 1024
+	truncationMessage      = "<truncated due to test results size>"
 )
 
 func (c Client) registerTestResults(
@@ -168,26 +174,13 @@ func (c Client) UpdateTestResults(
 		return nil, errors.NewSystemError("unable to determine file-size for %q", testResultsFile.FD.Name())
 	}
 
-	// strip out derivedFrom when over 5MB
-	if fileInfo.Size() > 5242880 {
-		c.Log.Warnf("removing original test result data from uploaded Captain test results due to content size threshold")
-		cleanedDerivedFrom := make([]v1.OriginalTestResults, len(testResults.DerivedFrom))
-
-		for i, originalTestResults := range testResults.DerivedFrom {
-			cleanedDerivedFrom[i] = v1.OriginalTestResults{
-				OriginalFilePath: originalTestResults.OriginalFilePath,
-				GroupNumber:      originalTestResults.GroupNumber,
-				Contents:         "W29taXR0ZWRd", // base64 encoded "[omitted]"
-			}
+	type stripFunc func(v1.TestResults) v1.TestResults
+	for _, strip := range []stripFunc{c.stripDerivedFrom, c.stripPreviousAttempts, c.stripCurrentAttempts} {
+		if fileInfo.Size() <= fileSizeThresholdBytes {
+			break
 		}
 
-		testResults = v1.TestResults{
-			Framework:   testResults.Framework,
-			Summary:     testResults.Summary,
-			Tests:       testResults.Tests,
-			OtherErrors: testResults.OtherErrors,
-			DerivedFrom: cleanedDerivedFrom,
-		}
+		testResults = strip(testResults)
 
 		testResultsFile, err = c.makeTestResultsFile(testResults, id)
 		if err != nil {
@@ -263,4 +256,62 @@ func (c Client) makeTestResultsFile(testResults v1.TestResults, externalID uuid.
 	}
 
 	return testResultsFile, nil
+}
+
+func (c Client) stripDerivedFrom(testResults v1.TestResults) v1.TestResults {
+	c.Log.Warnf("removing original test result data from uploaded Captain test results due to content size threshold")
+	cleanedDerivedFrom := make([]v1.OriginalTestResults, len(testResults.DerivedFrom))
+
+	for i, originalTestResults := range testResults.DerivedFrom {
+		cleanedDerivedFrom[i] = v1.OriginalTestResults{
+			OriginalFilePath: originalTestResults.OriginalFilePath,
+			GroupNumber:      originalTestResults.GroupNumber,
+			Contents:         base64.StdEncoding.EncodeToString([]byte(truncationMessage)),
+		}
+	}
+
+	return v1.TestResults{
+		Framework:   testResults.Framework,
+		Summary:     testResults.Summary,
+		Tests:       testResults.Tests,
+		OtherErrors: testResults.OtherErrors,
+		DerivedFrom: cleanedDerivedFrom,
+	}
+}
+
+func (c Client) stripPreviousAttempts(testResults v1.TestResults) v1.TestResults {
+	c.Log.Warnf("removing previous test attempts from uploaded Captain test results due to content size threshold")
+
+	for i, test := range testResults.Tests {
+		for j, attempt := range test.PastAttempts {
+			testResults.Tests[i].PastAttempts[j].Status = stripStatus(attempt.Status)
+		}
+	}
+
+	return testResults
+}
+
+func (c Client) stripCurrentAttempts(testResults v1.TestResults) v1.TestResults {
+	c.Log.Warnf("removing current test attempts from uploaded Captain test results due to content size threshold")
+
+	for i, test := range testResults.Tests {
+		if test.Attempt.Status.Backtrace != nil {
+			testResults.Tests[i].Attempt.Status = stripStatus(test.Attempt.Status)
+		}
+	}
+
+	return testResults
+}
+
+func stripStatus(status v1.TestStatus) v1.TestStatus {
+	if status.Backtrace != nil {
+		status.Backtrace = []string{truncationMessage}
+	}
+
+	if status.OriginalStatus != nil {
+		s := stripStatus(*status.OriginalStatus)
+		status.OriginalStatus = &s
+	}
+
+	return status
 }
