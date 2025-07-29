@@ -18,8 +18,8 @@ import (
 func (c Client) registerTestResults(
 	ctx context.Context,
 	testSuite string,
-	testResultsFiles []TestResultsFile,
-) ([]TestResultsFile, error) {
+	testResultsFile TestResultsFile,
+) (TestResultsFile, error) {
 	endpoint := hostEndpointCompat(c, "/api/test_suites/bulk_test_results")
 
 	reqBody := struct {
@@ -38,7 +38,7 @@ func (c Client) registerTestResults(
 		BranchName:          c.Provider.BranchName,
 		CommitSha:           c.Provider.CommitSha,
 		TestSuiteIdentifier: testSuite,
-		TestResultsFiles:    testResultsFiles,
+		TestResultsFiles:    []TestResultsFile{testResultsFile},
 		JobTags:             c.Provider.JobTags,
 	}
 
@@ -54,12 +54,12 @@ func (c Client) registerTestResults(
 
 	resp, err := c.postJSON(ctx, endpoint, reqBody)
 	if err != nil {
-		return nil, err
+		return TestResultsFile{}, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return nil, errors.NewInternalError(
+		return TestResultsFile{}, errors.NewInternalError(
 			"API backend encountered an error. Endpoint was %q, Status Code %d",
 			endpoint,
 			resp.StatusCode,
@@ -75,7 +75,7 @@ func (c Client) registerTestResults(
 	}{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
-		return nil, errors.NewInternalError(
+		return TestResultsFile{}, errors.NewInternalError(
 			"unable to parse the response body. Endpoint was %q, Content-Type %q. Original Error: %s",
 			endpoint,
 			resp.Header.Get(headerContentType),
@@ -86,24 +86,23 @@ func (c Client) registerTestResults(
 	for _, endpoint := range respBody.TestResultsUploads {
 		parsedURL, err := url.Parse(endpoint.UploadURL)
 		if err != nil {
-			return nil, errors.NewInternalError("unable to parse S3 URL")
+			return TestResultsFile{}, errors.NewInternalError("unable to parse S3 URL")
 		}
-		for i, testResultsFile := range testResultsFiles {
-			if testResultsFile.ExternalID == endpoint.ExternalID {
-				testResultsFiles[i].CaptainID = endpoint.CaptainID
-				testResultsFiles[i].UploadURL = parsedURL
-				break
-			}
+
+		if testResultsFile.ExternalID == endpoint.ExternalID {
+			testResultsFile.CaptainID = endpoint.CaptainID
+			testResultsFile.UploadURL = parsedURL
+			break
 		}
 	}
 
-	return testResultsFiles, nil
+	return testResultsFile, nil
 }
 
 func (c Client) updateTestResultsStatuses(
 	ctx context.Context,
 	testSuite string,
-	testResultsFiles []TestResultsFile,
+	testResultsFile TestResultsFile,
 ) error {
 	endpoint := hostEndpointCompat(c, "/api/test_suites/bulk_test_results")
 
@@ -118,13 +117,11 @@ func (c Client) updateTestResultsStatuses(
 	}{}
 	reqBody.TestSuiteIdentifier = testSuite
 
-	for _, testResultsFile := range testResultsFiles {
-		switch {
-		case testResultsFile.S3uploadStatus < 300:
-			reqBody.TestResultsFiles = append(reqBody.TestResultsFiles, uploadStatus{testResultsFile.CaptainID, "uploaded"})
-		default:
-			reqBody.TestResultsFiles = append(reqBody.TestResultsFiles, uploadStatus{testResultsFile.CaptainID, "upload_failed"})
-		}
+	switch {
+	case testResultsFile.S3uploadStatus < 300:
+		reqBody.TestResultsFiles = append(reqBody.TestResultsFiles, uploadStatus{testResultsFile.CaptainID, "uploaded"})
+	default:
+		reqBody.TestResultsFiles = append(reqBody.TestResultsFiles, uploadStatus{testResultsFile.CaptainID, "upload_failed"})
 	}
 
 	resp, err := c.putJSON(ctx, endpoint, reqBody)
@@ -151,7 +148,6 @@ func (c Client) UpdateTestResults(
 	ctx context.Context,
 	testSuite string,
 	testResults v1.TestResults,
-	adjustDerivedFromDueToContentLength bool,
 ) ([]backend.TestResultsUploadResult, error) {
 	if testSuite == "" {
 		return nil, errors.NewInputError("test suite name required")
@@ -162,9 +158,91 @@ func (c Client) UpdateTestResults(
 		return nil, c.logError(errors.NewInternalError("Unable to generate new UUID: %s", err))
 	}
 
+	testResultsFile, err := c.makeTestResultsFile(testResults, id)
+	if err != nil {
+		return nil, c.logError(err)
+	}
+
+	fileInfo, err := testResultsFile.FD.Stat()
+	if err != nil {
+		return nil, errors.NewSystemError("unable to determine file-size for %q", testResultsFile.FD.Name())
+	}
+
+	// strip out derivedFrom when over 5MB
+	if fileInfo.Size() > 5242880 {
+		c.Log.Warnf("removing original test result data from uploaded Captain test results due to content size threshold")
+		cleanedDerivedFrom := make([]v1.OriginalTestResults, len(testResults.DerivedFrom))
+
+		for i, originalTestResults := range testResults.DerivedFrom {
+			cleanedDerivedFrom[i] = v1.OriginalTestResults{
+				OriginalFilePath: originalTestResults.OriginalFilePath,
+				GroupNumber:      originalTestResults.GroupNumber,
+				Contents:         "W29taXR0ZWRd", // base64 encoded "[omitted]"
+			}
+		}
+
+		testResults = v1.TestResults{
+			Framework:   testResults.Framework,
+			Summary:     testResults.Summary,
+			Tests:       testResults.Tests,
+			OtherErrors: testResults.OtherErrors,
+			DerivedFrom: cleanedDerivedFrom,
+		}
+
+		testResultsFile, err = c.makeTestResultsFile(testResults, id)
+		if err != nil {
+			return nil, c.logError(err)
+		}
+
+		fileInfo, err = testResultsFile.FD.Stat()
+		if err != nil {
+			return nil, errors.NewSystemError("unable to determine file-size for %q", testResultsFile.FD.Name())
+		}
+	}
+
+	testResultsFile, err = c.registerTestResults(ctx, testSuite, testResultsFile)
+	if err != nil {
+		return nil, err
+	}
+
+	uploadResults := make([]backend.TestResultsUploadResult, 0)
+	if testResultsFile.UploadURL == nil {
+		return nil, errors.NewInternalError("endpoint failed to return upload destination url")
+	}
+	req := http.Request{
+		Method:        http.MethodPut,
+		URL:           testResultsFile.UploadURL,
+		Body:          testResultsFile.FD,
+		ContentLength: fileInfo.Size(),
+	}
+
+	resp, err := c.RoundTrip(&req)
+	if err != nil {
+		c.Log.Warnf("unable to upload test results file to S3: %s", err)
+		uploadResults = append(uploadResults, backend.TestResultsUploadResult{
+			OriginalPaths: uniqueStrings(testResultsFile.OriginalPaths),
+			Uploaded:      false,
+		})
+	} else {
+		testResultsFile.S3uploadStatus = resp.StatusCode
+		uploadResults = append(uploadResults, backend.TestResultsUploadResult{
+			OriginalPaths: uniqueStrings(testResultsFile.OriginalPaths),
+			Uploaded:      resp.StatusCode < 300,
+		})
+		_ = resp.Body.Close()
+	}
+
+	if err := c.updateTestResultsStatuses(ctx, testSuite, testResultsFile); err != nil {
+		c.Log.Warnf("unable to update test results file status: %s", err)
+	}
+
+	return uploadResults, nil
+}
+
+func (c Client) makeTestResultsFile(testResults v1.TestResults, externalID uuid.UUID) (TestResultsFile, error) {
 	buf, err := json.Marshal(testResults)
 	if err != nil {
-		return nil, c.logError(errors.NewInternalError("Unable to output test results as JSON: %s", err))
+		return TestResultsFile{}, errors.NewInternalError("Unable to output test results as JSON: %s", err)
 	}
 
 	f := fs.VirtualReadOnlyFile{
@@ -177,83 +255,12 @@ func (c Client) UpdateTestResults(
 		originalPaths[i] = originalTestResult.OriginalFilePath
 	}
 
-	testResultsFiles := []TestResultsFile{{
-		ExternalID:    id,
+	testResultsFile := TestResultsFile{
+		ExternalID:    externalID,
 		FD:            f,
 		OriginalPaths: originalPaths,
 		Parser:        ParserTypeRWX,
-	}}
-
-	fileSizeLookup := make(map[uuid.UUID]int64)
-	for _, testResultsFile := range testResultsFiles {
-		fileInfo, err := testResultsFile.FD.Stat()
-		if err != nil {
-			return nil, errors.NewSystemError("unable to determine file-size for %q", testResultsFile.FD.Name())
-		}
-
-		fileSizeLookup[testResultsFile.ExternalID] = fileInfo.Size()
-
-		// strip out derivedFrom when over 5MB
-		if adjustDerivedFromDueToContentLength && fileInfo.Size() > 5242880 {
-			c.Log.Warnf("removing original test result data from uploaded Captain test results due to content size threshold")
-			cleanedDerivedFrom := make([]v1.OriginalTestResults, len(testResults.DerivedFrom))
-
-			for i, originalTestResults := range testResults.DerivedFrom {
-				cleanedDerivedFrom[i] = v1.OriginalTestResults{
-					OriginalFilePath: originalTestResults.OriginalFilePath,
-					GroupNumber:      originalTestResults.GroupNumber,
-					Contents:         "W29taXR0ZWRd", // base64 encoded "[omitted]"
-				}
-			}
-			testResultsWithoutDerivedFrom := v1.TestResults{
-				Framework:   testResults.Framework,
-				Summary:     testResults.Summary,
-				Tests:       testResults.Tests,
-				OtherErrors: testResults.OtherErrors,
-				DerivedFrom: cleanedDerivedFrom,
-			}
-			return c.UpdateTestResults(ctx, testSuite, testResultsWithoutDerivedFrom, false)
-		}
 	}
 
-	testResultsFiles, err = c.registerTestResults(ctx, testSuite, testResultsFiles)
-	if err != nil {
-		return nil, err
-	}
-
-	uploadResults := make([]backend.TestResultsUploadResult, 0)
-	for i, testResultsFile := range testResultsFiles {
-		if testResultsFile.UploadURL == nil {
-			return nil, errors.NewInternalError("endpoint failed to return upload destination url")
-		}
-		req := http.Request{
-			Method:        http.MethodPut,
-			URL:           testResultsFile.UploadURL,
-			Body:          testResultsFile.FD,
-			ContentLength: fileSizeLookup[testResultsFile.ExternalID],
-		}
-
-		resp, err := c.RoundTrip(&req)
-		if err != nil {
-			c.Log.Warnf("unable to upload test results file to S3: %s", err)
-			uploadResults = append(uploadResults, backend.TestResultsUploadResult{
-				OriginalPaths: uniqueStrings(testResultsFile.OriginalPaths),
-				Uploaded:      false,
-			})
-			continue
-		}
-		defer resp.Body.Close()
-
-		testResultsFiles[i].S3uploadStatus = resp.StatusCode
-		uploadResults = append(uploadResults, backend.TestResultsUploadResult{
-			OriginalPaths: uniqueStrings(testResultsFile.OriginalPaths),
-			Uploaded:      resp.StatusCode < 300,
-		})
-	}
-
-	if err := c.updateTestResultsStatuses(ctx, testSuite, testResultsFiles); err != nil {
-		c.Log.Warnf("unable to update test results file status: %s", err)
-	}
-
-	return uploadResults, nil
+	return testResultsFile, nil
 }

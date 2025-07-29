@@ -186,7 +186,6 @@ var _ = Describe("Run", func() {
 				_ context.Context,
 				_ string,
 				_ v1.TestResults,
-				_ bool,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
 				return []backend.TestResultsUploadResult{{OriginalPaths: []string{testResultsFilePath}, Uploaded: true}}, nil
@@ -400,7 +399,6 @@ var _ = Describe("Run", func() {
 				_ context.Context,
 				_ string,
 				testResults v1.TestResults,
-				_ bool,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
 
@@ -791,7 +789,6 @@ var _ = Describe("Run", func() {
 				_ context.Context,
 				_ string,
 				_ v1.TestResults,
-				_ bool,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
 
@@ -892,7 +889,6 @@ var _ = Describe("Run", func() {
 				_ context.Context,
 				_ string,
 				testResults v1.TestResults,
-				_ bool,
 			) ([]backend.TestResultsUploadResult, error) {
 				testResultsFileUploaded = true
 
