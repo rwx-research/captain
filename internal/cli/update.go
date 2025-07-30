@@ -162,7 +162,7 @@ func (s Service) UpdateTestResults(
 		return nil, errors.WithStack(err)
 	}
 
-	result, err := s.API.UpdateTestResults(ctx, testSuiteID, *parsedResults, true)
+	result, err := s.API.UpdateTestResults(ctx, testSuiteID, *parsedResults)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to update test results")
 	}

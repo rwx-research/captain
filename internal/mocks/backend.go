@@ -14,7 +14,7 @@ type API struct {
 	MockGetRunConfiguration   func(context.Context, string) (backend.RunConfiguration, error)
 	MockGetQuarantinedTests   func(context.Context, string) ([]backend.Test, error)
 	MockGetTestTimingManifest func(context.Context, string) ([]testing.TestFileTiming, error)
-	MockUpdateTestResults     func(context.Context, string, v1.TestResults, bool) (
+	MockUpdateTestResults     func(context.Context, string, v1.TestResults) (
 		[]backend.TestResultsUploadResult, error,
 	)
 }
@@ -60,10 +60,9 @@ func (a *API) UpdateTestResults(
 	ctx context.Context,
 	testSuiteID string,
 	testResults v1.TestResults,
-	_ bool,
 ) ([]backend.TestResultsUploadResult, error) {
 	if a.MockUpdateTestResults != nil {
-		return a.MockUpdateTestResults(ctx, testSuiteID, testResults, true)
+		return a.MockUpdateTestResults(ctx, testSuiteID, testResults)
 	}
 
 	return nil, errors.NewInternalError("MockUpdateTestResults was not configured")

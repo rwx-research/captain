@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand/v2"
 	"net/http"
 	"strings"
 
@@ -30,6 +31,7 @@ var _ = Describe("Uploading Test Results", func() {
 	)
 
 	BeforeEach(func() {
+		testResults = v1.TestResults{}
 		mockUUID = uuid.MustParse("fff24366-af1d-43cc-ab32-8c9ed137cf09")
 		mockNewUUID = func() (uuid.UUID, error) {
 			return mockUUID, nil
@@ -85,7 +87,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("registers, uploads, and updates the test result in sequence", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
 			Expect(err).To(Succeed())
 			Expect(uploadResults).To(HaveLen(1))
 			Expect(uploadResults[0].Uploaded).To(Equal(true))
@@ -132,10 +134,227 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("registers, uploads, and updates the test result in sequence", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
 			Expect(err).To(Succeed())
 			Expect(uploadResults).To(HaveLen(1))
 			Expect(uploadResults[0].Uploaded).To(Equal(true))
+		})
+	})
+
+	Context("with large contents in `derivedFrom`", func() {
+		var err error
+
+		BeforeEach(func() {
+			err = nil
+			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
+				var resp http.Response
+
+				switch mockRoundTripCalls {
+				case 0: // registering the test results file
+					Expect(req.Method).To(Equal(http.MethodPost))
+					Expect(req.URL.Path).To(HaveSuffix("/api/test_suites/bulk_test_results"))
+					Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+					resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(
+						"{\"test_results_uploads\":[{\"id\": %q, \"external_identifier\":%q,\"upload_url\":\"%d\"}]}",
+						"some-captain-identifier", mockUUID, GinkgoRandomSeed(),
+					)))
+				case 1: // upload to `upload_url`
+					Expect(req.Method).To(Equal(http.MethodPut))
+					Expect(req.URL.String()).To(ContainSubstring(fmt.Sprintf("%d", GinkgoRandomSeed())))
+
+					body, err := io.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(body)).To(ContainSubstring("\"contents\":\"PHRydW5jYXRlZCBkdWUgdG8gdGVzdCByZXN1bHRzIHNpemU+\""))
+
+					resp.Body = io.NopCloser(strings.NewReader(""))
+				case 2: // update status
+					Expect(req.Method).To(Equal(http.MethodPut))
+					Expect(req.URL.Path).To(HaveSuffix("/api/test_suites/bulk_test_results"))
+					body, err := io.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(body)).To(ContainSubstring(fmt.Sprintf(
+						"%q,\"upload_status\":\"uploaded\"",
+						"some-captain-identifier",
+					)))
+					resp.Body = io.NopCloser(strings.NewReader(""))
+				default:
+					Fail("too many HTTP calls")
+				}
+
+				mockRoundTripCalls++
+
+				return &resp, nil
+			}
+		})
+
+		JustBeforeEach(func() {
+			tooMuchData := make([]byte, 26*1024*1024)
+			_, _ = rand.NewChaCha8([32]byte{}).Read(tooMuchData)
+
+			testResults = v1.TestResults{
+				DerivedFrom: []v1.OriginalTestResults{{
+					Contents: string(tooMuchData),
+				}},
+			}
+			_, err = apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+		})
+
+		It("strips the `derivedFrom` content from the test results", func() {
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Context("with large backtraces in previous attempts", func() {
+		var err error
+
+		BeforeEach(func() {
+			err = nil
+			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
+				var resp http.Response
+
+				switch mockRoundTripCalls {
+				case 0: // registering the test results file
+					Expect(req.Method).To(Equal(http.MethodPost))
+					Expect(req.URL.Path).To(HaveSuffix("/api/test_suites/bulk_test_results"))
+					Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+					resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(
+						"{\"test_results_uploads\":[{\"id\": %q, \"external_identifier\":%q,\"upload_url\":\"%d\"}]}",
+						"some-captain-identifier", mockUUID, GinkgoRandomSeed(),
+					)))
+				case 1: // upload to `upload_url`
+					Expect(req.Method).To(Equal(http.MethodPut))
+					Expect(req.URL.String()).To(ContainSubstring(fmt.Sprintf("%d", GinkgoRandomSeed())))
+
+					body, err := io.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(body)).To(ContainSubstring("\"contents\":\"PHRydW5jYXRlZCBkdWUgdG8gdGVzdCByZXN1bHRzIHNpemU+\""))
+					Expect(string(body)).To(ContainSubstring("\"backtrace\":[\"\\u003ctruncated due to test results size\\u003e\"]"))
+					Expect(string(body)).To(ContainSubstring("\"backtrace\":[\"won't be touched\"]"))
+
+					resp.Body = io.NopCloser(strings.NewReader(""))
+				case 2: // update status
+					Expect(req.Method).To(Equal(http.MethodPut))
+					Expect(req.URL.Path).To(HaveSuffix("/api/test_suites/bulk_test_results"))
+					body, err := io.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(body)).To(ContainSubstring(fmt.Sprintf(
+						"%q,\"upload_status\":\"uploaded\"",
+						"some-captain-identifier",
+					)))
+					resp.Body = io.NopCloser(strings.NewReader(""))
+				default:
+					Fail("too many HTTP calls")
+				}
+
+				mockRoundTripCalls++
+
+				return &resp, nil
+			}
+		})
+
+		JustBeforeEach(func() {
+			tooMuchData := make([]byte, 26*1024*1024)
+			_, _ = rand.NewChaCha8([32]byte{}).Read(tooMuchData)
+
+			testResults = v1.TestResults{
+				Tests: []v1.Test{{
+					PastAttempts: []v1.TestAttempt{{
+						Status: v1.TestStatus{
+							Backtrace: []string{string(tooMuchData)},
+						},
+					}},
+					Attempt: v1.TestAttempt{
+						Status: v1.TestStatus{
+							Backtrace: []string{"won't be touched"},
+						},
+					},
+				}},
+				DerivedFrom: []v1.OriginalTestResults{{
+					Contents: "will be stripped regardless",
+				}},
+			}
+			_, err = apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+		})
+
+		It("strips the `derivedFrom` content from the test results", func() {
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Context("with large backtraces in current attempt", func() {
+		var err error
+
+		BeforeEach(func() {
+			err = nil
+			mockRoundTripper = func(req *http.Request) (*http.Response, error) {
+				var resp http.Response
+
+				switch mockRoundTripCalls {
+				case 0: // registering the test results file
+					Expect(req.Method).To(Equal(http.MethodPost))
+					Expect(req.URL.Path).To(HaveSuffix("/api/test_suites/bulk_test_results"))
+					Expect(req.Header.Get("Content-Type")).To(Equal("application/json"))
+					resp.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(
+						"{\"test_results_uploads\":[{\"id\": %q, \"external_identifier\":%q,\"upload_url\":\"%d\"}]}",
+						"some-captain-identifier", mockUUID, GinkgoRandomSeed(),
+					)))
+				case 1: // upload to `upload_url`
+					Expect(req.Method).To(Equal(http.MethodPut))
+					Expect(req.URL.String()).To(ContainSubstring(fmt.Sprintf("%d", GinkgoRandomSeed())))
+
+					body, err := io.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(body)).To(ContainSubstring("\"contents\":\"PHRydW5jYXRlZCBkdWUgdG8gdGVzdCByZXN1bHRzIHNpemU+\""))
+					Expect(string(body)).To(ContainSubstring("\"backtrace\":[\"\\u003ctruncated due to test results size\\u003e\"]"))
+					Expect(string(body)).NotTo(ContainSubstring("\"backtrace\":[\"will be stripped regardless\"]"))
+
+					resp.Body = io.NopCloser(strings.NewReader(""))
+				case 2: // update status
+					Expect(req.Method).To(Equal(http.MethodPut))
+					Expect(req.URL.Path).To(HaveSuffix("/api/test_suites/bulk_test_results"))
+					body, err := io.ReadAll(req.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(body)).To(ContainSubstring(fmt.Sprintf(
+						"%q,\"upload_status\":\"uploaded\"",
+						"some-captain-identifier",
+					)))
+					resp.Body = io.NopCloser(strings.NewReader(""))
+				default:
+					Fail("too many HTTP calls")
+				}
+
+				mockRoundTripCalls++
+
+				return &resp, nil
+			}
+		})
+
+		JustBeforeEach(func() {
+			tooMuchData := make([]byte, 26*1024*1024)
+			_, _ = rand.NewChaCha8([32]byte{}).Read(tooMuchData)
+
+			testResults = v1.TestResults{
+				Tests: []v1.Test{{
+					PastAttempts: []v1.TestAttempt{{
+						Status: v1.TestStatus{
+							Backtrace: []string{"will be stripped regardless"},
+						},
+					}},
+					Attempt: v1.TestAttempt{
+						Status: v1.TestStatus{
+							Backtrace: []string{string(tooMuchData)},
+						},
+					},
+				}},
+				DerivedFrom: []v1.OriginalTestResults{{
+					Contents: "will be stripped regardless",
+				}},
+			}
+			_, err = apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
+		})
+
+		It("strips the `derivedFrom` content from the test results", func() {
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 
@@ -148,7 +367,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("returns an error to the user", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
 			Expect(uploadResults).To(BeNil())
 			Expect(err).ToNot(Succeed())
 		})
@@ -188,7 +407,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("updates the upload status as failed", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
 			Expect(err).To(Succeed())
 			Expect(uploadResults).To(HaveLen(1))
 			Expect(uploadResults[0].Uploaded).To(Equal(false))
@@ -225,7 +444,7 @@ var _ = Describe("Uploading Test Results", func() {
 		})
 
 		It("does not return an error to the user", func() {
-			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults, true)
+			uploadResults, err := apiClient.UpdateTestResults(context.Background(), "test suite id", testResults)
 			Expect(err).To(Succeed())
 			Expect(uploadResults).To(HaveLen(1))
 			Expect(uploadResults[0].Uploaded).To(Equal(true))

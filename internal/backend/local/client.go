@@ -161,7 +161,6 @@ func (c Client) UpdateTestResults(
 	_ context.Context,
 	_ string,
 	testResults v1.TestResults,
-	_ bool,
 ) ([]backend.TestResultsUploadResult, error) {
 	if c.Timings == nil {
 		c.Timings = make(map[string]time.Duration)
