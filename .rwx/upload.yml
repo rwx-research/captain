@@ -12,9 +12,7 @@ tasks:
 
   - key: tool-versions
     use: code
-    run: |
-      grep "golang " .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
-      grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
+    call: rwx/tool-versions 1.0.4
     filter:
       - .tool-versions
 
@@ -36,7 +34,7 @@ tasks:
       cd /tmp/mage
       mkdir $HOME/go # Mage assumes this already exists
       go run bootstrap.go
-      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
+      echo $PATH:$HOME/go/bin > $RWX_ENV/PATH
 
   - key: build-binary
     use: [code, mage]

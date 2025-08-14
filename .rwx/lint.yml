@@ -12,10 +12,7 @@ tasks:
 
   - key: tool-versions
     use: code
-    run: |
-      grep "golang " .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golang
-      grep mage .tool-versions | awk '{print $2}' | tee $MINT_VALUES/mage
-      grep golangci .tool-versions | awk '{print $2}' | tee $MINT_VALUES/golangci-lint
+    call: rwx/tool-versions 1.0.4
     filter:
       - .tool-versions
 
@@ -37,13 +34,13 @@ tasks:
       cd /tmp/mage
       mkdir $HOME/go # Mage assumes this already exists
       go run bootstrap.go
-      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
+      echo $PATH:$HOME/go/bin > $RWX_ENV/PATH
 
   - key: golangci-lint
     use: golang
     run: |
       curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v${{ tasks.tool-versions.values.golangci-lint }}
-      echo $PATH:$HOME/go/bin > $MINT_ENV/PATH
+      echo $PATH:$HOME/go/bin > $RWX_ENV/PATH
 
   - key: lint
     use: [code, mage, golangci-lint]

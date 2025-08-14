@@ -18,29 +18,29 @@ base:
 
 tasks:
   - key: test
-    call: ${{ run.mint-dir }}/test.yml
+    call: ${{ run.dir }}/test.yml
     init:
       commit-sha: ${{ init.commit-sha }}
 
   - key: buildkite-tests
-    call: ${{ run.mint-dir }}/buildkite.yml
+    call: ${{ run.dir }}/buildkite.yml
     init:
       commit-sha: ${{ init.commit-sha }}
 
   - key: backwards-compatibility-tests
-    call: ${{ run.mint-dir }}/generate-backwards-compatibility-tests.yml
+    call: ${{ run.dir }}/generate-backwards-compatibility-tests.yml
     init:
       commit-sha: ${{ init.commit-sha }}
 
   - key: lint
-    call: ${{ run.mint-dir }}/lint.yml
+    call: ${{ run.dir }}/lint.yml
     init:
       commit-sha: ${{ init.commit-sha }}
 
   - key: release-unstable
     after: test
     if: ${{ init.branch == 'main' }}
-    call: ${{ run.mint-dir }}/release.yml
+    call: ${{ run.dir }}/release.yml
     init:
       commit-sha: ${{ init.commit-sha }}
       kind: unstable

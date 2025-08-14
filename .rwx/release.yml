@@ -45,8 +45,8 @@ tasks:
             - key: extract-version-details
               run: |
                 echo "${{ init.version }}" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || (echo "Version number is not formatted as vX.X.X" && false)
-                echo "${{ init.version }}" > \$MINT_VALUES/full_version
-                echo "${{ init.version }}" | sed -E 's/\.[0-9]+\.[0-9]+$//g' > \$MINT_VALUES/aliased_version
+                echo "${{ init.version }}" > \$RWX_VALUES/full_version
+                echo "${{ init.version }}" | sed -E 's/\.[0-9]+\.[0-9]+$//g' > \$RWX_VALUES/aliased_version
       EOF
       fi
       if [[ "${{ init.kind }}" == "unstable" ]]; then
@@ -58,8 +58,8 @@ tasks:
           tasks:
             - key: extract-version-details
               run: |
-                echo "unstable-${{ init.commit-sha }}" > \$MINT_VALUES/full_version
-                echo "unstable" > \$MINT_VALUES/aliased_version
+                echo "unstable-${{ init.commit-sha }}" > \$RWX_VALUES/full_version
+                echo "unstable" > \$RWX_VALUES/aliased_version
       EOF
       fi
       if [[ "${{ init.kind }}" == "testing" ]]; then
@@ -71,8 +71,8 @@ tasks:
           tasks:
             - key: extract-version-details
               run: |
-                echo "testing-${{ init.commit-sha }}" > \$MINT_VALUES/full_version
-                echo "" > \$MINT_VALUES/aliased_version
+                echo "testing-${{ init.commit-sha }}" > \$RWX_VALUES/full_version
+                echo "" > \$RWX_VALUES/aliased_version
       EOF
       fi
     outputs:
@@ -85,8 +85,8 @@ tasks:
 
   - key: extract-version-details
     run: |
-      echo "${{ tasks.run-extract-version-details.tasks.extract-version-details.values.full_version }}" > $MINT_VALUES/full_version
-      echo "${{ tasks.run-extract-version-details.tasks.extract-version-details.values.aliased_version }}" > $MINT_VALUES/aliased_version
+      echo "${{ tasks.run-extract-version-details.tasks.extract-version-details.values.full_version }}" > $RWX_VALUES/full_version
+      echo "${{ tasks.run-extract-version-details.tasks.extract-version-details.values.aliased_version }}" > $RWX_VALUES/aliased_version
 
   - key: code
     call: git/clone 1.6.9
@@ -134,7 +134,7 @@ tasks:
       matrix:
         os: [linux, darwin, windows]
         arch: [amd64, arm64]
-    call: ${{ run.mint-dir }}/upload.yml
+    call: ${{ run.dir }}/upload.yml
     init:
       os: ${{ parallel.os }}
       arch: ${{ parallel.arch }}
@@ -144,7 +144,7 @@ tasks:
   # TODO: Approval
   - key: publish
     after: [upload-binary, extract-version-details]
-    call: ${{ run.mint-dir }}/publish.yml
+    call: ${{ run.dir }}/publish.yml
     if: ${{ init.kind == 'production' }}
     init:
       commit-sha: ${{ init.commit-sha }}
