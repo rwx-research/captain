@@ -92,7 +92,11 @@ func (c Client) GetTestTimingManifest(
 
 	queryValues := req.URL.Query()
 	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
-	queryValues.Add("commit_sha", c.Provider.CommitSha)
+	if c.Provider.TimingManifestKey != "" {
+		queryValues.Add("commit_sha", c.Provider.TimingManifestKey)
+	} else {
+		queryValues.Add("commit_sha", c.Provider.CommitSha)
+	}
 	req.URL.RawQuery = queryValues.Encode()
 
 	resp, err := c.RoundTrip(req)

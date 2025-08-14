@@ -17,14 +17,15 @@ type Env struct {
 }
 
 type Provider struct {
-	AttemptedBy    string
-	BranchName     string
-	CommitMessage  string
-	CommitSha      string
-	JobTags        map[string]any
-	ProviderName   string
-	Title          string
-	PartitionNodes config.PartitionNodes
+	AttemptedBy       string
+	BranchName        string
+	CommitMessage     string
+	CommitSha         string
+	JobTags           map[string]any
+	ProviderName      string
+	TimingManifestKey string
+	Title             string
+	PartitionNodes    config.PartitionNodes
 }
 
 func Validate(p Provider) error {
