@@ -14,7 +14,7 @@ concurrency-pools:
 
 base:
   os: ubuntu 24.04
-  tag: 1.1
+  tag: 1.2
 
 tasks:
   - key: test

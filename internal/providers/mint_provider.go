@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/rwx-research/captain-cli/internal/config"
@@ -8,24 +9,25 @@ import (
 )
 
 type MintEnv struct {
-	Detected bool `env:"MINT"`
+	Detected bool `env:"RWX"`
 
-	ParallelIndex     *string `env:"MINT_PARALLEL_INDEX"`
-	ParallelTotal     *string `env:"MINT_PARALLEL_TOTAL"`
-	Actor             string  `env:"MINT_ACTOR"`
-	ActorID           *string `env:"MINT_ACTOR_ID"`
-	RunURL            string  `env:"MINT_RUN_URL"`
-	TaskURL           string  `env:"MINT_TASK_URL"`
-	RunID             string  `env:"MINT_RUN_ID"`
-	TaskID            string  `env:"MINT_TASK_ID"`
-	TaskAttemptNumber string  `env:"MINT_TASK_ATTEMPT_NUMBER"`
-	RunTitle          string  `env:"MINT_RUN_TITLE"`
-	GitRepositoryURL  string  `env:"MINT_GIT_REPOSITORY_URL"`
-	GitRepositoryName string  `env:"MINT_GIT_REPOSITORY_NAME"`
-	GitCommitMessage  string  `env:"MINT_GIT_COMMIT_MESSAGE"`
-	GitCommitSha      string  `env:"MINT_GIT_COMMIT_SHA"`
-	GitRef            string  `env:"MINT_GIT_REF"`
-	GitRefName        string  `env:"MINT_GIT_REF_NAME"`
+	ParallelIndex         *string `env:"RWX_PARALLEL_INDEX"`
+	ParallelTotal         *string `env:"RWX_PARALLEL_TOTAL"`
+	ParallelGroupCacheKey *string `env:"RWX_PARALLEL_GROUP_CACHE_KEY"`
+	Actor                 string  `env:"RWX_ACTOR"`
+	ActorID               *string `env:"RWX_ACTOR_ID"`
+	RunURL                string  `env:"RWX_RUN_URL"`
+	TaskURL               string  `env:"RWX_TASK_URL"`
+	RunID                 string  `env:"RWX_RUN_ID"`
+	TaskID                string  `env:"RWX_TASK_ID"`
+	TaskAttemptNumber     string  `env:"RWX_TASK_ATTEMPT_NUMBER"`
+	RunTitle              string  `env:"RWX_RUN_TITLE"`
+	GitRepositoryURL      string  `env:"RWX_GIT_REPOSITORY_URL"`
+	GitRepositoryName     string  `env:"RWX_GIT_REPOSITORY_NAME"`
+	GitCommitMessage      string  `env:"RWX_GIT_COMMIT_MESSAGE"`
+	GitCommitSha          string  `env:"RWX_GIT_COMMIT_SHA"`
+	GitRef                string  `env:"RWX_GIT_REF"`
+	GitRefName            string  `env:"RWX_GIT_REF_NAME"`
 }
 
 func (cfg MintEnv) makeProvider() (Provider, error) {
@@ -53,14 +55,20 @@ func (cfg MintEnv) makeProvider() (Provider, error) {
 		}
 	}
 
+	timingManifestKey := ""
+	if cfg.ParallelGroupCacheKey != nil {
+		timingManifestKey = fmt.Sprintf("rwx-cache-key-%s", *cfg.ParallelGroupCacheKey)
+	}
+
 	provider := Provider{
-		AttemptedBy:   cfg.Actor,
-		BranchName:    cfg.GitRefName,
-		CommitMessage: cfg.GitCommitMessage,
-		CommitSha:     cfg.GitCommitSha,
-		JobTags:       tags,
-		ProviderName:  "mint",
-		Title:         cfg.RunTitle,
+		AttemptedBy:       cfg.Actor,
+		BranchName:        cfg.GitRefName,
+		CommitMessage:     cfg.GitCommitMessage,
+		CommitSha:         cfg.GitCommitSha,
+		JobTags:           tags,
+		ProviderName:      "mint",
+		TimingManifestKey: timingManifestKey,
+		Title:             cfg.RunTitle,
 		PartitionNodes: config.PartitionNodes{
 			Index: index,
 			Total: total,
@@ -76,121 +84,122 @@ func mintTags(cfg MintEnv) (map[string]any, error) {
 		// ActorID -- expected to be sometimes unset
 		// ParallelIndex -- only present if parallelization enabled
 		// ParallelTotal -- only present if parallelization enabled
+		// ParallelGroupCacheKey -- only present if parallelization enabled
 
 		if cfg.Actor == "" {
 			return errors.NewConfigurationError(
 				"Missing actor",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your actor.",
-				"Make sure you are running on Mint. If not, set `MINT` to `false`.",
+				"Make sure you are running on RWX. If not, set `RWX` to `false`.",
 			)
 		}
 
 		if cfg.RunURL == "" {
 			return errors.NewConfigurationError(
 				"Missing run url",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your run url.",
-				"Make sure you are running on Mint. If not, set `MINT` to `false`.",
+				"Make sure you are running on RWX. If not, set `RWX` to `false`.",
 			)
 		}
 
 		if cfg.TaskURL == "" {
 			return errors.NewConfigurationError(
 				"Missing task url",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your task url.",
-				"Make sure you are running on Mint. If not, set `MINT` to `false`.",
+				"Make sure you are running on RWX. If not, set `RWX` to `false`.",
 			)
 		}
 
 		if cfg.RunID == "" {
 			return errors.NewConfigurationError(
 				"Missing run id",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your run id.",
-				"Make sure you are running on Mint. If not, set `MINT` to `false`.",
+				"Make sure you are running on RWX. If not, set `RWX` to `false`.",
 			)
 		}
 
 		if cfg.TaskID == "" {
 			return errors.NewConfigurationError(
 				"Missing task id",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your task id.",
-				"Make sure you are running on Mint. If not, set `MINT` to `false`.",
+				"Make sure you are running on RWX. If not, set `RWX` to `false`.",
 			)
 		}
 
 		if cfg.TaskAttemptNumber == "" {
 			return errors.NewConfigurationError(
 				"Missing task attempt number",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your task attempt number.",
-				"Make sure you are running on Mint. If not, set `MINT` to `false`.",
+				"Make sure you are running on RWX. If not, set `RWX` to `false`.",
 			)
 		}
 
 		if cfg.RunTitle == "" {
 			return errors.NewConfigurationError(
 				"Missing run title",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your run title.",
-				"Make sure you are running on Mint. If not, set `MINT` to `false`.",
+				"Make sure you are running on RWX. If not, set `RWX` to `false`.",
 			)
 		}
 
 		if cfg.GitRepositoryURL == "" {
 			return errors.NewConfigurationError(
 				"Missing git repository url",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your git repository url.",
-				"Ensure that you've run the `mint/git-clone` leaf to set the `MINT_GIT_*` metadata.",
+				"Ensure that you've run the `git/clone` package to set the `RWX_GIT_*` metadata.",
 			)
 		}
 
 		if cfg.GitRepositoryName == "" {
 			return errors.NewConfigurationError(
 				"Missing git repository name",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your git repository name.",
-				"Ensure that you've run the `mint/git-clone` leaf to set the `MINT_GIT_*` metadata.",
+				"Ensure that you've run the `git/clone` package to set the `RWX_GIT_*` metadata.",
 			)
 		}
 
 		if cfg.GitCommitMessage == "" {
 			return errors.NewConfigurationError(
 				"Missing git commit message",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your git commit message.",
-				"Ensure that you've run the `mint/git-clone` leaf to set the `MINT_GIT_*` metadata.",
+				"Ensure that you've run the `git/clone` package to set the `RWX_GIT_*` metadata.",
 			)
 		}
 
 		if cfg.GitCommitSha == "" {
 			return errors.NewConfigurationError(
 				"Missing git commit sha",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your git commit sha.",
-				"Ensure that you've run the `mint/git-clone` leaf to set the `MINT_GIT_*` metadata.",
+				"Ensure that you've run the `git/clone` package to set the `RWX_GIT_*` metadata.",
 			)
 		}
 
 		if cfg.GitRef == "" {
 			return errors.NewConfigurationError(
 				"Missing git ref",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your git ref.",
-				"Ensure that you've run the `mint/git-clone` leaf to set the `MINT_GIT_*` metadata.",
+				"Ensure that you've run the `git/clone` package to set the `MINT_GIT_*` metadata.",
 			)
 		}
 
 		if cfg.GitRefName == "" {
 			return errors.NewConfigurationError(
 				"Missing git ref name",
-				"It appears that you are running on Mint (`MINT` is set to `true`),"+
+				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your git ref name.",
-				"Ensure that you've run the `mint/git-clone` leaf to set the `MINT_GIT_*` metadata.",
+				"Ensure that you've run the `git/clone` package to set the `RWX_GIT_*` metadata.",
 			)
 		}
 
@@ -223,6 +232,12 @@ func mintTags(cfg MintEnv) (map[string]any, error) {
 		tags["mint_parallel_total"] = *cfg.ParallelTotal
 	} else {
 		tags["mint_parallel_total"] = nil
+	}
+
+	if cfg.ParallelGroupCacheKey != nil {
+		tags["rwx_parallel_group_cache_key"] = *cfg.ParallelGroupCacheKey
+	} else {
+		tags["rwx_parallel_group_cache_key"] = nil
 	}
 
 	if cfg.ActorID != nil {

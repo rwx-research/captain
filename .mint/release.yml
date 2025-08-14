@@ -22,7 +22,7 @@ concurrency-pools:
 
 base:
   os: ubuntu 24.04
-  tag: 1.1
+  tag: 1.2
 
 tasks:
   - key: verify-kind
@@ -89,7 +89,7 @@ tasks:
       echo "${{ tasks.run-extract-version-details.tasks.extract-version-details.values.aliased_version }}" > $MINT_VALUES/aliased_version
 
   - key: code
-    call: mint/git-clone 1.6.4
+    call: git/clone 1.6.9
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
@@ -97,7 +97,7 @@ tasks:
       preserve-git-dir: true
 
   - key: github-cli
-    call: github/install-cli 1.0.5
+    call: github/install-cli 1.0.7
 
   - key: ensure-not-published-yet
     use: [code, github-cli]
