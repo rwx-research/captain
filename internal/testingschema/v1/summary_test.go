@@ -67,7 +67,7 @@ var _ = Describe("Summary", func() {
 				},
 			))
 
-			test = v1.Test{Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()}}
+			test = v1.Test{Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)}}
 			Expect(v1.NewSummary([]v1.Test{test, test}, nil)).To(Equal(
 				v1.Summary{
 					Status:   v1.SummaryStatusFailed,

@@ -67,8 +67,13 @@ func NewSuccessfulTestStatus() TestStatus {
 	return TestStatus{Kind: TestStatusSuccessful}
 }
 
-func NewTimedOutTestStatus() TestStatus {
-	return TestStatus{Kind: TestStatusTimedOut}
+func NewTimedOutTestStatus(message *string, exception *string, backtrace []string) TestStatus {
+	return TestStatus{
+		Kind:      TestStatusTimedOut,
+		Message:   message,
+		Exception: exception,
+		Backtrace: backtrace,
+	}
 }
 
 func NewTodoTestStatus(message *string) TestStatus {

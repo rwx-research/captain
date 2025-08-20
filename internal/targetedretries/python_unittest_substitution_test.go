@@ -111,7 +111,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 				Tests: []v1.Test{
 					{Name: name1, Attempt: v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)}},
 					{Name: name2, Attempt: v1.TestAttempt{Status: v1.NewCanceledTestStatus()}},
-					{Name: name3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()}},
+					{Name: name3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)}},
 					{Name: name4, Attempt: v1.TestAttempt{Status: v1.NewPendedTestStatus(nil)}},
 					{Name: name5, Attempt: v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()}},
 					{Name: name6, Attempt: v1.TestAttempt{Status: v1.NewSkippedTestStatus(nil)}},
@@ -148,7 +148,7 @@ var _ = Describe("PythonUnitTestSubstitution", func() {
 				Tests: []v1.Test{
 					{Name: name1, Attempt: v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)}},
 					{Name: name2, Attempt: v1.TestAttempt{Status: v1.NewCanceledTestStatus()}},
-					{Name: name3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()}},
+					{Name: name3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)}},
 					{Name: name4, Attempt: v1.TestAttempt{Status: v1.NewPendedTestStatus(nil)}},
 					{Name: name5, Attempt: v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()}},
 					{Name: name6, Attempt: v1.TestAttempt{Status: v1.NewSkippedTestStatus(nil)}},

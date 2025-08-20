@@ -102,12 +102,12 @@ var _ = Describe("Markdown Report", func() {
 				{
 					ID:      &id6,
 					Name:    "timed out test",
-					Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+					Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 				},
 				{
 					ID:      &id7,
 					Name:    "quarantined test",
-					Attempt: v1.TestAttempt{Status: v1.NewQuarantinedTestStatus(v1.NewTimedOutTestStatus())},
+					Attempt: v1.TestAttempt{Status: v1.NewQuarantinedTestStatus(v1.NewTimedOutTestStatus(nil, nil, nil))},
 				},
 				{
 					ID:      &id8,

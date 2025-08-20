@@ -862,7 +862,8 @@
           "tags": []
         },
         "status": {
-          "kind": "timedOut"
+          "kind": "timedOut",
+          "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
         },
         "stderr": "",
         "stdout": "",
@@ -877,7 +878,8 @@
             "tags": []
           },
           "status": {
-            "kind": "timedOut"
+            "kind": "timedOut",
+            "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
           },
           "stderr": "",
           "stdout": "",
@@ -897,7 +899,8 @@
             "tags": []
           },
           "status": {
-            "kind": "timedOut"
+            "kind": "timedOut",
+            "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
           },
           "stderr": "",
           "stdout": "",
@@ -1447,7 +1450,8 @@
           "tags": []
         },
         "status": {
-          "kind": "timedOut"
+          "kind": "timedOut",
+          "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
         },
         "stderr": "",
         "stdout": "",
@@ -1462,7 +1466,8 @@
             "tags": []
           },
           "status": {
-            "kind": "timedOut"
+            "kind": "timedOut",
+            "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
           },
           "stderr": "",
           "stdout": "",
@@ -1482,7 +1487,8 @@
             "tags": []
           },
           "status": {
-            "kind": "timedOut"
+            "kind": "timedOut",
+            "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
           },
           "stderr": "",
           "stdout": "",
@@ -2006,7 +2012,8 @@
           "tags": []
         },
         "status": {
-          "kind": "timedOut"
+          "kind": "timedOut",
+          "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
         },
         "stderr": "",
         "stdout": "",
@@ -2021,7 +2028,8 @@
             "tags": []
           },
           "status": {
-            "kind": "timedOut"
+            "kind": "timedOut",
+            "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
           },
           "stderr": "",
           "stdout": "",
@@ -2041,7 +2049,8 @@
             "tags": []
           },
           "status": {
-            "kind": "timedOut"
+            "kind": "timedOut",
+            "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
           },
           "stderr": "",
           "stdout": "",
@@ -2455,7 +2464,8 @@
           "tags": []
         },
         "status": {
-          "kind": "timedOut"
+          "kind": "timedOut",
+          "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
         },
         "stderr": "",
         "stdout": "",
@@ -2470,7 +2480,8 @@
             "tags": []
           },
           "status": {
-            "kind": "timedOut"
+            "kind": "timedOut",
+            "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
           },
           "stderr": "",
           "stdout": "",
@@ -2490,7 +2501,8 @@
             "tags": []
           },
           "status": {
-            "kind": "timedOut"
+            "kind": "timedOut",
+            "message": "\u001b[31mTest timeout of 1000ms exceeded.\u001b[39m"
           },
           "stderr": "",
           "stdout": "",

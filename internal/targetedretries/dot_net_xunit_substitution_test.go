@@ -130,7 +130,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 					{
 						Attempt: v1.TestAttempt{
 							Meta:   map[string]any{"type": &type3, "method": &method3},
-							Status: v1.NewTimedOutTestStatus(),
+							Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 						},
 					},
 					{
@@ -208,7 +208,7 @@ var _ = Describe("DotNetxUnitSubstitution", func() {
 					{
 						Attempt: v1.TestAttempt{
 							Meta:   map[string]any{"type": &type3, "method": &method3},
-							Status: v1.NewTimedOutTestStatus(),
+							Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 						},
 					},
 					{

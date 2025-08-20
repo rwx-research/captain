@@ -157,7 +157,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 					{
 						Name:     name3,
 						Location: &v1.Location{File: spec1},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Name:     name1,
@@ -229,7 +229,7 @@ var _ = Describe("JavaScriptCypressSubstitution", func() {
 					{
 						Name:     name3,
 						Location: &v1.Location{File: spec1},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Name:     name1,

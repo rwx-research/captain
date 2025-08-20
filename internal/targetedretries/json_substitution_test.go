@@ -130,7 +130,7 @@ var _ = Describe("JSONSubstitution", func() {
 				Tests: []v1.Test{
 					{ID: &id1, Attempt: v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)}},
 					{ID: &id2, Attempt: v1.TestAttempt{Status: v1.NewCanceledTestStatus()}},
-					{ID: &id3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()}},
+					{ID: &id3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)}},
 					{ID: &id4, Attempt: v1.TestAttempt{Status: v1.NewPendedTestStatus(nil)}},
 					{ID: &id5, Attempt: v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()}},
 					{ID: &id6, Attempt: v1.TestAttempt{Status: v1.NewSkippedTestStatus(nil)}},
@@ -174,7 +174,7 @@ var _ = Describe("JSONSubstitution", func() {
 				Tests: []v1.Test{
 					{ID: &id1, Attempt: v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)}},
 					{ID: &id2, Attempt: v1.TestAttempt{Status: v1.NewCanceledTestStatus()}},
-					{ID: &id3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()}},
+					{ID: &id3, Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)}},
 					{ID: &id4, Attempt: v1.TestAttempt{Status: v1.NewPendedTestStatus(nil)}},
 					{ID: &id5, Attempt: v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()}},
 					{ID: &id6, Attempt: v1.TestAttempt{Status: v1.NewSkippedTestStatus(nil)}},

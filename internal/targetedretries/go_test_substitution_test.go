@@ -141,7 +141,7 @@ var _ = Describe("GoTestSubstitution", func() {
 						Name: name2,
 						Attempt: v1.TestAttempt{
 							Meta:   map[string]any{"package": package1},
-							Status: v1.NewTimedOutTestStatus(),
+							Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 						},
 					},
 					{
@@ -223,7 +223,7 @@ var _ = Describe("GoTestSubstitution", func() {
 						Name: name2,
 						Attempt: v1.TestAttempt{
 							Meta:   map[string]any{"package": package1},
-							Status: v1.NewTimedOutTestStatus(),
+							Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 						},
 					},
 					{

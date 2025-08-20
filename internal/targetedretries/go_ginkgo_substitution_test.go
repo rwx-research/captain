@@ -119,7 +119,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 					},
 					{
 						Location: &v1.Location{File: file3, Line: &line3},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Location: &v1.Location{File: file2, Line: &line3},
@@ -174,7 +174,7 @@ var _ = Describe("GoGinkgoSubstitution", func() {
 					},
 					{
 						Location: &v1.Location{File: file3, Line: &line3},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Location: &v1.Location{File: file2, Line: &line3},

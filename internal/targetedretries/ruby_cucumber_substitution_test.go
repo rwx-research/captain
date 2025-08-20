@@ -124,7 +124,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 					{
 						Location: &v1.Location{File: file3},
 						Attempt: v1.TestAttempt{
-							Status: v1.NewTimedOutTestStatus(),
+							Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 						},
 					},
 					{
@@ -191,7 +191,7 @@ var _ = Describe("RubyCucumberSubstitution", func() {
 					{
 						Location: &v1.Location{File: file3},
 						Attempt: v1.TestAttempt{
-							Status: v1.NewTimedOutTestStatus(),
+							Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 						},
 					},
 					{
