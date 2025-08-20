@@ -388,7 +388,7 @@ var _ = Describe("Run", func() {
 							Name:     secondFailedTestDescription,
 							Location: &v1.Location{File: "/other/path/to/file.test"},
 							Attempt: v1.TestAttempt{
-								Status: v1.NewTimedOutTestStatus(),
+								Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 							},
 						},
 					},
@@ -778,7 +778,7 @@ var _ = Describe("Run", func() {
 							Name:     secondFailedTestDescription,
 							Location: &v1.Location{File: "/other/path/to/file.test"},
 							Attempt: v1.TestAttempt{
-								Status: v1.NewTimedOutTestStatus(),
+								Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 							},
 						},
 					},

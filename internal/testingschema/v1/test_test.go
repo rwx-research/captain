@@ -90,7 +90,7 @@ var _ = Describe("Test", func() {
 
 	Describe("NewTimedOutTestStatus", func() {
 		It("produces a TimedOut test status", func() {
-			Expect(v1.NewTimedOutTestStatus()).To(Equal(
+			Expect(v1.NewTimedOutTestStatus(nil, nil, nil)).To(Equal(
 				v1.TestStatus{
 					Kind: v1.TestStatusTimedOut,
 				},
@@ -150,7 +150,7 @@ var _ = Describe("Test", func() {
 		})
 
 		It("implies failure for timed out statuses", func() {
-			Expect(v1.NewTimedOutTestStatus().ImpliesFailure()).To(Equal(true))
+			Expect(v1.NewTimedOutTestStatus(nil, nil, nil).ImpliesFailure()).To(Equal(true))
 		})
 
 		It("does not imply failure for other statuses", func() {
@@ -168,7 +168,7 @@ var _ = Describe("Test", func() {
 		})
 
 		It("is potentially flaky for timed out statuses", func() {
-			Expect(v1.NewTimedOutTestStatus().PotentiallyFlaky()).To(Equal(true))
+			Expect(v1.NewTimedOutTestStatus(nil, nil, nil).PotentiallyFlaky()).To(Equal(true))
 		})
 
 		It("is not potentially flaky for other statuses", func() {
@@ -188,7 +188,7 @@ var _ = Describe("Test", func() {
 		})
 
 		It("is false for a test that timed out", func() {
-			test := v1.Test{Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus()}}
+			test := v1.Test{Attempt: v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)}}
 			Expect(test.Flaky()).To(Equal(false))
 		})
 
@@ -215,7 +215,7 @@ var _ = Describe("Test", func() {
 
 		It("is true for a test that timed out and passed", func() {
 			test := v1.Test{
-				Attempt:      v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+				Attempt:      v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 				PastAttempts: []v1.TestAttempt{{Status: v1.NewSuccessfulTestStatus()}},
 			}
 			Expect(test.Flaky()).To(Equal(true))

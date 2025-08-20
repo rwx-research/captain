@@ -181,7 +181,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 					},
 					{
 						Location: &v1.Location{File: file3, Line: &line2},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Location: &v1.Location{File: file1, Line: &line2},
@@ -237,7 +237,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 					},
 					{
 						Location: &v1.Location{File: file3, Line: &line2},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Location: &v1.Location{File: file1, Line: &line2},
@@ -296,7 +296,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 					{
 						Lineage:  lineage2,
 						Location: &v1.Location{File: file3},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Lineage:  lineage2,
@@ -370,7 +370,7 @@ var _ = Describe("RubyMinitestSubstitution", func() {
 					{
 						Lineage:  lineage2,
 						Location: &v1.Location{File: file3},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Lineage:  lineage2,

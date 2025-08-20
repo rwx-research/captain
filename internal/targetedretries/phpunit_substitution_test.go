@@ -150,7 +150,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 						Location: &v1.Location{File: file1},
 						Attempt: v1.TestAttempt{
 							Meta:   map[string]any{"name": name2},
-							Status: v1.NewTimedOutTestStatus(),
+							Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 						},
 					},
 					{
@@ -227,7 +227,7 @@ var _ = Describe("PHPUnitSubstitution", func() {
 						Location: &v1.Location{File: file1},
 						Attempt: v1.TestAttempt{
 							Meta:   map[string]any{"name": name2},
-							Status: v1.NewTimedOutTestStatus(),
+							Status: v1.NewTimedOutTestStatus(nil, nil, nil),
 						},
 					},
 					{

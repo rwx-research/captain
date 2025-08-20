@@ -146,7 +146,7 @@ var _ = Describe("JavaScriptMochaSubstitution", func() {
 					{
 						Name:     name2,
 						Location: &v1.Location{File: file1},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Name:     name2,
@@ -218,7 +218,7 @@ var _ = Describe("JavaScriptMochaSubstitution", func() {
 					{
 						Name:     name2,
 						Location: &v1.Location{File: file1},
-						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus()},
+						Attempt:  v1.TestAttempt{Status: v1.NewTimedOutTestStatus(nil, nil, nil)},
 					},
 					{
 						Name:     name2,

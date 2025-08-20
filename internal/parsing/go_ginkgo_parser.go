@@ -71,7 +71,7 @@ func (p GoGinkgoParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			case ginkgo.SpecStateInterrupted:
 				status = v1.NewCanceledTestStatus()
 			case ginkgo.SpecStateTimedout:
-				status = v1.NewTimedOutTestStatus()
+				status = v1.NewTimedOutTestStatus(nil, nil, nil)
 			default:
 				return nil, errors.NewInputError("Unknown spec state: %v", specReport.State)
 			}

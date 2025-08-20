@@ -280,7 +280,21 @@ func (p JavaScriptPlaywrightParser) testsWithinSuite(
 
 				status = v1.NewFailedTestStatus(message, nil, backtrace)
 			case "timedOut":
-				status = v1.NewTimedOutTestStatus()
+				var message *string
+				var backtrace []string
+
+				if result.Error != nil {
+					message = result.Error.Message
+
+					if result.Error.Stack != nil {
+						stackParts := javaScriptPlaywrightBacktraceSeparatorRegexp.Split(*result.Error.Stack, -1)[1:]
+						for _, part := range stackParts {
+							backtrace = append(backtrace, fmt.Sprintf("at%s", part))
+						}
+					}
+				}
+
+				status = v1.NewTimedOutTestStatus(message, nil, backtrace)
 			case "skipped":
 				status = v1.NewSkippedTestStatus(nil)
 			case "interrupted":
