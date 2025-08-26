@@ -36,7 +36,7 @@ type PythonPytestTestResult struct {
 	UserProperties [][]any         `json:"user_properties"`
 	Sections       []any           `json:"sections"` // unsure how this is used, moving on for now
 	Duration       float64         `json:"duration"` // in seconds
-	ReportType     string          `json:"$report_type"`
+	ReportType     *string         `json:"$report_type"`
 
 	// only when run in parallel w/ pytest-xdist
 	ItemIndex  int    `json:"item_index"`
@@ -56,27 +56,20 @@ func (p PythonPytestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			return nil, errors.NewInputError("Unable to parse test results as JSON: %s", err)
 		}
 
-		var reportType struct {
-			ReportType *string `json:"$report_type"`
-		}
-		if err := json.Unmarshal(item, &reportType); err != nil {
-			return nil, errors.NewInputError("Unable to parse test results as JSON: %s", err)
-		}
-		if reportType.ReportType == nil {
-			return nil, errors.NewInputError("Test results do not look like pytest resultlog (Missing $report_type)")
-		}
-
-		if *reportType.ReportType == "SessionStart" {
-			didSeeSessionStart = true
-			continue
-		}
-		if *reportType.ReportType != "TestReport" {
-			continue
-		}
-
 		var testResult PythonPytestTestResult
 		if err := json.Unmarshal(item, &testResult); err != nil {
 			return nil, errors.NewInputError("Unable to parse test results as JSON: %s", err)
+		}
+		if testResult.ReportType == nil {
+			return nil, errors.NewInputError("Test results do not look like pytest resultlog (Missing $report_type)")
+		}
+
+		if *testResult.ReportType == "SessionStart" {
+			didSeeSessionStart = true
+			continue
+		}
+		if *testResult.ReportType != "TestReport" {
+			continue
 		}
 
 		file := testResult.Location[0].(string)
