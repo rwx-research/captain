@@ -42,14 +42,14 @@ var _ = Describe("PythonPytestParser", func() {
 			testResults, err = parsing.PythonPytestParser{}.Parse(strings.NewReader(`{}`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(
-				"Test results do not look like pytest resultlog (SessionStart report type missing)",
+				"Test results do not look like pytest resultlog (Missing $report_type)",
 			))
 			Expect(testResults).To(BeNil())
 
-			testResults, err = parsing.PythonPytestParser{}.Parse(strings.NewReader(`{"$report_type": "SessionStart"}`))
+			testResults, err = parsing.PythonPytestParser{}.Parse(strings.NewReader(`{"$report_type": "WarningMessage"}`))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(
-				"Test results do not look like pytest resultlog (Missing pytest version)",
+				"Test results do not look like pytest resultlog (Missing SessionStart)",
 			))
 			Expect(testResults).To(BeNil())
 
