@@ -15,11 +15,6 @@ import (
 
 type PythonPytestParser struct{}
 
-type PythonPytestSessionStart struct {
-	PytestVersion *string `json:"pytest_version"`
-	ReportType    *string `json:"$report_type"`
-}
-
 // This is a subset of the failed longrepr because it's quite challenging to model in Go
 type PythonPytestFailedLongrepr struct {
 	Reprcrash struct {
@@ -52,30 +47,36 @@ type PythonPytestTestResult struct {
 
 func (p PythonPytestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	decoder := json.NewDecoder(data)
-
-	var sessionStart PythonPytestSessionStart
-	if err := decoder.Decode(&sessionStart); err != nil {
-		return nil, errors.NewInputError("Unable to parse test results as JSON: %s", err)
-	}
-	if sessionStart.ReportType == nil || *sessionStart.ReportType != "SessionStart" {
-		return nil, errors.NewInputError(
-			"Test results do not look like pytest resultlog (SessionStart report type missing)",
-		)
-	}
-	if sessionStart.PytestVersion == nil {
-		return nil, errors.NewInputError(
-			"Test results do not look like pytest resultlog (Missing pytest version)",
-		)
-	}
-
+	didSeeSessionStart := false
 	testsByNodeid := map[string]v1.Test{}
+
 	for decoder.More() {
-		var testResult PythonPytestTestResult
-		if err := decoder.Decode(&testResult); err != nil {
+		var item json.RawMessage
+		if err := decoder.Decode(&item); err != nil {
 			return nil, errors.NewInputError("Unable to parse test results as JSON: %s", err)
 		}
-		if testResult.ReportType != "TestReport" {
+
+		var reportType struct {
+			ReportType *string `json:"$report_type"`
+		}
+		if err := json.Unmarshal(item, &reportType); err != nil {
+			return nil, errors.NewInputError("Unable to parse test results as JSON: %s", err)
+		}
+		if reportType.ReportType == nil {
+			return nil, errors.NewInputError("Test results do not look like pytest resultlog (Missing $report_type)")
+		}
+
+		if *reportType.ReportType == "SessionStart" {
+			didSeeSessionStart = true
 			continue
+		}
+		if *reportType.ReportType != "TestReport" {
+			continue
+		}
+
+		var testResult PythonPytestTestResult
+		if err := json.Unmarshal(item, &testResult); err != nil {
+			return nil, errors.NewInputError("Unable to parse test results as JSON: %s", err)
 		}
 
 		file := testResult.Location[0].(string)
@@ -128,6 +129,9 @@ func (p PythonPytestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			}
 		}
 		testsByNodeid[testResult.Nodeid] = test
+	}
+	if !didSeeSessionStart {
+		return nil, errors.NewInputError("Test results do not look like pytest resultlog (Missing SessionStart)")
 	}
 
 	tests := make([]v1.Test, len(testsByNodeid))
