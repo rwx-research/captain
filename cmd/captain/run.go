@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -100,6 +101,33 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 								"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
 								"",
 							)
+						}
+					}
+
+					rwxTestResultsDir := os.Getenv("RWX_TEST_RESULTS")
+					if rwxTestResultsDir != "" {
+						if _, err := os.Stat(rwxTestResultsDir); err != nil {
+							captain.Log.Warnf("RWX_TEST_RESULTS directory does not exist: %s", rwxTestResultsDir)
+						} else {
+							rwxOutputPath := filepath.Join(rwxTestResultsDir, cliArgs.RootCliArgs.suiteID+".json")
+
+							rwxAbsPath, err := filepath.Abs(rwxOutputPath)
+							if err != nil {
+								captain.Log.Warnf("Unable to resolve absolute path for RWX_TEST_RESULTS output: %s", err.Error())
+							} else {
+								isDuplicate := false
+								for existingPath := range reporterFuncs {
+									existingAbsPath, err := filepath.Abs(existingPath)
+									if err == nil && existingAbsPath == rwxAbsPath {
+										isDuplicate = true
+										break
+									}
+								}
+
+								if !isDuplicate {
+									reporterFuncs[rwxOutputPath] = reporting.WriteJSONSummary
+								}
+							}
 						}
 					}
 
