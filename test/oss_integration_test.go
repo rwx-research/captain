@@ -765,6 +765,229 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				Expect(result.stdout).To(Equal("default run"))
 			})
 		})
+
+		Context("RWX_TEST_RESULTS environment variable", func() {
+			It("creates rwx-v1-json report when RWX_TEST_RESULTS is set to valid directory", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passed.json", prefix)
+				defer cleanup()
+
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				suiteId := randomSuiteId()
+				expectedOutputPath := filepath.Join(tmp, suiteId+".json")
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"--suite-id", suiteId,
+						"--test-results", testResultsPath,
+						"-c", "echo 'test passed'",
+					},
+					env: map[string]string{
+						"RWX_TEST_RESULTS": tmp,
+					},
+				})
+
+				Expect(result.exitCode).To(Equal(0))
+
+				_, err = os.Stat(expectedOutputPath)
+				Expect(err).NotTo(HaveOccurred())
+
+				data, err := ioutil.ReadFile(expectedOutputPath)
+				Expect(err).NotTo(HaveOccurred())
+
+				var jsonData interface{}
+				err = json.Unmarshal(data, &jsonData)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("warns when RWX_TEST_RESULTS points to non-existent directory", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passed.json", prefix)
+				defer cleanup()
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"--suite-id", randomSuiteId(),
+						"--test-results", testResultsPath,
+						"-c", "echo 'test passed'",
+					},
+					env: map[string]string{
+						"RWX_TEST_RESULTS": "/tmp/non-existent-directory-7982349",
+					},
+				})
+
+				Expect(result.exitCode).To(Equal(0))
+				Expect(result.stderr).To(ContainSubstring("RWX_TEST_RESULTS directory does not exist: /tmp/non-existent-directory-7982349"))
+			})
+
+			It("works alongside existing reporter configurations", func() {
+				mdTmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				rwxTmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				_, cleanup := createUniqueFile("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
+				defer cleanup()
+
+				suiteId := "captain-cli-functional-tests"
+				markdownOutputPath := filepath.Join(mdTmp, "markdown.md")
+				expectedRwxOutputPath := filepath.Join(rwxTmp, suiteId+".json")
+
+				cfg := loadCaptainConfig("fixtures/integration-tests/captain-configs/markdown-summary-reporter.printf-yaml", markdownOutputPath)
+
+				withCaptainConfig(cfg, mdTmp, func(configPath string) {
+					result := runCaptain(captainArgs{
+						args: []string{
+							"run",
+							suiteId,
+							"--config-file", configPath,
+						},
+						env: map[string]string{
+							"RWX_TEST_RESULTS": rwxTmp,
+						},
+					})
+
+					Expect(result.exitCode).To(Equal(123))
+
+					_, err = os.Stat(markdownOutputPath)
+					Expect(err).NotTo(HaveOccurred())
+
+					_, err = os.Stat(expectedRwxOutputPath)
+					Expect(err).NotTo(HaveOccurred())
+				})
+			})
+
+			It("prevents duplicate files when RWX_TEST_RESULTS matches existing reporter path", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passed.json", prefix)
+				defer cleanup()
+
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				suiteId := randomSuiteId()
+				outputPath := filepath.Join(tmp, suiteId+".json")
+
+				cfg := fmt.Sprintf(`test-suites:
+  %s:
+    command: echo 'test passed'
+    results:
+      path: %s
+    output:
+      reporters:
+        rwx-v1-json: %s`, suiteId, testResultsPath, outputPath)
+
+				configPath := filepath.Join(tmp, "captain.yml")
+				err = ioutil.WriteFile(configPath, []byte(cfg), 0644)
+				Expect(err).NotTo(HaveOccurred())
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						suiteId,
+						"--config-file", configPath,
+					},
+					env: map[string]string{
+						"RWX_TEST_RESULTS": tmp,
+					},
+				})
+
+				Expect(result.exitCode).To(Equal(0))
+
+				_, err = os.Stat(outputPath)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("works with multiple --reporter CLI flags", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passed.json", prefix)
+				defer cleanup()
+
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				rwxTmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				suiteId := randomSuiteId()
+				markdownOutputPath := filepath.Join(tmp, "cli-markdown.md")
+				expectedRwxOutputPath := filepath.Join(rwxTmp, suiteId+".json")
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"--suite-id", suiteId,
+						"--test-results", testResultsPath,
+						"--reporter", "markdown-summary=" + markdownOutputPath,
+						"-c", "echo 'test passed'",
+					},
+					env: map[string]string{
+						"RWX_TEST_RESULTS": rwxTmp,
+					},
+				})
+
+				Expect(result.exitCode).To(Equal(0))
+
+				_, err = os.Stat(markdownOutputPath)
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = os.Stat(expectedRwxOutputPath)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("works with multiple config file reporters", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-passed.json", prefix)
+				defer cleanup()
+
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				rwxTmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+
+				suiteId := randomSuiteId()
+				markdownOutputPath := filepath.Join(tmp, "config-markdown.md")
+				junitOutputPath := filepath.Join(tmp, "config-junit.xml")
+				expectedRwxOutputPath := filepath.Join(rwxTmp, suiteId+".json")
+
+				cfg := fmt.Sprintf(`test-suites:
+  %s:
+    command: echo 'test passed'
+    results:
+      path: %s
+    output:
+      reporters:
+        markdown-summary: %s
+        junit-xml: %s`, suiteId, testResultsPath, markdownOutputPath, junitOutputPath)
+
+				configPath := filepath.Join(tmp, "captain.yml")
+				err = ioutil.WriteFile(configPath, []byte(cfg), 0644)
+				Expect(err).NotTo(HaveOccurred())
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						suiteId,
+						"--config-file", configPath,
+					},
+					env: map[string]string{
+						"RWX_TEST_RESULTS": rwxTmp,
+					},
+				})
+
+				Expect(result.exitCode).To(Equal(0))
+
+				_, err = os.Stat(markdownOutputPath)
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = os.Stat(junitOutputPath)
+				Expect(err).NotTo(HaveOccurred())
+
+				_, err = os.Stat(expectedRwxOutputPath)
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
 	})
 
 	Describe("captain run w/ partition", func() {
