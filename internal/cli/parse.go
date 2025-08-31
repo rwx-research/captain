@@ -3,6 +3,8 @@ package cli
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"strconv"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/parsing"
@@ -24,6 +26,22 @@ func (s Service) Parse(_ context.Context, filepaths []string) error {
 	results, err := s.parse(testResultsFiles, 1)
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	// Apply stripping based on environment variables
+	if os.Getenv("CAPTAIN_STRIP_DERIVED_FROM") != "" && results != nil {
+		s.Log.Warnf("removing original test result data from Captain test results due to CAPTAIN_STRIP_DERIVED_FROM")
+		stripped := v1.StripDerivedFrom(*results)
+		results = &stripped
+	}
+
+	if maxSizeStr := os.Getenv("CAPTAIN_MAX_FILE_SIZE_IN_MEGABYTES"); maxSizeStr != "" && results != nil {
+		maxSizeMB, err := strconv.ParseFloat(maxSizeStr, 64)
+		if err == nil && maxSizeMB > 0 {
+			fileSizeThresholdBytes := int64(maxSizeMB * 1024 * 1024)
+			stripped := v1.StripToSize(*results, fileSizeThresholdBytes)
+			results = &stripped
+		}
 	}
 
 	newOutput, err := json.MarshalIndent(results, "", "  ")
