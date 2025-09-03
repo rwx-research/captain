@@ -24,6 +24,7 @@ func StripDerivedFrom(testResults TestResults) TestResults {
 		Tests:       testResults.Tests,
 		OtherErrors: testResults.OtherErrors,
 		DerivedFrom: cleanedDerivedFrom,
+		Meta:        testResults.Meta,
 	}
 }
 
