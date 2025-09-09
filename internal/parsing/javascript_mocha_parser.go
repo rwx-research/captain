@@ -26,9 +26,7 @@ type JavaScriptMochaStats struct {
 }
 
 type JavaScriptMochaError struct {
-	Actual           *string `json:"actual,omitempty"`
 	Code             *string `json:"code,omitempty"`
-	Expected         *string `json:"expected,omitempty"`
 	GeneratedMessage *bool   `json:"generatedMessage,omitempty"`
 	Message          string  `json:"message"`
 	Name             *string `json:"name,omitempty"`
