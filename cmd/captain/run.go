@@ -48,6 +48,7 @@ type CliArgs struct {
 	partitionGlobs            []string
 	partitionRoundRobin       bool
 	partitionTrimPrefix       string
+	skipQuarantinedTestRetries bool
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -322,6 +323,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"them)",
 	)
 
+	runCmd.Flags().BoolVar(
+		&cliArgs.skipQuarantinedTestRetries,
+		"skip-quarantined-test-retries",
+		false,
+		"if set, quarantined tests will not be retried and will only execute once",
+	)
+
 	runCmd.Flags().IntVar(
 		&cliArgs.partitionIndex,
 		"partition-index",
@@ -458,6 +466,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 
 		if cliArgs.failRetriesFast {
 			suiteConfig.Retries.FailFast = true
+		}
+
+		if cliArgs.skipQuarantinedTestRetries {
+			suiteConfig.Retries.SkipQuarantinedTestRetries = true
 		}
 
 		// We want to use the default as set by `cobra`

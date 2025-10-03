@@ -548,14 +548,16 @@ func (s Service) attemptRetries(
 				return false
 			}
 
-			// Skip quarantined tests - they should only execute once, not be retried
-			quarantinedTests := make([]backend.Test, len(apiConfiguration.QuarantinedTests))
-			for i, qt := range apiConfiguration.QuarantinedTests {
-				quarantinedTests[i] = qt.Test
-			}
-			if s.isIdentifiedIn(test, quarantinedTests) {
-				s.Log.Debugf("Skipping %v; test is quarantined\n", test)
-				return false
+			// Skip quarantined tests if the option is enabled - they should only execute once, not be retried
+			if cfg.SkipQuarantinedTestRetries {
+				quarantinedTests := make([]backend.Test, len(apiConfiguration.QuarantinedTests))
+				for i, qt := range apiConfiguration.QuarantinedTests {
+					quarantinedTests[i] = qt.Test
+				}
+				if s.isIdentifiedIn(test, quarantinedTests) {
+					s.Log.Debugf("Skipping %v; test is quarantined\n", test)
+					return false
+				}
 			}
 
 			testIsFlaky := false
