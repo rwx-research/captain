@@ -1278,7 +1278,7 @@ var _ = Describe("Run", func() {
 							secondStatus = v1.NewSuccessfulTestStatus()
 							thirdStatus = v1.NewSuccessfulTestStatus()
 						}
-						
+
 						return &v1.TestResults{
 							Framework: v1.RubyRSpecFramework,
 							Tests: []v1.Test{
@@ -1462,7 +1462,8 @@ var _ = Describe("Run", func() {
 				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
 
 				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
-				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(2), "Quarantined test should be retried when flag is false")
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(2),
+					"Quarantined test should be retried when flag is false")
 				Expect(uploadedTestResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
 				Expect(uploadedTestResults.Tests[0].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
 
@@ -2263,9 +2264,9 @@ var _ = Describe("Run", func() {
 
 	Context("CreateRetryFilter", func() {
 		var (
-			cfg     cli.RunConfig
-			apiConfig backend.RunConfiguration
-			remainingFlakyFailures []v1.Test
+			cfg                                    cli.RunConfig
+			apiConfig                              backend.RunConfiguration
+			remainingFlakyFailures                 []v1.Test
 			retries, flakyRetries, nonFlakyRetries int
 		)
 

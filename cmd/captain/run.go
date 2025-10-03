@@ -20,34 +20,34 @@ import (
 )
 
 type CliArgs struct {
-	command                   string
-	testResults               string
-	failOnUploadError         bool
-	failOnDuplicateTestID     bool
-	failOnMisconfiguredRetry  bool
-	failRetriesFast           bool
-	flakyRetries              int
-	intermediateArtifactsPath string
-	additionalArtifactPaths   []string
-	maxTestsToRetry           string
-	postRetryCommands         []string
-	preRetryCommands          []string
-	printSummary              bool
-	quiet                     bool
-	reporters                 []string
-	Retries                   int
-	retryCommandTemplate      string
-	updateStoredResults       bool
-	GenericProvider           providers.GenericEnv
-	frameworkParams           frameworkParams
-	RootCliArgs               rootCliArgs
-	partitionIndex            int
-	partitionTotal            int
-	partitionDelimiter        string
-	partitionCommandTemplate  string
-	partitionGlobs            []string
-	partitionRoundRobin       bool
-	partitionTrimPrefix       string
+	command                    string
+	testResults                string
+	failOnUploadError          bool
+	failOnDuplicateTestID      bool
+	failOnMisconfiguredRetry   bool
+	failRetriesFast            bool
+	flakyRetries               int
+	intermediateArtifactsPath  string
+	additionalArtifactPaths    []string
+	maxTestsToRetry            string
+	postRetryCommands          []string
+	preRetryCommands           []string
+	printSummary               bool
+	quiet                      bool
+	reporters                  []string
+	Retries                    int
+	retryCommandTemplate       string
+	updateStoredResults        bool
+	GenericProvider            providers.GenericEnv
+	frameworkParams            frameworkParams
+	RootCliArgs                rootCliArgs
+	partitionIndex             int
+	partitionTotal             int
+	partitionDelimiter         string
+	partitionCommandTemplate   string
+	partitionGlobs             []string
+	partitionRoundRobin        bool
+	partitionTrimPrefix        string
 	skipQuarantinedTestRetries bool
 }
 

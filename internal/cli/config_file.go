@@ -27,18 +27,18 @@ type SuiteConfigResults struct {
 }
 
 type SuiteConfigRetries struct {
-	Attempts                  int
-	Command                   string
-	FailFast                  bool     `yaml:"fail-fast"`
-	FailOnMisconfiguration    bool     `yaml:"fail-on-misconfiguration"`
-	FlakyAttempts             int      `yaml:"flaky-attempts"`
-	MaxTests                  string   `yaml:"max-tests"`
-	MaxTestsLegacyName        string   `yaml:"maxtests"`
-	PostRetryCommands         []string `yaml:"post-retry-commands"`
-	PreRetryCommands          []string `yaml:"pre-retry-commands"`
-	IntermediateArtifactsPath string   `yaml:"intermediate-artifacts-path"`
-	AdditionalArtifactPaths   []string `yaml:"additional-artifact-paths"`
-	SkipQuarantinedTestRetries bool    `yaml:"skip-quarantined-test-retries"`
+	Attempts                   int
+	Command                    string
+	FailFast                   bool     `yaml:"fail-fast"`
+	FailOnMisconfiguration     bool     `yaml:"fail-on-misconfiguration"`
+	FlakyAttempts              int      `yaml:"flaky-attempts"`
+	MaxTests                   string   `yaml:"max-tests"`
+	MaxTestsLegacyName         string   `yaml:"maxtests"`
+	PostRetryCommands          []string `yaml:"post-retry-commands"`
+	PreRetryCommands           []string `yaml:"pre-retry-commands"`
+	IntermediateArtifactsPath  string   `yaml:"intermediate-artifacts-path"`
+	AdditionalArtifactPaths    []string `yaml:"additional-artifact-paths"`
+	SkipQuarantinedTestRetries bool     `yaml:"skip-quarantined-test-retries"`
 }
 
 type SuiteConfigPartition struct {
