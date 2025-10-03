@@ -2260,4 +2260,160 @@ var _ = Describe("Run", func() {
 			))
 		})
 	})
+
+	Context("CreateRetryFilter", func() {
+		var (
+			cfg     cli.RunConfig
+			apiConfig backend.RunConfiguration
+			remainingFlakyFailures []v1.Test
+			retries, flakyRetries, nonFlakyRetries int
+		)
+
+		BeforeEach(func() {
+			cfg = cli.RunConfig{}
+			apiConfig = backend.RunConfiguration{}
+			remainingFlakyFailures = []v1.Test{}
+			retries = 0
+			flakyRetries = 2
+			nonFlakyRetries = 1
+		})
+
+		Context("when SkipQuarantinedTestRetries is true", func() {
+			BeforeEach(func() {
+				cfg.SkipQuarantinedTestRetries = true
+				apiConfig.QuarantinedTests = []backend.QuarantinedTest{
+					{
+						Test: backend.Test{
+							CompositeIdentifier: "quarantined-test -captain- /path/to/file.test",
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					},
+				}
+			})
+
+			It("filters out quarantined tests", func() {
+				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+				quarantinedTestName := "quarantined-test"
+				nonQuarantinedTestName := "normal-test"
+
+				quarantinedTest := v1.Test{
+					ID:       &quarantinedTestName,
+					Name:     quarantinedTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				nonQuarantinedTest := v1.Test{
+					ID:       &nonQuarantinedTestName,
+					Name:     nonQuarantinedTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				Expect(filter(quarantinedTest)).To(BeFalse(), "quarantined test should be filtered out")
+				Expect(filter(nonQuarantinedTest)).To(BeTrue(), "non-quarantined test should not be filtered out")
+			})
+
+			It("allows non-failing tests to pass through", func() {
+				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+
+				successfulTestName := "successful-test"
+				successfulTest := v1.Test{
+					ID:       &successfulTestName,
+					Name:     successfulTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewSuccessfulTestStatus(),
+					},
+				}
+
+				Expect(filter(successfulTest)).To(BeFalse(), "successful test should be filtered out")
+			})
+		})
+
+		Context("when SkipQuarantinedTestRetries is false", func() {
+			BeforeEach(func() {
+				cfg.SkipQuarantinedTestRetries = false
+				apiConfig.QuarantinedTests = []backend.QuarantinedTest{
+					{
+						Test: backend.Test{
+							CompositeIdentifier: "quarantined-test -captain- /path/to/file.test",
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					},
+				}
+			})
+
+			It("does not filter out quarantined tests", func() {
+				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+
+				quarantinedTestName := "quarantined-test"
+				quarantinedTest := v1.Test{
+					ID:       &quarantinedTestName,
+					Name:     quarantinedTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				Expect(filter(quarantinedTest)).To(BeTrue(), "quarantined test should not be filtered out when flag is false")
+			})
+		})
+
+		Context("when retry limits are exceeded", func() {
+			BeforeEach(func() {
+				cfg.SkipQuarantinedTestRetries = false
+				retries = 2
+				flakyRetries = 1
+				nonFlakyRetries = 1
+			})
+
+			It("filters out flaky tests when flaky retry limit is exceeded", func() {
+				flakyTestName := "flaky-test"
+				remainingFlakyFailures = []v1.Test{
+					{
+						ID:       &flakyTestName,
+						Name:     flakyTestName,
+						Location: &v1.Location{File: "/path/to/file.test"},
+					},
+				}
+
+				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+
+				flakyTest := v1.Test{
+					ID:       &flakyTestName,
+					Name:     flakyTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				Expect(filter(flakyTest)).To(BeFalse(), "flaky test should be filtered out when retry limit exceeded")
+			})
+
+			It("filters out non-flaky tests when non-flaky retry limit is exceeded", func() {
+				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+
+				nonFlakyTestName := "non-flaky-test"
+				nonFlakyTest := v1.Test{
+					ID:       &nonFlakyTestName,
+					Name:     nonFlakyTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				Expect(filter(nonFlakyTest)).To(BeFalse(), "non-flaky test should be filtered out when retry limit exceeded")
+			})
+		})
+	})
 })
