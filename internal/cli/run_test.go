@@ -1228,7 +1228,7 @@ var _ = Describe("Run", func() {
 		Context("when quarantined tests should not be retried", func() {
 			BeforeEach(func() {
 				runConfig.Retries = 2
-				runConfig.SkipQuarantinedTestRetries = true
+				runConfig.QuarantinedTestRetries = 0
 
 				mockGetRunConfiguration := func(
 					_ context.Context,
@@ -1364,7 +1364,7 @@ var _ = Describe("Run", func() {
 		Context("when quarantined tests should be retried (default behavior)", func() {
 			BeforeEach(func() {
 				runConfig.Retries = 2
-				runConfig.SkipQuarantinedTestRetries = false
+				runConfig.QuarantinedTestRetries = -1
 
 				mockGetRunConfiguration := func(
 					_ context.Context,
@@ -2271,7 +2271,9 @@ var _ = Describe("Run", func() {
 		)
 
 		BeforeEach(func() {
-			cfg = cli.RunConfig{}
+			cfg = cli.RunConfig{
+				QuarantinedTestRetries: -1,
+			}
 			apiConfig = backend.RunConfiguration{}
 			remainingFlakyFailures = []v1.Test{}
 			retries = 0
@@ -2279,9 +2281,9 @@ var _ = Describe("Run", func() {
 			nonFlakyRetries = 1
 		})
 
-		Context("when SkipQuarantinedTestRetries is true", func() {
+		Context("when QuarantinedTestRetries is 0", func() {
 			BeforeEach(func() {
-				cfg.SkipQuarantinedTestRetries = true
+				cfg.QuarantinedTestRetries = 0
 				apiConfig.QuarantinedTests = []backend.QuarantinedTest{
 					{
 						Test: backend.Test{
@@ -2293,8 +2295,9 @@ var _ = Describe("Run", func() {
 				}
 			})
 
-			It("filters out quarantined tests", func() {
-				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+			It("filters out quarantined tests when retries is 0", func() {
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, 0)
 				quarantinedTestName := "quarantined-test"
 				nonQuarantinedTestName := "normal-test"
 
@@ -2316,12 +2319,13 @@ var _ = Describe("Run", func() {
 					},
 				}
 
-				Expect(filter(quarantinedTest)).To(BeFalse(), "quarantined test should be filtered out")
+				Expect(filter(quarantinedTest)).To(BeFalse(), "quarantined test should be filtered out when retries is 0")
 				Expect(filter(nonQuarantinedTest)).To(BeTrue(), "non-quarantined test should not be filtered out")
 			})
 
 			It("allows non-failing tests to pass through", func() {
-				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, 0)
 
 				successfulTestName := "successful-test"
 				successfulTest := v1.Test{
@@ -2337,9 +2341,9 @@ var _ = Describe("Run", func() {
 			})
 		})
 
-		Context("when SkipQuarantinedTestRetries is false", func() {
+		Context("when QuarantinedTestRetries is 2", func() {
 			BeforeEach(func() {
-				cfg.SkipQuarantinedTestRetries = false
+				cfg.QuarantinedTestRetries = 2
 				apiConfig.QuarantinedTests = []backend.QuarantinedTest{
 					{
 						Test: backend.Test{
@@ -2351,8 +2355,45 @@ var _ = Describe("Run", func() {
 				}
 			})
 
-			It("does not filter out quarantined tests", func() {
-				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+			It("allows quarantined tests to be retried up to the specified limit", func() {
+				// Test with retries = 0 (should allow retry)
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, 0, flakyRetries,
+					nonFlakyRetries, 2)
+				quarantinedTestName := "quarantined-test"
+				quarantinedTest := v1.Test{
+					ID:       &quarantinedTestName,
+					Name:     quarantinedTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+				Expect(filter(quarantinedTest)).To(BeTrue(), "quarantined test should be retried when retries < limit")
+
+				// Test with retries = 2 (should not allow retry)
+				filter = service.CreateRetryFilter(apiConfig, remainingFlakyFailures, 2, flakyRetries,
+					nonFlakyRetries, 2)
+				Expect(filter(quarantinedTest)).To(BeFalse(), "quarantined test should not be retried when retries >= limit")
+			})
+		})
+
+		Context("when QuarantinedTestRetries is -1 (default)", func() {
+			BeforeEach(func() {
+				cfg.QuarantinedTestRetries = -1
+				apiConfig.QuarantinedTests = []backend.QuarantinedTest{
+					{
+						Test: backend.Test{
+							CompositeIdentifier: "quarantined-test -captain- /path/to/file.test",
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					},
+				}
+			})
+
+			It("does not filter out quarantined tests when retries is -1 (default)", func() {
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, -1)
 
 				quarantinedTestName := "quarantined-test"
 				quarantinedTest := v1.Test{
@@ -2364,13 +2405,14 @@ var _ = Describe("Run", func() {
 					},
 				}
 
-				Expect(filter(quarantinedTest)).To(BeTrue(), "quarantined test should not be filtered out when flag is false")
+				Expect(filter(quarantinedTest)).To(BeTrue(),
+					"quarantined test should not be filtered out when retries is -1 (default)")
 			})
 		})
 
 		Context("when retry limits are exceeded", func() {
 			BeforeEach(func() {
-				cfg.SkipQuarantinedTestRetries = false
+				cfg.QuarantinedTestRetries = -1
 				retries = 2
 				flakyRetries = 1
 				nonFlakyRetries = 1
@@ -2386,7 +2428,8 @@ var _ = Describe("Run", func() {
 					},
 				}
 
-				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, -1)
 
 				flakyTest := v1.Test{
 					ID:       &flakyTestName,
@@ -2401,7 +2444,8 @@ var _ = Describe("Run", func() {
 			})
 
 			It("filters out non-flaky tests when non-flaky retry limit is exceeded", func() {
-				filter := service.CreateRetryFilter(cfg, apiConfig, remainingFlakyFailures, retries, flakyRetries, nonFlakyRetries)
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, -1)
 
 				nonFlakyTestName := "non-flaky-test"
 				nonFlakyTest := v1.Test{

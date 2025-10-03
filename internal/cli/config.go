@@ -43,7 +43,7 @@ type RunConfig struct {
 	PartitionTrimPrefix         string
 	WriteRetryFailedTestsAction bool
 	DidRetryFailedTestsInMint   bool
-	SkipQuarantinedTestRetries  bool
+	QuarantinedTestRetries      int
 }
 
 var maxTestsToRetryRegexp = regexp.MustCompile(

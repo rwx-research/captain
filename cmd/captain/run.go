@@ -20,35 +20,35 @@ import (
 )
 
 type CliArgs struct {
-	command                    string
-	testResults                string
-	failOnUploadError          bool
-	failOnDuplicateTestID      bool
-	failOnMisconfiguredRetry   bool
-	failRetriesFast            bool
-	flakyRetries               int
-	intermediateArtifactsPath  string
-	additionalArtifactPaths    []string
-	maxTestsToRetry            string
-	postRetryCommands          []string
-	preRetryCommands           []string
-	printSummary               bool
-	quiet                      bool
-	reporters                  []string
-	Retries                    int
-	retryCommandTemplate       string
-	updateStoredResults        bool
-	GenericProvider            providers.GenericEnv
-	frameworkParams            frameworkParams
-	RootCliArgs                rootCliArgs
-	partitionIndex             int
-	partitionTotal             int
-	partitionDelimiter         string
-	partitionCommandTemplate   string
-	partitionGlobs             []string
-	partitionRoundRobin        bool
-	partitionTrimPrefix        string
-	skipQuarantinedTestRetries bool
+	command                   string
+	testResults               string
+	failOnUploadError         bool
+	failOnDuplicateTestID     bool
+	failOnMisconfiguredRetry  bool
+	failRetriesFast           bool
+	flakyRetries              int
+	intermediateArtifactsPath string
+	additionalArtifactPaths   []string
+	maxTestsToRetry           string
+	postRetryCommands         []string
+	preRetryCommands          []string
+	printSummary              bool
+	quiet                     bool
+	reporters                 []string
+	Retries                   int
+	retryCommandTemplate      string
+	updateStoredResults       bool
+	GenericProvider           providers.GenericEnv
+	frameworkParams           frameworkParams
+	RootCliArgs               rootCliArgs
+	partitionIndex            int
+	partitionTotal            int
+	partitionDelimiter        string
+	partitionCommandTemplate  string
+	partitionGlobs            []string
+	partitionRoundRobin       bool
+	partitionTrimPrefix       string
+	quarantinedTestRetries    int
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -152,30 +152,30 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 					}
 
 					runConfig = cli.RunConfig{
-						Args:                       args,
-						CloudOrganizationSlug:      "deep_link",
-						Command:                    suiteConfig.Command,
-						FailOnUploadError:          suiteConfig.FailOnUploadError,
-						FailOnMisconfiguredRetry:   suiteConfig.Retries.FailOnMisconfiguration,
-						FailRetriesFast:            suiteConfig.Retries.FailFast,
-						FlakyRetries:               suiteConfig.Retries.FlakyAttempts,
-						IntermediateArtifactsPath:  suiteConfig.Retries.IntermediateArtifactsPath,
-						AdditionalArtifactPaths:    suiteConfig.Retries.AdditionalArtifactPaths,
-						MaxTestsToRetry:            suiteConfig.Retries.MaxTests,
-						PostRetryCommands:          suiteConfig.Retries.PostRetryCommands,
-						PreRetryCommands:           suiteConfig.Retries.PreRetryCommands,
-						PrintSummary:               suiteConfig.Output.PrintSummary,
-						Quiet:                      suiteConfig.Output.Quiet,
-						Reporters:                  reporterFuncs,
-						Retries:                    suiteConfig.Retries.Attempts,
-						RetryCommandTemplate:       suiteConfig.Retries.Command,
-						SkipQuarantinedTestRetries: suiteConfig.Retries.SkipQuarantinedTestRetries,
-						SubstitutionsByFramework:   targetedretries.SubstitutionsByFramework,
-						SuiteID:                    cliArgs.RootCliArgs.suiteID,
-						TestResultsFileGlob:        os.ExpandEnv(suiteConfig.Results.Path),
-						UpdateStoredResults:        cliArgs.updateStoredResults,
-						UploadResults:              true,
-						PartitionCommandTemplate:   suiteConfig.Partition.Command,
+						Args:                      args,
+						CloudOrganizationSlug:     "deep_link",
+						Command:                   suiteConfig.Command,
+						FailOnUploadError:         suiteConfig.FailOnUploadError,
+						FailOnMisconfiguredRetry:  suiteConfig.Retries.FailOnMisconfiguration,
+						FailRetriesFast:           suiteConfig.Retries.FailFast,
+						FlakyRetries:              suiteConfig.Retries.FlakyAttempts,
+						IntermediateArtifactsPath: suiteConfig.Retries.IntermediateArtifactsPath,
+						AdditionalArtifactPaths:   suiteConfig.Retries.AdditionalArtifactPaths,
+						MaxTestsToRetry:           suiteConfig.Retries.MaxTests,
+						PostRetryCommands:         suiteConfig.Retries.PostRetryCommands,
+						PreRetryCommands:          suiteConfig.Retries.PreRetryCommands,
+						PrintSummary:              suiteConfig.Output.PrintSummary,
+						Quiet:                     suiteConfig.Output.Quiet,
+						Reporters:                 reporterFuncs,
+						Retries:                   suiteConfig.Retries.Attempts,
+						RetryCommandTemplate:      suiteConfig.Retries.Command,
+						QuarantinedTestRetries:    suiteConfig.Retries.QuarantinedAttempts,
+						SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
+						SuiteID:                   cliArgs.RootCliArgs.suiteID,
+						TestResultsFileGlob:       os.ExpandEnv(suiteConfig.Results.Path),
+						UpdateStoredResults:       cliArgs.updateStoredResults,
+						UploadResults:             true,
+						PartitionCommandTemplate:  suiteConfig.Partition.Command,
 						PartitionConfig: cli.PartitionConfig{
 							SuiteID:       cliArgs.RootCliArgs.suiteID,
 							TestFilePaths: suiteConfig.Partition.Globs,
@@ -324,11 +324,11 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"them)",
 	)
 
-	runCmd.Flags().BoolVar(
-		&cliArgs.skipQuarantinedTestRetries,
-		"skip-quarantined-test-retries",
-		false,
-		"if set, quarantined tests will not be retried and will only execute once",
+	runCmd.Flags().IntVar(
+		&cliArgs.quarantinedTestRetries,
+		"quarantined-test-retries",
+		-1,
+		"number of retries for quarantined tests, similar to --flaky-retries. Set to 0 to disable retrying quarantined tests",
 	)
 
 	runCmd.Flags().IntVar(
@@ -469,8 +469,9 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 			suiteConfig.Retries.FailFast = true
 		}
 
-		if cliArgs.skipQuarantinedTestRetries {
-			suiteConfig.Retries.SkipQuarantinedTestRetries = true
+		// We want to use the default as set by `cobra`
+		if suiteConfig.Retries.QuarantinedAttempts == 0 || cliArgs.quarantinedTestRetries != -1 {
+			suiteConfig.Retries.QuarantinedAttempts = cliArgs.quarantinedTestRetries
 		}
 
 		// We want to use the default as set by `cobra`
