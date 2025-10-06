@@ -1225,6 +1225,260 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("when quarantined tests should not be retried", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 2
+				runConfig.QuarantinedTestRetries = 0
+
+				mockGetRunConfiguration := func(
+					_ context.Context,
+					_ string,
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
+							{
+								Test: backend.Test{
+									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstTestDescription, "/path/to/file.test"),
+									IdentityComponents:  []string{"description", "file"},
+									StrictIdentity:      true,
+								},
+							},
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+
+				mockGetQuarantinedTests := func(
+					_ context.Context,
+					_ string,
+				) ([]backend.Test, error) {
+					return []backend.Test{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTests = mockGetQuarantinedTests
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+					secondStatus := secondInitialStatus
+					thirdStatus := thirdInitialStatus
+
+					if parseCount > 1 {
+						if parseCount == 2 {
+							secondStatus = v1.NewFailedTestStatus(nil, nil, nil)
+							thirdStatus = v1.NewFailedTestStatus(nil, nil, nil)
+						} else {
+							secondStatus = v1.NewSuccessfulTestStatus()
+							thirdStatus = v1.NewSuccessfulTestStatus()
+						}
+
+						return &v1.TestResults{
+							Framework: v1.RubyRSpecFramework,
+							Tests: []v1.Test{
+								{
+									ID:       &secondTestDescription,
+									Name:     secondTestDescription,
+									Location: &v1.Location{File: "/path/to/file.test"},
+									Attempt: v1.TestAttempt{
+										Status: secondStatus,
+									},
+								},
+								{
+									ID:       &thirdTestDescription,
+									Name:     thirdTestDescription,
+									Location: &v1.Location{File: "/other/path/to/file.test"},
+									Attempt: v1.TestAttempt{
+										Status: thirdStatus,
+									},
+								},
+							},
+						}, nil
+					}
+
+					firstStatus := firstInitialStatus
+					return &v1.TestResults{
+						Framework: v1.RubyRSpecFramework,
+						Tests: []v1.Test{
+							{
+								ID:       &firstTestDescription,
+								Name:     firstTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: firstStatus,
+								},
+							},
+							{
+								ID:       &secondTestDescription,
+								Name:     secondTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: secondStatus,
+								},
+							},
+							{
+								ID:       &thirdTestDescription,
+								Name:     thirdTestDescription,
+								Location: &v1.Location{File: "/other/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: thirdStatus,
+								},
+							},
+						},
+					}, nil
+				}
+			})
+
+			It("does not retry quarantined tests", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(2))
+				Expect(uploadedTestResults.Summary.Quarantined).To(Equal(1))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(2))
+
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusQuarantined))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.OriginalStatus.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(0), "Quarantined test should not be retried")
+
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].PastAttempts).To(HaveLen(2), "Non-quarantined test should be retried twice")
+				Expect(uploadedTestResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[2].PastAttempts).To(HaveLen(2), "Non-quarantined test should be retried twice")
+				Expect(uploadedTestResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
+			})
+		})
+
+		Context("when quarantined tests should be retried (default behavior)", func() {
+			BeforeEach(func() {
+				runConfig.Retries = 2
+				runConfig.QuarantinedTestRetries = -1
+
+				mockGetRunConfiguration := func(
+					_ context.Context,
+					_ string,
+				) (backend.RunConfiguration, error) {
+					return backend.RunConfiguration{
+						QuarantinedTests: []backend.QuarantinedTest{
+							{
+								Test: backend.Test{
+									CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstTestDescription, "/path/to/file.test"),
+									IdentityComponents:  []string{"description", "file"},
+									StrictIdentity:      true,
+								},
+							},
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetRunConfiguration = mockGetRunConfiguration
+
+				mockGetQuarantinedTests := func(
+					_ context.Context,
+					_ string,
+				) ([]backend.Test, error) {
+					return []backend.Test{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", firstTestDescription, "/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+				service.API.(*mocks.API).MockGetQuarantinedTests = mockGetQuarantinedTests
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+					firstStatus := firstInitialStatus
+					secondStatus := secondInitialStatus
+					thirdStatus := thirdInitialStatus
+
+					if parseCount > 1 {
+						if parseCount == 2 {
+							firstStatus = v1.NewFailedTestStatus(nil, nil, nil)
+							secondStatus = v1.NewFailedTestStatus(nil, nil, nil)
+							thirdStatus = v1.NewFailedTestStatus(nil, nil, nil)
+						} else {
+							firstStatus = v1.NewSuccessfulTestStatus()
+							secondStatus = v1.NewSuccessfulTestStatus()
+							thirdStatus = v1.NewSuccessfulTestStatus()
+						}
+					}
+
+					return &v1.TestResults{
+						Framework: v1.RubyRSpecFramework,
+						Tests: []v1.Test{
+							{
+								ID:       &firstTestDescription,
+								Name:     firstTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: firstStatus,
+								},
+							},
+							{
+								ID:       &secondTestDescription,
+								Name:     secondTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: secondStatus,
+								},
+							},
+							{
+								ID:       &thirdTestDescription,
+								Name:     thirdTestDescription,
+								Location: &v1.Location{File: "/other/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: thirdStatus,
+								},
+							},
+						},
+					}, nil
+				}
+			})
+
+			It("retries quarantined tests when flag is false", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(3))
+				Expect(uploadedTestResults.Summary.Quarantined).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+				Expect(uploadedTestResults.Summary.Retries).To(Equal(3))
+
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(2),
+					"Quarantined test should be retried when flag is false")
+				Expect(uploadedTestResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(uploadedTestResults.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[1].PastAttempts).To(HaveLen(2), "Non-quarantined test should be retried")
+				Expect(uploadedTestResults.Tests[1].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[1].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[2].PastAttempts).To(HaveLen(2), "Non-quarantined test should be retried")
+				Expect(uploadedTestResults.Tests[2].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+				Expect(uploadedTestResults.Tests[2].PastAttempts[1].Status.Kind).To(Equal(v1.TestStatusFailed))
+			})
+		})
+
 		Context("when retrying only flaky tests and there are no flaky tests", func() {
 			BeforeEach(func() {
 				runConfig.Retries = -1
@@ -2005,6 +2259,206 @@ var _ = Describe("Run", func() {
 			Expect(err.Error()).To(ContainSubstring(
 				"Multiple frameworks detected. The captain CLI only works with one framework at a time",
 			))
+		})
+	})
+
+	Context("CreateRetryFilter", func() {
+		var (
+			cfg                                    cli.RunConfig
+			apiConfig                              backend.RunConfiguration
+			remainingFlakyFailures                 []v1.Test
+			retries, flakyRetries, nonFlakyRetries int
+		)
+
+		BeforeEach(func() {
+			cfg = cli.RunConfig{
+				QuarantinedTestRetries: -1,
+			}
+			apiConfig = backend.RunConfiguration{}
+			remainingFlakyFailures = []v1.Test{}
+			retries = 0
+			flakyRetries = 2
+			nonFlakyRetries = 1
+		})
+
+		Context("when QuarantinedTestRetries is 0", func() {
+			BeforeEach(func() {
+				cfg.QuarantinedTestRetries = 0
+				apiConfig.QuarantinedTests = []backend.QuarantinedTest{
+					{
+						Test: backend.Test{
+							CompositeIdentifier: "quarantined-test -captain- /path/to/file.test",
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					},
+				}
+			})
+
+			It("filters out quarantined tests when retries is 0", func() {
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, 0)
+				quarantinedTestName := "quarantined-test"
+				nonQuarantinedTestName := "normal-test"
+
+				quarantinedTest := v1.Test{
+					ID:       &quarantinedTestName,
+					Name:     quarantinedTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				nonQuarantinedTest := v1.Test{
+					ID:       &nonQuarantinedTestName,
+					Name:     nonQuarantinedTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				Expect(filter(quarantinedTest)).To(BeFalse(), "quarantined test should be filtered out when retries is 0")
+				Expect(filter(nonQuarantinedTest)).To(BeTrue(), "non-quarantined test should not be filtered out")
+			})
+
+			It("allows non-failing tests to pass through", func() {
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, 0)
+
+				successfulTestName := "successful-test"
+				successfulTest := v1.Test{
+					ID:       &successfulTestName,
+					Name:     successfulTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewSuccessfulTestStatus(),
+					},
+				}
+
+				Expect(filter(successfulTest)).To(BeFalse(), "successful test should be filtered out")
+			})
+		})
+
+		Context("when QuarantinedTestRetries is 2", func() {
+			BeforeEach(func() {
+				cfg.QuarantinedTestRetries = 2
+				apiConfig.QuarantinedTests = []backend.QuarantinedTest{
+					{
+						Test: backend.Test{
+							CompositeIdentifier: "quarantined-test -captain- /path/to/file.test",
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					},
+				}
+			})
+
+			It("allows quarantined tests to be retried up to the specified limit", func() {
+				// Test with retries = 0 (should allow retry)
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, 0, flakyRetries,
+					nonFlakyRetries, 2)
+				quarantinedTestName := "quarantined-test"
+				quarantinedTest := v1.Test{
+					ID:       &quarantinedTestName,
+					Name:     quarantinedTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+				Expect(filter(quarantinedTest)).To(BeTrue(), "quarantined test should be retried when retries < limit")
+
+				// Test with retries = 2 (should not allow retry)
+				filter = service.CreateRetryFilter(apiConfig, remainingFlakyFailures, 2, flakyRetries,
+					nonFlakyRetries, 2)
+				Expect(filter(quarantinedTest)).To(BeFalse(), "quarantined test should not be retried when retries >= limit")
+			})
+		})
+
+		Context("when QuarantinedTestRetries is -1 (default)", func() {
+			BeforeEach(func() {
+				cfg.QuarantinedTestRetries = -1
+				apiConfig.QuarantinedTests = []backend.QuarantinedTest{
+					{
+						Test: backend.Test{
+							CompositeIdentifier: "quarantined-test -captain- /path/to/file.test",
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					},
+				}
+			})
+
+			It("does not filter out quarantined tests when retries is -1 (default)", func() {
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, -1)
+
+				quarantinedTestName := "quarantined-test"
+				quarantinedTest := v1.Test{
+					ID:       &quarantinedTestName,
+					Name:     quarantinedTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				Expect(filter(quarantinedTest)).To(BeTrue(),
+					"quarantined test should not be filtered out when retries is -1 (default)")
+			})
+		})
+
+		Context("when retry limits are exceeded", func() {
+			BeforeEach(func() {
+				cfg.QuarantinedTestRetries = -1
+				retries = 2
+				flakyRetries = 1
+				nonFlakyRetries = 1
+			})
+
+			It("filters out flaky tests when flaky retry limit is exceeded", func() {
+				flakyTestName := "flaky-test"
+				remainingFlakyFailures = []v1.Test{
+					{
+						ID:       &flakyTestName,
+						Name:     flakyTestName,
+						Location: &v1.Location{File: "/path/to/file.test"},
+					},
+				}
+
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, -1)
+
+				flakyTest := v1.Test{
+					ID:       &flakyTestName,
+					Name:     flakyTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				Expect(filter(flakyTest)).To(BeFalse(), "flaky test should be filtered out when retry limit exceeded")
+			})
+
+			It("filters out non-flaky tests when non-flaky retry limit is exceeded", func() {
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, -1)
+
+				nonFlakyTestName := "non-flaky-test"
+				nonFlakyTest := v1.Test{
+					ID:       &nonFlakyTestName,
+					Name:     nonFlakyTestName,
+					Location: &v1.Location{File: "/path/to/file.test"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+
+				Expect(filter(nonFlakyTest)).To(BeFalse(), "non-flaky test should be filtered out when retry limit exceeded")
+			})
 		})
 	})
 })

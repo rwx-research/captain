@@ -412,6 +412,7 @@ func (s Service) attemptRetries(
 ) (*v1.TestResults, *v1.TestResults, int, error) {
 	nonFlakyRetries := cfg.Retries
 	flakyRetries := cfg.FlakyRetries
+	quarantinedTestRetries := cfg.QuarantinedTestRetries
 
 	if nonFlakyRetries <= 0 && flakyRetries <= 0 {
 		return originalTestResults, newlyExecutedTestResults, startingRetryID, nil
@@ -475,11 +476,15 @@ func (s Service) attemptRetries(
 	}
 
 	maxRetries := nonFlakyRetries
+	if quarantinedTestRetries > maxRetries {
+		maxRetries = quarantinedTestRetries
+	}
 	if flakyRetries > maxRetries {
 		maxRetries = flakyRetries
 	}
 	formattedRetryTotal := fmt.Sprintf(" of %v", maxRetries)
-	if flakyRetries > 0 && nonFlakyRetries > 0 && nonFlakyRetries != flakyRetries {
+	if flakyRetries > 0 && nonFlakyRetries > 0 && nonFlakyRetries != flakyRetries &&
+		quarantinedTestRetries > 0 && quarantinedTestRetries != flakyRetries {
 		formattedRetryTotal = ""
 	}
 
@@ -491,6 +496,7 @@ func (s Service) attemptRetries(
 	for retries := 0; retries < maxRetries; retries++ {
 		remainingFlakyFailures := make([]v1.Test, 0)
 		remainingNonFlakyFailures := make([]v1.Test, 0)
+		remainingQuarantinedTestFailures := make([]v1.Test, 0)
 
 		for _, test := range flattenedTestResults.Tests {
 			if !test.Attempt.Status.ImpliesFailure() {
@@ -506,6 +512,7 @@ func (s Service) attemptRetries(
 
 		nonFlakyAttemptsExhausted := retries >= nonFlakyRetries
 		flakyAttemptsExhausted := retries >= flakyRetries
+		quarantinedTestAttemptsExhausted := retries >= quarantinedTestRetries
 
 		testsRemaining := 0
 		if !nonFlakyAttemptsExhausted {
@@ -513,6 +520,9 @@ func (s Service) attemptRetries(
 		}
 		if !flakyAttemptsExhausted {
 			testsRemaining += len(remainingFlakyFailures)
+		}
+		if !quarantinedTestAttemptsExhausted {
+			testsRemaining += len(remainingQuarantinedTestFailures)
 		}
 
 		// bail early if there are too many failed tests
@@ -543,31 +553,8 @@ func (s Service) attemptRetries(
 			break
 		}
 
-		filter := func(test v1.Test) bool {
-			if !test.Attempt.Status.ImpliesFailure() {
-				return false
-			}
-
-			testIsFlaky := false
-			for _, remainingFlakyFailure := range remainingFlakyFailures {
-				if test.Matches(remainingFlakyFailure) {
-					testIsFlaky = true
-					break
-				}
-			}
-
-			if retries >= flakyRetries && testIsFlaky {
-				s.Log.Debugf("Skipping %v; flaky attempts exhausted\n", test)
-				return false
-			}
-
-			if retries >= nonFlakyRetries && !testIsFlaky {
-				s.Log.Debugf("Skipping %v; non-flaky attempts exhausted\n", test)
-				return false
-			}
-
-			return true
-		}
+		filter := s.CreateRetryFilter(apiConfiguration, remainingFlakyFailures, retries, flakyRetries,
+			nonFlakyRetries, quarantinedTestRetries)
 
 		retryID++
 		ias.SetRetryID(retryID)
@@ -723,6 +710,59 @@ func (s Service) attemptRetries(
 
 	s.Log.Debugf("Retries complete, summary: %v\n", flattenedTestResults.Summary)
 	return flattenedTestResults, flattenedNewlyExecutedTestResults, retryID, nil
+}
+
+func (s Service) CreateRetryFilter(
+	apiConfiguration backend.RunConfiguration,
+	remainingFlakyFailures []v1.Test,
+	retries int,
+	flakyRetries int,
+	nonFlakyRetries int,
+	quarantinedTestRetries int,
+) func(test v1.Test) bool {
+	return func(test v1.Test) bool {
+		if !test.Attempt.Status.ImpliesFailure() {
+			return false
+		}
+
+		quarantinedTests := make([]backend.Test, len(apiConfiguration.QuarantinedTests))
+		for i, qt := range apiConfiguration.QuarantinedTests {
+			quarantinedTests[i] = qt.Test
+		}
+		testIsQuarantined := s.isIdentifiedIn(test, quarantinedTests)
+
+		// Handle quarantined test retry logic
+		if testIsQuarantined {
+			if quarantinedTestRetries == 0 {
+				s.Log.Debugf("Skipping %v; test is quarantined and quarantined test retries is 0\n", test)
+				return false
+			}
+			if quarantinedTestRetries > 0 && retries >= quarantinedTestRetries {
+				s.Log.Debugf("Skipping %v; quarantined test attempts exhausted\n", test)
+				return false
+			}
+		}
+
+		testIsFlaky := false
+		for _, remainingFlakyFailure := range remainingFlakyFailures {
+			if test.Matches(remainingFlakyFailure) {
+				testIsFlaky = true
+				break
+			}
+		}
+
+		if retries >= flakyRetries && testIsFlaky {
+			s.Log.Debugf("Skipping %v; flaky attempts exhausted\n", test)
+			return false
+		}
+
+		if retries >= nonFlakyRetries && !testIsFlaky {
+			s.Log.Debugf("Skipping %v; non-flaky attempts exhausted\n", test)
+			return false
+		}
+
+		return true
+	}
 }
 
 func (s Service) handleCommandOutcome(

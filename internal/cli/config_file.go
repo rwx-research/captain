@@ -38,6 +38,7 @@ type SuiteConfigRetries struct {
 	PreRetryCommands          []string `yaml:"pre-retry-commands"`
 	IntermediateArtifactsPath string   `yaml:"intermediate-artifacts-path"`
 	AdditionalArtifactPaths   []string `yaml:"additional-artifact-paths"`
+	QuarantinedAttempts       int      `yaml:"quarantined-attempts"`
 }
 
 type SuiteConfigPartition struct {

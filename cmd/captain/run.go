@@ -48,6 +48,7 @@ type CliArgs struct {
 	partitionGlobs            []string
 	partitionRoundRobin       bool
 	partitionTrimPrefix       string
+	quarantinedTestRetries    int
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -168,6 +169,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						Reporters:                 reporterFuncs,
 						Retries:                   suiteConfig.Retries.Attempts,
 						RetryCommandTemplate:      suiteConfig.Retries.Command,
+						QuarantinedTestRetries:    suiteConfig.Retries.QuarantinedAttempts,
 						SubstitutionsByFramework:  targetedretries.SubstitutionsByFramework,
 						SuiteID:                   cliArgs.RootCliArgs.suiteID,
 						TestResultsFileGlob:       os.ExpandEnv(suiteConfig.Results.Path),
@@ -323,6 +325,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 	)
 
 	runCmd.Flags().IntVar(
+		&cliArgs.quarantinedTestRetries,
+		"quarantined-test-retries",
+		-1,
+		"number of retries for quarantined tests, similar to --flaky-retries. Set to 0 to disable retrying quarantined tests",
+	)
+
+	runCmd.Flags().IntVar(
 		&cliArgs.partitionIndex,
 		"partition-index",
 		-1,
@@ -458,6 +467,11 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 
 		if cliArgs.failRetriesFast {
 			suiteConfig.Retries.FailFast = true
+		}
+
+		// We want to use the default as set by `cobra`
+		if suiteConfig.Retries.QuarantinedAttempts == 0 || cliArgs.quarantinedTestRetries != -1 {
+			suiteConfig.Retries.QuarantinedAttempts = cliArgs.quarantinedTestRetries
 		}
 
 		// We want to use the default as set by `cobra`
