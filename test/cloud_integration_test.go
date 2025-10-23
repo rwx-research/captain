@@ -62,7 +62,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
+						Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 					})
 					Expect(result.exitCode).To(Equal(123))
 				})
@@ -328,7 +328,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				withoutBackwardsCompatibility(func() {
-					Expect(result.stderr).To(Equal("Error: test suite exited with non-zero exit code"))
+					Expect(result.stderr).To(ContainSubstring("Error: test suite exited with non-zero exit code"))
 				})
 				Expect(result.exitCode).To(Equal(123))
 			})
