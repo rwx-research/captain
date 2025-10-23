@@ -728,6 +728,85 @@ var _ = Describe("Run", func() {
 				Expect(uploadedTestResults.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusTimedOut))
 			})
 		})
+
+		Context("test suite gets quarantined during execution", func() {
+			var callCount int
+
+			BeforeEach(func() {
+				callCount = 0
+				service.API.(*mocks.API).MockGetRunConfiguration = func(
+					_ context.Context,
+					_ string,
+				) (backend.RunConfiguration, error) {
+					callCount++
+					if callCount == 1 {
+						// Initial call - suite not quarantined
+						return backend.RunConfiguration{
+							IsSuiteQuarantined: false,
+						}, nil
+					}
+					// Subsequent calls - suite quarantined
+					return backend.RunConfiguration{
+						IsSuiteQuarantined: true,
+					}, nil
+				}
+			})
+
+			It("returns nil when suite gets quarantined during execution", func() {
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("logs the quarantine message when suite gets quarantined during execution", func() {
+				logMessages := make([]string, 0)
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).To(ContainElement(ContainSubstring(
+					"Exiting with exit code 0 because the test suite is quarantined",
+				)))
+			})
+		})
+
+		Context("test suite quarantine check falls back when fresh fetch fails", func() {
+			var callCount int
+
+			BeforeEach(func() {
+				callCount = 0
+				service.API.(*mocks.API).MockGetRunConfiguration = func(
+					_ context.Context,
+					_ string,
+				) (backend.RunConfiguration, error) {
+					callCount++
+					if callCount == 1 {
+						// First call - suite quarantined
+						return backend.RunConfiguration{
+							IsSuiteQuarantined: true,
+						}, nil
+					}
+					// Subsequent calls - fail
+					return backend.RunConfiguration{}, errors.NewInternalError("API error")
+				}
+			})
+
+			It("returns nil when fresh fetch fails but original config has suite quarantined", func() {
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("logs fallback warning when fresh fetch fails", func() {
+				logMessages := make([]string, 0)
+				for _, log := range recordedLogs.All() {
+					logMessages = append(logMessages, log.Message)
+				}
+
+				Expect(logMessages).To(ContainElement(ContainSubstring(
+					"Failed to get the updated run configuration, will fall back to the original",
+				)))
+				Expect(logMessages).To(ContainElement(ContainSubstring(
+					"Exiting with exit code 0 because the test suite is quarantined",
+				)))
+			})
+		})
 	})
 
 	Context("with other errors", func() {

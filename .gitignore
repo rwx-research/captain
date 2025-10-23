@@ -8,3 +8,4 @@
 test/.captain
 *.test
 local_env.sh
+.vscode/settings.json

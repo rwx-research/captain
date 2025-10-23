@@ -390,6 +390,14 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 	}
 
 	if err != nil {
+		// Fetch a fresh copy of apiConfiguration to see if the suite has been quarantined while it was running
+		updatedConfiguration, getRunErr := s.API.GetRunConfiguration(ctx, cfg.SuiteID)
+		if getRunErr != nil {
+			s.Log.Warnf("Failed to get the updated run configuration, will fall back to the original: %v", getRunErr)
+		} else {
+			apiConfiguration = updatedConfiguration
+		}
+
 		if apiConfiguration.IsSuiteQuarantined {
 			s.Log.Error(err)
 			s.Log.Infoln("Exiting with exit code 0 because the test suite is quarantined")
