@@ -25,6 +25,10 @@
     {
       "name": "NullAssertsTests+Null.Success",
       "scope": "test.xunit.assert.dll",
+      "location": {
+        "file": "some/path/to/NullAssertsTests.cs",
+        "line": 15
+      },
       "attempt": {
         "durationInNanoseconds": 6370900,
         "meta": {
@@ -105,6 +109,10 @@
     {
       "name": "RangeAssertsTests+InRange.IntNotWithinRangeWithZeroMinimum",
       "scope": "test.xunit.assert.dll",
+      "location": {
+        "file": "some/path/to/RangeAssertsTests.cs",
+        "line": 42
+      },
       "attempt": {
         "durationInNanoseconds": 307700,
         "meta": {
@@ -186,6 +194,10 @@
     {
       "name": "CommandLineTests+MethodArgument.MethodArgumentNotPassed",
       "scope": "test.xunit.console.dll",
+      "location": {
+        "file": "some/path/to/FileName.cs",
+        "line": 30
+      },
       "attempt": {
         "durationInNanoseconds": 323400,
         "meta": {
