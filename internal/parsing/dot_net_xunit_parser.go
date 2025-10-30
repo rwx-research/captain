@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,17 +44,17 @@ type DotNetxUnitTest struct {
 	Failure       *DotNetxUnitFailure      `xml:"failure"`
 	Output        *DotNetxUnitCdataContent `xml:"output"`
 	SkippedReason *DotNetxUnitCdataContent `xml:"reason"`
+	SourceFile    *string                  `xml:"source-file"`
+	SourceLine    *string                  `xml:"source-line"`
 
 	// attributes
-	ID         *string `xml:"id,attr"`
-	Method     *string `xml:"method,attr"`
-	Name       string  `xml:"name,attr"`
-	Result     string  `xml:"result,attr"` // Pass, Fail, Skip, NotRun
-	SourceFile *string `xml:"source-file,attr"`
-	SourceLine *int    `xml:"source-line,attr"`
-	Time       float64 `xml:"time,attr"`
-	TimeRtf    *string `xml:"time-rtf,attr"`
-	Type       *string `xml:"type,attr"`
+	ID      *string `xml:"id,attr"`
+	Method  *string `xml:"method,attr"`
+	Name    string  `xml:"name,attr"`
+	Result  string  `xml:"result,attr"` // Pass, Fail, Skip, NotRun
+	Time    float64 `xml:"time,attr"`
+	TimeRtf *string `xml:"time-rtf,attr"`
+	Type    *string `xml:"type,attr"`
 
 	XMLName xml.Name `xml:"test"`
 }
@@ -165,7 +166,13 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 
 				var location *v1.Location
 				if testCase.SourceFile != nil {
-					location = &v1.Location{File: *testCase.SourceFile, Line: testCase.SourceLine}
+					var line *int
+					if testCase.SourceLine != nil {
+						if parsedLine, err := strconv.Atoi(*testCase.SourceLine); err == nil {
+							line = &parsedLine
+						}
+					}
+					location = &v1.Location{File: *testCase.SourceFile, Line: line}
 				}
 
 				var stdout *string

@@ -72,9 +72,9 @@ var _ = Describe("DotNetxUnitParser", func() {
 									method="Success"
 									time="0.0063709"
 									result="Pass"
-									source-file="some/path/to/source.cs"
-									source-line="12"
 								>
+									<source-file>some/path/to/source.cs</source-file>
+									<source-line>12</source-line>
 									<traits>
 										<trait name="some-trait" value="some-value" />
 										<trait name="other-trait" value="other-value" />
