@@ -157,8 +157,8 @@ func (p DotNetxUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 
 				meta := map[string]any{
 					"assembly": assemblyName,
-					"type":     testCase.Type,
-					"method":   testCase.Method,
+					"type":     *testCase.Type,
+					"method":   *testCase.Method,
 				}
 				for _, trait := range testCase.Traits {
 					meta[fmt.Sprintf("trait-%v", trait.Name)] = trait.Value
