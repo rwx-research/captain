@@ -60,10 +60,18 @@ func (s DotNetxUnitSubstitution) SubstitutionsFor(
 			continue
 		}
 
-		testType := test.Attempt.Meta["type"].(*string)
-		testMethod := test.Attempt.Meta["method"].(*string)
+		testType, ok := test.Attempt.Meta["type"].(string)
+		if !ok {
+			return nil, errors.NewInternalError("Expected 'type' in meta to be string, got %T", test.Attempt.Meta["type"])
+		}
+
+		testMethod, ok := test.Attempt.Meta["method"].(string)
+		if !ok {
+			return nil, errors.NewInternalError("Expected 'method' in meta to be string, got %T", test.Attempt.Meta["method"])
+		}
+
 		fullyQualifiedName := testFilterSpecialCharacters.ReplaceAllStringFunc(
-			fmt.Sprintf("%v.%v", *testType, *testMethod),
+			fmt.Sprintf("%v.%v", testType, testMethod),
 			escapeTestFilterCharacter,
 		)
 		formattedTest := templating.ShellEscape(fmt.Sprintf("FullyQualifiedName=%v", fullyQualifiedName))

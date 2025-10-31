@@ -748,6 +748,26 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 				Expect(result.exitCode).To(Equal(123))
 			})
+
+			It("fails & passes through exit code on failure for xUnit", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/xunit-failed-not-quarantined.xml", prefix)
+				defer cleanup()
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"captain-cli-functional-tests",
+						"--test-results", testResultsPath,
+						"--retries", "1",
+						"--retry-command", `echo "{{ filter }}"`,
+						"-c", "bash -c 'exit 123'",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(result.exitCode).To(Equal(123))
+				Expect(result.stdout).To(ContainSubstring("FullyQualifiedName=ExampleTests.SomeTest")) // indicative of a retry
+			})
 		})
 
 		Context("when partitioning is configured but flags aren't provided", func() {

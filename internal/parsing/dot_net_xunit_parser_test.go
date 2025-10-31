@@ -108,8 +108,8 @@ line 3]]></output>
 						Duration: &duration,
 						Meta: map[string]any{
 							"assembly":          assembly,
-							"type":              &testType,
-							"method":            &testMethod,
+							"type":              testType,
+							"method":            testMethod,
 							"trait-some-trait":  "some-value",
 							"trait-other-trait": "other-value",
 						},
@@ -128,6 +128,8 @@ line 3]]></output>
 							<collection>
 								<test
 									name="NullAssertsTests+Null.Success"
+									type="NullAssertsTests+Null"
+									method="Success"
 									time="0.0063709"
 									result="Fail"
 								>
@@ -149,7 +151,8 @@ line 3]]></output>
 			message := "Some message here"
 			exception := "AssertionException"
 			assembly := "AssemblyName.dll"
-			var zeroString *string
+			testType := "NullAssertsTests+Null"
+			testMethod := "Success"
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					Scope: &assembly,
@@ -158,8 +161,8 @@ line 3]]></output>
 						Duration: &duration,
 						Meta: map[string]any{
 							"assembly": assembly,
-							"type":     zeroString,
-							"method":   zeroString,
+							"type":     testType,
+							"method":   testMethod,
 						},
 						Status: v1.NewFailedTestStatus(&message, &exception, []string{"Some trace", "other line"}),
 					},
@@ -175,6 +178,8 @@ line 3]]></output>
 							<collection>
 								<test
 									name="NullAssertsTests+Null.Success"
+									type="NullAssertsTests+Null"
+									method="Success"
 									time="0.0063709"
 									result="Fail"
 								>
@@ -189,7 +194,8 @@ line 3]]></output>
 
 			duration := time.Duration(6370900)
 			assembly := "AssemblyName.dll"
-			var zeroString *string
+			testType := "NullAssertsTests+Null"
+			testMethod := "Success"
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					Scope: &assembly,
@@ -198,8 +204,8 @@ line 3]]></output>
 						Duration: &duration,
 						Meta: map[string]any{
 							"assembly": assembly,
-							"type":     zeroString,
-							"method":   zeroString,
+							"type":     testType,
+							"method":   testMethod,
 						},
 						Status: v1.NewFailedTestStatus(nil, nil, nil),
 					},
@@ -215,6 +221,8 @@ line 3]]></output>
 							<collection>
 								<test
 									name="NullAssertsTests+Null.Success"
+									type="NullAssertsTests+Null"
+									method="Success"
 									time="0.0063709"
 									result="Skip"
 								>
@@ -231,7 +239,8 @@ line 3]]></output>
 			duration := time.Duration(6370900)
 			message := "Some reason here"
 			assembly := "AssemblyName.dll"
-			var zeroString *string
+			testType := "NullAssertsTests+Null"
+			testMethod := "Success"
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					Scope: &assembly,
@@ -240,8 +249,8 @@ line 3]]></output>
 						Duration: &duration,
 						Meta: map[string]any{
 							"assembly": assembly,
-							"type":     zeroString,
-							"method":   zeroString,
+							"type":     testType,
+							"method":   testMethod,
 						},
 						Status: v1.NewSkippedTestStatus(&message),
 					},
@@ -257,6 +266,8 @@ line 3]]></output>
 							<collection>
 								<test
 									name="NullAssertsTests+Null.Success"
+									type="NullAssertsTests+Null"
+									method="Success"
 									time="0.0063709"
 									result="NotRun"
 								>
@@ -271,7 +282,8 @@ line 3]]></output>
 
 			duration := time.Duration(6370900)
 			assembly := "AssemblyName.dll"
-			var zeroString *string
+			testType := "NullAssertsTests+Null"
+			testMethod := "Success"
 			Expect(testResults.Tests[0]).To(Equal(
 				v1.Test{
 					Scope: &assembly,
@@ -280,8 +292,8 @@ line 3]]></output>
 						Duration: &duration,
 						Meta: map[string]any{
 							"assembly": assembly,
-							"type":     zeroString,
-							"method":   zeroString,
+							"type":     testType,
+							"method":   testMethod,
 						},
 						Status: v1.NewSkippedTestStatus(nil),
 					},
@@ -297,6 +309,8 @@ line 3]]></output>
 							<collection>
 								<test
 									name="NullAssertsTests+Null.Success"
+									type="NullAssertsTests+Null"
+									method="Success"
 									time="0.0063709"
 									result="wat"
 								>

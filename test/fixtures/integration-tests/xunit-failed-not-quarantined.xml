@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies timestamp="08/01/2022 21:53:41">
+  <assembly name="test.xunit.assert.dll" environment="64-bit .NET Standard [collection-per-class, non-parallel]" test-framework="xUnit.net 2.4.3.0" run-date="2022-08-01" run-time="21:53:35" total="1" passed="0" failed="1" skipped="0" time="0.023" errors="0">
+    <collection total="1" passed="0" failed="1" skipped="0" name="Test collection for ExampleTests" time="0.018">
+      <test name="ExampleTests.SomeTest" type="ExampleTests" method="SomeTest" time="0.0063709" result="Fail">
+        <source-file>some/path/to/ExampleTests.cs</source-file>
+        <source-line>15</source-line>
+        <traits>
+          <trait name="Assembly" value="Trait" />
+        </traits>
+        <failure exception-type="Xunit.Sdk.EqualException">
+          <message><![CDATA[Assert.Equal() Failure
+Expected: 10
+Actual: 3]]></message>
+          <stack-trace><![CDATA[  at ExampleTests.SomeTest() in some/path/to/ExampleTests.cs:line 15]]></stack-trace>
+        </failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+
