@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"math"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -14,6 +15,11 @@ import (
 
 type RubyRSpecParser struct{}
 
+type RubyRspecScreenshot struct {
+	HTML  string `json:"html"`
+	Image string `json:"image"`
+}
+
 type RubyRSpecException struct {
 	Class     string   `json:"class"`
 	Message   string   `json:"message"`
@@ -21,15 +27,16 @@ type RubyRSpecException struct {
 }
 
 type RubyRSpecExample struct {
-	ID              *string             `json:"id"`
-	Description     string              `json:"description"`
-	FullDescription string              `json:"full_description"`
-	Status          string              `json:"status"`
-	FilePath        string              `json:"file_path"`
-	LineNumber      int                 `json:"line_number"`
-	RunTime         float64             `json:"run_time"`
-	PendingMessage  *string             `json:"pending_message"`
-	Exception       *RubyRSpecException `json:"exception"`
+	ID              *string              `json:"id"`
+	Description     string               `json:"description"`
+	FullDescription string               `json:"full_description"`
+	Status          string               `json:"status"`
+	FilePath        string               `json:"file_path"`
+	LineNumber      int                  `json:"line_number"`
+	RunTime         float64              `json:"run_time"`
+	PendingMessage  *string              `json:"pending_message"`
+	Exception       *RubyRSpecException  `json:"exception"`
+	Screenshot      *RubyRspecScreenshot `json:"screenshot"`
 }
 
 type RubyRSpecSummary struct {
@@ -87,6 +94,23 @@ func (p RubyRSpecParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 		if example.LineNumber != 0 {
 			meta["lineNumber"] = example.LineNumber
+		}
+
+		if example.Screenshot != nil {
+			screenshot := make(map[string]string)
+			if example.Screenshot.HTML != "" {
+				path, err := filepath.Abs(example.Screenshot.HTML)
+				if err != nil {
+					screenshot["html"] = path
+				}
+			}
+			if example.Screenshot.Image != "" {
+				path, err := filepath.Abs(example.Screenshot.Image)
+				if err != nil {
+					screenshot["image"] = path
+				}
+			}
+			meta["screenshot"] = screenshot
 		}
 
 		var status v1.TestStatus
