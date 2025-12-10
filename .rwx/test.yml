@@ -4,6 +4,7 @@ on:
       schedule: "35 2 * * 2" # At 02:35 every Tuesday
       init:
         commit-sha: ${{ event.git.sha }}
+        trigger: "cron"
 
 base:
   os: ubuntu 24.04
@@ -72,6 +73,7 @@ tasks:
       REPORT: true
       RWX_ACCESS_TOKEN_STAGING: ${{ secrets.RWX_ACCESS_TOKEN_STAGING }} # used from within the tests against staging
     run: ./captain run captain-cli-ginkgo
+    cache: ${{ init.trigger != "cron" }}
 
   - key: test-alternate-filename
     use: [build, ginkgo]
@@ -83,6 +85,7 @@ tasks:
     run: |
       mv .captain/config.yaml .captain/config.yml
       ./captain run captain-cli-ginkgo --command mage unittest
+    cache: ${{ init.trigger != "cron" }}
 
   - key: test-without-config
     use: [build, ginkgo]
@@ -98,3 +101,4 @@ tasks:
         --fail-on-upload-error true \
         --reporter github-step-summary \
         --test-results report.xml
+    cache: ${{ init.trigger != "cron" }}

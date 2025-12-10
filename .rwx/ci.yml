@@ -21,6 +21,7 @@ tasks:
     call: ${{ run.dir }}/test.yml
     init:
       commit-sha: ${{ init.commit-sha }}
+      trigger: ${{ init.trigger }}
 
   - key: buildkite-tests
     call: ${{ run.dir }}/buildkite.yml
