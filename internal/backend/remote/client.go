@@ -302,7 +302,7 @@ func (c Client) GetIdentityRecipes(ctx context.Context) ([]byte, error) {
 
 // TODO(TS): Remove this once we're no longer testing against versions that use captain.build
 func hostEndpointCompat(c Client, endpoint string) string {
-	remoteHost := c.ClientConfig.Host
+	remoteHost := c.Host
 
 	if !strings.Contains(remoteHost, "cloud") {
 		return endpoint

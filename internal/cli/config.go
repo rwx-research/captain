@@ -73,7 +73,7 @@ func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
 		)
 	}
 
-	if rc.MaxTestsToRetry != "" && !(rc.Retries > 0 || rc.FlakyRetries > 0) {
+	if rc.MaxTestsToRetry != "" && rc.Retries <= 0 && rc.FlakyRetries <= 0 {
 		log.Warn("The --max-tests-to-retry flag has no effect as no retries are otherwise configured.")
 	}
 

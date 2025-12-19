@@ -63,7 +63,7 @@ var _ = Describe("JSONSubstitution", func() {
 		)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(substitutions).To(HaveLen(1))
-		cupaloy.SnapshotT(GinkgoT(), mockFile.Builder.String())
+		cupaloy.SnapshotT(GinkgoT(), mockFile.String())
 	})
 
 	Describe("Example", func() {
@@ -151,7 +151,7 @@ var _ = Describe("JSONSubstitution", func() {
 			))
 
 			parsedTestResults := v1.TestResults{}
-			decoder := json.NewDecoder(strings.NewReader(mockFile.Builder.String()))
+			decoder := json.NewDecoder(strings.NewReader(mockFile.String()))
 			err := decoder.Decode(&parsedTestResults)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(parsedTestResults.Summary.Tests).To(Equal(3))
@@ -197,7 +197,7 @@ var _ = Describe("JSONSubstitution", func() {
 			))
 
 			parsedTestResults := v1.TestResults{}
-			decoder := json.NewDecoder(strings.NewReader(mockFile.Builder.String()))
+			decoder := json.NewDecoder(strings.NewReader(mockFile.String()))
 			err = decoder.Decode(&parsedTestResults)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(parsedTestResults.Summary.Tests).To(Equal(1))

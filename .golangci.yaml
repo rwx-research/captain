@@ -1,6 +1,7 @@
+version: "2"
 linters:
   # Only run explicitly enabled linters
-  disable-all: true
+  default: none
   # The list below includes pretty much all available linters from the "bugs",
   # "format", and "performance" categories. However, we don't use most of the
   # non-default "style", "comment", or "complexity" linters since they are often
@@ -14,23 +15,18 @@ linters:
     - contextcheck
     - decorder
     - durationcheck
+    - err113
     - errcheck
     - errchkjson
     - errname
     - errorlint
-    - err113
     - exhaustive
     - fatcontext
     - forbidigo
-    - gci
     - gocheckcompilerdirectives
     - gochecksumtype
     - gocritic
-    - gofmt
-    - gofumpt
-    - goimports
     - gosec
-    - gosimple
     - gosmopolitan
     - govet
     - ineffassign
@@ -53,37 +49,51 @@ linters:
     - staticcheck
     - testifylint
     - testpackage
-    - typecheck
     - unused
     - wrapcheck
     - zerologlint
-
-linters-settings:
-  forbidigo:
-    forbid:
-      - 'fmt\.Errorf' # Use internal errors package instead.
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/rwx-research)
-      - dot
-  wrapcheck:
-    ignoreSigRegexps:
-      - errors\.WithDecoration\(
-      - errors\.New.*Error\(
-
-issues:
-  exclude-rules:
-    # Some of the rules can be relaxed for test files
-    - path: _test\.go
-      linters:
-        - wrapcheck
-    # Comments sometimes _have_ to be longer than the limit (e.g. URLs)
-    - linters:
-        - lll
-      source: "^\\s*// "
-    # Allow dot-imports for gomega and ginkgo
-    - linters:
-        - revive
-      source: "gomega|ginkgo"
+  settings:
+    forbidigo:
+      forbid:
+        - pattern: fmt\.Errorf # Use internal errors package instead.
+    wrapcheck:
+      ignore-sig-regexps:
+        - errors\.WithDecoration\(
+        - errors\.New.*Error\(
+  exclusions:
+    # Presets provide v1-equivalent default exclusions
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - wrapcheck
+        path: _test\.go
+      # Test files with intentional ANSI escape sequences for testing
+      - linters:
+          - staticcheck
+        path: _test\.go
+        text: ST1018
+      # Comments sometimes have to be longer than the limit (e.g. URLs)
+      - linters:
+          - lll
+        source: '^\s*// '
+      # Allow dot-imports for gomega and ginkgo
+      - linters:
+          - revive
+        source: gomega|ginkgo
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/rwx-research)
+        - dot
