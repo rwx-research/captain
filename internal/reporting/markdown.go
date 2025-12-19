@@ -64,20 +64,19 @@ const (
 
 func WriteMarkdownSummary(file fs.File, testResults v1.TestResults, cfg Configuration) error {
 	markdown := new(strings.Builder)
-	if _, err := markdown.WriteString(fmt.Sprintf("# `%v` Summary\n\n", cfg.SuiteID)); err != nil {
+	if _, err := fmt.Fprintf(markdown, "# `%v` Summary\n\n", cfg.SuiteID); err != nil {
 		return errors.WithStack(err)
 	}
 
 	if cfg.CloudEnabled {
-		if _, err := markdown.WriteString(
-			fmt.Sprintf(
-				"[🔗 View in Captain Cloud](https://%v/captain/%v/test_suite_summaries/%v/%v/%v)\n\n",
-				cfg.CloudHost,
-				cfg.CloudOrganizationSlug,
-				cfg.SuiteID,
-				cfg.Provider.BranchName,
-				cfg.Provider.CommitSha,
-			),
+		if _, err := fmt.Fprintf(
+			markdown,
+			"[🔗 View in Captain Cloud](https://%v/captain/%v/test_suite_summaries/%v/%v/%v)\n\n",
+			cfg.CloudHost,
+			cfg.CloudOrganizationSlug,
+			cfg.SuiteID,
+			cfg.Provider.BranchName,
+			cfg.Provider.CommitSha,
 		); err != nil {
 			return errors.WithStack(err)
 		}
@@ -137,7 +136,7 @@ func writeMarkdownSummaryStatus(markdown *strings.Builder, value int, singular s
 		return nil
 	}
 
-	if _, err := markdown.WriteString(fmt.Sprintf(", %v %v", value, pluralize(value, singular, plural))); err != nil {
+	if _, err := fmt.Fprintf(markdown, ", %v %v", value, pluralize(value, singular, plural)); err != nil {
 		return errors.WithStack(err)
 	}
 
@@ -147,8 +146,8 @@ func writeMarkdownSummaryStatus(markdown *strings.Builder, value int, singular s
 func writeMarkdownSummaryLine(markdown *strings.Builder, testResults v1.TestResults) error {
 	summary := testResults.Summary
 
-	if _, err := markdown.WriteString(
-		fmt.Sprintf("%v %v", summary.Tests, pluralize(summary.Tests, "test", "tests")),
+	if _, err := fmt.Fprintf(
+		markdown, "%v %v", summary.Tests, pluralize(summary.Tests, "test", "tests"),
 	); err != nil {
 		return errors.WithStack(err)
 	}
@@ -349,7 +348,7 @@ func writeMarkdownSection(
 		return false, nil
 	}
 
-	if _, err := markdown.WriteString(fmt.Sprintf("\n## %v\n\n", section)); err != nil {
+	if _, err := fmt.Fprintf(markdown, "\n## %v\n\n", section); err != nil {
 		return false, errors.WithStack(err)
 	}
 

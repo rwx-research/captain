@@ -90,7 +90,7 @@ var _ = Describe("Update Captain", func() {
 				})
 
 				It("updates the local flakes file", func() {
-					fileContent := flakes.Builder.String()
+					fileContent := flakes.String()
 					Expect(fileContent).To(HavePrefix("- description:"), "The first line should be the first argument")
 					Expect(fileContent).To(ContainSubstring("description: my test"))
 					Expect(fileContent).To(ContainSubstring("file: test.js"))
@@ -109,7 +109,7 @@ var _ = Describe("Update Captain", func() {
 				})
 
 				It("updates the local quarantines file", func() {
-					fileContent := quarantines.Builder.String()
+					fileContent := quarantines.String()
 					Expect(fileContent).To(HavePrefix("- project:"), "The first line should be the first argument")
 					Expect(fileContent).To(ContainSubstring("project: foobar"))
 					Expect(fileContent).To(ContainSubstring("description: another test"))

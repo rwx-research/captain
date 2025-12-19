@@ -65,7 +65,7 @@ var _ = Describe("Text Report", func() {
 
 	It("produces a readable summary", func() {
 		Expect(reporting.WriteTextSummary(mockFile, testResults, reporting.Configuration{})).To(Succeed())
-		summary := mockFile.Builder.String()
+		summary := mockFile.String()
 
 		Expect(summary).To(ContainSubstring("Failed (1):"))
 		Expect(summary).To(ContainSubstring("Timed Out (1):"))

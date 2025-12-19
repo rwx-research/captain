@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 
 	captain "github.com/rwx-research/captain-cli/cmd/captain"
-	main "github.com/rwx-research/captain-cli/cmd/captain"
 	"github.com/rwx-research/captain-cli/test/helpers"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -15,10 +14,10 @@ import (
 
 var _ = Describe("InitConfig", func() {
 	var cmd *cobra.Command
-	var cliArgs main.CliArgs
+	var cliArgs captain.CliArgs
 
 	BeforeEach(func() {
-		cliArgs = main.CliArgs{}
+		cliArgs = captain.CliArgs{}
 		cmd = &cobra.Command{
 			Use:                "mycli",
 			Run:                func(_ *cobra.Command, _ []string) {}, // do nothing

@@ -82,7 +82,7 @@ func (p JavaScriptCypressParser) Parse(data io.Reader) (*v1.TestResults, error) 
 		return nil, errors.NewInputError("The test suites in the XML do not appear to match Cypress XML")
 	}
 	firstFile := testResults.TestSuites[0].File
-	if !(strings.Contains(*firstFile, ".cy.") || strings.Contains(*firstFile, "cypress/")) {
+	if !strings.Contains(*firstFile, ".cy.") && !strings.Contains(*firstFile, "cypress/") {
 		return nil, errors.NewInputError("The file does not look like a Cypress file: %q", *firstFile)
 	}
 
@@ -92,7 +92,7 @@ func (p JavaScriptCypressParser) Parse(data io.Reader) (*v1.TestResults, error) 
 		if testSuite.File != nil {
 			currentFile = testSuite.File
 
-			if !(strings.Contains(*currentFile, ".cy.") || strings.Contains(*currentFile, "cypress/")) {
+			if !strings.Contains(*currentFile, ".cy.") && !strings.Contains(*currentFile, "cypress/") {
 				return nil, errors.NewInputError("The file does not look like a Cypress file: %q", *currentFile)
 			}
 		}

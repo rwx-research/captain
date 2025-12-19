@@ -143,7 +143,7 @@ var _ = Describe("Markdown Report", func() {
 			},
 		}
 		Expect(reporting.WriteMarkdownSummary(mockFile, testResults, cfg)).To(Succeed())
-		summary := mockFile.Builder.String()
+		summary := mockFile.String()
 		cupaloy.SnapshotT(GinkgoT(), summary)
 	})
 
@@ -156,7 +156,7 @@ var _ = Describe("Markdown Report", func() {
 			Provider:             providers.Provider{},
 		}
 		Expect(reporting.WriteMarkdownSummary(mockFile, testResults, cfg)).To(Succeed())
-		summary := mockFile.Builder.String()
+		summary := mockFile.String()
 		cupaloy.SnapshotT(GinkgoT(), summary)
 	})
 
@@ -168,7 +168,7 @@ var _ = Describe("Markdown Report", func() {
 			Provider:     providers.Provider{},
 		}
 		Expect(reporting.WriteMarkdownSummary(mockFile, testResults, cfg)).To(Succeed())
-		summary := mockFile.Builder.String()
+		summary := mockFile.String()
 		cupaloy.SnapshotT(GinkgoT(), summary)
 	})
 
@@ -203,7 +203,7 @@ var _ = Describe("Markdown Report", func() {
 				cfg,
 			),
 		).To(Succeed())
-		summary := mockFile.Builder.String()
+		summary := mockFile.String()
 		cupaloy.SnapshotT(GinkgoT(), summary)
 
 		Expect(len(summary) < 1000000).To(Equal(true))

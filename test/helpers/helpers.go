@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -13,7 +14,7 @@ func ReadEnvFromFile(fileName string) map[string]string {
 	// use shell to parse the env file to support quotations, comments, etc
 
 	// #nosec G204 -- test where we we control the filename
-	cmd := exec.Command("env", "-i", "bash", "-c", fmt.Sprintf("source %s && env", fileName))
+	cmd := exec.CommandContext(context.Background(), "env", "-i", "bash", "-c", fmt.Sprintf("source %s && env", fileName))
 	output, err := cmd.Output()
 
 	// fmt.Fprintf(GinkgoWriter, "ENV OUTPUT: %s", string(output))

@@ -153,11 +153,7 @@ func (p PHPUnitParser) testsWithinSuite(suite PHPUnitTestSuite) ([]v1.Test, erro
 // returns the determined failed status and whether it was risky or not
 func (p PHPUnitParser) newFailedTestStatus(failure PHPUnitFailure) (v1.TestStatus, bool) {
 	failureException := failure.Type
-	risky := false
-
-	if failureException != nil && *failureException == "PHPUnit\\Framework\\RiskyTestError" {
-		risky = true
-	}
+	risky := failureException != nil && *failureException == "PHPUnit\\Framework\\RiskyTestError"
 
 	var lines []string
 	if failure.Contents != nil {
