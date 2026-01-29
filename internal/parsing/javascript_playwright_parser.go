@@ -193,168 +193,160 @@ func (p JavaScriptPlaywrightParser) testsWithinSuite(
 
 	tests := make([]v1.Test, 0)
 	for _, spec := range suite.Specs {
-		if len(spec.Tests) != 1 {
-			// https://github.com/microsoft/playwright/blob/e7088cc68573db2d7d83e2a184da16ba3f15a264/packages/playwright-test/src/reporters/json.ts#L161
-			return nil, errors.NewInputError(
-				"Playwright specs must have exactly one test. Got: %v",
-				spec.Tests,
-			)
-		}
+		for _, test := range spec.Tests {
+			lineage := make([]string, 0)
+			for _, parent := range nestedParents {
+				// We differentiate by file already in v1.Test.Location.File
+				if parent.File == parent.Title {
+					continue
+				}
 
-		test := spec.Tests[0]
+				lineage = append(lineage, parent.Title)
+			}
+			lineage = append(lineage, spec.Title)
 
-		lineage := make([]string, 0)
-		for _, parent := range nestedParents {
-			// We differentiate by file already in v1.Test.Location.File
-			if parent.File == parent.Title {
-				continue
+			line := spec.Line
+			column := spec.Column
+			location := v1.Location{
+				File:   spec.File,
+				Line:   &line,
+				Column: &column,
 			}
 
-			lineage = append(lineage, parent.Title)
-		}
-		lineage = append(lineage, spec.Title)
-
-		line := spec.Line
-		column := spec.Column
-		location := v1.Location{
-			File:   spec.File,
-			Line:   &line,
-			Column: &column,
-		}
-
-		project := test.ProjectName
-		attempt := v1.TestAttempt{
-			Status: v1.NewSkippedTestStatus(nil),
-			Meta: map[string]any{
-				"annotations": test.Annotations,
-				"project":     project,
-				"tags":        spec.Tags,
-			},
-		}
-		pastAttempts := make([]v1.TestAttempt, 0)
-		resultCount := len(test.Results)
-		for i, result := range test.Results {
-			duration := time.Duration(result.Duration * int(time.Millisecond))
-			startedAt := result.StartTime
-
-			stderrLines := make([]string, len(result.Stderr))
-			for i, entry := range result.Stderr {
-				if entry.Buffer != nil {
-					stderrLines[i] = *entry.Buffer
-				}
-				if entry.Text != nil {
-					stderrLines[i] = *entry.Text
-				}
+			project := test.ProjectName
+			attempt := v1.TestAttempt{
+				Status: v1.NewSkippedTestStatus(nil),
+				Meta: map[string]any{
+					"annotations": test.Annotations,
+					"project":     project,
+					"tags":        spec.Tags,
+				},
 			}
-			stderr := strings.Join(stderrLines, "")
+			pastAttempts := make([]v1.TestAttempt, 0)
+			resultCount := len(test.Results)
+			for i, result := range test.Results {
+				duration := time.Duration(result.Duration * int(time.Millisecond))
+				startedAt := result.StartTime
 
-			stdoutLines := make([]string, len(result.Stdout))
-			for i, entry := range result.Stdout {
-				if entry.Buffer != nil {
-					stdoutLines[i] = *entry.Buffer
+				stderrLines := make([]string, len(result.Stderr))
+				for i, entry := range result.Stderr {
+					if entry.Buffer != nil {
+						stderrLines[i] = *entry.Buffer
+					}
+					if entry.Text != nil {
+						stderrLines[i] = *entry.Text
+					}
 				}
-				if entry.Text != nil {
-					stdoutLines[i] = *entry.Text
+				stderr := strings.Join(stderrLines, "")
+
+				stdoutLines := make([]string, len(result.Stdout))
+				for i, entry := range result.Stdout {
+					if entry.Buffer != nil {
+						stdoutLines[i] = *entry.Buffer
+					}
+					if entry.Text != nil {
+						stdoutLines[i] = *entry.Text
+					}
 				}
-			}
-			stdout := strings.Join(stdoutLines, "")
+				stdout := strings.Join(stdoutLines, "")
 
-			var status v1.TestStatus
-			switch result.Status {
-			case "passed":
-				status = v1.NewSuccessfulTestStatus()
-			case "failed":
-				var message *string
-				var backtrace []string
+				var status v1.TestStatus
+				switch result.Status {
+				case "passed":
+					status = v1.NewSuccessfulTestStatus()
+				case "failed":
+					var message *string
+					var backtrace []string
 
-				if result.Error != nil {
-					message = result.Error.Message
+					if result.Error != nil {
+						message = result.Error.Message
 
-					if result.Error.Stack != nil {
-						stackParts := javaScriptPlaywrightBacktraceSeparatorRegexp.Split(*result.Error.Stack, -1)[1:]
-						for _, part := range stackParts {
-							backtrace = append(backtrace, fmt.Sprintf("at%s", part))
+						if result.Error.Stack != nil {
+							stackParts := javaScriptPlaywrightBacktraceSeparatorRegexp.Split(*result.Error.Stack, -1)[1:]
+							for _, part := range stackParts {
+								backtrace = append(backtrace, fmt.Sprintf("at%s", part))
+							}
 						}
 					}
-				}
 
-				status = v1.NewFailedTestStatus(message, nil, backtrace)
-			case "timedOut":
-				var message *string
-				var backtrace []string
+					status = v1.NewFailedTestStatus(message, nil, backtrace)
+				case "timedOut":
+					var message *string
+					var backtrace []string
 
-				if result.Error != nil {
-					message = result.Error.Message
+					if result.Error != nil {
+						message = result.Error.Message
 
-					if result.Error.Stack != nil {
-						stackParts := javaScriptPlaywrightBacktraceSeparatorRegexp.Split(*result.Error.Stack, -1)[1:]
-						for _, part := range stackParts {
-							backtrace = append(backtrace, fmt.Sprintf("at%s", part))
+						if result.Error.Stack != nil {
+							stackParts := javaScriptPlaywrightBacktraceSeparatorRegexp.Split(*result.Error.Stack, -1)[1:]
+							for _, part := range stackParts {
+								backtrace = append(backtrace, fmt.Sprintf("at%s", part))
+							}
 						}
 					}
+
+					status = v1.NewTimedOutTestStatus(message, nil, backtrace)
+				case "skipped":
+					status = v1.NewSkippedTestStatus(nil)
+				case "interrupted":
+					status = v1.NewCanceledTestStatus()
+				default:
+					return nil, errors.NewInputError("Unexpected test results status: %v", result.Status)
 				}
 
-				status = v1.NewTimedOutTestStatus(message, nil, backtrace)
-			case "skipped":
-				status = v1.NewSkippedTestStatus(nil)
-			case "interrupted":
-				status = v1.NewCanceledTestStatus()
-			default:
-				return nil, errors.NewInputError("Unexpected test results status: %v", result.Status)
-			}
+				meta := map[string]any{
+					"annotations": test.Annotations,
+					"project":     test.ProjectName,
+					"tags":        spec.Tags,
+				}
 
-			meta := map[string]any{
-				"annotations": test.Annotations,
-				"project":     test.ProjectName,
-				"tags":        spec.Tags,
-			}
+				if len(result.Attachments) > 0 {
+					attachments := make([]JavaScriptPlaywrightMetaFileAttachment, len(result.Attachments))
 
-			if len(result.Attachments) > 0 {
-				attachments := make([]JavaScriptPlaywrightMetaFileAttachment, len(result.Attachments))
-
-				for j, attachment := range result.Attachments {
-					attachments[j] = JavaScriptPlaywrightMetaFileAttachment{
-						Name: attachment.Name,
-						Path: attachment.Path,
+					for j, attachment := range result.Attachments {
+						attachments[j] = JavaScriptPlaywrightMetaFileAttachment{
+							Name: attachment.Name,
+							Path: attachment.Path,
+						}
 					}
+
+					meta["fileAttachments"] = attachments
 				}
 
-				meta["fileAttachments"] = attachments
+				workingAttempt := v1.TestAttempt{
+					Duration:  &duration,
+					Meta:      meta,
+					Status:    status,
+					Stderr:    &stderr,
+					Stdout:    &stdout,
+					StartedAt: &startedAt,
+				}
+
+				if i == resultCount-1 {
+					attempt = workingAttempt
+				} else {
+					pastAttempts = append(pastAttempts, workingAttempt)
+				}
 			}
 
-			workingAttempt := v1.TestAttempt{
-				Duration:  &duration,
-				Meta:      meta,
-				Status:    status,
-				Stderr:    &stderr,
-				Stdout:    &stdout,
-				StartedAt: &startedAt,
+			if test.ExpectedStatus == "failed" {
+				if attempt.Status.Kind == v1.TestStatusFailed {
+					attempt.Status = v1.NewSuccessfulTestStatus()
+				} else {
+					message := "Expected the test to fail, but it did not"
+					attempt.Status = v1.NewFailedTestStatus(&message, nil, nil)
+				}
 			}
 
-			if i == resultCount-1 {
-				attempt = workingAttempt
-			} else {
-				pastAttempts = append(pastAttempts, workingAttempt)
-			}
+			tests = append(tests, v1.Test{
+				Scope:        &project,
+				Name:         strings.Join(lineage, " "),
+				Lineage:      lineage,
+				Location:     &location,
+				Attempt:      attempt,
+				PastAttempts: pastAttempts,
+			})
 		}
-
-		if test.ExpectedStatus == "failed" {
-			if attempt.Status.Kind == v1.TestStatusFailed {
-				attempt.Status = v1.NewSuccessfulTestStatus()
-			} else {
-				message := "Expected the test to fail, but it did not"
-				attempt.Status = v1.NewFailedTestStatus(&message, nil, nil)
-			}
-		}
-
-		tests = append(tests, v1.Test{
-			Scope:        &project,
-			Name:         strings.Join(lineage, " "),
-			Lineage:      lineage,
-			Location:     &location,
-			Attempt:      attempt,
-			PastAttempts: pastAttempts,
-		})
 	}
 
 	tests = append(tests, nestedTests...)

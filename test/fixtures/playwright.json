@@ -19,9 +19,7 @@
         "name": "chromium",
         "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
         "testIgnore": [],
-        "testMatch": [
-          "**/?(*.)@(spec|test).*"
-        ],
+        "testMatch": ["**/?(*.)@(spec|test).*"],
         "timeout": 5000
       },
       {
@@ -32,21 +30,13 @@
         "name": "firefox",
         "testDir": "/Users/kylekthompson/src/captain-examples/playwright/tests",
         "testIgnore": [],
-        "testMatch": [
-          "**/?(*.)@(spec|test).*"
-        ],
+        "testMatch": ["**/?(*.)@(spec|test).*"],
         "timeout": 5000
       }
     ],
     "reporter": [
-      [
-        "html",
-        null
-      ],
-      [
-        "list",
-        null
-      ],
+      ["html", null],
+      ["list", null],
       [
         "json",
         {
@@ -102,6 +92,27 @@
                       "stderr": [],
                       "retry": 0,
                       "startTime": "2022-12-15T20:31:02.753Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 5000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 28,
+                      "status": "passed",
+                      "duration": 928,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2022-12-15T20:31:10.426Z",
                       "attachments": []
                     }
                   ],
@@ -175,38 +186,6 @@
               "id": "849da1cee0c412ce5534-2531b32b950949c93e0b",
               "file": "demo-todo-app.spec.ts",
               "line": 53,
-              "column": 3
-            },
-            {
-              "title": "should allow me to add todo items",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 5000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [
-                    {
-                      "workerIndex": 28,
-                      "status": "passed",
-                      "duration": 928,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2022-12-15T20:31:10.426Z",
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "849da1cee0c412ce5534-d0e081deb82d930532c8",
-              "file": "demo-todo-app.spec.ts",
-              "line": 14,
               "column": 3
             },
             {

@@ -50,6 +50,33 @@
       }
     },
     {
+      "name": "New Todo should allow me to add todo items",
+      "scope": "firefox",
+      "lineage": [
+        "New Todo",
+        "should allow me to add todo items"
+      ],
+      "location": {
+        "file": "demo-todo-app.spec.ts",
+        "line": 14,
+        "column": 3
+      },
+      "attempt": {
+        "durationInNanoseconds": 928000000,
+        "meta": {
+          "annotations": [],
+          "project": "firefox",
+          "tags": []
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "stderr": "",
+        "stdout": "",
+        "startedAt": "2022-12-15T20:31:10.426Z"
+      }
+    },
+    {
       "name": "New Todo should clear text input field when an item is added",
       "scope": "chromium",
       "lineage": [
@@ -101,33 +128,6 @@
         "stderr": "",
         "stdout": "",
         "startedAt": "2022-12-15T20:31:02.756Z"
-      }
-    },
-    {
-      "name": "New Todo should allow me to add todo items",
-      "scope": "firefox",
-      "lineage": [
-        "New Todo",
-        "should allow me to add todo items"
-      ],
-      "location": {
-        "file": "demo-todo-app.spec.ts",
-        "line": 14,
-        "column": 3
-      },
-      "attempt": {
-        "durationInNanoseconds": 928000000,
-        "meta": {
-          "annotations": [],
-          "project": "firefox",
-          "tags": []
-        },
-        "status": {
-          "kind": "successful"
-        },
-        "stderr": "",
-        "stdout": "",
-        "startedAt": "2022-12-15T20:31:10.426Z"
       }
     },
     {
