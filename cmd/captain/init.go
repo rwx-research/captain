@@ -46,6 +46,7 @@ var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]pars
 	v1.JavaScriptMochaFramework:      {parsing.JavaScriptMochaParser{}},
 	v1.JavaScriptPlaywrightFramework: {parsing.JavaScriptPlaywrightParser{}},
 	v1.JavaScriptVitestFramework:     {parsing.JavaScriptVitestParser{}},
+	v1.JavaScriptBunFramework:        {parsing.JUnitTestsuitesParser{}, parsing.JUnitTestsuiteParser{}},
 	v1.PHPUnitFramework:              {parsing.PHPUnitParser{}},
 	v1.PythonPytestFramework:         {parsing.PythonPytestParser{}},
 	v1.PythonUnitTestFramework:       {parsing.PythonUnitTestParser{}},
