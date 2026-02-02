@@ -50,15 +50,16 @@ type JUnitProperty struct {
 }
 
 type JUnitTestSuite struct {
-	Errors     int             `xml:"errors,attr"`
-	Failures   int             `xml:"failures,attr"`
-	Name       string          `xml:"name,attr"`
-	Skipped    int             `xml:"skipped,attr"`
-	TestCases  []JUnitTestCase `xml:"testcase"`
-	Properties []JUnitProperty `xml:"properties>property"`
-	Tests      *int            `xml:"tests,attr"`
-	Time       float64         `xml:"time,attr,omitempty"`
-	Timestamp  string          `xml:"timestamp,attr,omitempty"`
+	Errors     int              `xml:"errors,attr"`
+	Failures   int              `xml:"failures,attr"`
+	Name       string           `xml:"name,attr"`
+	Skipped    int              `xml:"skipped,attr"`
+	TestCases  []JUnitTestCase  `xml:"testcase"`
+	TestSuites []JUnitTestSuite `xml:"testsuite"`
+	Properties []JUnitProperty  `xml:"properties>property"`
+	Tests      *int             `xml:"tests,attr"`
+	Time       float64          `xml:"time,attr,omitempty"`
+	Timestamp  string           `xml:"timestamp,attr,omitempty"`
 
 	// out of spec, but maybe interesting
 	File *string `xml:"file,attr"`
@@ -72,6 +73,16 @@ type JUnitTestResults struct {
 }
 
 var jUnitNewlineRegexp = regexp.MustCompile(`\r?\n`)
+
+// collectTestCases recursively collects all testcases from a testsuite and its nested testsuites
+func collectTestCases(suite JUnitTestSuite) []JUnitTestCase {
+	testCases := make([]JUnitTestCase, 0, len(suite.TestCases))
+	testCases = append(testCases, suite.TestCases...)
+	for _, nestedSuite := range suite.TestSuites {
+		testCases = append(testCases, collectTestCases(nestedSuite)...)
+	}
+	return testCases
+}
 
 func (p JUnitTestsuitesParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	var testResults JUnitTestResults
@@ -90,7 +101,7 @@ func (p JUnitTestsuitesParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			properties[property.Name] = property.Value
 		}
 
-		for _, testCase := range testSuite.TestCases {
+		for _, testCase := range collectTestCases(testSuite) {
 			// The a lot of reporter libraries allow switching these
 			// We want the one that has the entire description (contains the short description)
 			// e.g. classname="Some Tests with some context it passes" name="it passes"

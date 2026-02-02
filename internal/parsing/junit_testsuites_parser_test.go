@@ -331,5 +331,31 @@ var _ = Describe("JUnitTestsuitesParser", func() {
 			Expect(testResults).NotTo(BeNil())
 			Expect(testResults.Tests[0].Name).To(Equal("prefix some test name"))
 		})
+
+		It("parses nested testsuites (bun test format)", func() {
+			testResults, err := parsing.JUnitTestsuitesParser{}.Parse(strings.NewReader(
+				`
+					<testsuites name="bun test" tests="3">
+						<testsuite name="test.spec.ts" file="test.spec.ts" tests="3">
+							<testsuite name="Suite" file="test.spec.ts" line="1" tests="3">
+								<testsuite name="#method" file="test.spec.ts" line="2" tests="3">
+									<testcase name="works" classname="#method > Suite" time="0.1" />
+									<testsuite name="nested" file="test.spec.ts" line="4" tests="2">
+										<testcase name="test 1" classname="nested > #method > Suite" time="0.2" />
+										<testcase name="test 2" classname="nested > #method > Suite" time="0.3" />
+									</testsuite>
+								</testsuite>
+							</testsuite>
+						</testsuite>
+					</testsuites>
+				`,
+			))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(testResults).NotTo(BeNil())
+			Expect(testResults.Tests).To(HaveLen(3))
+			Expect(testResults.Tests[0].Name).To(Equal("#method > Suite works"))
+			Expect(testResults.Tests[1].Name).To(Equal("nested > #method > Suite test 1"))
+			Expect(testResults.Tests[2].Name).To(Equal("nested > #method > Suite test 2"))
+		})
 	})
 })
