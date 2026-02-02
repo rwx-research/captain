@@ -1,4 +1,4 @@
-golang 1.25.5
+golang 1.25.6
 mage 1.14.0
 golangci-lint 2.4.0
 ginkgo 2.19.0
