@@ -26,6 +26,7 @@ const (
 	FrameworkKindRSpec      FrameworkKind = "RSpec"
 	FrameworkKindxUnit      FrameworkKind = "xUnit"
 	FrameworkKindVitest     FrameworkKind = "Vitest"
+	FrameworkKindBun        FrameworkKind = "Bun"
 
 	FrameworkLanguageDotNet     FrameworkLanguage = ".NET"
 	FrameworkLanguageElixir     FrameworkLanguage = "Elixir"
@@ -86,6 +87,9 @@ var (
 	)
 	JavaScriptVitestFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindVitest},
+	)
+	JavaScriptBunFramework = registerFramework(
+		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindBun},
 	)
 	PHPUnitFramework = registerFramework(
 		Framework{Language: FrameworkLanguagePHP, Kind: FrameworkKindPHPUnit},
