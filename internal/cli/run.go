@@ -274,6 +274,16 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 		newlyExecutedTestResults.Meta["captain_suite_id"] = cfg.SuiteID
 	}
 
+	if newlyExecutedTestResults != nil {
+		otelSpanAttributes := rwxOtelSpanAttributes(
+			*newlyExecutedTestResults,
+			cfg.SuiteID,
+		)
+		if writeErr := mint.WriteOtelSpanAttributesJSON(s.FileSystem, s.Log, otelSpanAttributes); writeErr != nil {
+			s.Log.Warnf("Unable to write RWX OTEL span attributes: %s", writeErr.Error())
+		}
+	}
+
 	var uploadResults []backend.TestResultsUploadResult
 	var uploadError error
 	var headerPrinted bool
@@ -998,4 +1008,38 @@ func pluralize(count int, singular string, plural string) string {
 	}
 
 	return plural
+}
+
+func rwxOtelSpanAttributes(
+	testResults v1.TestResults,
+	suiteID string,
+) map[string]any {
+	quarantinedFailures := 0
+	actionableFailures := 0
+	for _, test := range testResults.Tests {
+		if test.Attempt.Status.Kind == v1.TestStatusQuarantined {
+			quarantinedFailures++
+		} else if test.Attempt.Status.ImpliesFailure() {
+			actionableFailures++
+		}
+	}
+
+	return map[string]any{
+		"rwx.tests.suite-id":             suiteID,
+		"rwx.tests.summary.status":       string(testResults.Summary.Status),
+		"rwx.tests.summary.tests":        testResults.Summary.Tests,
+		"rwx.tests.summary.flaky":        testResults.Summary.Flaky,
+		"rwx.tests.summary.other-errors": testResults.Summary.OtherErrors,
+		"rwx.tests.summary.retries":      testResults.Summary.Retries,
+		"rwx.tests.summary.canceled":     testResults.Summary.Canceled,
+		"rwx.tests.summary.failed":       testResults.Summary.Failed,
+		"rwx.tests.summary.pended":       testResults.Summary.Pended,
+		"rwx.tests.summary.quarantined":  testResults.Summary.Quarantined,
+		"rwx.tests.summary.skipped":      testResults.Summary.Skipped,
+		"rwx.tests.summary.successful":   testResults.Summary.Successful,
+		"rwx.tests.summary.timed-out":    testResults.Summary.TimedOut,
+		"rwx.tests.summary.todo":         testResults.Summary.Todo,
+		"rwx.tests.failures.quarantined": quarantinedFailures,
+		"rwx.tests.failures.actionable":  actionableFailures,
+	}
 }

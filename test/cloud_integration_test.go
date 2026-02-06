@@ -5,6 +5,7 @@ package integration_test
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -21,6 +22,24 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 			env["CAPTAIN_HOST"] = "staging.cloud.rwx.com"
 			env["RWX_ACCESS_TOKEN"] = os.Getenv("RWX_ACCESS_TOKEN_STAGING")
 			return env
+		}
+
+		withoutKnownRWXOtelSpanWarnings := func(stderr string) string {
+			lines := strings.Split(stderr, "\n")
+			filteredLines := make([]string, 0, len(lines))
+
+			for _, line := range lines {
+				if strings.Contains(line, "Skipping RWX OTEL span attributes because they were already written:") {
+					continue
+				}
+				filteredLines = append(filteredLines, line)
+			}
+
+			return strings.TrimSpace(strings.Join(filteredLines, "\n"))
+		}
+
+		expectCleanStderr := func(stderr string) {
+			Expect(withoutKnownRWXOtelSpanWarnings(stderr)).To(BeEmpty())
 		}
 
 		Describe("captain run", func() {
@@ -41,7 +60,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
+						expectCleanStderr(result.stderr)
 					})
 					Expect(result.exitCode).To(Equal(0))
 				})
@@ -162,7 +181,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
+						expectCleanStderr(result.stderr)
 					})
 					Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'"))
 					Expect(result.exitCode).To(Equal(0))
@@ -258,7 +277,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						})
 
 						withoutBackwardsCompatibility(func() {
-							Expect(result.stderr).To(BeEmpty())
+							expectCleanStderr(result.stderr)
 						})
 						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
 						Expect(result.exitCode).To(Equal(0))
@@ -283,7 +302,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						})
 
 						withoutBackwardsCompatibility(func() {
-							Expect(result.stderr).To(BeEmpty())
+							expectCleanStderr(result.stderr)
 						})
 						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
 						Expect(result.exitCode).To(Equal(0))
@@ -308,7 +327,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				withoutBackwardsCompatibility(func() {
-					Expect(result.stderr).To(BeEmpty())
+					expectCleanStderr(result.stderr)
 				})
 				Expect(result.exitCode).To(Equal(0))
 			})
@@ -405,7 +424,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
+						expectCleanStderr(result.stderr)
 					})
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
 					Expect(result.exitCode).To(Equal(0))
@@ -424,7 +443,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						Expect(result.stderr).To(BeEmpty())
+						expectCleanStderr(result.stderr)
 					})
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
 					Expect(result.exitCode).To(Equal(0))
@@ -444,7 +463,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 				})
 
 				withoutBackwardsCompatibility(func() {
-					Expect(result.stderr).To(BeEmpty())
+					expectCleanStderr(result.stderr)
 					Expect(result.stdout).To(BeEmpty())
 				})
 				Expect(result.exitCode).To(Equal(0))
