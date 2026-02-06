@@ -341,6 +341,161 @@ var _ = Describe("Run", func() {
 				)))
 			})
 		})
+
+		Context("RWX OTEL span attributes", func() {
+			var (
+				otelSpanPath string
+				createdFiles map[string]*strings.Builder
+				existingFile map[string]bool
+			)
+
+			BeforeEach(func() {
+				otelSpanPath = "/tmp/rwx-otel-span"
+				Expect(os.Setenv("RWX_OTEL_SPAN", otelSpanPath)).To(Succeed())
+				DeferCleanup(func() {
+					Expect(os.Unsetenv("RWX_OTEL_SPAN")).To(Succeed())
+				})
+
+				firstTestDescription := fmt.Sprintf("first-successful-description-%d", GinkgoRandomSeed()+1)
+				secondTestDescription := fmt.Sprintf("second-failed-description-%d", GinkgoRandomSeed()+2)
+				thirdTestDescription := fmt.Sprintf("third-timeout-description-%d", GinkgoRandomSeed()+3)
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					return &v1.TestResults{
+						Tests: []v1.Test{
+							{
+								Name:     firstTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: v1.NewSuccessfulTestStatus(),
+								},
+							},
+							{
+								Name:     secondTestDescription,
+								Location: &v1.Location{File: "/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: v1.NewFailedTestStatus(nil, nil, nil),
+								},
+							},
+							{
+								Name:     thirdTestDescription,
+								Location: &v1.Location{File: "/other/path/to/file.test"},
+								Attempt: v1.TestAttempt{
+									Status: v1.NewTimedOutTestStatus(nil, nil, nil),
+								},
+							},
+						},
+					}, nil
+				}
+
+				service.API.(*mocks.API).MockGetQuarantinedTests = func(
+					_ context.Context,
+					_ string,
+				) ([]backend.Test, error) {
+					return []backend.Test{
+						{
+							CompositeIdentifier: fmt.Sprintf("%v -captain- %v", thirdTestDescription, "/other/path/to/file.test"),
+							IdentityComponents:  []string{"description", "file"},
+							StrictIdentity:      true,
+						},
+					}, nil
+				}
+
+				createdFiles = make(map[string]*strings.Builder)
+				existingFile = make(map[string]bool)
+
+				service.FileSystem.(*mocks.FileSystem).MockStat = func(name string) (os.FileInfo, error) {
+					if existingFile[name] {
+						return mocks.FileInfo{}, nil
+					}
+
+					return nil, os.ErrNotExist
+				}
+				service.FileSystem.(*mocks.FileSystem).MockCreate = func(path string) (fs.File, error) {
+					builder := new(strings.Builder)
+					createdFiles[path] = builder
+
+					return &mocks.File{
+						Builder: builder,
+						Reader:  strings.NewReader(""),
+					}, nil
+				}
+			})
+
+			It("writes final span attributes in RWX OTEL span path", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.suite-id.json", otelSpanPath)].String()).To(Equal(`"test"`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.status.json", otelSpanPath)].String()).To(Equal(`"failed"`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.tests.json", otelSpanPath)].String()).To(Equal(`3`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.flaky.json", otelSpanPath)].String()).To(Equal(`0`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.other-errors.json", otelSpanPath)].String()).To(Equal(`0`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.retries.json", otelSpanPath)].String()).To(Equal(`0`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.canceled.json", otelSpanPath)].String()).To(Equal(`0`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.failed.json", otelSpanPath)].String()).To(Equal(`1`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.pended.json", otelSpanPath)].String()).To(Equal(`0`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.quarantined.json", otelSpanPath)].String()).To(Equal(`1`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.skipped.json", otelSpanPath)].String()).To(Equal(`0`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.successful.json", otelSpanPath)].String()).To(Equal(`1`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.timed-out.json", otelSpanPath)].String()).To(Equal(`0`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.summary.todo.json", otelSpanPath)].String()).To(Equal(`0`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.failures.quarantined.json", otelSpanPath)].String()).To(Equal(`1`))
+				Expect(createdFiles[fmt.Sprintf("%s/rwx.tests.failures.actionable.json", otelSpanPath)].String()).To(Equal(`1`))
+			})
+
+			Context("when an attribute file already exists", func() {
+				BeforeEach(func() {
+					existingFile[fmt.Sprintf("%s/rwx.tests.suite-id.json", otelSpanPath)] = true
+				})
+
+				It("warns and skips writing all attributes", func() {
+					Expect(err).NotTo(HaveOccurred())
+					Expect(createdFiles).NotTo(HaveKey(fmt.Sprintf("%s/rwx.tests.summary.tests.json", otelSpanPath)))
+					Expect(createdFiles).NotTo(HaveKey(fmt.Sprintf("%s/rwx.tests.summary.flaky.json", otelSpanPath)))
+
+					logMessages := make([]string, 0)
+					for _, log := range recordedLogs.All() {
+						logMessages = append(logMessages, log.Message)
+					}
+
+					Expect(logMessages).To(ContainElement(
+						ContainSubstring("Skipping RWX OTEL span attributes because they were already written"),
+					))
+				})
+			})
+
+			Context("when writing attributes fails", func() {
+				BeforeEach(func() {
+					service.FileSystem.(*mocks.FileSystem).MockCreate = func(path string) (fs.File, error) {
+						if strings.HasPrefix(path, otelSpanPath+"/") {
+							return nil, iofs.ErrPermission
+						}
+
+						builder := new(strings.Builder)
+						createdFiles[path] = builder
+
+						return &mocks.File{
+							Builder: builder,
+							Reader:  strings.NewReader(""),
+						}, nil
+					}
+				})
+
+				It("warns but does not fail the run", func() {
+					Expect(err).NotTo(HaveOccurred())
+
+					logMessages := make([]string, 0)
+					for _, log := range recordedLogs.All() {
+						logMessages = append(logMessages, log.Message)
+					}
+
+					Expect(logMessages).To(ContainElement(ContainSubstring("Unable to write RWX OTEL span attributes")))
+				})
+			})
+		})
 	})
 
 	Context("with an erroring command", func() {
