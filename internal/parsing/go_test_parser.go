@@ -58,7 +58,8 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			// Default to timed out. Tests that complete normally will have their status
 			// overridden by a "pass", "fail", or "skip" action. Tests that are killed by
 			// `go test -timeout` never receive a terminal action and will remain timed out.
-			timedOutMessage := "This test was inferred to have timed out because go test never emitted a pass, fail, or skip event for it."
+			timedOutMessage := "This test was inferred to have timed out because " +
+				"go test never emitted a pass, fail, or skip event for it."
 			existingTest = v1.Test{
 				Scope: &testPackage,
 				Name:  *testOutput.Test,
