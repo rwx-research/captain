@@ -63,6 +63,8 @@ var _ = Describe("GoTestParser", func() {
 
 			Expect(passedTest.Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
 			Expect(timedOutTest.Attempt.Status.Kind).To(Equal(v1.TestStatusTimedOut))
+			Expect(timedOutTest.Attempt.Status.Message).ToNot(BeNil())
+			Expect(*timedOutTest.Attempt.Status.Message).To(ContainSubstring("inferred to have timed out"))
 		})
 
 		It("errors on malformed JSON with no remnants of Go Test JSON", func() {
