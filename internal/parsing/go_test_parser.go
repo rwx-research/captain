@@ -27,6 +27,9 @@ type GoTestTestOutput struct {
 
 func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	testsByPackage := map[string]map[string]v1.Test{}
+	// Track tests that received a terminal action (pass, fail, skip).
+	// Tests with a "run" but no terminal action are treated as timed out.
+	resolvedTests := map[string]map[string]bool{}
 	scanner := bufio.NewScanner(data)
 	for scanner.Scan() {
 		text := strings.TrimSpace(scanner.Text())
@@ -50,6 +53,7 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 
 		if _, ok := testsByPackage[*testOutput.Package]; !ok {
 			testsByPackage[*testOutput.Package] = map[string]v1.Test{}
+			resolvedTests[*testOutput.Package] = map[string]bool{}
 		}
 
 		testPackage := *testOutput.Package
@@ -74,6 +78,7 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			duration := time.Duration(math.Round(*testOutput.Elapsed * float64(time.Second)))
 			existingTest.Attempt.Duration = &duration
 			existingTest.Attempt.Status = v1.NewFailedTestStatus(nil, nil, nil)
+			resolvedTests[*testOutput.Package][*testOutput.Test] = true
 		case "output":
 			if testOutput.Output == nil {
 				return nil, errors.NewInputError("JSON with action of output is missing output: %v", testOutput)
@@ -89,6 +94,7 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			duration := time.Duration(math.Round(*testOutput.Elapsed * float64(time.Second)))
 			existingTest.Attempt.Duration = &duration
 			existingTest.Attempt.Status = v1.NewSuccessfulTestStatus()
+			resolvedTests[*testOutput.Package][*testOutput.Test] = true
 		case "pause":
 			// no-op
 		case "run":
@@ -97,11 +103,23 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			duration := time.Duration(math.Round(*testOutput.Elapsed * float64(time.Second)))
 			existingTest.Attempt.Duration = &duration
 			existingTest.Attempt.Status = v1.NewSkippedTestStatus(nil)
+			resolvedTests[*testOutput.Package][*testOutput.Test] = true
 		default:
 			return nil, errors.NewInputError("Unexpected test action: %v", *testOutput.Action)
 		}
 
 		testsByPackage[*testOutput.Package][*testOutput.Test] = existingTest
+	}
+
+	// Mark tests that were started ("run") but never received a terminal action as timed out.
+	// This happens when `go test -timeout` kills the process before individual tests complete.
+	for pkg, testsByName := range testsByPackage {
+		for name, test := range testsByName {
+			if !resolvedTests[pkg][name] {
+				test.Attempt.Status = v1.NewTimedOutTestStatus(nil, nil, nil)
+				testsByName[name] = test
+			}
+		}
 	}
 
 	tests := make([]v1.Test, 0)

@@ -42,6 +42,29 @@ var _ = Describe("GoTestParser", func() {
 			))
 		})
 
+		It("marks timed out tests that have no pass/fail action", func() {
+			fixture, err := os.Open("../../test/fixtures/go_test_timeout.jsonl")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.GoTestParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(testResults.Tests).To(HaveLen(2))
+
+			var passedTest, timedOutTest v1.Test
+			for _, t := range testResults.Tests {
+				switch t.Name {
+				case "TestLoadConfig_Success":
+					passedTest = t
+				case "TestThreeSeconds":
+					timedOutTest = t
+				}
+			}
+
+			Expect(passedTest.Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+			Expect(timedOutTest.Attempt.Status.Kind).To(Equal(v1.TestStatusTimedOut))
+		})
+
 		It("errors on malformed JSON with no remnants of Go Test JSON", func() {
 			testResults, err := parsing.GoTestParser{}.Parse(strings.NewReader(`asdfasdfsdf`))
 			Expect(err).To(HaveOccurred())
