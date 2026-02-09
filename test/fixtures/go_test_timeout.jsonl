@@ -1,0 +1,11 @@
+{"Time":"2026-02-06T22:02:43.175647483Z","Action":"start","Package":"github.com/rwx-research/mint/agent-go"}
+{"Time":"2026-02-06T22:02:43.178232496Z","Action":"run","Package":"github.com/rwx-research/mint/agent-go","Test":"TestLoadConfig_Success"}
+{"Time":"2026-02-06T22:02:43.178240496Z","Action":"output","Package":"github.com/rwx-research/mint/agent-go","Test":"TestLoadConfig_Success","Output":"=== RUN   TestLoadConfig_Success\n"}
+{"Time":"2026-02-06T22:02:43.178264997Z","Action":"output","Package":"github.com/rwx-research/mint/agent-go","Test":"TestLoadConfig_Success","Output":"--- PASS: TestLoadConfig_Success (0.00s)\n"}
+{"Time":"2026-02-06T22:02:43.178267039Z","Action":"pass","Package":"github.com/rwx-research/mint/agent-go","Test":"TestLoadConfig_Success","Elapsed":0}
+{"Time":"2026-02-06T22:02:43.178570795Z","Action":"run","Package":"github.com/rwx-research/mint/agent-go","Test":"TestThreeSeconds"}
+{"Time":"2026-02-06T22:02:43.178571795Z","Action":"output","Package":"github.com/rwx-research/mint/agent-go","Test":"TestThreeSeconds","Output":"=== RUN   TestThreeSeconds\n"}
+{"Time":"2026-02-06T22:02:44.182898736Z","Action":"output","Package":"github.com/rwx-research/mint/agent-go","Test":"TestThreeSeconds","Output":"panic: test timed out after 1s\n"}
+{"Time":"2026-02-06T22:02:44.185338996Z","Action":"output","Package":"github.com/rwx-research/mint/agent-go","Test":"TestThreeSeconds","Output":"exit status 2\n"}
+{"Time":"2026-02-06T22:02:44.185400956Z","Action":"output","Package":"github.com/rwx-research/mint/agent-go","Output":"FAIL\tgithub.com/rwx-research/mint/agent-go\t1.009s\n"}
+{"Time":"2026-02-06T22:02:44.185415539Z","Action":"fail","Package":"github.com/rwx-research/mint/agent-go","Elapsed":1.01}
