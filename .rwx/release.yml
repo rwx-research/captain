@@ -21,8 +21,8 @@ concurrency-pools:
     on-overflow: queue
 
 base:
-  os: ubuntu 24.04
-  tag: 1.2
+  image: ubuntu:24.04
+  config: rwx/base 1.0.0
 
 tasks:
   - key: verify-kind
@@ -38,8 +38,8 @@ tasks:
       if [[ "${{ init.kind }}" == "production" ]]; then
         cat << EOF | tee extract-version-details.yml
           base:
-            os: ubuntu 24.04
-            tag: 1.1
+            image: ubuntu:24.04
+            config: rwx/base 1.0.0
 
           tasks:
             - key: extract-version-details
@@ -52,8 +52,8 @@ tasks:
       if [[ "${{ init.kind }}" == "unstable" ]]; then
         cat << EOF | tee extract-version-details.yml
           base:
-            os: ubuntu 24.04
-            tag: 1.1
+            image: ubuntu:24.04
+            config: rwx/base 1.0.0
 
           tasks:
             - key: extract-version-details
@@ -65,8 +65,8 @@ tasks:
       if [[ "${{ init.kind }}" == "testing" ]]; then
         cat << EOF | tee extract-version-details.yml
           base:
-            os: ubuntu 24.04
-            tag: 1.1
+            image: ubuntu:24.04
+            config: rwx/base 1.0.0
 
           tasks:
             - key: extract-version-details

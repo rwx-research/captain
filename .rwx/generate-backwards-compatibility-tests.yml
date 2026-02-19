@@ -1,6 +1,6 @@
 base:
-  os: ubuntu 24.04
-  tag: 1.2
+  image: ubuntu:24.04
+  config: rwx/base 1.0.0
 
 tasks:
   - key: code
