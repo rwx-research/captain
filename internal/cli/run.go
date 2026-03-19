@@ -975,7 +975,8 @@ func (s Service) reportTestResults(
 			reportingConfiguration.Provider.BranchName,
 			reportingConfiguration.Provider.CommitSha,
 		)
-		if err := os.WriteFile(backlinkPath, []byte(backlinkURL), 0o600); err != nil { //nolint:gosec // path from trusted env var
+		//nolint:gosec // path from trusted env var
+		if err := os.WriteFile(backlinkPath, []byte(backlinkURL), 0o600); err != nil {
 			s.Log.Warnf("Could not populate backlink in Mint")
 		}
 	}
