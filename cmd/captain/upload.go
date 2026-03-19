@@ -24,6 +24,7 @@ func configureUploadCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 				return errors.WithStack(err)
 			}
 			// TODO: Should also support reading from stdin
+			//nolint:staticcheck // deprecated but still functional
 			_, err = captain.UploadTestResults(cmd.Context(), cliArgs.RootCliArgs.suiteID, args)
 			return errors.WithStack(err)
 		},

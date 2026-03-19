@@ -110,6 +110,7 @@ func (s Service) RemoveQuarantine(_ context.Context, args []string) error {
 }
 
 // UploadTestResults is the implementation of `captain upload results`.
+//
 // Deprecated: Use `captain update results` instead, which supports both the local and remote backend.
 func (s Service) UploadTestResults(
 	ctx context.Context,

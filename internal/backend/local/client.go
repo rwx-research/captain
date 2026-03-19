@@ -125,7 +125,7 @@ func (c Client) Flush() error {
 }
 
 func (c Client) GetTestTimingManifest(_ context.Context, _ string) ([]testing.TestFileTiming, error) {
-	testTimings := make([]testing.TestFileTiming, 0)
+	testTimings := make([]testing.TestFileTiming, 0, len(c.Timings))
 
 	for file, duration := range c.Timings {
 		testTimings = append(testTimings, testing.TestFileTiming{

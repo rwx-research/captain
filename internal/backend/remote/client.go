@@ -62,7 +62,7 @@ func NewClient(cfg ClientConfig) (Client, error) {
 			cfg.Log.Debugf("Executing following HTTP request:\n\n%s\n", sanitizedDump)
 		}
 
-		resp, err := client.Do(req)
+		resp, err := client.Do(req) //nolint:gosec // request URL is from application config
 		if err != nil {
 			return resp, errors.NewSystemError("unable to perform HTTP request to %q: %s", req.URL, err)
 		}

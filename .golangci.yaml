@@ -70,6 +70,7 @@ linters:
     rules:
       - linters:
           - wrapcheck
+          - prealloc
         path: _test\.go
       # Test files with intentional ANSI escape sequences for testing
       - linters:

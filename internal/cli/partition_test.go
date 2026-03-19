@@ -109,8 +109,9 @@ var _ = Describe("Partition", func() {
 
 		It("only considers unique filepaths", func() {
 			_ = service.Partition(ctx, cfgWithArgs(0, 1, []string{"*.test", "*.test"}, " ", false, ""))
-			logMessages := make([]string, 0)
-			for _, log := range recordedLogs.FilterLevelExact(zap.InfoLevel).All() {
+			logs := recordedLogs.FilterLevelExact(zap.InfoLevel).All()
+			logMessages := make([]string, 0, len(logs))
+			for _, log := range logs {
 				logMessages = append(logMessages, log.Message)
 			}
 			Expect(logMessages).To(ContainElement("a.test b.test c.test d.test"))
@@ -151,8 +152,9 @@ var _ = Describe("Partition", func() {
 		It("uses least runtime strategy", func() {
 			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
-			assignments := make([]string, 0)
-			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
+			debugLogs := recordedLogs.FilterLevelExact(zap.DebugLevel).All()
+			assignments := make([]string, 0, len(debugLogs))
+			for _, log := range debugLogs {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(ContainElements([]string{
@@ -200,8 +202,9 @@ var _ = Describe("Partition", func() {
 		It("uses round-robin strategy", func() {
 			_ = service.Partition(ctx, cfgWithGlobAndRoundRobin(1, 2, "*.test"))
 
-			assignments := make([]string, 0)
-			for _, log := range recordedLogs.FilterLevelExact(zap.DebugLevel).All() {
+			debugLogs := recordedLogs.FilterLevelExact(zap.DebugLevel).All()
+			assignments := make([]string, 0, len(debugLogs))
+			for _, log := range debugLogs {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(Equal([]string{
@@ -254,8 +257,9 @@ var _ = Describe("Partition", func() {
 		It("prints warning to standard err", func() {
 			_ = service.Partition(ctx, cfgWithGlob(1, 2, "*.test"))
 
-			assignments := make([]string, 0)
-			for _, log := range recordedLogs.FilterLevelExact(zap.WarnLevel).All() {
+			warnLogs := recordedLogs.FilterLevelExact(zap.WarnLevel).All()
+			assignments := make([]string, 0, len(warnLogs))
+			for _, log := range warnLogs {
 				assignments = append(assignments, log.Message)
 			}
 			Expect(assignments).To(
