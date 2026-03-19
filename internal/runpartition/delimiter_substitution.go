@@ -41,7 +41,7 @@ func (s DelimiterSubstitution) SubstitutionLookupFor(
 	_ templating.CompiledTemplate,
 	testFilePaths []string,
 ) (map[string]string, error) {
-	escapedTestFilePaths := make([]string, 0)
+	escapedTestFilePaths := make([]string, 0, len(testFilePaths))
 
 	for _, testFilePath := range testFilePaths {
 		escapedTestFilePaths = append(escapedTestFilePaths, fmt.Sprintf("'%v'", templating.ShellEscape(testFilePath)))

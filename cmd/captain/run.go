@@ -107,7 +107,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 
 					rwxTestResultsDir := os.Getenv("RWX_TEST_RESULTS")
 					if rwxTestResultsDir != "" {
-						if _, err := os.Stat(rwxTestResultsDir); err != nil {
+						if _, err := os.Stat(rwxTestResultsDir); err != nil { //nolint:gosec // path from trusted env var
 							captain.Log.Warnf("RWX_TEST_RESULTS directory does not exist: %s", rwxTestResultsDir)
 						} else {
 							rwxOutputPath := filepath.Join(rwxTestResultsDir, cliArgs.RootCliArgs.suiteID+".json")

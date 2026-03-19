@@ -107,7 +107,7 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			testsSeenByProject[project][test] = struct{}{}
 		}
 
-		substitutions := make([]map[string]string, 0)
+		substitutions := make([]map[string]string, 0, len(testsByProject))
 		for project, tests := range testsByProject {
 			substitutions = append(substitutions, map[string]string{
 				"project": project,

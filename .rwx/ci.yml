@@ -5,6 +5,9 @@ on:
         trigger: push
         commit-sha: ${{ event.git.sha }}
         branch: ${{ event.git.branch }}
+  cli:
+    init:
+      commit-sha: ${{ event.git.sha }}
 
 concurrency-pools:
   - id: rwx-research/captain:ci:${{ init.branch }}:${{ init.trigger }}
