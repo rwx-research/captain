@@ -27,6 +27,7 @@ type GoTestTestOutput struct {
 
 func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	testsByPackage := map[string]map[string]v1.Test{}
+	failedPackages := map[string]bool{}
 	scanner := bufio.NewScanner(data)
 	for scanner.Scan() {
 		text := strings.TrimSpace(scanner.Text())
@@ -43,8 +44,10 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			return nil, errors.NewInputError("Test results do not look like go test")
 		}
 
-		// We don't care about package-level stats/info
 		if testOutput.Test == nil {
+			if *testOutput.Action == "fail" {
+				failedPackages[*testOutput.Package] = true
+			}
 			continue
 		}
 
@@ -129,9 +132,34 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		return tests[i].Name < tests[j].Name
 	})
 
+	// Detect package-level failures where no individual test in the package failed.
+	// This can happen when a goroutine panics, TestMain fails, or there's a build error.
+	var otherErrors []v1.OtherError
+	for pkg := range failedPackages {
+		hasFailedTest := false
+		if testsByName, ok := testsByPackage[pkg]; ok {
+			for _, test := range testsByName {
+				if test.Attempt.Status.ImpliesFailure() {
+					hasFailedTest = true
+					break
+				}
+			}
+		}
+		if !hasFailedTest {
+			otherErrors = append(otherErrors, v1.OtherError{
+				Message: "Package " + pkg + " failed with no individual test failure. Check for a panic outside the tests.",
+			})
+		}
+	}
+
+	// For determinism
+	sort.Slice(otherErrors, func(i, j int) bool {
+		return otherErrors[i].Message < otherErrors[j].Message
+	})
+
 	return v1.NewTestResults(
 		v1.GoTestFramework,
 		tests,
-		nil,
+		otherErrors,
 	), nil
 }
