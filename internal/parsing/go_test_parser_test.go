@@ -67,6 +67,35 @@ var _ = Describe("GoTestParser", func() {
 			Expect(*timedOutTest.Attempt.Status.Message).To(ContainSubstring("Captain inferred that this test timed out"))
 		})
 
+		It("reports an other error when a package fails with no individual test failure", func() {
+			fixture, err := os.Open("../../test/fixtures/go_test_package_failure.jsonl")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.GoTestParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(testResults.Tests).To(HaveLen(1))
+			Expect(testResults.Tests[0].Name).To(Equal("TestOne"))
+			Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+
+			Expect(testResults.OtherErrors).To(HaveLen(1))
+			Expect(testResults.OtherErrors[0].Message).To(ContainSubstring("example.com/pkg1"))
+			Expect(testResults.OtherErrors[0].Message).To(ContainSubstring("no individual test failure"))
+
+			Expect(testResults.Summary.Status).To(Equal(v1.SummaryStatusFailed))
+			Expect(testResults.Summary.OtherErrors).To(Equal(1))
+		})
+
+		It("does not report an other error when a package fails with a failed test", func() {
+			fixture, err := os.Open("../../test/fixtures/go_test.jsonl")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.GoTestParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(testResults.OtherErrors).To(HaveLen(0))
+		})
+
 		It("errors on malformed JSON with no remnants of Go Test JSON", func() {
 			testResults, err := parsing.GoTestParser{}.Parse(strings.NewReader(`asdfasdfsdf`))
 			Expect(err).To(HaveOccurred())
