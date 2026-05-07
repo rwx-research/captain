@@ -1,28 +1,27 @@
 base:
   image: ubuntu:24.04
-  config: rwx/base 1.0.0
+  config: rwx/base 1.1.0
 
 tasks:
   - key: code
-    call: git/clone 1.6.9
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
-      github-access-token: ${{ github.token }}
 
   - key: tool-versions
     use: code
-    call: rwx/tool-versions 1.0.4
+    call: rwx/tool-versions 1.0.7
     filter:
       - .tool-versions
 
   - key: golang
-    call: golang/install 1.1.4
+    call: golang/install 1.2.1
     with:
       go-version: ${{ tasks.tool-versions.values.golang }}
 
   - key: mage-source
-    call: git/clone 1.6.9
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/magefile/mage.git
       ref: v${{ tasks.tool-versions.values.mage }}
@@ -46,7 +45,7 @@ tasks:
       LDFLAGS: -w -s -X github.com/rwx-research/captain-cli.Version=${{ init.full-version }}
 
   - key: github-cli
-    call: github/install-cli 1.0.7
+    call: github/install-cli 1.0.10
 
   - key: upload
     if: ${{ init.os != 'darwin' }}

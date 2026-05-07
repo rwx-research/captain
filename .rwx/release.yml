@@ -22,7 +22,7 @@ concurrency-pools:
 
 base:
   image: ubuntu:24.04
-  config: rwx/base 1.0.0
+  config: rwx/base 1.1.0
 
 tasks:
   - key: verify-kind
@@ -89,22 +89,21 @@ tasks:
       echo "${{ tasks.run-extract-version-details.tasks.extract-version-details.values.aliased_version }}" > $RWX_VALUES/aliased_version
 
   - key: code
-    call: git/clone 1.6.9
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
-      github-access-token: ${{ github.token }}
       preserve-git-dir: true
 
   - key: github-cli
-    call: github/install-cli 1.0.7
+    call: github/install-cli 1.0.10
 
   - key: ensure-not-published-yet
     use: [code, github-cli]
     run: |
       (gh release view ${{ tasks.extract-version-details.values.full_version }} --json isDraft || echo '{"isDraft": true}') | jq -e '.isDraft == true'
     env:
-      GH_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
 
   - key: push-tags
     use: code

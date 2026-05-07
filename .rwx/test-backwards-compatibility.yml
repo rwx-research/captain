@@ -5,29 +5,28 @@ concurrency-pools:
 
 base:
   image: ubuntu:24.04
-  config: rwx/base 1.0.0
+  config: rwx/base 1.1.0
 
 tasks:
   - key: new-code
-    call: git/clone 1.6.9
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
-      github-access-token: ${{ github.token }}
 
   - key: tool-versions-for-new-code
     use: new-code
-    call: rwx/tool-versions 1.0.4
+    call: rwx/tool-versions 1.0.7
     filter:
       - .tool-versions
 
   - key: golang-for-new-code
-    call: golang/install 1.1.4
+    call: golang/install 1.2.1
     with:
       go-version: ${{ tasks.tool-versions-for-new-code.values.golang }}
 
   - key: mage-source-for-new-code
-    call: git/clone 1.6.9
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/magefile/mage.git
       ref: v${{ tasks.tool-versions-for-new-code.values.mage }}
@@ -53,25 +52,24 @@ tasks:
           path: ./captain
 
   - key: legacy-code
-    call: git/clone 1.6.9
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.legacy-version }}
-      github-access-token: ${{ github.token }}
 
   - key: tool-versions-for-legacy-code
     use: legacy-code
-    call: rwx/tool-versions 1.0.4
+    call: rwx/tool-versions 1.0.7
     filter:
       - .tool-versions
 
   - key: golang-for-legacy-code
-    call: golang/install 1.1.4
+    call: golang/install 1.2.1
     with:
       go-version: ${{ tasks.tool-versions-for-legacy-code.values.golang }}
 
   - key: mage-source-for-legacy-code
-    call: git/clone 1.6.9
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/magefile/mage.git
       ref: v${{ tasks.tool-versions-for-legacy-code.values.mage }}
@@ -86,7 +84,7 @@ tasks:
       echo $PATH:$HOME/go/bin > $RWX_ENV/PATH
 
   - key: ginkgo-source-for-legacy-code
-    call: git/clone 1.6.9
+    call: git/clone 2.0.7
     with:
       repository: https://github.com/onsi/ginkgo.git
       ref: v${{ tasks.tool-versions-for-legacy-code.values.ginkgo }}
