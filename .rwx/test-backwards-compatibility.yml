@@ -13,7 +13,6 @@ tasks:
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
-      github-access-token: ${{ github.token }}
 
   - key: tool-versions-for-new-code
     use: new-code
@@ -57,7 +56,6 @@ tasks:
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.legacy-version }}
-      github-access-token: ${{ github.token }}
 
   - key: tool-versions-for-legacy-code
     use: legacy-code

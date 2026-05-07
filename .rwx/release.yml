@@ -93,7 +93,6 @@ tasks:
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
-      github-access-token: ${{ github.token }}
       preserve-git-dir: true
 
   - key: github-cli
@@ -104,7 +103,7 @@ tasks:
     run: |
       (gh release view ${{ tasks.extract-version-details.values.full_version }} --json isDraft || echo '{"isDraft": true}') | jq -e '.isDraft == true'
     env:
-      GH_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ vaults.default.github-apps.rwx-bot.token }}
 
   - key: push-tags
     use: code

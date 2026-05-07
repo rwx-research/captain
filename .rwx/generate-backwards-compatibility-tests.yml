@@ -8,7 +8,6 @@ tasks:
     with:
       repository: https://github.com/rwx-research/captain.git
       ref: ${{ init.commit-sha }}
-      github-access-token: ${{ github.token }}
       preserve-git-dir: true
 
   - key: tool-versions
