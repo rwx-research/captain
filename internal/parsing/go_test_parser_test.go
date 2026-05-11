@@ -86,6 +86,21 @@ var _ = Describe("GoTestParser", func() {
 			Expect(testResults.Summary.OtherErrors).To(Equal(1))
 		})
 
+		It("reports an other error when a package fails without the trailing FAIL output line", func() {
+			fixture, err := os.Open("../../test/fixtures/go_test_panic.jsonl")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.GoTestParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(testResults.OtherErrors).To(HaveLen(1))
+			Expect(testResults.OtherErrors[0].Message).To(ContainSubstring("go-testbed"))
+			Expect(testResults.OtherErrors[0].Message).To(ContainSubstring("Not all tests"))
+
+			Expect(testResults.Summary.Status).To(Equal(v1.SummaryStatusFailed))
+			Expect(testResults.Summary.OtherErrors).To(Equal(1))
+		})
+
 		It("reports an other error with location and exception when a package fails to build", func() {
 			fixture, err := os.Open("../../test/fixtures/go_test_build_failure.jsonl")
 			Expect(err).ToNot(HaveOccurred())
