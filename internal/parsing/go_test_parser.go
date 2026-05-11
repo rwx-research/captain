@@ -17,17 +17,21 @@ type GoTestParser struct{}
 
 // https://pkg.go.dev/cmd/test2json
 type GoTestTestOutput struct {
-	Time    time.Time `json:"Time"`
-	Action  *string   `json:"Action"` // bench, cont, fail, output, pass, pause, run, skip
-	Package *string   `json:"Package"`
-	Test    *string   `json:"Test"`    // optional, depends if the output is about a specific test or package
-	Output  *string   `json:"Output"`  // set for output events
-	Elapsed *float64  `json:"Elapsed"` // set for pass and fail events
+	Time       time.Time `json:"Time"`
+	Action     *string   `json:"Action"` // bench, build-fail, build-output, cont, fail, output, pass, pause, run, skip
+	Package    *string   `json:"Package"`
+	ImportPath *string   `json:"ImportPath"` // set for build-output and build-fail events instead of Package
+	Test       *string   `json:"Test"`       // optional, depends if the output is about a specific test or package
+	Output     *string   `json:"Output"`     // set for output events
+	Elapsed    *float64  `json:"Elapsed"`    // set for pass and fail events
 }
 
 func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	testsByPackage := map[string]map[string]v1.Test{}
 	failedPackages := map[string]bool{}
+	packagesWithFailLine := map[string]bool{}
+	buildOutputs := map[string]string{}
+	failedBuilds := map[string]bool{}
 	scanner := bufio.NewScanner(data)
 	for scanner.Scan() {
 		text := strings.TrimSpace(scanner.Text())
@@ -40,13 +44,29 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			continue
 		}
 
+		if testOutput.Action != nil && testOutput.ImportPath != nil {
+			switch *testOutput.Action {
+			case "build-output":
+				if testOutput.Output != nil {
+					buildOutputs[*testOutput.ImportPath] += *testOutput.Output
+				}
+				continue
+			case "build-fail":
+				failedBuilds[*testOutput.ImportPath] = true
+				continue
+			}
+		}
+
 		if testOutput.Action == nil || testOutput.Package == nil {
-			return nil, errors.NewInputError("Test results do not look like go test")
+			return nil, errors.NewInputError("Test results do not look like go test. Offending line: %v", text)
 		}
 
 		if testOutput.Test == nil {
 			if *testOutput.Action == "fail" {
 				failedPackages[*testOutput.Package] = true
+			}
+			if *testOutput.Action == "output" && testOutput.Output != nil && *testOutput.Output == "FAIL\n" {
+				packagesWithFailLine[*testOutput.Package] = true
 			}
 			continue
 		}
@@ -119,7 +139,7 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 	}
 
-	if len(tests) == 0 {
+	if len(tests) == 0 && len(failedBuilds) == 0 {
 		return nil, errors.NewInputError("Did not see any tests, so we cannot be sure it is go test output")
 	}
 
@@ -132,10 +152,20 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		return tests[i].Name < tests[j].Name
 	})
 
-	// Detect package-level failures where no individual test in the package failed.
-	// This can happen when a goroutine panics, TestMain fails, or there's a build error.
+	// Detect package-level failures.
+	// When `go test -json` finishes running every test in a failed package, it emits a
+	// bare "FAIL\n" output line just before the "FAIL\tpkg\ttime\n" line. If that bare
+	// line is missing, execution was cut short (e.g. by a panic) and some tests in the
+	// package never ran — surface this so retries can flag it.
 	var otherErrors []v1.OtherError
 	for pkg := range failedPackages {
+		if !packagesWithFailLine[pkg] {
+			otherErrors = append(otherErrors, v1.OtherError{
+				Message: "Not all tests in package " + pkg + " ran. Check for a panic that aborted the package.",
+			})
+			continue
+		}
+
 		hasFailedTest := false
 		if testsByName, ok := testsByPackage[pkg]; ok {
 			for _, test := range testsByName {
@@ -150,6 +180,22 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 				Message: "Package " + pkg + " failed with no individual test failure. Check for a panic outside the tests.",
 			})
 		}
+	}
+
+	for importPath := range failedBuilds {
+		// Go emits import paths for test-binary builds as "<package> [<test-binary>.test]".
+		// The first part is the package the compiler was working on; the bracketed part
+		// is which test binary's build graph it belonged to. Only the package is useful
+		// as a Location.
+		pkg := importPath
+		if idx := strings.Index(importPath, " ["); idx != -1 {
+			pkg = importPath[:idx]
+		}
+		otherError := v1.OtherError{Message: "Build failed for " + importPath, Location: &v1.Location{File: pkg}}
+		if output := buildOutputs[importPath]; output != "" {
+			otherError.Exception = &output
+		}
+		otherErrors = append(otherErrors, otherError)
 	}
 
 	// For determinism

@@ -1,0 +1,23 @@
+{"Time":"2026-05-11T16:26:43.752853-04:00","Action":"start","Package":"go-testbed"}
+{"Time":"2026-05-11T16:26:44.027924-04:00","Action":"run","Package":"go-testbed","Test":"TestWithPanic"}
+{"Time":"2026-05-11T16:26:44.027942-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"=== RUN   TestWithPanic\n"}
+{"Time":"2026-05-11T16:26:44.027981-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"--- FAIL: TestWithPanic (0.00s)\n"}
+{"Time":"2026-05-11T16:26:44.030521-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"panic: panic during test [recovered]\n"}
+{"Time":"2026-05-11T16:26:44.030531-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"\tpanic: panic during test\n"}
+{"Time":"2026-05-11T16:26:44.030535-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"\n"}
+{"Time":"2026-05-11T16:26:44.030542-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"goroutine 34 [running]:\n"}
+{"Time":"2026-05-11T16:26:44.030559-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"testing.tRunner.func1.2({0x1041f5dc0, 0x10421f800})\n"}
+{"Time":"2026-05-11T16:26:44.030567-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"\tsrc/testing/testing.go:1632 +0x1bc\n"}
+{"Time":"2026-05-11T16:26:44.030576-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"testing.tRunner.func1()\n"}
+{"Time":"2026-05-11T16:26:44.030579-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"\tsrc/testing/testing.go:1635 +0x334\n"}
+{"Time":"2026-05-11T16:26:44.030594-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"panic({0x1041f5dc0?, 0x10421f800?})\n"}
+{"Time":"2026-05-11T16:26:44.030598-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"\tsrc/runtime/panic.go:785 +0x124\n"}
+{"Time":"2026-05-11T16:26:44.030616-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"go-testbed.TestWithPanic(0x140001a4680?)\n"}
+{"Time":"2026-05-11T16:26:44.030626-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"\t/Users/user/code/go-testbed/panic_test.go:6 +0x2c\n"}
+{"Time":"2026-05-11T16:26:44.030641-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"testing.tRunner(0x140001a4680, 0x10421eec0)\n"}
+{"Time":"2026-05-11T16:26:44.030644-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"\tsrc/testing/testing.go:1690 +0xe4\n"}
+{"Time":"2026-05-11T16:26:44.030662-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"created by testing.(*T).Run in goroutine 1\n"}
+{"Time":"2026-05-11T16:26:44.030664-04:00","Action":"output","Package":"go-testbed","Test":"TestWithPanic","Output":"\tsrc/testing/testing.go:1743 +0x314\n"}
+{"Time":"2026-05-11T16:26:44.030973-04:00","Action":"fail","Package":"go-testbed","Test":"TestWithPanic","Elapsed":0}
+{"Time":"2026-05-11T16:26:44.030978-04:00","Action":"output","Package":"go-testbed","Output":"FAIL\tgo-testbed\t0.278s\n"}
+{"Time":"2026-05-11T16:26:44.030982-04:00","Action":"fail","Package":"go-testbed","Elapsed":0.278}

@@ -86,6 +86,45 @@ var _ = Describe("GoTestParser", func() {
 			Expect(testResults.Summary.OtherErrors).To(Equal(1))
 		})
 
+		It("reports an other error when a package fails without the trailing FAIL output line", func() {
+			fixture, err := os.Open("../../test/fixtures/go_test_panic.jsonl")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.GoTestParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(testResults.OtherErrors).To(HaveLen(1))
+			Expect(testResults.OtherErrors[0].Message).To(ContainSubstring("go-testbed"))
+			Expect(testResults.OtherErrors[0].Message).To(ContainSubstring("Not all tests"))
+
+			Expect(testResults.Summary.Status).To(Equal(v1.SummaryStatusFailed))
+			Expect(testResults.Summary.OtherErrors).To(Equal(1))
+		})
+
+		It("reports an other error with location and exception when a package fails to build", func() {
+			fixture, err := os.Open("../../test/fixtures/go_test_build_failure.jsonl")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.GoTestParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(testResults.Tests).To(HaveLen(1))
+			Expect(testResults.Tests[0].Name).To(Equal("TestOne"))
+			Expect(testResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+
+			Expect(testResults.OtherErrors).To(HaveLen(1))
+			Expect(testResults.OtherErrors[0].Message).To(Equal("Build failed for example.com/pkg2 [example.com/pkg2.test]"))
+			Expect(testResults.OtherErrors[0].Location).ToNot(BeNil())
+			Expect(testResults.OtherErrors[0].Location.File).To(Equal("example.com/pkg2"))
+			Expect(testResults.OtherErrors[0].Exception).ToNot(BeNil())
+			Expect(*testResults.OtherErrors[0].Exception).To(Equal(
+				"example.com/pkg2: /usr/local/go/pkg/tool/linux_amd64/compile: signal: killed\nmore build output\n",
+			))
+
+			Expect(testResults.Summary.Status).To(Equal(v1.SummaryStatusFailed))
+			Expect(testResults.Summary.OtherErrors).To(Equal(1))
+		})
+
 		It("does not report an other error when a package fails with a failed test", func() {
 			fixture, err := os.Open("../../test/fixtures/go_test.jsonl")
 			Expect(err).ToNot(HaveOccurred())
