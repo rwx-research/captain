@@ -17,17 +17,20 @@ type GoTestParser struct{}
 
 // https://pkg.go.dev/cmd/test2json
 type GoTestTestOutput struct {
-	Time    time.Time `json:"Time"`
-	Action  *string   `json:"Action"` // bench, cont, fail, output, pass, pause, run, skip
-	Package *string   `json:"Package"`
-	Test    *string   `json:"Test"`    // optional, depends if the output is about a specific test or package
-	Output  *string   `json:"Output"`  // set for output events
-	Elapsed *float64  `json:"Elapsed"` // set for pass and fail events
+	Time       time.Time `json:"Time"`
+	Action     *string   `json:"Action"` // bench, build-fail, build-output, cont, fail, output, pass, pause, run, skip
+	Package    *string   `json:"Package"`
+	ImportPath *string   `json:"ImportPath"` // set for build-output and build-fail events instead of Package
+	Test       *string   `json:"Test"`       // optional, depends if the output is about a specific test or package
+	Output     *string   `json:"Output"`     // set for output events
+	Elapsed    *float64  `json:"Elapsed"`    // set for pass and fail events
 }
 
 func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	testsByPackage := map[string]map[string]v1.Test{}
 	failedPackages := map[string]bool{}
+	buildOutputs := map[string]string{}
+	failedBuilds := map[string]bool{}
 	scanner := bufio.NewScanner(data)
 	for scanner.Scan() {
 		text := strings.TrimSpace(scanner.Text())
@@ -40,8 +43,21 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			continue
 		}
 
+		if testOutput.Action != nil && testOutput.ImportPath != nil {
+			switch *testOutput.Action {
+			case "build-output":
+				if testOutput.Output != nil {
+					buildOutputs[*testOutput.ImportPath] += *testOutput.Output
+				}
+				continue
+			case "build-fail":
+				failedBuilds[*testOutput.ImportPath] = true
+				continue
+			}
+		}
+
 		if testOutput.Action == nil || testOutput.Package == nil {
-			return nil, errors.NewInputError("Test results do not look like go test")
+			return nil, errors.NewInputError("Test results do not look like go test. Offending line: %v", text)
 		}
 
 		if testOutput.Test == nil {
@@ -119,7 +135,7 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 	}
 
-	if len(tests) == 0 {
+	if len(tests) == 0 && len(failedBuilds) == 0 {
 		return nil, errors.NewInputError("Did not see any tests, so we cannot be sure it is go test output")
 	}
 
@@ -150,6 +166,22 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 				Message: "Package " + pkg + " failed with no individual test failure. Check for a panic outside the tests.",
 			})
 		}
+	}
+
+	for importPath := range failedBuilds {
+		// Go emits import paths for test-binary builds as "<package> [<test-binary>.test]".
+		// The first part is the package the compiler was working on; the bracketed part
+		// is which test binary's build graph it belonged to. Only the package is useful
+		// as a Location.
+		pkg := importPath
+		if idx := strings.Index(importPath, " ["); idx != -1 {
+			pkg = importPath[:idx]
+		}
+		otherError := v1.OtherError{Message: "Build failed for " + importPath, Location: &v1.Location{File: pkg}}
+		if output := buildOutputs[importPath]; output != "" {
+			otherError.Exception = &output
+		}
+		otherErrors = append(otherErrors, otherError)
 	}
 
 	// For determinism
