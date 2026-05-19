@@ -30,6 +30,7 @@ var mutuallyExclusiveParsers []parsing.Parser = []parsing.Parser{
 	parsing.JavaScriptKarmaParser{},
 	parsing.JavaScriptMochaParser{},
 	parsing.JavaScriptPlaywrightParser{},
+	parsing.JavaScriptTestCafeParser{},
 	parsing.PythonPytestParser{},
 	parsing.RubyRSpecParser{},
 }
@@ -45,6 +46,7 @@ var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]pars
 	v1.JavaScriptKarmaFramework:      {parsing.JavaScriptKarmaParser{}},
 	v1.JavaScriptMochaFramework:      {parsing.JavaScriptMochaParser{}},
 	v1.JavaScriptPlaywrightFramework: {parsing.JavaScriptPlaywrightParser{}},
+	v1.JavaScriptTestCafeFramework:   {parsing.JavaScriptTestCafeParser{}},
 	v1.JavaScriptVitestFramework:     {parsing.JavaScriptVitestParser{}},
 	v1.JavaScriptBunFramework:        {parsing.JUnitTestsuitesParser{}, parsing.JUnitTestsuiteParser{}},
 	v1.PHPUnitFramework:              {parsing.PHPUnitParser{}},
