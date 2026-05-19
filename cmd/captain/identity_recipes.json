@@ -54,6 +54,11 @@
   },
   {
     "language": "JavaScript",
+    "kind": "TestCafe",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "JavaScript",
     "kind": "Vitest",
     "recipe": { "components": ["file", "description"], "strict": true }
   },
