@@ -27,6 +27,17 @@ var _ = Describe("JavaScriptTestCafeParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("parses the sample file with fixture and test meta", func() {
+			fixture, err := os.Open("../../test/fixtures/testcafe_with_meta.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.JavaScriptTestCafeParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
+			Expect(err).ToNot(HaveOccurred())
+			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
+		})
+
 		It("errors on malformed JSON", func() {
 			testResults, err := parsing.JavaScriptTestCafeParser{}.Parse(strings.NewReader(`{`))
 			Expect(err).To(HaveOccurred())
