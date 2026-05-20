@@ -1,0 +1,52 @@
+{
+  "startTime": "2026-05-19T14:00:00.000Z",
+  "endTime": "2026-05-19T14:00:12.500Z",
+  "userAgents": [
+    "Chrome 124.0.0 / macOS 14.5"
+  ],
+  "passed": 2,
+  "total": 3,
+  "skipped": 1,
+  "fixtures": [
+    {
+      "name": "Checkout flow",
+      "path": "./tests/checkout.testcafe.ts",
+      "meta": {
+        "owner": "team-checkout",
+        "suite": "smoke"
+      },
+      "tests": [
+        {
+          "name": "applies coupon code",
+          "meta": {
+            "issue": "JIRA-1024",
+            "severity": "critical"
+          },
+          "errs": [],
+          "durationMs": 4823,
+          "unstable": false,
+          "screenshotPath": null
+        },
+        {
+          "name": "shows tax breakdown",
+          "errs": [],
+          "durationMs": 3120,
+          "unstable": false,
+          "screenshotPath": null
+        },
+        {
+          "name": "honors loyalty discount",
+          "meta": {
+            "issue": "JIRA-1131"
+          },
+          "errs": [],
+          "durationMs": 0,
+          "unstable": false,
+          "screenshotPath": null,
+          "skipped": true
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,216 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "TestCafe"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 7,
+    "flaky": 0,
+    "otherErrors": 3,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 2,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 1,
+    "successful": 4,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "First fixture First test in first fixture",
+      "lineage": [
+        "First fixture",
+        "First test in first fixture"
+      ],
+      "location": {
+        "file": "./fixture1.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 74000000000,
+        "meta": {
+          "screenshotPath": "/screenshots/1445437598847",
+          "unstable": true,
+          "userAgents": [
+            "Chrome 41.0.2227 / Mac OS X 10.10.1",
+            "Firefox 47 / Mac OS X 10.10.1"
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "1970-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "First fixture Second test in first fixture",
+      "lineage": [
+        "First fixture",
+        "Second test in first fixture"
+      ],
+      "location": {
+        "file": "./fixture1.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 74000000000,
+        "meta": {
+          "screenshotPath": "/screenshots/1445437598847",
+          "unstable": false,
+          "userAgents": [
+            "Chrome 41.0.2227 / Mac OS X 10.10.1",
+            "Firefox 47 / Mac OS X 10.10.1"
+          ]
+        },
+        "status": {
+          "kind": "failed",
+          "message": "A JavaScript error occurred on \"http://example.org\".",
+          "backtrace": [
+            "A JavaScript error occurred on \"http://example.org\".\nRepeat test actions in the browser and check the console for errors.\nEnable the “skipJsErrors” option to ignore JavaScript errors during test execution. Learn more: \"https://testcafe.io/documentation/404038/recipes/debugging/skip-javascript-errors\"\nIf the website only throws this error when you test it with TestCafe, please create a new issue at:\n\"https://github.com/DevExpress/testcafe/issues/new?template=bug-report.md\".\n\nJavaScript error details:\nSome error\n\nBrowser: Chrome 41.0.2227 / Mac OS X 10.10.1\nScreenshot: /screenshots/1445437598847/errors\n\n   1 |var createCallsiteRecord = require (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at async formattedImport (some-file:1:1)\n   at async exports.requireOrImport (some-file:1:1)\n   at async exports.loadFilesAsync (some-file:1:1)\n   at async singleRun (some-file:1:1)\n   at async exports.handler (some-file:1:1)",
+            "The specified selector does not match any element in the DOM tree.\n\nBrowser: Firefox 47 / Mac OS X 10.10.1\n\n   1 |var createCallsiteRecord = require (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at async formattedImport (some-file:1:1)\n   at async exports.requireOrImport (some-file:1:1)\n   at async exports.loadFilesAsync (some-file:1:1)\n   at async singleRun (some-file:1:1)\n   at async exports.handler (some-file:1:1)"
+          ]
+        },
+        "startedAt": "1970-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "First fixture Third test in first fixture",
+      "lineage": [
+        "First fixture",
+        "Third test in first fixture"
+      ],
+      "location": {
+        "file": "./fixture1.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 74000000000,
+        "meta": {
+          "unstable": false,
+          "userAgents": [
+            "Chrome 41.0.2227 / Mac OS X 10.10.1",
+            "Firefox 47 / Mac OS X 10.10.1"
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "1970-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "Second fixture First test in second fixture",
+      "lineage": [
+        "Second fixture",
+        "First test in second fixture"
+      ],
+      "location": {
+        "file": "./fixture2.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 74000000000,
+        "meta": {
+          "unstable": false,
+          "userAgents": [
+            "Chrome 41.0.2227 / Mac OS X 10.10.1",
+            "Firefox 47 / Mac OS X 10.10.1"
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "1970-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "Second fixture Second test in second fixture",
+      "lineage": [
+        "Second fixture",
+        "Second test in second fixture"
+      ],
+      "location": {
+        "file": "./fixture2.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 74000000000,
+        "meta": {
+          "unstable": false,
+          "userAgents": [
+            "Chrome 41.0.2227 / Mac OS X 10.10.1",
+            "Firefox 47 / Mac OS X 10.10.1"
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "1970-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "Second fixture Third test in second fixture",
+      "lineage": [
+        "Second fixture",
+        "Third test in second fixture"
+      ],
+      "location": {
+        "file": "./fixture2.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "unstable": false,
+          "userAgents": [
+            "Chrome 41.0.2227 / Mac OS X 10.10.1",
+            "Firefox 47 / Mac OS X 10.10.1"
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "startedAt": "1970-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "Third fixture First test in third fixture",
+      "lineage": [
+        "Third fixture",
+        "First test in third fixture"
+      ],
+      "location": {
+        "file": "./fixture3.js"
+      },
+      "attempt": {
+        "durationInNanoseconds": 74000000000,
+        "meta": {
+          "unstable": true,
+          "userAgents": [
+            "Chrome 41.0.2227 / Mac OS X 10.10.1",
+            "Firefox 47 / Mac OS X 10.10.1"
+          ]
+        },
+        "status": {
+          "kind": "failed",
+          "message": "- Error in fixture.beforeEach hook -",
+          "backtrace": [
+            "- Error in fixture.beforeEach hook -\nThe specified selector does not match any element in the DOM tree.\n\nBrowser: Firefox 47 / Mac OS X 10.10.1\n\n   1 |var createCallsiteRecord = require (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at Object.\u003canonymous\u003e (some-file:1:1)\n   at async formattedImport (some-file:1:1)\n   at async exports.requireOrImport (some-file:1:1)\n   at async exports.loadFilesAsync (some-file:1:1)\n   at async singleRun (some-file:1:1)\n   at async exports.handler (some-file:1:1)"
+          ]
+        },
+        "startedAt": "1970-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "otherErrors": [
+    {
+      "message": "Was unable to take a screenshot due to an error.\n\nReferenceError: someVar is not defined"
+    },
+    {
+      "message": "Was unable to take a screenshot due to an error.\n\nReferenceError: someOtherVar is not defined"
+    },
+    {
+      "message": "Was unable to take screenshots because the screenshot directory is not specified. To specify it, use the \"-s\" or \"--screenshots\" command line option or the \"screenshots\" method of the test runner in case you are using API."
+    }
+  ]
+}

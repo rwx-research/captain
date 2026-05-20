@@ -1,0 +1,114 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "JavaScript",
+    "kind": "TestCafe"
+  },
+  "summary": {
+    "status": {
+      "kind": "successful"
+    },
+    "tests": 3,
+    "flaky": 0,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 0,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 1,
+    "successful": 2,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "Checkout flow applies coupon code",
+      "lineage": [
+        "Checkout flow",
+        "applies coupon code"
+      ],
+      "location": {
+        "file": "./tests/checkout.testcafe.ts"
+      },
+      "attempt": {
+        "durationInNanoseconds": 4823000000,
+        "meta": {
+          "fixtureMeta": {
+            "owner": "team-checkout",
+            "suite": "smoke"
+          },
+          "meta": {
+            "issue": "JIRA-1024",
+            "severity": "critical"
+          },
+          "unstable": false,
+          "userAgents": [
+            "Chrome 124.0.0 / macOS 14.5"
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "2026-05-19T14:00:00Z"
+      }
+    },
+    {
+      "name": "Checkout flow shows tax breakdown",
+      "lineage": [
+        "Checkout flow",
+        "shows tax breakdown"
+      ],
+      "location": {
+        "file": "./tests/checkout.testcafe.ts"
+      },
+      "attempt": {
+        "durationInNanoseconds": 3120000000,
+        "meta": {
+          "fixtureMeta": {
+            "owner": "team-checkout",
+            "suite": "smoke"
+          },
+          "unstable": false,
+          "userAgents": [
+            "Chrome 124.0.0 / macOS 14.5"
+          ]
+        },
+        "status": {
+          "kind": "successful"
+        },
+        "startedAt": "2026-05-19T14:00:00Z"
+      }
+    },
+    {
+      "name": "Checkout flow honors loyalty discount",
+      "lineage": [
+        "Checkout flow",
+        "honors loyalty discount"
+      ],
+      "location": {
+        "file": "./tests/checkout.testcafe.ts"
+      },
+      "attempt": {
+        "durationInNanoseconds": 0,
+        "meta": {
+          "fixtureMeta": {
+            "owner": "team-checkout",
+            "suite": "smoke"
+          },
+          "meta": {
+            "issue": "JIRA-1131"
+          },
+          "unstable": false,
+          "userAgents": [
+            "Chrome 124.0.0 / macOS 14.5"
+          ]
+        },
+        "status": {
+          "kind": "skipped"
+        },
+        "startedAt": "2026-05-19T14:00:00Z"
+      }
+    }
+  ]
+}

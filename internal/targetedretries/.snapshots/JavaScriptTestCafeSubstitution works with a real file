@@ -1,0 +1,10 @@
+([]map[string]string) (len=2) {
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=13) "./fixture1.js",
+    (string) (len=4) "grep": (string) (len=30) "^Second test in first fixture$"
+  },
+  (map[string]string) (len=2) {
+    (string) (len=4) "file": (string) (len=13) "./fixture3.js",
+    (string) (len=4) "grep": (string) (len=29) "^First test in third fixture$"
+  }
+}
