@@ -1,0 +1,96 @@
+package targetedretries
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/templating"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
+)
+
+type JavaScriptTestCafeSubstitution struct{}
+
+func (s JavaScriptTestCafeSubstitution) Example() string {
+	return "npx testcafe chrome '{{ file }}' -T '{{ grep }}'"
+}
+
+func (s JavaScriptTestCafeSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
+	keywords := compiledTemplate.Keywords()
+
+	if len(keywords) == 0 {
+		return errors.NewInputError(
+			"Retrying TestCafe requires a template with the 'file' and 'grep' keywords; no keywords were found",
+		)
+	}
+
+	if len(keywords) != 2 {
+		return errors.NewInputError(
+			"Retrying TestCafe requires a template with the 'file' and 'grep' keywords; these were found: %v",
+			strings.Join(keywords, ", "),
+		)
+	}
+
+	if (keywords[0] == "file" && keywords[1] == "grep") ||
+		(keywords[0] == "grep" && keywords[1] == "file") {
+		return nil
+	}
+
+	return errors.NewInputError(
+		"Retrying TestCafe requires a template with the 'file' and 'grep' keywords; '%v' and '%v' were found instead",
+		keywords[0],
+		keywords[1],
+	)
+}
+
+func (s JavaScriptTestCafeSubstitution) SubstitutionsFor(
+	_ templating.CompiledTemplate,
+	testResults v1.TestResults,
+	filter func(v1.Test) bool,
+) ([]map[string]string, error) {
+	testsByFile := map[string][]string{}
+	testsSeenByFile := map[string]map[string]struct{}{}
+
+	for _, test := range testResults.Tests {
+		if !filter(test) {
+			continue
+		}
+
+		if test.Location == nil || test.Location.File == "" {
+			continue
+		}
+
+		if len(test.Lineage) == 0 {
+			continue
+		}
+		testName := test.Lineage[len(test.Lineage)-1]
+
+		file := templating.ShellEscape(test.Location.File)
+		if _, ok := testsSeenByFile[file]; !ok {
+			testsSeenByFile[file] = map[string]struct{}{}
+		}
+		if _, ok := testsByFile[file]; !ok {
+			testsByFile[file] = make([]string, 0)
+		}
+
+		formattedName := templating.ShellEscape(templating.RegexpEscape(testName))
+		if _, ok := testsSeenByFile[file][formattedName]; ok {
+			continue
+		}
+
+		testsByFile[file] = append(testsByFile[file], formattedName)
+		testsSeenByFile[file][formattedName] = struct{}{}
+	}
+
+	substitutions := make([]map[string]string, len(testsByFile))
+	i := 0
+	for file, tests := range testsByFile {
+		substitutions[i] = map[string]string{
+			"file": file,
+			"grep": fmt.Sprintf("^%v$", strings.Join(tests, "|")),
+		}
+		i++
+	}
+
+	return substitutions, nil
+}

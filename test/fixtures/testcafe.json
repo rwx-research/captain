@@ -1,0 +1,91 @@
+{
+  "startTime": "1970-01-01T00:00:00.000Z",
+  "endTime": "1970-01-01T00:15:25.000Z",
+  "userAgents": [
+    "Chrome 41.0.2227 / Mac OS X 10.10.1",
+    "Firefox 47 / Mac OS X 10.10.1"
+  ],
+  "passed": 4,
+  "total": 6,
+  "skipped": 1,
+  "fixtures": [
+    {
+      "name": "First fixture",
+      "path": "./fixture1.js",
+      "tests": [
+        {
+          "name": "First test in first fixture",
+          "errs": [],
+          "durationMs": 74000,
+          "unstable": true,
+          "screenshotPath": "/screenshots/1445437598847"
+        },
+        {
+          "name": "Second test in first fixture",
+          "errs": [
+            "A JavaScript error occurred on \"http://example.org\".\nRepeat test actions in the browser and check the console for errors.\nEnable the “skipJsErrors” option to ignore JavaScript errors during test execution. Learn more: \"https://testcafe.io/documentation/404038/recipes/debugging/skip-javascript-errors\"\nIf the website only throws this error when you test it with TestCafe, please create a new issue at:\n\"https://github.com/DevExpress/testcafe/issues/new?template=bug-report.md\".\n\nJavaScript error details:\nSome error\n\nBrowser: Chrome 41.0.2227 / Mac OS X 10.10.1\nScreenshot: /screenshots/1445437598847/errors\n\n   1 |var createCallsiteRecord = require (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at async formattedImport (some-file:1:1)\n   at async exports.requireOrImport (some-file:1:1)\n   at async exports.loadFilesAsync (some-file:1:1)\n   at async singleRun (some-file:1:1)\n   at async exports.handler (some-file:1:1)",
+            "The specified selector does not match any element in the DOM tree.\n\nBrowser: Firefox 47 / Mac OS X 10.10.1\n\n   1 |var createCallsiteRecord = require (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at async formattedImport (some-file:1:1)\n   at async exports.requireOrImport (some-file:1:1)\n   at async exports.loadFilesAsync (some-file:1:1)\n   at async singleRun (some-file:1:1)\n   at async exports.handler (some-file:1:1)"
+          ],
+          "durationMs": 74000,
+          "unstable": false,
+          "screenshotPath": "/screenshots/1445437598847"
+        },
+        {
+          "name": "Third test in first fixture",
+          "errs": [],
+          "durationMs": 74000,
+          "unstable": false,
+          "screenshotPath": null
+        }
+      ]
+    },
+    {
+      "name": "Second fixture",
+      "path": "./fixture2.js",
+      "tests": [
+        {
+          "name": "First test in second fixture",
+          "errs": [],
+          "durationMs": 74000,
+          "unstable": false,
+          "screenshotPath": null
+        },
+        {
+          "name": "Second test in second fixture",
+          "errs": [],
+          "durationMs": 74000,
+          "unstable": false,
+          "screenshotPath": null
+        },
+        {
+          "name": "Third test in second fixture",
+          "errs": [],
+          "durationMs": 0,
+          "unstable": false,
+          "screenshotPath": null,
+          "skipped": true
+        }
+      ]
+    },
+    {
+      "name": "Third fixture",
+      "path": "./fixture3.js",
+      "tests": [
+        {
+          "name": "First test in third fixture",
+          "errs": [
+            "- Error in fixture.beforeEach hook -\nThe specified selector does not match any element in the DOM tree.\n\nBrowser: Firefox 47 / Mac OS X 10.10.1\n\n   1 |var createCallsiteRecord = require (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at Object.<anonymous> (some-file:1:1)\n   at async formattedImport (some-file:1:1)\n   at async exports.requireOrImport (some-file:1:1)\n   at async exports.loadFilesAsync (some-file:1:1)\n   at async singleRun (some-file:1:1)\n   at async exports.handler (some-file:1:1)"
+          ],
+          "durationMs": 74000,
+          "unstable": true,
+          "screenshotPath": null
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "Was unable to take a screenshot due to an error.\n\nReferenceError: someVar is not defined",
+    "Was unable to take a screenshot due to an error.\n\nReferenceError: someOtherVar is not defined",
+    "Was unable to take screenshots because the screenshot directory is not specified. To specify it, use the \"-s\" or \"--screenshots\" command line option or the \"screenshots\" method of the test runner in case you are using API."
+  ]
+}

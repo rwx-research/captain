@@ -768,6 +768,27 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				Expect(result.exitCode).To(Equal(123))
 				Expect(result.stdout).To(ContainSubstring("FullyQualifiedName=ExampleTests.SomeTest")) // indicative of a retry
 			})
+
+			It("fails & passes through exit code on failure for TestCafe", func() {
+				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/testcafe-failed-not-quarantined.json", prefix)
+				defer cleanup()
+
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"captain-cli-functional-tests",
+						"--test-results", testResultsPath,
+						"--retries", "1",
+						"--retry-command", `echo "file={{ file }} grep={{ grep }}"`,
+						"-c", "bash -c 'exit 123'",
+					},
+					env: make(map[string]string),
+				})
+
+				Expect(result.exitCode).To(Equal(123))
+				Expect(result.stdout).To(ContainSubstring("file=./tests/example.testcafe.js")) // indicative of a retry
+				Expect(result.stdout).To(ContainSubstring("grep=^submits the form$"))           // both tokens substituted
+			})
 		})
 
 		Context("when partitioning is configured but flags aren't provided", func() {

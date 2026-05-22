@@ -1,0 +1,24 @@
+{
+  "startTime": "2026-01-01T00:00:00.000Z",
+  "endTime": "2026-01-01T00:00:10.000Z",
+  "userAgents": ["Chrome 120 / Linux"],
+  "passed": 0,
+  "total": 1,
+  "skipped": 0,
+  "fixtures": [
+    {
+      "name": "example",
+      "path": "./tests/example.testcafe.js",
+      "tests": [
+        {
+          "name": "submits the form",
+          "errs": ["AssertionError: expected 'a' to equal 'b'"],
+          "durationMs": 123,
+          "unstable": false,
+          "screenshotPath": null
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}

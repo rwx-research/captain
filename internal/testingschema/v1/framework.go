@@ -22,6 +22,7 @@ const (
 	FrameworkKindPHPUnit    FrameworkKind = "PHPUnit"
 	FrameworkKindPlaywright FrameworkKind = "Playwright"
 	FrameworkKindPytest     FrameworkKind = "pytest"
+	FrameworkKindTestCafe   FrameworkKind = "TestCafe"
 	FrameworkKindUnitTest   FrameworkKind = "unittest"
 	FrameworkKindRSpec      FrameworkKind = "RSpec"
 	FrameworkKindxUnit      FrameworkKind = "xUnit"
@@ -84,6 +85,9 @@ var (
 	)
 	JavaScriptPlaywrightFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindPlaywright},
+	)
+	JavaScriptTestCafeFramework = registerFramework(
+		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindTestCafe},
 	)
 	JavaScriptVitestFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindVitest},
