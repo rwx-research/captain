@@ -8,6 +8,8 @@ on:
   cli:
     init:
       commit-sha: ${{ event.git.sha }}
+      branch: cli-${{ event.git.branch }}
+      trigger: cli
 
 concurrency-pools:
   - id: rwx-research/captain:ci:${{ init.branch }}:${{ init.trigger }}
