@@ -88,10 +88,6 @@ func (p JavaScriptKarmaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 
 		for _, testCase := range testCases {
-			lineage := make([]string, 0, len(testCase.Suite)+1)
-			lineage = append(lineage, testCase.Suite...)
-			lineage = append(lineage, testCase.Description)
-
 			// karma-mocha's adapter hardcodes `id` to "" and does not emit a `fullName`
 			// field at all (see karma-mocha/src/adapter.js). Without a fallback, every
 			// karma-mocha test reduces to the same composite identifier and Captain
@@ -100,7 +96,7 @@ func (p JavaScriptKarmaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			id := testCase.ID
 			name := testCase.FullName
 			if name == "" {
-				name = strings.Join(lineage, " ")
+				name = strings.Join(append(testCase.Suite, testCase.Description), " ")
 			}
 			if id == "" {
 				id = name
@@ -141,7 +137,7 @@ func (p JavaScriptKarmaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 					ID:      &id,
 					Name:    name,
 					Scope:   &browserName,
-					Lineage: lineage,
+					Lineage: append(testCase.Suite, testCase.Description),
 					Attempt: v1.TestAttempt{
 						Duration: &duration,
 						Status:   status,
