@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/mileusna/useragent"
@@ -87,7 +88,20 @@ func (p JavaScriptKarmaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 
 		for _, testCase := range testCases {
+			// karma-mocha's adapter hardcodes `id` to "" and does not emit a `fullName`
+			// field at all (see karma-mocha/src/adapter.js). Without a fallback, every
+			// karma-mocha test reduces to the same composite identifier and Captain
+			// reports them as duplicates. karma-jasmine populates both fields and is
+			// unaffected by this fallback.
 			id := testCase.ID
+			name := testCase.FullName
+			if name == "" {
+				name = strings.Join(append(testCase.Suite, testCase.Description), " ")
+			}
+			if id == "" {
+				id = name
+			}
+
 			duration := time.Duration(testCase.Time * int(time.Millisecond))
 			var status v1.TestStatus
 			switch {
@@ -121,7 +135,7 @@ func (p JavaScriptKarmaParser) Parse(data io.Reader) (*v1.TestResults, error) {
 				tests,
 				v1.Test{
 					ID:      &id,
-					Name:    testCase.FullName,
+					Name:    name,
 					Scope:   &browserName,
 					Lineage: append(testCase.Suite, testCase.Description),
 					Attempt: v1.TestAttempt{

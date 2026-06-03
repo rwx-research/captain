@@ -1,0 +1,89 @@
+{
+  "browsers": {
+    "87843490": {
+      "id": "87843490",
+      "fullName": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+      "name": "Chrome 109.0.0.0 (Mac OS 10.15.7)",
+      "state": "DISCONNECTED",
+      "lastResult": {
+        "startTime": 1677015045628,
+        "total": 4,
+        "success": 2,
+        "failed": 1,
+        "skipped": 1,
+        "totalTime": 6,
+        "netTime": 2,
+        "error": true,
+        "disconnected": false
+      },
+      "disconnectsCount": 0,
+      "noActivityTimeout": 30000,
+      "disconnectDelay": 2000
+    }
+  },
+  "result": {
+    "87843490": [
+      {
+        "id": "",
+        "description": "is a contextual passing test",
+        "suite": ["Some test", "context"],
+        "success": true,
+        "skipped": false,
+        "pending": false,
+        "time": 1,
+        "log": [],
+        "assertionErrors": [],
+        "startTime": 1677015045630,
+        "endTime": 1677015045631
+      },
+      {
+        "id": "",
+        "description": "is a passing test",
+        "suite": ["Some test"],
+        "success": true,
+        "skipped": false,
+        "pending": false,
+        "time": 1,
+        "log": [],
+        "assertionErrors": [],
+        "startTime": 1677015045632,
+        "endTime": 1677015045633
+      },
+      {
+        "id": "",
+        "description": "is a skipped test",
+        "suite": ["Some test"],
+        "success": false,
+        "skipped": true,
+        "pending": true,
+        "time": 0,
+        "log": [],
+        "assertionErrors": [],
+        "endTime": 1677015045633
+      },
+      {
+        "id": "",
+        "description": "is a failing test",
+        "suite": ["Some test"],
+        "success": false,
+        "skipped": false,
+        "pending": false,
+        "time": 0,
+        "log": [
+          "AssertionError: Expected true to be false.\n    at Context.<anonymous> (http://localhost:9876/base/tests/some-test.js?0928787523d1ecf8fe8e5c6b04ef9abb48348e11:19:18)"
+        ],
+        "assertionErrors": [],
+        "startTime": 1677015045634,
+        "endTime": 1677015045634
+      }
+    ]
+  },
+  "summary": {
+    "success": 2,
+    "failed": 1,
+    "skipped": 1,
+    "error": true,
+    "disconnected": false,
+    "exitCode": 1
+  }
+}

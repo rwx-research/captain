@@ -28,6 +28,33 @@ var _ = Describe("JavaScriptKarmaParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("synthesizes id and name from suite and description when karma-mocha leaves them empty", func() {
+			fixture, err := os.Open("../../test/fixtures/karma_mocha.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.JavaScriptKarmaParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(testResults.Tests).To(HaveLen(4))
+			synthesizedNames := make([]string, 0, len(testResults.Tests))
+			for _, test := range testResults.Tests {
+				Expect(test.ID).ToNot(BeNil())
+				Expect(*test.ID).ToNot(BeEmpty())
+				Expect(*test.ID).To(Equal(test.Name))
+				synthesizedNames = append(synthesizedNames, test.Name)
+			}
+			Expect(synthesizedNames).To(ConsistOf(
+				"Some test context is a contextual passing test",
+				"Some test is a passing test",
+				"Some test is a skipped test",
+				"Some test is a failing test",
+			))
+
+			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
+			Expect(err).ToNot(HaveOccurred())
+			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
+		})
+
 		It("errors on JSON that doesn't look like Karma", func() {
 			var testResults *v1.TestResults
 			var err error
