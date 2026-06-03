@@ -28,6 +28,18 @@ var _ = Describe("JavaScriptKarmaParser", func() {
 			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
 		})
 
+		It("synthesizes id and name from suite and description when karma-mocha leaves them empty", func() {
+			fixture, err := os.Open("../../test/fixtures/karma_mocha.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.JavaScriptKarmaParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+
+			rwxJSON, err := json.MarshalIndent(testResults, "", "  ")
+			Expect(err).ToNot(HaveOccurred())
+			cupaloy.SnapshotT(GinkgoT(), rwxJSON)
+		})
+
 		It("errors on JSON that doesn't look like Karma", func() {
 			var testResults *v1.TestResults
 			var err error
