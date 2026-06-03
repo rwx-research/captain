@@ -24,83 +24,57 @@
   "result": {
     "87843490": [
       {
+        "id": "",
         "description": "is a contextual passing test",
-        "id": "",
-        "log": [],
-        "skipped": false,
-        "disabled": false,
-        "pending": false,
-        "success": true,
         "suite": ["Some test", "context"],
+        "success": true,
+        "skipped": false,
+        "pending": false,
         "time": 1,
-        "executedExpectationsCount": 1,
-        "passedExpectations": [
-          {
-            "matcherName": "toBe",
-            "message": "Passed.",
-            "stack": "",
-            "passed": true
-          }
-        ],
-        "properties": null
+        "log": [],
+        "assertionErrors": [],
+        "startTime": 1677015045630,
+        "endTime": 1677015045631
       },
       {
+        "id": "",
         "description": "is a passing test",
-        "id": "",
-        "log": [],
-        "skipped": false,
-        "disabled": false,
-        "pending": false,
-        "success": true,
         "suite": ["Some test"],
+        "success": true,
+        "skipped": false,
+        "pending": false,
         "time": 1,
-        "executedExpectationsCount": 2,
-        "passedExpectations": [
-          {
-            "matcherName": "toBe",
-            "message": "Passed.",
-            "stack": "",
-            "passed": true
-          },
-          {
-            "matcherName": "toBe",
-            "message": "Passed.",
-            "stack": "",
-            "passed": true
-          }
-        ],
-        "properties": null
-      },
-      {
-        "description": "is a skipped test",
-        "id": "",
         "log": [],
-        "skipped": true,
-        "disabled": false,
-        "pending": true,
-        "success": true,
-        "suite": ["Some test"],
-        "time": 0,
-        "executedExpectationsCount": 0,
-        "passedExpectations": [],
-        "properties": null
+        "assertionErrors": [],
+        "startTime": 1677015045632,
+        "endTime": 1677015045633
       },
       {
-        "description": "is a failing test",
         "id": "",
-        "log": [
-          "Expected true to be false.\n    at <Jasmine>\n    at UserContext.<anonymous> (http://localhost:9876/base/tests/some-test.js?0928787523d1ecf8fe8e5c6b04ef9abb48348e11:19:18)\n    at <Jasmine>"
-        ],
-        "skipped": false,
-        "disabled": false,
-        "pending": false,
-        "success": false,
+        "description": "is a skipped test",
         "suite": ["Some test"],
+        "success": false,
+        "skipped": true,
+        "pending": true,
         "time": 0,
-        "executedExpectationsCount": 1,
-        "passedExpectations": [],
-        "properties": null,
-        "debug_url": "http://localhost:9876/debug.html?spec=Some%20test%20is%20a%20failing%20test"
+        "log": [],
+        "assertionErrors": [],
+        "endTime": 1677015045633
+      },
+      {
+        "id": "",
+        "description": "is a failing test",
+        "suite": ["Some test"],
+        "success": false,
+        "skipped": false,
+        "pending": false,
+        "time": 0,
+        "log": [
+          "AssertionError: Expected true to be false.\n    at Context.<anonymous> (http://localhost:9876/base/tests/some-test.js?0928787523d1ecf8fe8e5c6b04ef9abb48348e11:19:18)"
+        ],
+        "assertionErrors": [],
+        "startTime": 1677015045634,
+        "endTime": 1677015045634
       }
     ]
   },
