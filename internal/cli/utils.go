@@ -11,6 +11,8 @@ import (
 	"github.com/rwx-research/captain-cli/internal/fs"
 )
 
+const originalAttemptID = "original-attempt"
+
 type IntermediateArtifactStorage struct {
 	basePath   string
 	commandID  string
@@ -29,7 +31,7 @@ func (s Service) NewIntermediateArtifactStorage(path string) (*IntermediateArtif
 		basePath:   path,
 		fs:         s.FileSystem,
 		workingDir: wd,
-		retryID:    "original-attempt",
+		retryID:    originalAttemptID,
 	}
 
 	if path == "" {
@@ -153,12 +155,23 @@ func (ias *IntermediateArtifactStorage) moveFile(srcPath, dstPath string) error 
 		return nil
 	}
 
-	srcFile, err := ias.fs.Open(srcPath)
+	if err := copyFile(ias.fs, srcPath, dstPath); err != nil {
+		return err
+	}
+
+	return errors.WithStack(ias.fs.Remove(srcPath))
+}
+
+func copyFile(fileSystem fs.FileSystem, srcPath, dstPath string) error {
+	srcFile, err := fileSystem.Open(srcPath)
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	defer func() {
+		_ = srcFile.Close()
+	}()
 
-	dstFile, err := ias.fs.Create(dstPath)
+	dstFile, err := fileSystem.Create(dstPath)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -167,24 +180,10 @@ func (ias *IntermediateArtifactStorage) moveFile(srcPath, dstPath string) error 
 	}()
 
 	if _, err = io.Copy(dstFile, srcFile); err != nil {
-		_ = srcFile.Close()
 		return errors.WithStack(err)
 	}
 
-	if err = dstFile.Sync(); err != nil {
-		_ = srcFile.Close()
-		return errors.WithStack(err)
-	}
-
-	if err = srcFile.Close(); err != nil {
-		return errors.WithStack(err)
-	}
-
-	if err = ias.fs.Remove(srcPath); err != nil {
-		return errors.WithStack(err)
-	}
-
-	return nil
+	return errors.WithStack(dstFile.Sync())
 }
 
 func (ias *IntermediateArtifactStorage) delete() error {
@@ -197,4 +196,14 @@ func (ias *IntermediateArtifactStorage) SetCommandID(n int) {
 
 func (ias *IntermediateArtifactStorage) SetRetryID(n int) {
 	ias.retryID = fmt.Sprintf("retry-%d", n)
+}
+
+// attemptScope is a unique-per-invocation path segment used to namespace preserved attachments so
+// re-invocations writing to the same framework paths don't clobber each other.
+func (ias *IntermediateArtifactStorage) attemptScope() string {
+	if ias.commandID != "" {
+		return filepath.Join(ias.retryID, ias.commandID)
+	}
+
+	return ias.retryID
 }

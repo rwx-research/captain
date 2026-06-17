@@ -176,6 +176,13 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 			return err
 		}
 
+		// Preserve this attempt's attachments before any retry re-invocation overwrites them in place.
+		if shouldPreserveAttachments() {
+			if err := s.preserveAttachments(testResults, originalAttemptID); err != nil {
+				return errors.WithStack(err)
+			}
+		}
+
 		if testResults != nil {
 			tests := make([]v1.Test, len(testResults.Tests))
 			copy(tests, testResults.Tests)
@@ -675,6 +682,13 @@ func (s Service) attemptRetries(
 			newTestResults, newTestResultsFiles, _, err := s.handleCommandOutcome(cfg, cmdErr, retryID)
 			if err != nil {
 				return flattenedTestResults, flattenedNewlyExecutedTestResults, retryID, err
+			}
+
+			// Preserve this invocation's attachments before the next invocation overwrites them in place.
+			if shouldPreserveAttachments() {
+				if err := s.preserveAttachments(newTestResults, ias.attemptScope()); err != nil {
+					return flattenedTestResults, flattenedNewlyExecutedTestResults, retryID, errors.WithStack(err)
+				}
 			}
 
 			if newTestResults != nil {
