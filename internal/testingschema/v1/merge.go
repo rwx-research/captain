@@ -53,13 +53,26 @@ func flatten(unionedTestResults []TestResults) TestResults {
 					// do not flatten skipped statuses into existing tests because they didn't actually run again
 					break
 				}
+				swapped := false
 				if newAttempt.Status.ImpliesFailure() && !newPastAttempt.Status.ImpliesFailure() {
 					newAttempt, newPastAttempt = newPastAttempt, newAttempt
+					swapped = true
 				}
 
-				pastAttempts := make([]TestAttempt, len(baseTest.PastAttempts)+1)
-				copy(pastAttempts, baseTest.PastAttempts)
-				pastAttempts[len(pastAttempts)-1] = newPastAttempt
+				// Preserve the complete attempt history from both sides. The incoming test may carry its
+				// own PastAttempts (e.g. a framework's in-process retries within a single Captain
+				// invocation); dropping them loses attempts and their distinct attachments (traces).
+				pastAttempts := make([]TestAttempt, 0, len(baseTest.PastAttempts)+len(incomingTest.PastAttempts)+1)
+				pastAttempts = append(pastAttempts, baseTest.PastAttempts...)
+				if swapped {
+					// headline stayed on baseTest.Attempt; incomingTest.Attempt becomes the latest past attempt
+					pastAttempts = append(pastAttempts, incomingTest.PastAttempts...)
+					pastAttempts = append(pastAttempts, newPastAttempt)
+				} else {
+					// headline moved to incomingTest.Attempt; baseTest.Attempt precedes incoming's past attempts
+					pastAttempts = append(pastAttempts, newPastAttempt)
+					pastAttempts = append(pastAttempts, incomingTest.PastAttempts...)
+				}
 
 				flattened.Tests[i] = Test{
 					Scope:        baseTest.Scope,

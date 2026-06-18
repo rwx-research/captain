@@ -676,4 +676,126 @@ var _ = Describe("Merge", func() {
 			},
 		))
 	})
+
+	It("preserves the incoming test's own past attempts across batches", func() {
+		int1 := 1
+		id1 := "id1"
+		name1 := "name1"
+		lineage1 := []string{"name", "1"}
+		location1 := v1.Location{File: "file1.rb", Line: &int1}
+
+		baseP0 := "base-p0"
+		baseP1 := "base-p1"
+		baseHeadline := "base-headline"
+		incP0 := "inc-p0"
+		incP1 := "inc-p1"
+		incHeadline := "inc-headline"
+
+		// First invocation: an attempt with its own in-process retries (e.g. a framework retrying).
+		results1 := v1.TestResults{
+			Framework: v1.JavaScriptPlaywrightFramework,
+			Tests: []v1.Test{
+				{
+					ID:       &id1,
+					Name:     name1,
+					Lineage:  lineage1,
+					Location: &location1,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&baseHeadline, nil, nil)},
+					PastAttempts: []v1.TestAttempt{
+						{Status: v1.NewFailedTestStatus(&baseP0, nil, nil)},
+						{Status: v1.NewFailedTestStatus(&baseP1, nil, nil)},
+					},
+				},
+			},
+		}
+
+		// Second invocation (a targeted retry) with its own in-process retries.
+		results2 := v1.TestResults{
+			Framework: v1.JavaScriptPlaywrightFramework,
+			Tests: []v1.Test{
+				{
+					ID:       &id1,
+					Name:     name1,
+					Lineage:  lineage1,
+					Location: &location1,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&incHeadline, nil, nil)},
+					PastAttempts: []v1.TestAttempt{
+						{Status: v1.NewFailedTestStatus(&incP0, nil, nil)},
+						{Status: v1.NewFailedTestStatus(&incP1, nil, nil)},
+					},
+				},
+			},
+		}
+
+		merged := v1.Merge([]v1.TestResults{results1}, []v1.TestResults{results2})
+
+		Expect(merged.Tests).To(HaveLen(1))
+		Expect(merged.Tests[0].Attempt).To(Equal(
+			v1.TestAttempt{Status: v1.NewFailedTestStatus(&incHeadline, nil, nil)},
+		))
+		// Full chronological history, headline excluded: base's full sequence, then incoming's past.
+		Expect(merged.Tests[0].PastAttempts).To(Equal([]v1.TestAttempt{
+			{Status: v1.NewFailedTestStatus(&baseP0, nil, nil)},
+			{Status: v1.NewFailedTestStatus(&baseP1, nil, nil)},
+			{Status: v1.NewFailedTestStatus(&baseHeadline, nil, nil)},
+			{Status: v1.NewFailedTestStatus(&incP0, nil, nil)},
+			{Status: v1.NewFailedTestStatus(&incP1, nil, nil)},
+		}))
+	})
+
+	It("keeps a passing headline while preserving both sides' past attempts", func() {
+		int1 := 1
+		id1 := "id1"
+		name1 := "name1"
+		lineage1 := []string{"name", "1"}
+		location1 := v1.Location{File: "file1.rb", Line: &int1}
+
+		baseP0 := "base-p0"
+		incP0 := "inc-p0"
+		incHeadline := "inc-headline"
+
+		// First invocation eventually passed.
+		results1 := v1.TestResults{
+			Framework: v1.JavaScriptPlaywrightFramework,
+			Tests: []v1.Test{
+				{
+					ID:       &id1,
+					Name:     name1,
+					Lineage:  lineage1,
+					Location: &location1,
+					Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+					PastAttempts: []v1.TestAttempt{
+						{Status: v1.NewFailedTestStatus(&baseP0, nil, nil)},
+					},
+				},
+			},
+		}
+
+		// A later invocation failed; the passing attempt must remain the headline.
+		results2 := v1.TestResults{
+			Framework: v1.JavaScriptPlaywrightFramework,
+			Tests: []v1.Test{
+				{
+					ID:       &id1,
+					Name:     name1,
+					Lineage:  lineage1,
+					Location: &location1,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&incHeadline, nil, nil)},
+					PastAttempts: []v1.TestAttempt{
+						{Status: v1.NewFailedTestStatus(&incP0, nil, nil)},
+					},
+				},
+			},
+		}
+
+		merged := v1.Merge([]v1.TestResults{results1}, []v1.TestResults{results2})
+
+		Expect(merged.Tests).To(HaveLen(1))
+		Expect(merged.Tests[0].Attempt).To(Equal(v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()}))
+		Expect(merged.Tests[0].PastAttempts).To(Equal([]v1.TestAttempt{
+			{Status: v1.NewFailedTestStatus(&baseP0, nil, nil)},
+			{Status: v1.NewFailedTestStatus(&incP0, nil, nil)},
+			{Status: v1.NewFailedTestStatus(&incHeadline, nil, nil)},
+		}))
+	})
 })
