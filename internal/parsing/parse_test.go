@@ -56,6 +56,13 @@ func (p NeitherErrorNorResultsParser) Parse(_ io.Reader) (*v1.TestResults, error
 	return nil, nil
 }
 
+type PanicParser struct{}
+
+func (p PanicParser) Parse(_ io.Reader) (*v1.TestResults, error) {
+	// Mirrors the class of runtime panic (e.g. slice bounds) seen in real parsers.
+	panic("simulated parser panic")
+}
+
 var _ = Describe("Parse", func() {
 	var (
 		logCore      zapcore.Core
@@ -158,6 +165,50 @@ var _ = Describe("Parse", func() {
 		Expect(logMessages).NotTo(ContainElement(
 			ContainSubstring("ultimately responsible for parsing the test results"),
 		))
+	})
+
+	It("recovers from a parser panic and reports a debuggable warning", func() {
+		results, err := parsing.Parse(
+			file,
+			1,
+			parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{PanicParser{}},
+				Logger:                   log,
+			},
+		)
+
+		Expect(results).To(BeNil())
+		Expect(err).NotTo(BeNil())
+		Expect(err.Error()).To(
+			ContainSubstring("No parsers were capable of parsing the provided test results"),
+		)
+
+		logMessages := make([]string, 0)
+		for _, log := range recordedLogs.All() {
+			logMessages = append(logMessages, log.Message)
+		}
+
+		Expect(logMessages).To(ContainElement(SatisfyAll(
+			ContainSubstring("Recovered from a panic in"),
+			ContainSubstring("PanicParser"),
+			ContainSubstring("some/path/to/file"),
+			ContainSubstring("Stack trace:"),
+		)))
+	})
+
+	It("recovers from a parser panic and falls through to a working parser", func() {
+		results, err := parsing.Parse(
+			file,
+			1,
+			parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{PanicParser{}, SuccessfulParserOne{}},
+				Logger:                   log,
+			},
+		)
+
+		Expect(err).To(BeNil())
+		Expect(results).NotTo(BeNil())
+		Expect(results.Summary.Tests).To(Equal(1))
 	})
 
 	It("returns the first test results with the base64 encoded content", func() {

@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"runtime/debug"
 	"strings"
 
 	"go.uber.org/zap"
@@ -105,6 +106,32 @@ func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
 	return results, nil
 }
 
+// safelyParse invokes a parser and recovers from any panic it raises, converting the panic into an
+// error so that one misbehaving parser cannot abort the entire run. The recovered panic (including a
+// stack trace pointing at the offending line) is logged so the underlying parser bug remains
+// debuggable.
+func safelyParse(
+	parser Parser,
+	file fs.File,
+	logger *zap.SugaredLogger,
+) (result *v1.TestResults, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Warnf(
+				"Recovered from a panic in %T while parsing %q; skipping this parser. "+
+					"Double check the docs to ensure you're using the proper test framework and reporter. "+
+					"If your format is correct, please report this error along with the test results file.\n"+
+					"Panic: %v\nStack trace:\n%s",
+				parser, file.Name(), r, debug.Stack(),
+			)
+			err = errors.NewInputError("%T panicked while parsing %q: %v", parser, file.Name(), r)
+		}
+	}()
+
+	result, err = parser.Parse(file)
+	return result, errors.WithStack(err)
+}
+
 func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1.TestResults, error) {
 	if len(parsers) == 0 {
 		return nil, errors.NewInternalError("No parsers were provided")
@@ -117,7 +144,7 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 			return nil, err
 		}
 
-		parsedTestResult, err := parser.Parse(file)
+		parsedTestResult, err := safelyParse(parser, file, cfg.Logger)
 		if err != nil {
 			cfg.Logger.Debugf("%T was not capable of parsing the test results. Error: %v", parser, err)
 			continue
