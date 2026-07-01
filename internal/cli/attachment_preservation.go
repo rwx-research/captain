@@ -110,7 +110,10 @@ func (s Service) preserveAttemptAttachments(attempt *v1.TestAttempt, scope strin
 			return errors.WithStack(err)
 		}
 
-		attachments[i].Path = destRel
+		// Emit an absolute path. The RWX agent resolves these paths, and Captain's working
+		// directory is not necessarily the agent's workspace root (e.g. a monorepo subdirectory),
+		// so a relative path can't be resolved unambiguously on that side.
+		attachments[i].Path = destAbs
 		changed = true
 	}
 
