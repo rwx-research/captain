@@ -106,10 +106,8 @@ func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
 	return results, nil
 }
 
-// safelyParse invokes a parser and recovers from any panic it raises, converting the panic into an
-// error so that one misbehaving parser cannot abort the entire run. The recovered panic (including a
-// stack trace pointing at the offending line) is logged so the underlying parser bug remains
-// debuggable.
+const supportedFrameworksDocsURL = "https://www.rwx.com/docs/captain/test-frameworks"
+
 func safelyParse(
 	parser Parser,
 	file fs.File,
@@ -117,19 +115,38 @@ func safelyParse(
 ) (result *v1.TestResults, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Warnf(
-				"Recovered from a panic in %T while parsing %q; skipping this parser. "+
-					"Double check the docs to ensure you're using the proper test framework and reporter. "+
-					"If your format is correct, please report this error along with the test results file.\n"+
-					"Panic: %v\nStack trace:\n%s",
-				parser, file.Name(), r, debug.Stack(),
-			)
-			err = errors.NewInputError("%T panicked while parsing %q: %v", parser, file.Name(), r)
+			logger.Debugf("%T panicked while parsing %q:\n%s", parser, file.Name(), debug.Stack())
+			err = errors.NewInputError("panicked while parsing %q: %v", file.Name(), r)
 		}
 	}()
 
 	result, err = parser.Parse(file)
 	return result, errors.WithStack(err)
+}
+
+// noCapableParserError builds the error returned when no parser could parse the results. It lists each
+// attempted parser's failure - errors and recovered panics alike - and links to the supported
+// frameworks so users can confirm they're using a supported test framework and reporter. When the
+// framework was specified manually, only that framework's parser(s) were attempted, so the message is
+// phrased accordingly.
+func noCapableParserError(cfg Config, parseFailures []string) error {
+	details := strings.Join(parseFailures, "\n")
+
+	if cfg.ProvidedFrameworkKind != "" || cfg.ProvidedFrameworkLanguage != "" {
+		return errors.NewInputError(
+			"The configured test framework could not parse the provided test results. Double check that "+
+				"you're using a supported test framework and reporter: %s\n%s",
+			supportedFrameworksDocsURL,
+			details,
+		)
+	}
+
+	return errors.NewInputError(
+		"No parsers were capable of parsing the provided test results. Double check that you're using a "+
+			"supported test framework and reporter: %s\nAttempted parsers:\n%s",
+		supportedFrameworksDocsURL,
+		details,
+	)
 }
 
 func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1.TestResults, error) {
@@ -138,6 +155,7 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 	}
 
 	parsedTestResults := make([]v1.TestResults, 0)
+	parseFailures := make([]string, 0)
 	var firstParser Parser
 	for _, parser := range parsers {
 		if err := rewindFile(file); err != nil {
@@ -147,6 +165,7 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 		parsedTestResult, err := safelyParse(parser, file, cfg.Logger)
 		if err != nil {
 			cfg.Logger.Debugf("%T was not capable of parsing the test results. Error: %v", parser, err)
+			parseFailures = append(parseFailures, fmt.Sprintf("  %T: %v", parser, err))
 			continue
 		}
 		if parsedTestResult == nil {
@@ -162,7 +181,7 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 	}
 
 	if len(parsedTestResults) == 0 {
-		return nil, errors.NewInputError("No parsers were capable of parsing the provided test results")
+		return nil, noCapableParserError(cfg, parseFailures)
 	}
 
 	finalResults := parsedTestResults[0]
