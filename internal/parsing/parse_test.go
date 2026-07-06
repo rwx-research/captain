@@ -241,9 +241,9 @@ var _ = Describe("Parse", func() {
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(SatisfyAll(
-			ContainSubstring("The configured test framework could not parse the provided test results"),
+			ContainSubstring("The provided test results could not be parsed by the Ruby minitest parser"),
 			ContainSubstring("https://www.rwx.com/docs/captain/test-frameworks"),
-			ContainSubstring("PanicParser"),
+			ContainSubstring("The error that occurred when attempting to parse the provided test results was:"),
 			ContainSubstring("panicked"),
 		))
 	})
