@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"runtime/debug"
 	"strings"
 
 	"go.uber.org/zap"
@@ -105,21 +106,80 @@ func Parse(file fs.File, groupNumber int, cfg Config) (*v1.TestResults, error) {
 	return results, nil
 }
 
+const supportedFrameworksDocsURL = "https://www.rwx.com/docs/captain/test-frameworks"
+
+func safelyParse(
+	parser Parser,
+	file fs.File,
+	logger *zap.SugaredLogger,
+) (result *v1.TestResults, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Debugf("%T panicked while parsing %q:\n%s", parser, file.Name(), debug.Stack())
+			err = errors.NewInputError("panicked while parsing %q: %v", file.Name(), r)
+		}
+	}()
+
+	result, err = parser.Parse(file)
+	return result, errors.WithStack(err)
+}
+
+type parserFailure struct {
+	parser Parser
+	err    error
+}
+
+// noCapableParserError builds the error returned when no parser could parse the results, linking to the
+// supported frameworks. For a manually specified framework we name it and show the parser's error
+// directly; when auto-detecting we note that no parser matched and list each parser we attempted.
+func noCapableParserError(cfg Config, failures []parserFailure) error {
+	if cfg.ProvidedFrameworkKind != "" || cfg.ProvidedFrameworkLanguage != "" {
+		parseErrors := make([]string, 0, len(failures))
+		for _, failure := range failures {
+			parseErrors = append(parseErrors, failure.err.Error())
+		}
+
+		return errors.NewInputError(
+			"The provided test results could not be parsed by the %s %s parser. Check the documentation "+
+				"to learn how to produce results that are compatible with Captain: %s\n\n"+
+				"The error that occurred when attempting to parse the provided test results was:\n%s",
+			cfg.ProvidedFrameworkLanguage,
+			cfg.ProvidedFrameworkKind,
+			supportedFrameworksDocsURL,
+			strings.Join(parseErrors, "\n"),
+		)
+	}
+
+	attempted := make([]string, 0, len(failures))
+	for _, failure := range failures {
+		attempted = append(attempted, fmt.Sprintf("  %T: %v", failure.parser, failure.err))
+	}
+
+	return errors.NewInputError(
+		"No parsers were capable of parsing the provided test results. Double check that you're using a "+
+			"supported test framework and reporter: %s\nAttempted parsers:\n%s",
+		supportedFrameworksDocsURL,
+		strings.Join(attempted, "\n"),
+	)
+}
+
 func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1.TestResults, error) {
 	if len(parsers) == 0 {
 		return nil, errors.NewInternalError("No parsers were provided")
 	}
 
 	parsedTestResults := make([]v1.TestResults, 0)
+	parseFailures := make([]parserFailure, 0)
 	var firstParser Parser
 	for _, parser := range parsers {
 		if err := rewindFile(file); err != nil {
 			return nil, err
 		}
 
-		parsedTestResult, err := parser.Parse(file)
+		parsedTestResult, err := safelyParse(parser, file, cfg.Logger)
 		if err != nil {
 			cfg.Logger.Debugf("%T was not capable of parsing the test results. Error: %v", parser, err)
+			parseFailures = append(parseFailures, parserFailure{parser: parser, err: err})
 			continue
 		}
 		if parsedTestResult == nil {
@@ -135,7 +195,7 @@ func parseWith(file fs.File, parsers []Parser, groupNumber int, cfg Config) (*v1
 	}
 
 	if len(parsedTestResults) == 0 {
-		return nil, errors.NewInputError("No parsers were capable of parsing the provided test results")
+		return nil, noCapableParserError(cfg, parseFailures)
 	}
 
 	finalResults := parsedTestResults[0]

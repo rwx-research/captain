@@ -56,6 +56,13 @@ func (p NeitherErrorNorResultsParser) Parse(_ io.Reader) (*v1.TestResults, error
 	return nil, nil
 }
 
+type PanicParser struct{}
+
+func (p PanicParser) Parse(_ io.Reader) (*v1.TestResults, error) {
+	// Mirrors the class of runtime panic (e.g. slice bounds) seen in real parsers.
+	panic("simulated parser panic")
+}
+
 var _ = Describe("Parse", func() {
 	var (
 		logCore      zapcore.Core
@@ -143,9 +150,12 @@ var _ = Describe("Parse", func() {
 
 		Expect(results).To(BeNil())
 		Expect(err).NotTo(BeNil())
-		Expect(err.Error()).To(
+		Expect(err.Error()).To(SatisfyAll(
 			ContainSubstring("No parsers were capable of parsing the provided test results"),
-		)
+			ContainSubstring("https://www.rwx.com/docs/captain/test-frameworks"),
+			ContainSubstring("ErrorParser"),
+			ContainSubstring("could not parse"),
+		))
 
 		logMessages := make([]string, 0)
 		for _, log := range recordedLogs.All() {
@@ -157,6 +167,84 @@ var _ = Describe("Parse", func() {
 		))
 		Expect(logMessages).NotTo(ContainElement(
 			ContainSubstring("ultimately responsible for parsing the test results"),
+		))
+	})
+
+	It("surfaces a parser panic as a parse failure with a docs link when no parser succeeds", func() {
+		results, err := parsing.Parse(
+			file,
+			1,
+			parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{PanicParser{}},
+				Logger:                   log,
+			},
+		)
+
+		Expect(results).To(BeNil())
+		Expect(err).NotTo(BeNil())
+		Expect(err.Error()).To(SatisfyAll(
+			ContainSubstring("No parsers were capable of parsing the provided test results"),
+			ContainSubstring("https://www.rwx.com/docs/captain/test-frameworks"),
+			ContainSubstring("PanicParser"),
+			ContainSubstring("panicked"),
+		))
+
+		// The full stack trace is available at debug level, but the panic is never surfaced above it.
+		debugMessages := make([]string, 0)
+		for _, entry := range recordedLogs.All() {
+			if entry.Level >= zapcore.WarnLevel {
+				Expect(entry.Message).NotTo(ContainSubstring("panic"))
+			}
+			if entry.Level == zapcore.DebugLevel {
+				debugMessages = append(debugMessages, entry.Message)
+			}
+		}
+		Expect(debugMessages).To(ContainElement(ContainSubstring("PanicParser panicked while parsing")))
+	})
+
+	It("swallows a parser panic when a later parser succeeds", func() {
+		results, err := parsing.Parse(
+			file,
+			1,
+			parsing.Config{
+				MutuallyExclusiveParsers: []parsing.Parser{PanicParser{}, SuccessfulParserOne{}},
+				Logger:                   log,
+			},
+		)
+
+		Expect(err).To(BeNil())
+		Expect(results).NotTo(BeNil())
+		Expect(results.Summary.Tests).To(Equal(1))
+
+		// A recovered panic must not be surfaced above debug when another parser succeeds.
+		for _, entry := range recordedLogs.All() {
+			if entry.Level >= zapcore.WarnLevel {
+				Expect(entry.Message).NotTo(ContainSubstring("panic"))
+			}
+		}
+	})
+
+	It("surfaces the failure for a manually specified framework whose parser panics", func() {
+		results, err := parsing.Parse(
+			file,
+			1,
+			parsing.Config{
+				ProvidedFrameworkLanguage: "Ruby",
+				ProvidedFrameworkKind:     "minitest",
+				FrameworkParsers: map[v1.Framework][]parsing.Parser{
+					v1.RubyMinitestFramework: {PanicParser{}},
+				},
+				Logger: log,
+			},
+		)
+
+		Expect(results).To(BeNil())
+		Expect(err).NotTo(BeNil())
+		Expect(err.Error()).To(SatisfyAll(
+			ContainSubstring("The provided test results could not be parsed by the Ruby minitest parser"),
+			ContainSubstring("https://www.rwx.com/docs/captain/test-frameworks"),
+			ContainSubstring("The error that occurred when attempting to parse the provided test results was:"),
+			ContainSubstring("panicked"),
 		))
 	})
 
