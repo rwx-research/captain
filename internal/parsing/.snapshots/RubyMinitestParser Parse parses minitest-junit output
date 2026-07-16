@@ -1,0 +1,94 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {
+    "language": "Ruby",
+    "kind": "minitest"
+  },
+  "summary": {
+    "status": {
+      "kind": "failed"
+    },
+    "tests": 3,
+    "flaky": 0,
+    "otherErrors": 0,
+    "retries": 0,
+    "canceled": 0,
+    "failed": 2,
+    "pended": 0,
+    "quarantined": 0,
+    "skipped": 0,
+    "successful": 1,
+    "timedOut": 0,
+    "todo": 0
+  },
+  "tests": [
+    {
+      "name": "ExampleTest#test_fails",
+      "lineage": [
+        "ExampleTest",
+        "test_fails"
+      ],
+      "location": {
+        "file": "test/example_test.rb",
+        "line": 8
+      },
+      "attempt": {
+        "durationInNanoseconds": 25000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "failed",
+          "message": "intentional failure",
+          "backtrace": [
+            "test/example_test.rb:9:in `test_fails'"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ExampleTest#test_passes",
+      "lineage": [
+        "ExampleTest",
+        "test_passes"
+      ],
+      "location": {
+        "file": "test/example_test.rb",
+        "line": 4
+      },
+      "attempt": {
+        "durationInNanoseconds": 8000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "ExampleTest#test_raises",
+      "lineage": [
+        "ExampleTest",
+        "test_raises"
+      ],
+      "location": {
+        "file": "test/example_test.rb",
+        "line": 12
+      },
+      "attempt": {
+        "durationInNanoseconds": 211000,
+        "meta": {
+          "assertions": 0
+        },
+        "status": {
+          "kind": "failed",
+          "message": "RuntimeError: uh oh",
+          "backtrace": [
+            "test/example_test.rb:13:in `test_raises'"
+          ]
+        }
+      }
+    }
+  ]
+}

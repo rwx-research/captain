@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="minitest" timestamp="2026-07-16T00:00:00+00:00" hostname="ci" tests="3" skipped="0" failures="1" errors="1" time="0.000244">
+    <testcase classname="ExampleTest" name="test_fails" time="0.000025" file="test/example_test.rb" line="8" assertions="1">
+      <failure message="Failure:
+ExampleTest#test_fails [test/example_test.rb:9]:
+intentional failure
+">test/example_test.rb:9:in `test_fails'</failure>
+    </testcase>
+    <testcase classname="ExampleTest" name="test_passes" time="0.000008" file="test/example_test.rb" line="4" assertions="1"/>
+    <testcase classname="ExampleTest" name="test_raises" time="0.000211" file="test/example_test.rb" line="12" assertions="0">
+      <error message="Error:
+ExampleTest#test_raises:
+RuntimeError: uh oh
+    test/example_test.rb:13:in `test_raises'
+">test/example_test.rb:13:in `test_raises'</error>
+    </testcase>
+  </testsuite>
+</testsuites>

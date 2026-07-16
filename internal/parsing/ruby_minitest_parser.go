@@ -13,7 +13,9 @@ import (
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
-// Parses https://github.com/minitest-reporters/minitest-reporters/blob/73eea31b1e8b6af88c87f969cfa464d917f00cbb/lib/minitest/reporters/junit_reporter.rb#L16
+// Parses the JUnit XML emitted by either minitest reporter:
+//   - minitest-reporters: https://github.com/minitest-reporters/minitest-reporters/blob/73eea31b1e8b6af88c87f969cfa464d917f00cbb/lib/minitest/reporters/junit_reporter.rb#L16
+//   - minitest-junit:     https://github.com/aespinosa/minitest-junit
 type RubyMinitestParser struct{}
 
 type RubyMinitestFailure struct {
@@ -30,6 +32,7 @@ type RubyMinitestTestCase struct {
 	Error      *RubyMinitestFailure `xml:"error"`
 	Failure    *RubyMinitestFailure `xml:"failure"`
 	File       string               `xml:"file,attr"`
+	Line       int                  `xml:"line,attr"`
 	Lineno     int                  `xml:"lineno,attr"`
 	Name       string               `xml:"name,attr"`
 	Skipped    *RubyMinitestSkipped `xml:"skipped"`
@@ -86,7 +89,11 @@ func (p RubyMinitestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 				status = v1.NewSuccessfulTestStatus()
 			}
 
+			// minitest-reporters emits the line number as `lineno`, minitest-junit as `line`.
 			line := testCase.Lineno
+			if line == 0 {
+				line = testCase.Line
+			}
 			location := v1.Location{File: testCase.File, Line: &line}
 
 			tests = append(
@@ -118,38 +125,66 @@ var (
 )
 
 func (p RubyMinitestParser) NewFailedTestStatus(failure RubyMinitestFailure) v1.TestStatus {
-	failureMessage := failure.Message
-	failureException := failure.Type
+	message := failure.Message
+	var backtrace []string
 
-	if failure.Contents == nil {
-		return v1.NewFailedTestStatus(failureMessage, failureException, nil)
-	}
-
-	lines := rubyMinitestNewlineRegexp.Split(strings.TrimSpace(*failure.Contents), -1)[2:]
-
-	var failureBacktrace []string
-
-	if len(lines) > 0 {
-		failureMessageComponents := make([]string, 0)
-
-		for _, line := range lines {
-			if rubyMinitestBacktraceRegexp.Match([]byte(line)) {
-				failureBacktrace = append(failureBacktrace, strings.TrimSpace(line))
-			} else {
-				failureMessageComponents = append(failureMessageComponents, line)
+	if failure.Contents != nil && rubyMinitestFailureLocationRegexp.MatchString(*failure.Contents) {
+		// minitest-reporters: the detail block and backtrace both live in the body.
+		if m, b := p.parseMinitestDetailBlock(*failure.Contents); m != nil {
+			message, backtrace = m, b
+		}
+		if backtrace == nil {
+			if loc := rubyMinitestFailureLocationRegexp.FindStringSubmatch(*failure.Contents); len(loc) >= 2 {
+				backtrace = []string{loc[1]}
 			}
 		}
-
-		constructedMessage := strings.Join(failureMessageComponents, "\n")
-		failureMessage = &constructedMessage
-	}
-
-	if failureBacktrace == nil {
-		location := rubyMinitestFailureLocationRegexp.FindStringSubmatch(*failure.Contents)
-		if len(location) >= 2 {
-			failureBacktrace = []string{location[1]}
+	} else {
+		// minitest-junit: the detail block is in the `message` attribute and the body is a
+		// single backtrace frame.
+		if failure.Message != nil {
+			if m, _ := p.parseMinitestDetailBlock(*failure.Message); m != nil {
+				message = m
+			}
+		}
+		if failure.Contents != nil {
+			if frame := strings.TrimSpace(*failure.Contents); frame != "" {
+				backtrace = []string{frame}
+			}
 		}
 	}
 
-	return v1.NewFailedTestStatus(failureMessage, failureException, failureBacktrace)
+	return v1.NewFailedTestStatus(message, failure.Type, backtrace)
+}
+
+// parseMinitestDetailBlock extracts the human-readable message and any backtrace frames from a
+// minitest failure/error detail block, formatted as:
+//
+//	Failure:                        (or "Error:")
+//	<identity> [<file>:<line>]:
+//	<message line(s)>
+//	<optional indented backtrace frame(s)>
+//
+// The two leading label/location lines are dropped so the stored message matches across the
+// minitest-reporters and minitest-junit layouts. Returns a nil message when the block is too
+// short to contain one, leaving the caller's fallback in place.
+func (p RubyMinitestParser) parseMinitestDetailBlock(block string) (*string, []string) {
+	lines := rubyMinitestNewlineRegexp.Split(strings.TrimSpace(block), -1)
+	if len(lines) <= 2 {
+		return nil, nil
+	}
+	lines = lines[2:]
+
+	var failureBacktrace []string
+	failureMessageComponents := make([]string, 0)
+
+	for _, line := range lines {
+		if rubyMinitestBacktraceRegexp.Match([]byte(line)) {
+			failureBacktrace = append(failureBacktrace, strings.TrimSpace(line))
+		} else {
+			failureMessageComponents = append(failureMessageComponents, line)
+		}
+	}
+
+	constructedMessage := strings.Join(failureMessageComponents, "\n")
+	return &constructedMessage, failureBacktrace
 }
