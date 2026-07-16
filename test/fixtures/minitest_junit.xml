@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="minitest" timestamp="2026-07-16T00:00:00+00:00" hostname="ci" tests="3" skipped="0" failures="1" errors="1" time="0.000244">
-    <testcase classname="ExampleTest" name="test_fails" time="0.000025" file="test/example_test.rb" line="8" assertions="1">
+  <testsuite name="minitest" timestamp="2026-07-16T00:00:00+00:00" hostname="ci" tests="4" skipped="1" failures="2" errors="1" time="0.000139">
+    <testcase classname="ExampleTest" name="test_passes" time="0.000006" file="test/example_test.rb" line="4" assertions="1"/>
+    <testcase classname="ExampleTest" name="test_fails" time="0.000005" file="test/example_test.rb" line="8" assertions="1">
       <failure message="Failure:
 ExampleTest#test_fails [test/example_test.rb:9]:
 intentional failure
 ">test/example_test.rb:9:in `test_fails'</failure>
     </testcase>
-    <testcase classname="ExampleTest" name="test_passes" time="0.000008" file="test/example_test.rb" line="4" assertions="1"/>
-    <testcase classname="ExampleTest" name="test_raises" time="0.000211" file="test/example_test.rb" line="12" assertions="0">
+    <testcase classname="ExampleTest" name="test_raises" time="0.000120" file="test/example_test.rb" line="12" assertions="0">
       <error message="Error:
 ExampleTest#test_raises:
 RuntimeError: uh oh
     test/example_test.rb:13:in `test_raises'
 ">test/example_test.rb:13:in `test_raises'</error>
+    </testcase>
+    <testcase classname="ExampleTest" name="test_skips" time="0.000008" file="test/example_test.rb" line="16" assertions="0">
+      <skipped message="Skipped:
+ExampleTest#test_skips [test/example_test.rb:17]:
+not ready
+"></skipped>
     </testcase>
   </testsuite>
 </testsuites>

@@ -8,7 +8,7 @@
     "status": {
       "kind": "failed"
     },
-    "tests": 3,
+    "tests": 4,
     "flaky": 0,
     "otherErrors": 0,
     "retries": 0,
@@ -16,36 +16,12 @@
     "failed": 2,
     "pended": 0,
     "quarantined": 0,
-    "skipped": 0,
+    "skipped": 1,
     "successful": 1,
     "timedOut": 0,
     "todo": 0
   },
   "tests": [
-    {
-      "name": "ExampleTest#test_fails",
-      "lineage": [
-        "ExampleTest",
-        "test_fails"
-      ],
-      "location": {
-        "file": "test/example_test.rb",
-        "line": 8
-      },
-      "attempt": {
-        "durationInNanoseconds": 25000,
-        "meta": {
-          "assertions": 1
-        },
-        "status": {
-          "kind": "failed",
-          "message": "intentional failure",
-          "backtrace": [
-            "test/example_test.rb:9:in `test_fails'"
-          ]
-        }
-      }
-    },
     {
       "name": "ExampleTest#test_passes",
       "lineage": [
@@ -57,12 +33,36 @@
         "line": 4
       },
       "attempt": {
-        "durationInNanoseconds": 8000,
+        "durationInNanoseconds": 6000,
         "meta": {
           "assertions": 1
         },
         "status": {
           "kind": "successful"
+        }
+      }
+    },
+    {
+      "name": "ExampleTest#test_fails",
+      "lineage": [
+        "ExampleTest",
+        "test_fails"
+      ],
+      "location": {
+        "file": "test/example_test.rb",
+        "line": 8
+      },
+      "attempt": {
+        "durationInNanoseconds": 5000,
+        "meta": {
+          "assertions": 1
+        },
+        "status": {
+          "kind": "failed",
+          "message": "intentional failure",
+          "backtrace": [
+            "test/example_test.rb:9:in `test_fails'"
+          ]
         }
       }
     },
@@ -77,7 +77,7 @@
         "line": 12
       },
       "attempt": {
-        "durationInNanoseconds": 211000,
+        "durationInNanoseconds": 120000,
         "meta": {
           "assertions": 0
         },
@@ -87,6 +87,26 @@
           "backtrace": [
             "test/example_test.rb:13:in `test_raises'"
           ]
+        }
+      }
+    },
+    {
+      "name": "ExampleTest#test_skips",
+      "lineage": [
+        "ExampleTest",
+        "test_skips"
+      ],
+      "location": {
+        "file": "test/example_test.rb",
+        "line": 16
+      },
+      "attempt": {
+        "durationInNanoseconds": 8000,
+        "meta": {
+          "assertions": 0
+        },
+        "status": {
+          "kind": "skipped"
         }
       }
     }

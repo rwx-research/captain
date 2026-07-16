@@ -34,7 +34,7 @@ var _ = Describe("RubyMinitestParser", func() {
 			testResults, err := parsing.RubyMinitestParser{}.Parse(fixture)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(testResults.Tests).To(HaveLen(3))
+			Expect(testResults.Tests).To(HaveLen(4))
 
 			byName := map[string]v1.Test{}
 			for _, test := range testResults.Tests {
@@ -46,6 +46,11 @@ var _ = Describe("RubyMinitestParser", func() {
 			Expect(*passed.Location.Line).To(Equal(4))
 			Expect(passed.Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
 			Expect(passed.Attempt.Meta["assertions"]).To(Equal(1))
+
+			skipped := byName["ExampleTest#test_skips"]
+			Expect(skipped.Location.File).To(Equal("test/example_test.rb"))
+			Expect(*skipped.Location.Line).To(Equal(16))
+			Expect(skipped.Attempt.Status.Kind).To(Equal(v1.TestStatusSkipped))
 
 			failed := byName["ExampleTest#test_fails"]
 			Expect(failed.Location.File).To(Equal("test/example_test.rb"))
