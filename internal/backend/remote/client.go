@@ -8,9 +8,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"strings"
+	"time"
 
 	"github.com/rwx-research/captain-cli"
 	"github.com/rwx-research/captain-cli/internal/backend"
@@ -23,6 +25,11 @@ type Client struct {
 	ClientConfig
 	RoundTrip func(*http.Request) (*http.Response, error)
 }
+
+const (
+	maxRetries     = 5
+	initialBackoff = time.Second
+)
 
 // NewClient is the preferred constructor for the API client. It makes sure that the configuration is valid & necessary
 // defaults are applied.
@@ -44,7 +51,8 @@ func NewClient(cfg ClientConfig) (Client, error) {
 		// c) move all of this sequental logic out of the API layer
 		// None of these options are great - having this special case for the S3 upload seems the least bad (given
 		// that there is only a single occurrence)
-		if !strings.HasSuffix(req.URL.Host, "amazonaws.com") {
+		isCaptainAPI := !strings.HasSuffix(req.URL.Host, "amazonaws.com")
+		if isCaptainAPI {
 			req.URL.Scheme = "https"
 			if cfg.Insecure {
 				req.URL.Scheme = "http"
@@ -62,18 +70,54 @@ func NewClient(cfg ClientConfig) (Client, error) {
 			cfg.Log.Debugf("Executing following HTTP request:\n\n%s\n", sanitizedDump)
 		}
 
-		resp, err := client.Do(req) //nolint:gosec // request URL is from application config
-		if err != nil {
-			return resp, errors.NewSystemError("unable to perform HTTP request to %q: %s", req.URL, err)
-		}
+		backoff := initialBackoff
+		for attempt := 0; ; attempt++ {
+			resp, err := client.Do(req) //nolint:gosec // request URL is from application config
+			if err != nil {
+				return resp, errors.NewSystemError("unable to perform HTTP request to %q: %s", req.URL, err)
+			}
 
-		if cfg.Debug {
-			dump, _ := httputil.DumpResponse(resp, true)
-			sanitizedDump := setCookieHeaderRegexp.ReplaceAll(dump, []byte("Set-Cookie: <redacted>"))
-			cfg.Log.Debugf("Received following response:\n\n%s\n", sanitizedDump)
-		}
+			if cfg.Debug {
+				dump, _ := httputil.DumpResponse(resp, true)
+				sanitizedDump := setCookieHeaderRegexp.ReplaceAll(dump, []byte("Set-Cookie: <redacted>"))
+				cfg.Log.Debugf("Received following response:\n\n%s\n", sanitizedDump)
+			}
 
-		return resp, nil
+			if !isCaptainAPI || resp.StatusCode < 500 || attempt == maxRetries {
+				return resp, nil
+			}
+
+			// The request body was consumed by the previous attempt; requests without a
+			// replayable body cannot be retried.
+			var retryBody io.ReadCloser
+			if req.GetBody != nil {
+				retryBody, err = req.GetBody()
+				if err != nil {
+					return resp, nil //nolint:nilerr // fall back to returning the last response if the body can't be replayed
+				}
+			} else if req.Body != nil {
+				return resp, nil
+			}
+
+			_, _ = io.Copy(io.Discard, resp.Body)
+			_ = resp.Body.Close()
+
+			cfg.Log.Debugf(
+				"Received status code %d from %q; retrying in %s (attempt %d of %d)",
+				resp.StatusCode, req.URL, backoff, attempt+1, maxRetries,
+			)
+
+			select {
+			case <-req.Context().Done():
+				return nil, errors.NewSystemError(
+					"unable to perform HTTP request to %q: %s", req.URL, req.Context().Err(),
+				)
+			case <-time.After(backoff):
+			}
+
+			backoff *= 2
+			req.Body = retryBody
+		}
 	}
 
 	return Client{cfg, roundTrip}, nil
