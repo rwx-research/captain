@@ -100,13 +100,13 @@ func (p RubyRSpecParser) Parse(data io.Reader) (*v1.TestResults, error) {
 			screenshot := make(map[string]string)
 			if example.Screenshot.HTML != "" {
 				path, err := filepath.Abs(example.Screenshot.HTML)
-				if err != nil {
+				if err == nil {
 					screenshot["html"] = path
 				}
 			}
 			if example.Screenshot.Image != "" {
 				path, err := filepath.Abs(example.Screenshot.Image)
-				if err != nil {
+				if err == nil {
 					screenshot["image"] = path
 				}
 			}

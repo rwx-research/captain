@@ -11,11 +11,17 @@ import (
 )
 
 // preservedAttachmentsDir is the working-directory-relative root under which Captain copies test
-// attachment files (e.g. Playwright traces). Frameworks write attachments to deterministic per-retry
-// paths; when Captain re-invokes the test command for a targeted retry, those files are overwritten
-// in place. Without preserving them, only the final invocation's attachment survives on disk, and it
-// ends up associated with whichever attempt the merged results happen to reference that path from.
+// attachment files (e.g. Playwright traces, failure screenshots). Frameworks write attachments to
+// deterministic per-retry paths; when Captain re-invokes the test command for a targeted retry, those
+// files are overwritten in place. Without preserving them, only the final invocation's attachment
+// survives on disk, and it ends up associated with whichever attempt the merged results happen to
+// reference that path from.
 const preservedAttachmentsDir = "captain-attempts"
+
+// screenshotMetaKeys are the entries under an attempt's meta["screenshot"] that hold filesystem
+// paths. The RWX agent uploads the files at these paths, so they need the same per-invocation
+// preservation as meta["fileAttachments"]. Any other key is left untouched.
+var screenshotMetaKeys = []string{"image", "html"}
 
 // fileAttachment mirrors the shape Captain stores under an attempt's meta["fileAttachments"]. We
 // round-trip through JSON rather than depend on a framework-specific type, so the reporter emits the
@@ -67,6 +73,14 @@ func (s Service) preserveAttemptAttachments(attempt *v1.TestAttempt, scope strin
 		return nil
 	}
 
+	if err := s.preserveFileAttachments(attempt, scope, workingDir); err != nil {
+		return err
+	}
+
+	return s.preserveScreenshot(attempt, scope, workingDir)
+}
+
+func (s Service) preserveFileAttachments(attempt *v1.TestAttempt, scope string, workingDir string) error {
 	raw, ok := attempt.Meta["fileAttachments"]
 	if !ok {
 		return nil
@@ -85,34 +99,14 @@ func (s Service) preserveAttemptAttachments(attempt *v1.TestAttempt, scope strin
 
 	changed := false
 	for i := range attachments {
-		srcPath := attachments[i].Path
-		if srcPath == "" {
+		destAbs, preserved, err := s.preserveFile(attachments[i].Path, scope, workingDir)
+		if err != nil {
+			return err
+		}
+		if !preserved {
 			continue
 		}
 
-		srcAbs := srcPath
-		if !filepath.IsAbs(srcAbs) {
-			srcAbs = filepath.Join(workingDir, srcPath)
-		}
-
-		// The file may already have been overwritten or removed by a later invocation; skip if missing.
-		if _, err := s.FileSystem.Stat(srcAbs); err != nil {
-			continue
-		}
-
-		destRel := filepath.Join(preservedAttachmentsDir, scope, relativeAttachmentPath(srcPath, srcAbs, workingDir))
-		destAbs := filepath.Join(workingDir, destRel)
-
-		if err := s.FileSystem.MkdirAll(filepath.Dir(destAbs), 0o750); err != nil {
-			return errors.WithStack(err)
-		}
-		if err := copyFile(s.FileSystem, srcAbs, destAbs); err != nil {
-			return errors.WithStack(err)
-		}
-
-		// Emit an absolute path. The RWX agent resolves these paths, and Captain's working
-		// directory is not necessarily the agent's workspace root (e.g. a monorepo subdirectory),
-		// so a relative path can't be resolved unambiguously on that side.
 		attachments[i].Path = destAbs
 		changed = true
 	}
@@ -122,6 +116,88 @@ func (s Service) preserveAttemptAttachments(attempt *v1.TestAttempt, scope strin
 	}
 
 	return nil
+}
+
+// preserveScreenshot preserves the failure screenshot and HTML snapshot an attempt reports under
+// meta["screenshot"]. This is a separate key from meta["fileAttachments"], and it's the one the RWX
+// agent uploads screenshots from, so both need preserving for a targeted retry to keep each attempt
+// pointed at its own files.
+func (s Service) preserveScreenshot(attempt *v1.TestAttempt, scope string, workingDir string) error {
+	raw, ok := attempt.Meta["screenshot"]
+	if !ok {
+		return nil
+	}
+
+	encoded, err := json.Marshal(raw)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Decode into a generic map rather than a fixed struct so that keys we don't recognize survive
+	// the round trip untouched.
+	var screenshot map[string]any
+	if err := json.Unmarshal(encoded, &screenshot); err != nil {
+		// Not a recognized screenshot shape; leave it untouched.
+		return nil //nolint:nilerr
+	}
+
+	changed := false
+	for _, key := range screenshotMetaKeys {
+		srcPath, ok := screenshot[key].(string)
+		if !ok {
+			continue
+		}
+
+		destAbs, preserved, err := s.preserveFile(srcPath, scope, workingDir)
+		if err != nil {
+			return err
+		}
+		if !preserved {
+			continue
+		}
+
+		screenshot[key] = destAbs
+		changed = true
+	}
+
+	if changed {
+		attempt.Meta["screenshot"] = screenshot
+	}
+
+	return nil
+}
+
+// preserveFile copies srcPath into the invocation-scoped preservation directory and returns the
+// absolute path of the copy. It reports false when there is nothing to preserve: an empty path, or a
+// source that a later invocation has already overwritten or removed. Callers leave those unchanged.
+func (s Service) preserveFile(srcPath string, scope string, workingDir string) (string, bool, error) {
+	if srcPath == "" {
+		return "", false, nil
+	}
+
+	srcAbs := srcPath
+	if !filepath.IsAbs(srcAbs) {
+		srcAbs = filepath.Join(workingDir, srcPath)
+	}
+
+	if _, err := s.FileSystem.Stat(srcAbs); err != nil {
+		return "", false, nil //nolint:nilerr
+	}
+
+	destRel := filepath.Join(preservedAttachmentsDir, scope, relativeAttachmentPath(srcPath, srcAbs, workingDir))
+	destAbs := filepath.Join(workingDir, destRel)
+
+	if err := s.FileSystem.MkdirAll(filepath.Dir(destAbs), 0o750); err != nil {
+		return "", false, errors.WithStack(err)
+	}
+	if err := copyFile(s.FileSystem, srcAbs, destAbs); err != nil {
+		return "", false, errors.WithStack(err)
+	}
+
+	// Emit an absolute path. The RWX agent resolves these paths, and Captain's working directory is
+	// not necessarily the agent's workspace root (e.g. a monorepo subdirectory), so a relative path
+	// can't be resolved unambiguously on that side.
+	return destAbs, true, nil
 }
 
 // relativeAttachmentPath derives a working-directory-relative path to mirror the source attachment

@@ -3,6 +3,7 @@ package parsing_test
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -105,6 +106,50 @@ var _ = Describe("RubyRSpecParser", func() {
 					},
 				},
 			))
+		})
+
+		It("parses examples with screenshots", func() {
+			id := "./spec/some/id_spec.rb:[1:2:3]"
+			rspecResults := parsing.RubyRSpecTestResults{
+				Examples: []parsing.RubyRSpecExample{
+					{
+						ID:              &id,
+						Description:     "the test description",
+						FullDescription: "Some::Class the test description",
+						Status:          "failed",
+						FilePath:        "./spec/some/other/file/path_spec.rb",
+						LineNumber:      12,
+						RunTime:         0.00005,
+						Exception: &parsing.RubyRSpecException{
+							Class:   "ExceptionClass",
+							Message: "ExceptionMessage",
+						},
+						Screenshot: &parsing.RubyRspecScreenshot{
+							HTML:  "./tmp/screenshots/failure.html",
+							Image: "./tmp/screenshots/failure.png",
+						},
+					},
+				},
+				Summary: &parsing.RubyRSpecSummary{},
+			}
+			data, err := json.Marshal(rspecResults)
+			Expect(err).NotTo(HaveOccurred())
+
+			testResults, err := parsing.RubyRSpecParser{}.Parse(strings.NewReader(string(data)))
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(testResults).NotTo(BeNil())
+
+			// The RWX agent resolves these paths, so they're emitted as absolute.
+			expectedHTML, err := filepath.Abs("./tmp/screenshots/failure.html")
+			Expect(err).NotTo(HaveOccurred())
+			expectedImage, err := filepath.Abs("./tmp/screenshots/failure.png")
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(testResults.Tests[0].Attempt.Meta["screenshot"]).To(Equal(map[string]string{
+				"html":  expectedHTML,
+				"image": expectedImage,
+			}))
 		})
 
 		It("parses successful examples", func() {
