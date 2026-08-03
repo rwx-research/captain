@@ -714,6 +714,166 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				Expect(result.stdout).To(ContainSubstring("'./x.rb[1:1]'")) // indicative of a retry
 			})
 
+			It("preserves each attempt's screenshot across a targeted retry", func() {
+				// The framework writes its failure screenshot to a deterministic path, so the retry
+				// invocation overwrites the original attempt's file in place. Captain has to copy each
+				// invocation's screenshot aside and rewrite meta["screenshot"], or the earlier attempt
+				// ends up pointing at the later attempt's image.
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+				defer os.RemoveAll(tmp)
+
+				// Preserved copies are written relative to Captain's working directory.
+				defer os.RemoveAll("captain-attempts")
+
+				rwxTmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+				defer os.RemoveAll(rwxTmp)
+
+				screenshotPath := filepath.Join(tmp, "shot.png")
+				resultsPath := filepath.Join(tmp, "results.json")
+				resultsTemplatePath := filepath.Join(tmp, "results-template.json")
+
+				// RWX v1 JSON with a Cypress framework, which is what @rwx-cloud/cypress-rwx-reporter
+				// emits — the real producer of meta["screenshot"]. Written out rather than taken from
+				// a framework's own format so the fixture matches a contract that actually exists.
+				results := fmt.Sprintf(`{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {"language": "JavaScript", "kind": "Cypress"},
+  "summary": {"status": {"kind": "failed"}, "tests": 1, "otherErrors": 0, "retries": 0,
+    "canceled": 0, "failed": 1, "pended": 0, "quarantined": 0, "skipped": 0,
+    "successful": 0, "timedOut": 0, "todo": 0},
+  "tests": [{
+    "id": "cypress/e2e/login.cy.js:logs in",
+    "name": "logs in",
+    "lineage": ["logs in"],
+    "location": {"file": "cypress/e2e/login.cy.js"},
+    "attempt": {
+      "durationInNanoseconds": 8000000,
+      "meta": {"screenshot": {"image": %q}},
+      "status": {"kind": "failed", "message": "m", "exception": "AssertionError"}
+    }
+  }]
+}`, screenshotPath)
+				Expect(ioutil.WriteFile(resultsTemplatePath, []byte(results), 0644)).To(Succeed())
+				Expect(ioutil.WriteFile(resultsPath, []byte(results), 0644)).To(Succeed())
+
+				suiteId := randomSuiteId()
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"--suite-id", suiteId,
+						"--test-results", resultsPath,
+						"--retries", "1",
+						"--retry-command", fmt.Sprintf(
+							`bash -c "printf attempt-2 > %s; cp %s %s; echo {{ spec }}"`,
+							screenshotPath, resultsTemplatePath, resultsPath,
+						),
+						"-c", fmt.Sprintf(`bash -c "printf attempt-1 > %s; exit 123"`, screenshotPath),
+					},
+					env: map[string]string{
+						"RWX_TEST_RESULTS": rwxTmp,
+					},
+				})
+
+				Expect(result.exitCode).To(Equal(123))
+				Expect(result.stdout).To(ContainSubstring("cypress/e2e/login.cy.js")) // indicative of a retry
+
+				// The retry overwrote the framework's screenshot, so only the preserved copies can
+				// still distinguish the two attempts.
+				Expect(ioutil.ReadFile(screenshotPath)).To(Equal([]byte("attempt-2")))
+
+				var testResults v1.TestResults
+				emitted, err := ioutil.ReadFile(filepath.Join(rwxTmp, suiteId+".json"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(json.Unmarshal(emitted, &testResults)).To(Succeed())
+				Expect(testResults.Tests).To(HaveLen(1))
+
+				screenshotFor := func(attempt v1.TestAttempt) string {
+					screenshot, ok := attempt.Meta["screenshot"].(map[string]any)
+					Expect(ok).To(BeTrue(), "expected meta[\"screenshot\"] to be a map, got %v", attempt.Meta["screenshot"])
+					image, ok := screenshot["image"].(string)
+					Expect(ok).To(BeTrue(), "expected a screenshot image path, got %v", screenshot["image"])
+					return image
+				}
+
+				test := testResults.Tests[0]
+				Expect(test.PastAttempts).To(HaveLen(1))
+
+				retriedImage := screenshotFor(test.Attempt)
+				originalImage := screenshotFor(test.PastAttempts[0])
+
+				// Each attempt must resolve to its own copy, and the RWX agent resolves these as
+				// absolute paths.
+				Expect(originalImage).NotTo(Equal(retriedImage))
+				Expect(filepath.IsAbs(originalImage)).To(BeTrue(), "expected an absolute path, got %q", originalImage)
+				Expect(filepath.IsAbs(retriedImage)).To(BeTrue(), "expected an absolute path, got %q", retriedImage)
+
+				Expect(ioutil.ReadFile(originalImage)).To(Equal([]byte("attempt-1")))
+				Expect(ioutil.ReadFile(retriedImage)).To(Equal([]byte("attempt-2")))
+			})
+
+			It("does not preserve attachments outside of RWX", func() {
+				// Preservation is gated on RWX_TEST_RESULTS because it rewrites paths and writes
+				// copies into the working directory. Without that gate a plain `captain run` would
+				// litter every user's checkout and hand them paths their framework never wrote. This
+				// is the safety property for everyone not running on RWX, so it gets its own test.
+				tmp, err := os.MkdirTemp("", "*")
+				Expect(err).NotTo(HaveOccurred())
+				defer os.RemoveAll(tmp)
+				defer os.RemoveAll("captain-attempts")
+
+				screenshotPath := filepath.Join(tmp, "shot.png")
+				resultsPath := filepath.Join(tmp, "results.json")
+
+				results := fmt.Sprintf(`{
+  "$schema": "https://raw.githubusercontent.com/rwx-research/test-results-schema/main/v1.json",
+  "framework": {"language": "JavaScript", "kind": "Cypress"},
+  "summary": {"status": {"kind": "failed"}, "tests": 1, "otherErrors": 0, "retries": 0,
+    "canceled": 0, "failed": 1, "pended": 0, "quarantined": 0, "skipped": 0,
+    "successful": 0, "timedOut": 0, "todo": 0},
+  "tests": [{
+    "id": "cypress/e2e/login.cy.js:logs in",
+    "name": "logs in",
+    "lineage": ["logs in"],
+    "location": {"file": "cypress/e2e/login.cy.js"},
+    "attempt": {
+      "durationInNanoseconds": 8000000,
+      "meta": {"screenshot": {"image": %q}},
+      "status": {"kind": "failed", "message": "m", "exception": "AssertionError"}
+    }
+  }]
+}`, screenshotPath)
+				Expect(ioutil.WriteFile(resultsPath, []byte(results), 0644)).To(Succeed())
+
+				junitPath := filepath.Join(tmp, "out.json")
+				result := runCaptain(captainArgs{
+					args: []string{
+						"run",
+						"--suite-id", randomSuiteId(),
+						"--test-results", resultsPath,
+						"--reporter", "rwx-v1-json=" + junitPath,
+						"-c", fmt.Sprintf(`bash -c "printf attempt-1 > %s; exit 123"`, screenshotPath),
+					},
+					env: make(map[string]string), // deliberately no RWX_TEST_RESULTS
+				})
+
+				Expect(result.exitCode).To(Equal(123))
+
+				// No preservation directory, and the reported path is still the framework's own.
+				_, statErr := os.Stat("captain-attempts")
+				Expect(os.IsNotExist(statErr)).To(BeTrue(), "captain-attempts should not exist outside of RWX")
+
+				var testResults v1.TestResults
+				emitted, err := ioutil.ReadFile(junitPath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(json.Unmarshal(emitted, &testResults)).To(Succeed())
+
+				screenshot, ok := testResults.Tests[0].Attempt.Meta["screenshot"].(map[string]any)
+				Expect(ok).To(BeTrue())
+				Expect(screenshot["image"]).To(Equal(screenshotPath))
+			})
+
 			It("fails & passes through exit code on failure", func() {
 				testResultsPath, cleanup := createUniqueFile("fixtures/integration-tests/rspec-failed-not-quarantined.json", prefix)
 				defer cleanup()
