@@ -72,8 +72,9 @@ type JavaScriptPlaywrightTestResult struct {
 }
 
 type JavaScriptPlaywrightAnnotation struct {
-	Type        string `json:"type"`
-	Description string `json:"description,omitempty"`
+	Type        string                        `json:"type"`
+	Description string                        `json:"description,omitempty"`
+	Location    *JavaScriptPlaywrightLocation `json:"location,omitempty"`
 }
 
 type JavaScriptPlaywrightTest struct {

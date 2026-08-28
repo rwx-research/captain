@@ -1,0 +1,76 @@
+{
+  "config": {},
+  "suites": [
+    {
+      "title": "example.spec.ts",
+      "file": "/project/tests/example.spec.ts",
+      "line": 0,
+      "column": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "outer serial suite",
+          "file": "/project/tests/example.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "fails",
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "issue",
+                      "description": "https://example.com/issues/1"
+                    },
+                    {
+                      "type": "rwx:serial",
+                      "location": {
+                        "file": "/project/tests/example.spec.ts",
+                        "line": 10,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "failed",
+                      "duration": 1,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-28T12:00:00Z",
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": 1,
+                      "status": "failed",
+                      "duration": 1,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-08-28T12:00:01Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "serial-failure",
+              "file": "/project/tests/example.spec.ts",
+              "line": 42,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
