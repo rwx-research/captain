@@ -87,7 +87,8 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			}
 
 			project := templating.ShellEscape(test.Attempt.Meta["project"].(string))
-			test := templating.ShellEscape(playwrightRetryLocation(test).String())
+			location, _ := playwrightRetryLocation(test)
+			test := templating.ShellEscape(location.String())
 
 			if _, ok := testsSeenByProject[project]; !ok {
 				testsSeenByProject[project] = map[string]struct{}{}
@@ -120,6 +121,8 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 
 	testsByFileByProject := map[string]map[string][]string{}
 	testsSeenByFileByProject := map[string]map[string]map[string]struct{}{}
+	serialLocationsByProject := map[string][]string{}
+	serialLocationsSeenByProject := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
 		if !filter(test) {
@@ -127,6 +130,21 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 		}
 
 		project := templating.ShellEscape(test.Attempt.Meta["project"].(string))
+		location, serial := playwrightRetryLocation(test)
+		if serial {
+			file := templating.ShellEscape(location.String())
+			if _, ok := serialLocationsSeenByProject[project]; !ok {
+				serialLocationsSeenByProject[project] = map[string]struct{}{}
+			}
+			if _, ok := serialLocationsSeenByProject[project][file]; ok {
+				continue
+			}
+
+			serialLocationsByProject[project] = append(serialLocationsByProject[project], file)
+			serialLocationsSeenByProject[project][file] = struct{}{}
+			continue
+		}
+
 		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFileByProject[project]; !ok {
 			testsSeenByFileByProject[project] = map[string]map[string]struct{}{}
@@ -160,14 +178,23 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			})
 		}
 	}
+	for project, locations := range serialLocationsByProject {
+		for _, location := range locations {
+			substitutions = append(substitutions, map[string]string{
+				"project": project,
+				"file":    location,
+				"grep":    ".*",
+			})
+		}
+	}
 
 	return substitutions, nil
 }
 
-func playwrightRetryLocation(test v1.Test) *v1.Location {
+func playwrightRetryLocation(test v1.Test) (*v1.Location, bool) {
 	annotations, ok := test.Attempt.Meta["annotations"].([]parsing.JavaScriptPlaywrightAnnotation)
 	if !ok {
-		return test.Location
+		return test.Location, false
 	}
 
 	for _, annotation := range annotations {
@@ -178,13 +205,13 @@ func playwrightRetryLocation(test v1.Test) *v1.Location {
 
 		location := &v1.Location{File: annotation.Location.File}
 		if annotation.Location.Line == 0 {
-			return location
+			return location, true
 		}
 
 		line := annotation.Location.Line
 		location.Line = &line
-		return location
+		return location, true
 	}
 
-	return test.Location
+	return test.Location, false
 }

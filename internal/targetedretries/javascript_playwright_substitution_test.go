@@ -209,6 +209,119 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 
 	Describe("Substitutions", func() {
 		Describe("the old template format", func() {
+			It("targets the annotated serial suite location without narrowing by test name", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
+
+				fixture, err := os.Open("../../test/fixtures/playwright_serial.json")
+				Expect(err).ToNot(HaveOccurred())
+				testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(fixture)
+				Expect(err).ToNot(HaveOccurred())
+
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					*testResults,
+					func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(substitutions).To(Equal([]map[string]string{
+					{
+						"file":    "/project/tests/example.spec.ts:10",
+						"project": "chromium",
+						"grep":    ".*",
+					},
+				}))
+			})
+
+			It("keeps mixed ordinary and deduplicated serial substitutions", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
+
+				fixture, err := os.Open("../../test/fixtures/playwright_serial.json")
+				Expect(err).ToNot(HaveOccurred())
+				testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(fixture)
+				Expect(err).ToNot(HaveOccurred())
+
+				secondSerialFailure := testResults.Tests[0]
+				secondSerialFailure.Name = "second serial failure"
+				secondSerialFailure.Location = &v1.Location{
+					File: "/project/tests/example.spec.ts",
+					Line: new(43),
+				}
+				ordinaryFailure := v1.Test{
+					Name:     "ordinary failure",
+					Location: &v1.Location{File: "/project/tests/example.spec.ts", Line: new(50)},
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{
+							"annotations": []parsing.JavaScriptPlaywrightAnnotation{},
+							"project":     "chromium",
+						},
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+				wholeFileSerialFailure := v1.Test{
+					Name:     "whole file serial failure",
+					Location: &v1.Location{File: "/project/tests/example.spec.ts", Line: new(60)},
+					Attempt: v1.TestAttempt{
+						Meta: map[string]any{
+							"annotations": []parsing.JavaScriptPlaywrightAnnotation{
+								{
+									Type: "rwx:serial",
+									Location: &parsing.JavaScriptPlaywrightLocation{
+										File: "/project/tests/example.spec.ts",
+										Line: 0,
+									},
+								},
+							},
+							"project": "chromium",
+						},
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+				testResults.Tests = []v1.Test{
+					testResults.Tests[0],
+					secondSerialFailure,
+					ordinaryFailure,
+					wholeFileSerialFailure,
+				}
+
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					*testResults,
+					func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				sort.SliceStable(substitutions, func(i int, j int) bool {
+					if substitutions[i]["file"] != substitutions[j]["file"] {
+						return substitutions[i]["file"] < substitutions[j]["file"]
+					}
+					return substitutions[i]["grep"] < substitutions[j]["grep"]
+				})
+				Expect(substitutions).To(Equal([]map[string]string{
+					{
+						"file":    "/project/tests/example.spec.ts",
+						"project": "chromium",
+						"grep":    ".*",
+					},
+					{
+						"file":    "/project/tests/example.spec.ts",
+						"project": "chromium",
+						"grep":    "ordinary failure",
+					},
+					{
+						"file":    "/project/tests/example.spec.ts:10",
+						"project": "chromium",
+						"grep":    ".*",
+					},
+				}))
+			})
+
 			It("returns tests grouped by file and project", func() {
 				compiledTemplate, compileErr := templating.CompileTemplate(
 					"npx playwright test '{{ file }}' --project '{{ project }}' --grep '{{ grep }}'",
