@@ -1,12 +1,11 @@
 package targetedretries
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
@@ -88,9 +87,7 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			}
 
 			project := templating.ShellEscape(test.Attempt.Meta["project"].(string))
-			file := templating.ShellEscape(test.Location.File)
-			line := strconv.Itoa(*test.Location.Line)
-			test := fmt.Sprintf("%v:%v", file, line)
+			test := templating.ShellEscape(playwrightRetryLocation(test).String())
 
 			if _, ok := testsSeenByProject[project]; !ok {
 				testsSeenByProject[project] = map[string]struct{}{}
@@ -165,4 +162,29 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 	}
 
 	return substitutions, nil
+}
+
+func playwrightRetryLocation(test v1.Test) *v1.Location {
+	annotations, ok := test.Attempt.Meta["annotations"].([]parsing.JavaScriptPlaywrightAnnotation)
+	if !ok {
+		return test.Location
+	}
+
+	for _, annotation := range annotations {
+		if annotation.Type != "rwx:serial" || annotation.Location == nil ||
+			annotation.Location.File == "" || annotation.Location.Line < 0 {
+			continue
+		}
+
+		location := &v1.Location{File: annotation.Location.File}
+		if annotation.Location.Line == 0 {
+			return location
+		}
+
+		line := annotation.Location.Line
+		location.Line = &line
+		return location
+	}
+
+	return test.Location
 }

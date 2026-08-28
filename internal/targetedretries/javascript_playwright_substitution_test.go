@@ -394,6 +394,149 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 		})
 
 		Describe("the new template format", func() {
+			It("targets the annotated serial suite location", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test {{ tests }} --project '{{ project }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
+
+				fixture, err := os.Open("../../test/fixtures/playwright_serial.json")
+				Expect(err).ToNot(HaveOccurred())
+				testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(fixture)
+				Expect(err).ToNot(HaveOccurred())
+
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					*testResults,
+					func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(substitutions).To(Equal([]map[string]string{
+					{
+						"project": "chromium",
+						"tests":   "/project/tests/example.spec.ts:10",
+					},
+				}))
+			})
+
+			It("targets the whole serial suite file when its line is zero", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test {{ tests }} --project '{{ project }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
+
+				testResults := v1.TestResults{
+					Tests: []v1.Test{
+						{
+							Name:     "serial failure",
+							Location: &v1.Location{File: "tests/example.spec.ts", Line: new(42)},
+							Attempt: v1.TestAttempt{
+								Meta: map[string]any{
+									"annotations": []parsing.JavaScriptPlaywrightAnnotation{
+										{
+											Type: "rwx:serial",
+											Location: &parsing.JavaScriptPlaywrightLocation{
+												File: "tests/example.spec.ts",
+												Line: 0,
+											},
+										},
+									},
+									"project": "chromium",
+								},
+								Status: v1.NewFailedTestStatus(nil, nil, nil),
+							},
+						},
+					},
+				}
+
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					testResults,
+					func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(substitutions).To(Equal([]map[string]string{
+					{
+						"project": "chromium",
+						"tests":   "tests/example.spec.ts",
+					},
+				}))
+			})
+
+			It("keeps mixed ordinary and deduplicated serial targets", func() {
+				compiledTemplate, compileErr := templating.CompileTemplate(
+					"npx playwright test {{ tests }} --project '{{ project }}'",
+				)
+				Expect(compileErr).NotTo(HaveOccurred())
+
+				failedTest := func(
+					name string,
+					line int,
+					annotations []parsing.JavaScriptPlaywrightAnnotation,
+				) v1.Test {
+					return v1.Test{
+						Name:     name,
+						Location: &v1.Location{File: "tests/example.spec.ts", Line: &line},
+						Attempt: v1.TestAttempt{
+							Meta: map[string]any{
+								"annotations": annotations,
+								"project":     "chromium",
+							},
+							Status: v1.NewFailedTestStatus(nil, nil, nil),
+						},
+					}
+				}
+				serialAnnotation := func(line int) parsing.JavaScriptPlaywrightAnnotation {
+					return parsing.JavaScriptPlaywrightAnnotation{
+						Type: "rwx:serial",
+						Location: &parsing.JavaScriptPlaywrightLocation{
+							File: "tests/example.spec.ts",
+							Line: line,
+						},
+					}
+				}
+
+				testResults := v1.TestResults{
+					Tests: []v1.Test{
+						failedTest("first serial failure", 41, []parsing.JavaScriptPlaywrightAnnotation{
+							serialAnnotation(10),
+						}),
+						failedTest("second serial failure", 42, []parsing.JavaScriptPlaywrightAnnotation{
+							serialAnnotation(10),
+						}),
+						failedTest("ordinary failure", 50, []parsing.JavaScriptPlaywrightAnnotation{
+							{
+								Type:     "issue",
+								Location: &parsing.JavaScriptPlaywrightLocation{File: "tests/example.spec.ts", Line: 5},
+							},
+						}),
+						failedTest("invalid serial annotation", 55, []parsing.JavaScriptPlaywrightAnnotation{
+							{Type: "rwx:serial"},
+						}),
+						failedTest("whole file serial failure", 60, []parsing.JavaScriptPlaywrightAnnotation{
+							serialAnnotation(0),
+						}),
+					},
+				}
+
+				substitution := targetedretries.JavaScriptPlaywrightSubstitution{}
+				substitutions, err := substitution.SubstitutionsFor(
+					compiledTemplate,
+					testResults,
+					func(t v1.Test) bool { return t.Attempt.Status.ImpliesFailure() },
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(substitutions).To(Equal([]map[string]string{
+					{
+						"project": "chromium",
+						"tests": "tests/example.spec.ts:10 tests/example.spec.ts:50 " +
+							"tests/example.spec.ts:55 tests/example.spec.ts",
+					},
+				}))
+			})
+
 			It("returns tests grouped by file and project", func() {
 				compiledTemplate, compileErr := templating.CompileTemplate(
 					"npx playwright test {{ tests }} --project '{{ project }}'",
