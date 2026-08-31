@@ -38,6 +38,34 @@ var _ = Describe("JavaScriptPlaywrightParser", func() {
 			Expect(*test.Scope).To(SatisfyAny(Equal("chromium"), Equal("firefox")))
 		})
 
+		It("preserves serial suite locations in annotation metadata", func() {
+			fixture, err := os.Open("../../test/fixtures/playwright_serial.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			testResults, err := parsing.JavaScriptPlaywrightParser{}.Parse(fixture)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(testResults.Tests).To(HaveLen(1))
+
+			test := testResults.Tests[0]
+			Expect(test.Location).To(Equal(&v1.Location{
+				File:   "/project/tests/example.spec.ts",
+				Line:   new(42),
+				Column: new(3),
+			}))
+
+			expectedAnnotations := `[
+				{"type":"issue","description":"https://example.com/issues/1"},
+				{"type":"rwx:serial","location":{"file":"/project/tests/example.spec.ts","line":10,"column":6}}
+			]`
+			annotations, err := json.Marshal(test.Attempt.Meta["annotations"])
+			Expect(err).ToNot(HaveOccurred())
+			Expect(annotations).To(MatchJSON(expectedAnnotations))
+			Expect(test.PastAttempts).To(HaveLen(1))
+			pastAnnotations, err := json.Marshal(test.PastAttempts[0].Meta["annotations"])
+			Expect(err).ToNot(HaveOccurred())
+			Expect(pastAnnotations).To(MatchJSON(expectedAnnotations))
+		})
+
 		It("parses the sample file with other errors", func() {
 			fixture, err := os.Open("../../test/fixtures/playwright_with_other_errors.json")
 			Expect(err).ToNot(HaveOccurred())

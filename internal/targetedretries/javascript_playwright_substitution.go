@@ -1,12 +1,11 @@
 package targetedretries
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/templating"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
@@ -88,9 +87,8 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			}
 
 			project := templating.ShellEscape(test.Attempt.Meta["project"].(string))
-			file := templating.ShellEscape(test.Location.File)
-			line := strconv.Itoa(*test.Location.Line)
-			test := fmt.Sprintf("%v:%v", file, line)
+			location, _ := playwrightRetryLocation(test)
+			test := templating.ShellEscape(location.String())
 
 			if _, ok := testsSeenByProject[project]; !ok {
 				testsSeenByProject[project] = map[string]struct{}{}
@@ -123,6 +121,8 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 
 	testsByFileByProject := map[string]map[string][]string{}
 	testsSeenByFileByProject := map[string]map[string]map[string]struct{}{}
+	serialLocationsByProject := map[string][]string{}
+	serialLocationsSeenByProject := map[string]map[string]struct{}{}
 
 	for _, test := range testResults.Tests {
 		if !filter(test) {
@@ -130,6 +130,21 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 		}
 
 		project := templating.ShellEscape(test.Attempt.Meta["project"].(string))
+		location, serial := playwrightRetryLocation(test)
+		if serial {
+			file := templating.ShellEscape(location.String())
+			if _, ok := serialLocationsSeenByProject[project]; !ok {
+				serialLocationsSeenByProject[project] = map[string]struct{}{}
+			}
+			if _, ok := serialLocationsSeenByProject[project][file]; ok {
+				continue
+			}
+
+			serialLocationsByProject[project] = append(serialLocationsByProject[project], file)
+			serialLocationsSeenByProject[project][file] = struct{}{}
+			continue
+		}
+
 		file := templating.ShellEscape(test.Location.File)
 		if _, ok := testsSeenByFileByProject[project]; !ok {
 			testsSeenByFileByProject[project] = map[string]map[string]struct{}{}
@@ -163,6 +178,40 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			})
 		}
 	}
+	for project, locations := range serialLocationsByProject {
+		for _, location := range locations {
+			substitutions = append(substitutions, map[string]string{
+				"project": project,
+				"file":    location,
+				"grep":    ".*",
+			})
+		}
+	}
 
 	return substitutions, nil
+}
+
+func playwrightRetryLocation(test v1.Test) (*v1.Location, bool) {
+	annotations, ok := test.Attempt.Meta["annotations"].([]parsing.JavaScriptPlaywrightAnnotation)
+	if !ok {
+		return test.Location, false
+	}
+
+	for _, annotation := range annotations {
+		if annotation.Type != "rwx:serial" || annotation.Location == nil ||
+			annotation.Location.File == "" || annotation.Location.Line < 0 {
+			continue
+		}
+
+		location := &v1.Location{File: annotation.Location.File}
+		if annotation.Location.Line == 0 {
+			return location, true
+		}
+
+		line := annotation.Location.Line
+		location.Line = &line
+		return location, true
+	}
+
+	return test.Location, false
 }
