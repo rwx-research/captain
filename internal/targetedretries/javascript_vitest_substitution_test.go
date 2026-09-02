@@ -180,11 +180,11 @@ var _ = Describe("JavaScriptVitestSubstitution", func() {
 				[]map[string]string{
 					{
 						"file":            `path/to/file with '"'"'.js`,
-						"testNamePattern": `^name of describe test '"'"'one'"'"' \+ 1$`,
+						"testNamePattern": `^(name of describe test '"'"'one'"'"' \+ 1)$`,
 					},
 					{
 						"file":            "path/to/file1.js",
-						"testNamePattern": `^name of describe test '"'"'one'"'"' \+ 1|name of describe test 2$`,
+						"testNamePattern": `^(name of describe test '"'"'one'"'"' \+ 1|name of describe test 2)$`,
 					},
 				},
 			))
@@ -252,7 +252,7 @@ var _ = Describe("JavaScriptVitestSubstitution", func() {
 				[]map[string]string{
 					{
 						"file":            "path/to/file1.js",
-						"testNamePattern": `^name of describe test '"'"'one'"'"' \+ 1$`,
+						"testNamePattern": `^(name of describe test '"'"'one'"'"' \+ 1)$`,
 					},
 				},
 			))

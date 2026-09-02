@@ -947,7 +947,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 
 				Expect(result.exitCode).To(Equal(123))
 				Expect(result.stdout).To(ContainSubstring("file=./tests/example.testcafe.js")) // indicative of a retry
-				Expect(result.stdout).To(ContainSubstring("grep=^submits the form$"))           // both tokens substituted
+				Expect(result.stdout).To(ContainSubstring("grep=^(submits the form)$"))        // both tokens substituted
 			})
 		})
 

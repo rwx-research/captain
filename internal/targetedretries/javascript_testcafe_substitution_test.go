@@ -181,11 +181,11 @@ var _ = Describe("JavaScriptTestCafeSubstitution", func() {
 				[]map[string]string{
 					{
 						"file": "tests/checkout.testcafe.ts",
-						"grep": `^applies coupon '"'"'A'"'"' \+ 1|shows tax breakdown$`,
+						"grep": `^(applies coupon '"'"'A'"'"' \+ 1|shows tax breakdown)$`,
 					},
 					{
 						"file": `tests/with space.testcafe.ts`,
-						"grep": `^applies coupon '"'"'A'"'"' \+ 1$`,
+						"grep": `^(applies coupon '"'"'A'"'"' \+ 1)$`,
 					},
 				},
 			))
@@ -230,7 +230,7 @@ var _ = Describe("JavaScriptTestCafeSubstitution", func() {
 				[]map[string]string{
 					{
 						"file": "tests/checkout.testcafe.ts",
-						"grep": `^applies coupon code$`,
+						"grep": `^(applies coupon code)$`,
 					},
 				},
 			))
@@ -270,7 +270,7 @@ var _ = Describe("JavaScriptTestCafeSubstitution", func() {
 				[]map[string]string{
 					{
 						"file": "tests/checkout.testcafe.ts",
-						"grep": `^applies coupon code$`,
+						"grep": `^(applies coupon code)$`,
 					},
 				},
 			))

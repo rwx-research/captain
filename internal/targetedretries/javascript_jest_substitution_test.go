@@ -180,11 +180,11 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 				[]map[string]string{
 					{
 						"testPathPattern": `path/to/file with '"'"'.js`,
-						"testNamePattern": `^name of describe test '"'"'one'"'"' \+ 1$`,
+						"testNamePattern": `^(name of describe test '"'"'one'"'"' \+ 1)$`,
 					},
 					{
 						"testPathPattern": "path/to/file1.js",
-						"testNamePattern": `^name of describe test '"'"'one'"'"' \+ 1|name of describe test 2$`,
+						"testNamePattern": `^(name of describe test '"'"'one'"'"' \+ 1|name of describe test 2)$`,
 					},
 				},
 			))
@@ -252,7 +252,7 @@ var _ = Describe("JavaScriptJestSubstitution", func() {
 				[]map[string]string{
 					{
 						"testPathPattern": "path/to/file1.js",
-						"testNamePattern": `^name of describe test '"'"'one'"'"' \+ 1$`,
+						"testNamePattern": `^(name of describe test '"'"'one'"'"' \+ 1)$`,
 					},
 				},
 			))

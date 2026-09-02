@@ -81,7 +81,7 @@ func (s JavaScriptJestSubstitution) SubstitutionsFor(
 	for file, tests := range testsByFile {
 		substitutions[i] = map[string]string{
 			"testPathPattern": file,
-			"testNamePattern": fmt.Sprintf("^%v$", strings.Join(tests, "|")),
+			"testNamePattern": fmt.Sprintf("^(%v)$", strings.Join(tests, "|")),
 		}
 		i++
 	}

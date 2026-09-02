@@ -83,7 +83,7 @@ func (s GoTestSubstitution) SubstitutionsFor(
 	for testPackage, tests := range testsByPackage {
 		substitutions[i] = map[string]string{
 			"package": testPackage,
-			"run":     fmt.Sprintf("^%v$", strings.Join(tests, "|")),
+			"run":     fmt.Sprintf("^(%v)$", strings.Join(tests, "|")),
 		}
 		i++
 	}

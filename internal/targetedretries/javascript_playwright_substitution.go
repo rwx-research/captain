@@ -1,6 +1,7 @@
 package targetedretries
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -174,7 +175,14 @@ func (s JavaScriptPlaywrightSubstitution) SubstitutionsFor(
 			substitutions = append(substitutions, map[string]string{
 				"project": project,
 				"file":    file,
-				"grep":    strings.Join(tests, "|"),
+				// Playwright matches grep against "project file describe title tags", and
+				// keeps the leading space when the project name is empty.
+				"grep": fmt.Sprintf(
+					`^%v %v (%v)(?: @[^ ]*)*$`,
+					templating.RegexpEscape(project),
+					templating.RegexpEscape(file),
+					strings.Join(tests, "|"),
+				),
 			})
 		}
 	}
