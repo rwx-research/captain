@@ -182,11 +182,11 @@ var _ = Describe("GoTestSubstitution", func() {
 				[]map[string]string{
 					{
 						"package": "package1",
-						"run":     "^name1|name2$",
+						"run":     "^(name1|name2)$",
 					},
 					{
 						"package": "package2",
-						"run":     "^name1$",
+						"run":     "^(name1)$",
 					},
 				},
 			))
@@ -264,7 +264,7 @@ var _ = Describe("GoTestSubstitution", func() {
 				[]map[string]string{
 					{
 						"package": "package1",
-						"run":     "^name1$",
+						"run":     "^(name1)$",
 					},
 				},
 			))
@@ -298,7 +298,7 @@ var _ = Describe("GoTestSubstitution", func() {
 				[]map[string]string{
 					{
 						"package": `package1 with '"'"' embedded`,
-						"run":     `^name1 with \+ and \. embedded$`,
+						"run":     `^(name1 with \+ and \. embedded)$`,
 					},
 				},
 			))
@@ -348,7 +348,7 @@ var _ = Describe("GoTestSubstitution", func() {
 				[]map[string]string{
 					{
 						"package": "package1",
-						"run":     "^Table$",
+						"run":     "^(Table)$",
 					},
 				},
 			))

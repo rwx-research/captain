@@ -312,7 +312,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 					{
 						"file":    "/project/tests/example.spec.ts",
 						"project": "chromium",
-						"grep":    "ordinary failure",
+						"grep":    `^chromium /project/tests/example\.spec\.ts (ordinary failure)(?: @[^ ]*)*$`,
 					},
 					{
 						"file":    "/project/tests/example.spec.ts:10",
@@ -405,12 +405,14 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 						{
 							"file":    `path/to/file with '"'"'.js`,
 							"project": `project with '"'"' 2`,
-							"grep":    `name of describe test '"'"'one'"'"' \+ 1`,
+							"grep": `^project with '"'"' 2 path/to/file with '"'"'\.js ` +
+								`(name of describe test '"'"'one'"'"' \+ 1)(?: @[^ ]*)*$`,
 						},
 						{
 							"file":    "path/to/file1.js",
 							"project": "project1",
-							"grep":    `name of describe test '"'"'one'"'"' \+ 1|name of describe test 2`,
+							"grep": `^project1 path/to/file1\.js ` +
+								`(name of describe test '"'"'one'"'"' \+ 1|name of describe test 2)(?: @[^ ]*)*$`,
 						},
 					},
 				))
@@ -499,7 +501,7 @@ var _ = Describe("JavaScriptPlaywrightSubstitution", func() {
 						{
 							"file":    "path/to/file1.js",
 							"project": "project1",
-							"grep":    `name of describe test '"'"'one'"'"' \+ 1`,
+							"grep":    `^project1 path/to/file1\.js (name of describe test '"'"'one'"'"' \+ 1)(?: @[^ ]*)*$`,
 						},
 					},
 				))

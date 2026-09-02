@@ -78,7 +78,7 @@ func (s JavaScriptMochaSubstitution) SubstitutionsFor(
 	for file, tests := range testsByFile {
 		substitutions[i] = map[string]string{
 			"file": file,
-			"grep": fmt.Sprintf("^%v$", strings.Join(tests, "|")),
+			"grep": fmt.Sprintf("^(%v)$", strings.Join(tests, "|")),
 		}
 		i++
 	}
