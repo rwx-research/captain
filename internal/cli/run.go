@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/mattn/go-shellwords"
@@ -707,24 +708,34 @@ func (s Service) attemptRetries(
 			}
 		}
 
-	FLATTENED_TEST_RESULTS:
-		for _, originalTest := range flattenedTestResults.Tests {
+		// A loose match is not enough: the merge below refuses to flatten a retried result that could
+		// belong to more than one original, and those originals stay failed.
+		flattenedInto := make(map[int]struct{}, len(flattenedTestResults.Tests))
+		originalTestIndex := v1.NewTestIndex(flattenedTestResults.Tests)
+		for _, retriedResult := range allNewTestResults {
+			for _, retriedTest := range retriedResult.Tests {
+				i := originalTestIndex.IndexOfTestToFlattenInto(flattenedTestResults.Tests, retriedTest)
+				if i >= 0 {
+					flattenedInto[i] = struct{}{}
+				}
+			}
+		}
+
+		for i, originalTest := range flattenedTestResults.Tests {
 			if !filter(originalTest) {
 				continue
 			}
-
-			for _, retriedResult := range allNewTestResults {
-				for _, retriedTest := range retriedResult.Tests {
-					if originalTest.Matches(retriedTest) {
-						continue FLATTENED_TEST_RESULTS
-					}
-				}
+			if _, ok := flattenedInto[i]; ok {
+				continue
 			}
 
 			missingTestResult := fmt.Sprintf(
 				"The retry command of suite %q appears to be misconfigured. "+
-					"Captain could not identify the original (failed) test in the output of the retry command.",
+					"Captain could not identify the original (failed) test in the output of the retry command.\n"+
+					"  Original test: %s%s",
 				cfg.SuiteID,
+				originalTest.IdentityForMatching(),
+				describeNearestRetriedTests(originalTest, allNewTestResults),
 			)
 			if cfg.FailOnMisconfiguredRetry {
 				return flattenedTestResults, flattenedNewlyExecutedTestResults,
@@ -775,9 +786,12 @@ func (s Service) CreateRetryFilter(
 			}
 		}
 
+		// remainingFlakyFailures comes from the test results this filter runs against, so a flaky
+		// failure is in it as itself.
+		testIdentity := test.IdentityForMatching()
 		testIsFlaky := false
 		for _, remainingFlakyFailure := range remainingFlakyFailures {
-			if test.Matches(remainingFlakyFailure) {
+			if remainingFlakyFailure.IdentityForMatching() == testIdentity {
 				testIsFlaky = true
 				break
 			}
@@ -795,6 +809,57 @@ func (s Service) CreateRetryFilter(
 
 		return true
 	}
+}
+
+const maxNearestRetriedTests = 3
+
+func describeNearestRetriedTests(originalTest v1.Test, allNewTestResults []v1.TestResults) string {
+	sameFileDiffs := make([][]string, 0)
+	sameNameDiffs := make([][]string, 0)
+
+	for _, retriedResult := range allNewTestResults {
+		for _, retriedTest := range retriedResult.Tests {
+			switch {
+			case originalTest.Location != nil && retriedTest.Location != nil &&
+				retriedTest.Location.File == originalTest.Location.File:
+				sameFileDiffs = append(sameFileDiffs, originalTest.DiffIdentityForMatching(retriedTest))
+			case retriedTest.Name == originalTest.Name:
+				sameNameDiffs = append(sameNameDiffs, originalTest.DiffIdentityForMatching(retriedTest))
+			}
+		}
+	}
+
+	// A retry command is most likely to mangle a test's name, so tests that share only the original's
+	// name are the last resort.
+	diffs, sharedComponent := sameFileDiffs, "file"
+	if len(diffs) == 0 {
+		diffs, sharedComponent = sameNameDiffs, "name"
+	}
+	if len(diffs) == 0 {
+		return "\n  No test in the output of the retry command shares this test's file or name."
+	}
+
+	sort.SliceStable(diffs, func(i int, j int) bool { return len(diffs[i]) < len(diffs[j]) })
+
+	shown := len(diffs)
+	if shown > maxNearestRetriedTests {
+		shown = maxNearestRetriedTests
+	}
+
+	description := ""
+	for _, diff := range diffs[:shown] {
+		description += fmt.Sprintf("\n  Retried test differs by: %s", strings.Join(diff, ", "))
+	}
+	if shown < len(diffs) {
+		description += fmt.Sprintf(
+			"\n  (%d of %d tests with the same %s in the retry output, least different first)",
+			shown,
+			len(diffs),
+			sharedComponent,
+		)
+	}
+
+	return description
 }
 
 func (s Service) handleCommandOutcome(

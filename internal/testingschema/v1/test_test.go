@@ -414,6 +414,49 @@ var _ = Describe("Test", func() {
 				Location: &location1_2,
 			})).To(BeFalse())
 		})
+
+		It("matches when the location's line and column are only known on one side", func() {
+			line := 58
+			column := 1
+
+			name := "name1"
+			lineage := []string{"name", "1"}
+			withoutPosition := v1.Location{File: "file1"}
+			withPosition := v1.Location{File: "file1", Line: &line, Column: &column}
+
+			failed := v1.Test{Name: name, Lineage: lineage, Location: &withoutPosition}
+			retried := v1.Test{Name: name, Lineage: lineage, Location: &withPosition}
+
+			Expect(failed.Matches(retried)).To(BeTrue())
+			Expect(retried.Matches(failed)).To(BeTrue())
+		})
+
+		It("does not match tests in different files when the line and column are unknown", func() {
+			name := "name1"
+			lineage := []string{"name", "1"}
+			file1 := v1.Location{File: "file1"}
+			file2 := v1.Location{File: "file2"}
+
+			Expect(
+				v1.Test{Name: name, Lineage: lineage, Location: &file1}.
+					Matches(v1.Test{Name: name, Lineage: lineage, Location: &file2}),
+			).To(BeFalse())
+		})
+
+		It("does not match tests with different known lines", func() {
+			line1 := 58
+			line2 := 72
+
+			name := "name1"
+			lineage := []string{"name", "1"}
+			location1 := v1.Location{File: "file1", Line: &line1}
+			location2 := v1.Location{File: "file1", Line: &line2}
+
+			Expect(
+				v1.Test{Name: name, Lineage: lineage, Location: &location1}.
+					Matches(v1.Test{Name: name, Lineage: lineage, Location: &location2}),
+			).To(BeFalse())
+		})
 	})
 
 	Describe("IdentityForMatching", func() {
@@ -450,6 +493,60 @@ var _ = Describe("Test", func() {
 
 			//nolint:lll
 			Expect(test.IdentityForMatching()).To(Equal("scope= :: id=nil :: name=name1 :: locationFile=nil :: locationColumn=nil :: locationLine=nil :: lineage="))
+		})
+	})
+
+	Describe("DiffIdentityForMatching", func() {
+		It("describes only the components that differ", func() {
+			line := 58
+			column := 1
+
+			name := "name1"
+			lineage := []string{"name", "1"}
+			withoutPosition := v1.Location{File: "file1"}
+			withPosition := v1.Location{File: "file1", Line: &line, Column: &column}
+
+			failed := v1.Test{Name: name, Lineage: lineage, Location: &withoutPosition}
+			retried := v1.Test{Name: name, Lineage: lineage, Location: &withPosition}
+
+			Expect(failed.DiffIdentityForMatching(retried)).To(Equal([]string{
+				"locationColumn (nil -> 1)",
+				"locationLine (nil -> 58)",
+			}))
+		})
+
+		It("describes nothing for two tests with the same identity", func() {
+			location := v1.Location{File: "file1"}
+			test := v1.Test{Name: "name1", Lineage: []string{"name", "1"}, Location: &location}
+
+			Expect(test.DiffIdentityForMatching(test)).To(BeEmpty())
+		})
+
+		It("names every differing component", func() {
+			scope := "scope1"
+			id := "id1"
+			line := 58
+			column := 1
+			location := v1.Location{File: "file1", Line: &line, Column: &column}
+
+			original := v1.Test{Name: "name1", Lineage: []string{"name", "1"}}
+			retried := v1.Test{
+				Scope:    &scope,
+				ID:       &id,
+				Name:     "name2",
+				Lineage:  []string{"name", "2"},
+				Location: &location,
+			}
+
+			Expect(original.DiffIdentityForMatching(retried)).To(Equal([]string{
+				"scope ( -> scope1)",
+				"id (nil -> id1)",
+				"name (name1 -> name2)",
+				"locationFile (nil -> file1)",
+				"locationColumn (nil -> 1)",
+				"locationLine (nil -> 58)",
+				"lineage (____name____1 -> ____name____2)",
+			}))
 		})
 	})
 

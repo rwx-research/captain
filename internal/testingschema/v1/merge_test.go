@@ -798,4 +798,209 @@ var _ = Describe("Merge", func() {
 			{Status: v1.NewFailedTestStatus(&incHeadline, nil, nil)},
 		}))
 	})
+
+	It("flattens a test whose location line and column are only reported on some attempts", func() {
+		message := "Exceeded timeout of 10000 ms for a test."
+
+		line := 58
+		column := 1
+
+		name := "times out once, then passes"
+		lineage := []string{name}
+		locationWithoutPosition := v1.Location{File: "flake.test.ts"}
+		locationWithPosition := v1.Location{File: "flake.test.ts", Line: &line, Column: &column}
+
+		original := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &locationWithoutPosition,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+				},
+			},
+		}
+
+		retry := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &locationWithPosition,
+					Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+				},
+			},
+		}
+
+		Expect(v1.Merge(
+			[]v1.TestResults{original},
+			[]v1.TestResults{retry},
+		)).To(Equal(
+			v1.TestResults{
+				Framework: v1.JavaScriptJestFramework,
+				Summary: v1.Summary{
+					Status:     v1.SummaryStatusSuccessful,
+					Tests:      1,
+					Flaky:      1,
+					Successful: 1,
+					Retries:    1,
+				},
+				Tests: []v1.Test{
+					{
+						Name:     name,
+						Lineage:  lineage,
+						Location: &locationWithPosition,
+						Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+						PastAttempts: []v1.TestAttempt{
+							{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+						},
+					},
+				},
+			},
+		))
+	})
+
+	It("keeps the line and column when only the earlier attempt was missing them", func() {
+		message := "Exceeded timeout of 10000 ms for a test."
+
+		line := 58
+		column := 1
+
+		name := "times out once, then passes"
+		lineage := []string{name}
+		locationWithoutPosition := v1.Location{File: "flake.test.ts"}
+		locationWithPosition := v1.Location{File: "flake.test.ts", Line: &line, Column: &column}
+
+		failed := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{{
+				Name:     name,
+				Lineage:  lineage,
+				Location: &locationWithoutPosition,
+				Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+			}},
+		}
+
+		retried := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{{
+				Name:     name,
+				Lineage:  lineage,
+				Location: &locationWithPosition,
+				Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+			}},
+		}
+
+		merged := v1.Merge([]v1.TestResults{failed}, []v1.TestResults{retried})
+
+		Expect(merged.Tests).To(HaveLen(1))
+		Expect(merged.Tests[0].Location.Line).To(Equal(&line))
+		Expect(merged.Tests[0].Location.Column).To(Equal(&column))
+	})
+
+	It("does not flatten a test whose location is missing into an ambiguous set of matches", func() {
+		message := "Exceeded timeout of 10000 ms for a test."
+
+		firstLine := 10
+		secondLine := 20
+		column := 1
+
+		name := "runs the case"
+		lineage := []string{name}
+		firstLocation := v1.Location{File: "each.test.ts", Line: &firstLine, Column: &column}
+		secondLocation := v1.Location{File: "each.test.ts", Line: &secondLine, Column: &column}
+		locationWithoutPosition := v1.Location{File: "each.test.ts"}
+
+		original := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &firstLocation,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+				},
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &secondLocation,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+				},
+			},
+		}
+
+		retry := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &locationWithoutPosition,
+					Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+				},
+			},
+		}
+
+		merged := v1.Merge([]v1.TestResults{original}, []v1.TestResults{retry})
+
+		Expect(merged.Tests).To(HaveLen(3))
+		Expect(merged.Tests[0].PastAttempts).To(BeEmpty())
+		Expect(merged.Tests[1].PastAttempts).To(BeEmpty())
+		Expect(merged.Tests[2].Attempt.Meta).To(Equal(map[string]any{
+			"__rwx": map[string]any{"missingInPreviousBatchOfResults": true},
+		}))
+		Expect(merged.Summary.Failed).To(Equal(2))
+	})
+
+	It("flattens into an exact match rather than one that is only known to the same file", func() {
+		message := "Exceeded timeout of 10000 ms for a test."
+
+		line := 20
+		column := 1
+
+		name := "runs the case"
+		lineage := []string{name}
+		locationWithoutPosition := v1.Location{File: "each.test.ts"}
+		locationWithPosition := v1.Location{File: "each.test.ts", Line: &line, Column: &column}
+
+		original := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &locationWithoutPosition,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+				},
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &locationWithPosition,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+				},
+			},
+		}
+
+		retry := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &locationWithPosition,
+					Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+				},
+			},
+		}
+
+		merged := v1.Merge([]v1.TestResults{original}, []v1.TestResults{retry})
+
+		Expect(merged.Tests).To(HaveLen(2))
+		Expect(merged.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusFailed))
+		Expect(merged.Tests[0].PastAttempts).To(BeEmpty())
+		Expect(merged.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+		Expect(merged.Tests[1].PastAttempts).To(HaveLen(1))
+	})
 })

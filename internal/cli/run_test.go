@@ -1237,6 +1237,199 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("when a failing test's location line and column are only known on the retry", func() {
+			var timeoutTestDescription string
+
+			BeforeEach(func() {
+				timeoutTestDescription = fmt.Sprintf("timeout-description-%d", GinkgoRandomSeed()+5)
+				line := 58
+				column := 1
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+
+					location := v1.Location{File: "flake.test.ts"}
+					status := v1.NewFailedTestStatus(nil, nil, nil)
+					if parseCount > 1 {
+						location = v1.Location{File: "flake.test.ts", Line: &line, Column: &column}
+						status = v1.NewSuccessfulTestStatus()
+					}
+
+					return &v1.TestResults{
+						Framework: v1.JavaScriptJestFramework,
+						Tests: []v1.Test{
+							{
+								Name:     timeoutTestDescription,
+								Lineage:  []string{timeoutTestDescription},
+								Location: &location,
+								Attempt:  v1.TestAttempt{Status: status},
+							},
+						},
+					}, nil
+				}
+
+				runConfig.Retries = 1
+				//nolint:lll
+				runConfig.RetryCommandTemplate = "retry --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'"
+				runConfig.SubstitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
+					v1.JavaScriptJestFramework: new(targetedretries.JavaScriptJestSubstitution),
+				}
+			})
+
+			It("identifies the retried test as the original failure", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Tests).To(Equal(1))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(1))
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(0))
+
+				Expect(uploadedTestResults.Tests).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[0].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(1))
+				Expect(uploadedTestResults.Tests[0].PastAttempts[0].Status.Kind).To(Equal(v1.TestStatusFailed))
+
+				Expect(recordedLogs.FilterMessageSnippet("appears to be misconfigured").Len()).To(BeZero())
+			})
+		})
+
+		Context("when a retried result could belong to either of two tests with the same name", func() {
+			var duplicateTestDescription string
+
+			BeforeEach(func() {
+				duplicateTestDescription = fmt.Sprintf("duplicate-description-%d", GinkgoRandomSeed()+7)
+				firstLine := 10
+				secondLine := 20
+				column := 1
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+
+					duplicateTest := func(line *int, column *int, status v1.TestStatus) v1.Test {
+						return v1.Test{
+							Name:     duplicateTestDescription,
+							Lineage:  []string{duplicateTestDescription},
+							Location: &v1.Location{File: "dupes.test.ts", Line: line, Column: column},
+							Attempt:  v1.TestAttempt{Status: status},
+						}
+					}
+
+					if parseCount == 1 {
+						return &v1.TestResults{
+							Framework: v1.JavaScriptJestFramework,
+							Tests: []v1.Test{
+								duplicateTest(&firstLine, &column, v1.NewFailedTestStatus(nil, nil, nil)),
+								duplicateTest(&secondLine, &column, v1.NewFailedTestStatus(nil, nil, nil)),
+							},
+						}, nil
+					}
+
+					// The retry command does not pass --testLocationInResults, so neither retried result
+					// says which of the two tests it is.
+					return &v1.TestResults{
+						Framework: v1.JavaScriptJestFramework,
+						Tests: []v1.Test{
+							duplicateTest(nil, nil, v1.NewSuccessfulTestStatus()),
+							duplicateTest(nil, nil, v1.NewSuccessfulTestStatus()),
+						},
+					}, nil
+				}
+
+				runConfig.Retries = 1
+				//nolint:lll
+				runConfig.RetryCommandTemplate = "retry --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'"
+				runConfig.SubstitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
+					v1.JavaScriptJestFramework: new(targetedretries.JavaScriptJestSubstitution),
+				}
+			})
+
+			It("warns about both originals it could not attach a result to", func() {
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(2))
+
+				Expect(recordedLogs.FilterMessageSnippet("appears to be misconfigured").Len()).To(Equal(2))
+			})
+		})
+
+		Context("when no test in the output of the retry command matches the original failure", func() {
+			var originalTestDescription string
+
+			BeforeEach(func() {
+				originalTestDescription = fmt.Sprintf("original-description-%d", GinkgoRandomSeed()+6)
+				originalLine := 10
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+
+					if parseCount == 1 {
+						return &v1.TestResults{
+							Framework: v1.JavaScriptJestFramework,
+							Tests: []v1.Test{
+								{
+									Name:     originalTestDescription,
+									Lineage:  []string{originalTestDescription},
+									Location: &v1.Location{File: "flake.test.ts", Line: &originalLine},
+									Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(nil, nil, nil)},
+								},
+							},
+						}, nil
+					}
+
+					mangledTests := make([]v1.Test, 0, 5)
+					for i := 0; i < 5; i++ {
+						line := 20 + i
+						mangledName := fmt.Sprintf("mangled-description-%d", i)
+						mangledTests = append(mangledTests, v1.Test{
+							Name:     mangledName,
+							Lineage:  []string{mangledName},
+							Location: &v1.Location{File: "flake.test.ts", Line: &line},
+							Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+						})
+					}
+
+					return &v1.TestResults{Framework: v1.JavaScriptJestFramework, Tests: mangledTests}, nil
+				}
+
+				runConfig.Retries = 1
+				//nolint:lll
+				runConfig.RetryCommandTemplate = "retry --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'"
+				runConfig.SubstitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
+					v1.JavaScriptJestFramework: new(targetedretries.JavaScriptJestSubstitution),
+				}
+			})
+
+			It("names the original test and the nearest few tests it saw instead", func() {
+				warnings := recordedLogs.FilterMessageSnippet("appears to be misconfigured")
+				Expect(warnings.Len()).To(Equal(1))
+
+				message := warnings.All()[0].Message
+				Expect(message).To(ContainSubstring(fmt.Sprintf(
+					"Original test: scope= :: id=nil :: name=%s",
+					originalTestDescription,
+				)))
+
+				Expect(strings.Count(message, "Retried test differs by:")).To(Equal(3))
+				Expect(message).To(ContainSubstring(
+					"(3 of 5 tests with the same file in the retry output, least different first)",
+				))
+				Expect(message).To(ContainSubstring(fmt.Sprintf(
+					"Retried test differs by: name (%s -> mangled-description-0), locationLine (10 -> 20), "+
+						"lineage (____%s -> ____mangled-description-0)",
+					originalTestDescription,
+					originalTestDescription,
+				)))
+			})
+		})
+
 		Context("when there are pre- or post- retry commands", func() {
 			var (
 				preRetryCommandFinished, postRetryCommandFinished bool
@@ -2692,6 +2885,58 @@ var _ = Describe("Run", func() {
 				}
 
 				Expect(filter(nonFlakyTest)).To(BeFalse(), "non-flaky test should be filtered out when retry limit exceeded")
+			})
+		})
+
+		Context("when two tests share a file, name, and lineage", func() {
+			var (
+				name                string
+				column, flakyLine   int
+				timedOutSiblingTest v1.Test
+			)
+
+			BeforeEach(func() {
+				name = "runs the case"
+				column = 1
+				flakyLine = 10
+				retries = 1
+				flakyRetries = 2
+				nonFlakyRetries = 1
+
+				timedOutSiblingTest = v1.Test{
+					Name:     name,
+					Lineage:  []string{name},
+					Location: &v1.Location{File: "each.test.ts"},
+					Attempt: v1.TestAttempt{
+						Status: v1.NewFailedTestStatus(nil, nil, nil),
+					},
+				}
+			})
+
+			It("does not give the flaky retry budget to the sibling of a flaky failure", func() {
+				remainingFlakyFailures = []v1.Test{
+					{
+						Name:     name,
+						Lineage:  []string{name},
+						Location: &v1.Location{File: "each.test.ts", Line: &flakyLine, Column: &column},
+					},
+				}
+
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, -1)
+
+				Expect(filter(timedOutSiblingTest)).To(BeFalse(),
+					"a test the backend never reported as flaky should use the non-flaky retry budget")
+			})
+
+			It("still gives the flaky retry budget to a flaky failure of its own", func() {
+				remainingFlakyFailures = []v1.Test{timedOutSiblingTest}
+
+				filter := service.CreateRetryFilter(apiConfig, remainingFlakyFailures, retries, flakyRetries,
+					nonFlakyRetries, -1)
+
+				Expect(filter(timedOutSiblingTest)).To(BeTrue(),
+					"a flaky failure should use the flaky retry budget even without a line and column")
 			})
 		})
 	})
