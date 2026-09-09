@@ -799,6 +799,90 @@ var _ = Describe("Merge", func() {
 		}))
 	})
 
+	It("takes the line and column from whichever attempt knew each of them", func() {
+		message := "flaked"
+
+		line := 10
+		column := 3
+
+		name := "partially located"
+		lineage := []string{name}
+		withLine := v1.Location{File: "flake.test.ts", Line: &line}
+		withColumn := v1.Location{File: "flake.test.ts", Column: &column}
+
+		original := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &withLine,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+				},
+			},
+		}
+
+		retry := v1.TestResults{
+			Framework: v1.JavaScriptJestFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &withColumn,
+					Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+				},
+			},
+		}
+
+		merged := v1.Merge([]v1.TestResults{original}, []v1.TestResults{retry})
+
+		Expect(merged.Tests).To(HaveLen(1))
+		Expect(merged.Tests[0].Location.Line).To(Equal(&line))
+		Expect(merged.Tests[0].Location.Column).To(Equal(&column))
+	})
+
+	It("only flattens a location that is missing a position for Jest", func() {
+		message := "flaked"
+
+		line := 58
+		column := 1
+
+		name := "times out once, then passes"
+		lineage := []string{name}
+		locationWithoutPosition := v1.Location{File: "flake_spec.rb"}
+		locationWithPosition := v1.Location{File: "flake_spec.rb", Line: &line, Column: &column}
+
+		original := v1.TestResults{
+			Framework: v1.RubyRSpecFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &locationWithoutPosition,
+					Attempt:  v1.TestAttempt{Status: v1.NewFailedTestStatus(&message, nil, nil)},
+				},
+			},
+		}
+
+		retry := v1.TestResults{
+			Framework: v1.RubyRSpecFramework,
+			Tests: []v1.Test{
+				{
+					Name:     name,
+					Lineage:  lineage,
+					Location: &locationWithPosition,
+					Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
+				},
+			},
+		}
+
+		merged := v1.Merge([]v1.TestResults{original}, []v1.TestResults{retry})
+
+		Expect(merged.Tests).To(HaveLen(2))
+		Expect(merged.Summary.Failed).To(Equal(1))
+		Expect(merged.Summary.Flaky).To(Equal(0))
+	})
+
 	It("flattens a test whose location line and column are only reported on some attempts", func() {
 		message := "Exceeded timeout of 10000 ms for a test."
 

@@ -34,7 +34,7 @@ func flatten(unionedTestResults []TestResults) TestResults {
 		len(flattened.OtherErrors) == 0 &&
 		len(flattened.DerivedFrom) == 0
 
-	index := NewTestIndex(flattened.Tests)
+	index := NewTestIndex(flattened.Tests, flattened.Framework)
 
 	for batch, testResults := range rest {
 		flattened.DerivedFrom = append(flattened.DerivedFrom, testResults.DerivedFrom...)
@@ -103,10 +103,17 @@ func flatten(unionedTestResults []TestResults) TestResults {
 // test which reports no line on one attempt still has a small set of candidates to match against.
 type TestIndex struct {
 	candidates map[string][]int
+
+	// Only Jest is known to report a test's line and column on one attempt but not on another, so no
+	// other framework flattens a test into one that never reported a position.
+	matchesMissingPosition bool
 }
 
-func NewTestIndex(tests []Test) TestIndex {
-	index := TestIndex{candidates: make(map[string][]int, len(tests))}
+func NewTestIndex(tests []Test, framework Framework) TestIndex {
+	index := TestIndex{
+		candidates:             make(map[string][]int, len(tests)),
+		matchesMissingPosition: framework.Equal(JavaScriptJestFramework),
+	}
 	for i, test := range tests {
 		index.add(i, test)
 	}
@@ -122,21 +129,30 @@ func (index TestIndex) add(i int, test Test) {
 // Finds the test in tests that incomingTest should be flattened into, or -1 when there isn't one.
 func (index TestIndex) IndexOfTestToFlattenInto(tests []Test, incomingTest Test) int {
 	incomingIdentity := incomingTest.IdentityForMatching()
+	candidates := index.candidates[incomingTest.identityForMatching(true, true)]
+
+	for _, i := range candidates {
+		if tests[i].IdentityForMatching() == incomingIdentity {
+			return i
+		}
+	}
+
+	if !index.matchesMissingPosition {
+		return -1
+	}
+
 	incomingHasPosition := incomingTest.locationHasPosition()
 	looseMatch := -1
 	looseMatches := 0
 
-	for _, i := range index.candidates[incomingTest.identityForMatching(true, true)] {
-		if tests[i].IdentityForMatching() == incomingIdentity {
-			return i
-		}
-
-		// Test.Matches only reaches further than an identity when one side is missing a line or column.
+	for _, i := range candidates {
+		// Matching without a position only reaches further than an identity when one side is missing a
+		// line or column.
 		if incomingHasPosition && tests[i].locationHasPosition() {
 			continue
 		}
 
-		if tests[i].Matches(incomingTest) {
+		if tests[i].matchesIgnoringMissingPosition(incomingTest) {
 			looseMatch = i
 			looseMatches++
 		}
@@ -151,18 +167,23 @@ func (index TestIndex) IndexOfTestToFlattenInto(tests []Test, incomingTest Test)
 }
 
 // Jest reports no line or column for a test that fails by timeout, but its passing retry reports
-// both.
+// both. Either half can be the one that went missing, so each is taken from whichever attempt knew
+// it rather than preferring one attempt's location wholesale.
 func mostSpecificLocation(baseLocation *Location, incomingLocation *Location) *Location {
-	switch {
-	case baseLocation == nil:
+	if baseLocation == nil {
 		return incomingLocation
-	case incomingLocation == nil:
-		return baseLocation
-	case baseLocation.Line == nil && incomingLocation.Line != nil:
-		return incomingLocation
-	case baseLocation.Column == nil && incomingLocation.Column != nil:
-		return incomingLocation
-	default:
+	}
+	if incomingLocation == nil || (baseLocation.Line != nil && baseLocation.Column != nil) {
 		return baseLocation
 	}
+
+	mostSpecific := *baseLocation
+	if mostSpecific.Line == nil {
+		mostSpecific.Line = incomingLocation.Line
+	}
+	if mostSpecific.Column == nil {
+		mostSpecific.Column = incomingLocation.Column
+	}
+
+	return &mostSpecific
 }

@@ -1357,6 +1357,74 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("when two original failures share an identity with the retried results", func() {
+			var sharedTestDescription string
+
+			BeforeEach(func() {
+				sharedTestDescription = fmt.Sprintf("shared-description-%d", GinkgoRandomSeed()+8)
+				line := 7
+				column := 21
+
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+					*v1.TestResults,
+					error,
+				) {
+					parseCount++
+
+					// it.each reports the same name, line and column for every case it generates, so the
+					// two tests are indistinguishable within an attempt as well as across attempts.
+					sharedTest := func(status v1.TestStatus) v1.Test {
+						return v1.Test{
+							Name:     sharedTestDescription,
+							Lineage:  []string{sharedTestDescription},
+							Location: &v1.Location{File: "each.test.ts", Line: &line, Column: &column},
+							Attempt:  v1.TestAttempt{Status: status},
+						}
+					}
+
+					if parseCount == 1 {
+						return &v1.TestResults{
+							Framework: v1.JavaScriptJestFramework,
+							Tests: []v1.Test{
+								sharedTest(v1.NewFailedTestStatus(nil, nil, nil)),
+								sharedTest(v1.NewFailedTestStatus(nil, nil, nil)),
+							},
+						}, nil
+					}
+
+					return &v1.TestResults{
+						Framework: v1.JavaScriptJestFramework,
+						Tests: []v1.Test{
+							sharedTest(v1.NewSuccessfulTestStatus()),
+							sharedTest(v1.NewSuccessfulTestStatus()),
+						},
+					}, nil
+				}
+
+				runConfig.Retries = 1
+				//nolint:lll
+				runConfig.RetryCommandTemplate = "retry --testPathPattern '{{ testPathPattern }}' --testNamePattern '{{ testNamePattern }}'"
+				runConfig.SubstitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
+					v1.JavaScriptJestFramework: new(targetedretries.JavaScriptJestSubstitution),
+				}
+			})
+
+			It("reports that the retried results share the original's identity", func() {
+				Expect(uploadedTestResults).ToNot(BeNil())
+				Expect(uploadedTestResults.Summary.Failed).To(Equal(1))
+
+				warnings := recordedLogs.FilterMessageSnippet("appears to be misconfigured")
+				Expect(warnings.Len()).To(Equal(1))
+
+				message := warnings.All()[0].Message
+				Expect(message).To(ContainSubstring(
+					"2 retried test(s) share this test's exact identity, so Captain could not tell which " +
+						"result belongs to it.",
+				))
+				Expect(message).NotTo(ContainSubstring("Retried test differs by:"))
+			})
+		})
+
 		Context("when no test in the output of the retry command matches the original failure", func() {
 			var originalTestDescription string
 

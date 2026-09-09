@@ -170,9 +170,10 @@ func (t Test) Tag(key string, value any) Test {
 	return t
 }
 
-func (t Test) Matches(other Test) bool {
-	// Jest reports no location for a test that fails by timeout, so the same test can have a line and
-	// column on one attempt and not on another.
+// Matches two tests that agree on everything except a line and column one of them never reported.
+// Jest reports no location for a test that fails by timeout, so the same test can have a line and
+// column on one attempt and not on another.
+func (t Test) matchesIgnoringMissingPosition(other Test) bool {
 	wildcardColumn := t.Location == nil || t.Location.Column == nil ||
 		other.Location == nil || other.Location.Column == nil
 	wildcardLine := t.Location == nil || t.Location.Line == nil ||

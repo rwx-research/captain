@@ -711,7 +711,7 @@ func (s Service) attemptRetries(
 		// A loose match is not enough: the merge below refuses to flatten a retried result that could
 		// belong to more than one original, and those originals stay failed.
 		flattenedInto := make(map[int]struct{}, len(flattenedTestResults.Tests))
-		originalTestIndex := v1.NewTestIndex(flattenedTestResults.Tests)
+		originalTestIndex := v1.NewTestIndex(flattenedTestResults.Tests, flattenedTestResults.Framework)
 		for _, retriedResult := range allNewTestResults {
 			for _, retriedTest := range retriedResult.Tests {
 				i := originalTestIndex.IndexOfTestToFlattenInto(flattenedTestResults.Tests, retriedTest)
@@ -814,11 +814,20 @@ func (s Service) CreateRetryFilter(
 const maxNearestRetriedTests = 3
 
 func describeNearestRetriedTests(originalTest v1.Test, allNewTestResults []v1.TestResults) string {
+	originalIdentity := originalTest.IdentityForMatching()
 	sameFileDiffs := make([][]string, 0)
 	sameNameDiffs := make([][]string, 0)
+	identical := 0
 
 	for _, retriedResult := range allNewTestResults {
 		for _, retriedTest := range retriedResult.Tests {
+			// A test that differs by nothing was claimed by another original with the same identity, so
+			// describing how it differs would describe nothing at all.
+			if retriedTest.IdentityForMatching() == originalIdentity {
+				identical++
+				continue
+			}
+
 			switch {
 			case originalTest.Location != nil && retriedTest.Location != nil &&
 				retriedTest.Location.File == originalTest.Location.File:
@@ -827,6 +836,14 @@ func describeNearestRetriedTests(originalTest v1.Test, allNewTestResults []v1.Te
 				sameNameDiffs = append(sameNameDiffs, originalTest.DiffIdentityForMatching(retriedTest))
 			}
 		}
+	}
+
+	if identical > 0 {
+		return fmt.Sprintf(
+			"\n  %d retried test(s) share this test's exact identity, so Captain could not tell which "+
+				"result belongs to it.",
+			identical,
+		)
 	}
 
 	// A retry command is most likely to mangle a test's name, so tests that share only the original's
