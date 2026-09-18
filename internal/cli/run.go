@@ -707,18 +707,14 @@ func (s Service) attemptRetries(
 			}
 		}
 
-	FLATTENED_TEST_RESULTS:
-		for _, originalTest := range flattenedTestResults.Tests {
+		matching := v1.MatchRetries(*flattenedTestResults, allNewTestResults)
+		for originalIndex, originalTest := range flattenedTestResults.Tests {
 			if !filter(originalTest) {
 				continue
 			}
 
-			for _, retriedResult := range allNewTestResults {
-				for _, retriedTest := range retriedResult.Tests {
-					if originalTest.Matches(retriedTest) {
-						continue FLATTENED_TEST_RESULTS
-					}
-				}
+			if matching.Matched[originalIndex] {
+				continue
 			}
 
 			missingTestResult := fmt.Sprintf(
@@ -726,6 +722,12 @@ func (s Service) attemptRetries(
 					"Captain could not identify the original (failed) test in the output of the retry command.",
 				cfg.SuiteID,
 			)
+			missingTestResult += "\n  Original test: " + originalTest.IdentityForMatching()
+			if matching.Ambiguous[originalIndex] {
+				missingTestResult += "\n  Multiple compatible tests prevent a unique one-to-one retry match."
+			} else {
+				missingTestResult += "\n  No compatible test was found in the retry results."
+			}
 			if cfg.FailOnMisconfiguredRetry {
 				return flattenedTestResults, flattenedNewlyExecutedTestResults,
 					retryID, errors.NewRetryError("%s", missingTestResult)

@@ -539,7 +539,7 @@ var _ = Describe("Merge", func() {
 		))
 	})
 
-	It("only merges incoming tests into one base test, even if there are multiple matches", func() {
+	It("does not choose arbitrarily between multiple exact matches", func() {
 		str1 := "1"
 
 		int1 := 1
@@ -582,41 +582,14 @@ var _ = Describe("Merge", func() {
 			},
 		}
 
-		Expect(v1.Merge(
-			[]v1.TestResults{results1},
-			[]v1.TestResults{results2},
-		)).To(Equal(
-			v1.TestResults{
-				Framework: v1.RubyRSpecFramework,
-				Summary: v1.Summary{
-					Status:     v1.SummaryStatusFailed,
-					Tests:      2,
-					Flaky:      1,
-					Successful: 1,
-					Canceled:   1,
-					Retries:    1,
-				},
-				Tests: []v1.Test{
-					{
-						ID:       &id1,
-						Name:     name1,
-						Lineage:  lineage1,
-						Location: &location1,
-						Attempt:  v1.TestAttempt{Status: v1.NewSuccessfulTestStatus()},
-						PastAttempts: []v1.TestAttempt{
-							{Status: v1.NewFailedTestStatus(&str1, nil, nil)},
-						},
-					},
-					{
-						ID:       &id1,
-						Name:     name1,
-						Lineage:  lineage1,
-						Location: &location1,
-						Attempt:  v1.TestAttempt{Status: v1.NewCanceledTestStatus()},
-					},
-				},
-			},
-		))
+		merged := v1.Merge([]v1.TestResults{results1}, []v1.TestResults{results2})
+		Expect(merged.Tests).To(HaveLen(3))
+		Expect(merged.Tests[:2]).To(Equal(results1.Tests))
+		Expect(merged.Tests[2].Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+		Expect(merged.Tests[2].PastAttempts).To(BeEmpty())
+		Expect(merged.Summary.Failed).To(Equal(1))
+		Expect(merged.Summary.Canceled).To(Equal(1))
+		Expect(merged.Summary.Retries).To(BeZero())
 	})
 
 	It("does not flatten attempts that didn't actually run", func() {

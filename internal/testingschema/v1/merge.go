@@ -38,20 +38,17 @@ func flatten(unionedTestResults []TestResults) TestResults {
 		flattened.DerivedFrom = append(flattened.DerivedFrom, testResults.DerivedFrom...)
 		flattened.OtherErrors = append(flattened.OtherErrors, testResults.OtherErrors...)
 
-		for _, incomingTest := range testResults.Tests {
-			matchedWithBaseTest := false
-
-			for i, baseTest := range flattened.Tests {
-				if !baseTest.Matches(incomingTest) {
-					continue
-				}
-				matchedWithBaseTest = true
+		matching := MatchRetries(flattened, []TestResults{testResults})
+		for incomingIndex, incomingTest := range testResults.Tests {
+			i := matching.OriginalIndex[incomingIndex]
+			if i >= 0 {
+				baseTest := flattened.Tests[i]
 
 				newAttempt := incomingTest.Attempt
 				newPastAttempt := baseTest.Attempt
 				if newAttempt.Status.ImpliesSkipped() {
 					// do not flatten skipped statuses into existing tests because they didn't actually run again
-					break
+					continue
 				}
 				swapped := false
 				if newAttempt.Status.ImpliesFailure() && !newPastAttempt.Status.ImpliesFailure() {
@@ -79,14 +76,11 @@ func flatten(unionedTestResults []TestResults) TestResults {
 					ID:           baseTest.ID,
 					Name:         baseTest.Name,
 					Lineage:      baseTest.Lineage,
-					Location:     baseTest.Location,
+					Location:     mergedLocation(baseTest.Location, incomingTest.Location),
 					Attempt:      newAttempt,
 					PastAttempts: pastAttempts,
 				}
-				break
-			}
-
-			if !matchedWithBaseTest {
+			} else {
 				if flattenedStartedEmpty && index == 0 {
 					flattened.Tests = append(flattened.Tests, incomingTest)
 				} else {

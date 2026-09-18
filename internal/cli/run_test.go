@@ -1206,6 +1206,89 @@ var _ = Describe("Run", func() {
 			}
 		})
 
+		Context("when reconciling Jest retry results", func() {
+			var duplicateRetry, failedRetry, differentName bool
+
+			BeforeEach(func() {
+				duplicateRetry, failedRetry, differentName = false, false, false
+				runConfig.FailOnMisconfiguredRetry = true
+				runConfig.RetryCommandTemplate = "retry '{{ testPathPattern }}' '{{ testNamePattern }}'"
+				runConfig.SubstitutionsByFramework = map[v1.Framework]targetedretries.Substitution{
+					v1.JavaScriptJestFramework: new(targetedretries.JavaScriptJestSubstitution),
+				}
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(_ io.Reader) (
+					*v1.TestResults, error,
+				) {
+					parseCount++
+					test := v1.Test{
+						Name: "times out once", Lineage: []string{"times out once"},
+						Location: &v1.Location{File: "test.js"},
+						Attempt:  v1.TestAttempt{Status: v1.TestStatus{Kind: v1.TestStatusTimedOut}},
+					}
+					if parseCount > 1 {
+						line, column := 13, 2
+						test.Location.Line, test.Location.Column = &line, &column
+						if !failedRetry {
+							test.Attempt.Status = v1.NewSuccessfulTestStatus()
+						}
+						if differentName {
+							test.Name = "another test"
+						}
+					}
+					tests := []v1.Test{test}
+					if parseCount > 1 && duplicateRetry {
+						tests = append(tests, test)
+					}
+					return v1.NewTestResults(v1.JavaScriptJestFramework, tests, nil), nil
+				}
+			})
+
+			It("clears a timeout when the passing retry adds a position", func() {
+				Expect(err).NotTo(HaveOccurred())
+				Expect(uploadedTestResults.Tests).To(HaveLen(1))
+				Expect(uploadedTestResults.Summary.Successful).To(Equal(1))
+				Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(1))
+				Expect(recordedLogs.FilterMessageSnippet("could not identify").Len()).To(BeZero())
+			})
+
+			Context("when the retry fails again", func() {
+				BeforeEach(func() { failedRetry = true })
+				It("reports a test failure rather than a misconfigured retry", func() {
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).NotTo(ContainSubstring("could not identify"))
+					Expect(uploadedTestResults.Tests).To(HaveLen(1))
+					Expect(uploadedTestResults.Tests[0].PastAttempts).To(HaveLen(1))
+				})
+			})
+
+			Context("when multiple retries could belong to the original", func() {
+				BeforeEach(func() { duplicateRetry = true })
+				It("fails explicitly on ambiguous reconciliation", func() {
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("Multiple compatible tests"))
+					Expect(err.Error()).To(ContainSubstring("Original test:"))
+				})
+
+				Context("when misconfigured retries only warn", func() {
+					BeforeEach(func() { runConfig.FailOnMisconfiguredRetry = false })
+					It("warns and retains the original failure", func() {
+						Expect(err).To(HaveOccurred())
+						Expect(recordedLogs.FilterMessageSnippet("Multiple compatible tests").Len()).To(Equal(1))
+						Expect(uploadedTestResults.Tests).To(HaveLen(3))
+						Expect(uploadedTestResults.Summary.TimedOut).To(Equal(1))
+					})
+				})
+			})
+
+			Context("when no retry matches", func() {
+				BeforeEach(func() { differentName = true })
+				It("distinguishes absence from ambiguity", func() {
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("No compatible test"))
+				})
+			})
+		})
+
 		Context("when there are no remaining failures after some retries", func() {
 			BeforeEach(func() {
 				runConfig.Retries = 5
