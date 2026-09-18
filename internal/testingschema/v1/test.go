@@ -170,11 +170,71 @@ func (t Test) Tag(key string, value any) Test {
 	return t
 }
 
-func (t Test) Matches(other Test) bool {
-	return t.IdentityForMatching() == other.IdentityForMatching()
+// Matches two tests that agree on everything except a line and column one of them never reported.
+// Jest reports no location for a test that fails by timeout, so the same test can have a line and
+// column on one attempt and not on another.
+func (t Test) matchesIgnoringMissingPosition(other Test) bool {
+	wildcardColumn := t.Location == nil || t.Location.Column == nil ||
+		other.Location == nil || other.Location.Column == nil
+	wildcardLine := t.Location == nil || t.Location.Line == nil ||
+		other.Location == nil || other.Location.Line == nil
+
+	return t.identityForMatching(wildcardColumn, wildcardLine) ==
+		other.identityForMatching(wildcardColumn, wildcardLine)
+}
+
+func (t Test) locationHasPosition() bool {
+	return t.Location != nil && t.Location.Line != nil && t.Location.Column != nil
 }
 
 func (t Test) IdentityForMatching() string {
+	return t.identityForMatching(false, false)
+}
+
+func (t Test) DiffIdentityForMatching(other Test) []string {
+	components := t.identityComponentsForMatching(false, false)
+	otherComponents := other.identityComponentsForMatching(false, false)
+
+	diff := make([]string, 0, len(components))
+	for i, component := range components {
+		if component.value == otherComponents[i].value {
+			continue
+		}
+
+		diff = append(
+			diff,
+			fmt.Sprintf("%s (%s -> %s)", component.name, component.value, otherComponents[i].value),
+		)
+	}
+
+	return diff
+}
+
+func (t Test) identityForMatching(wildcardColumn bool, wildcardLine bool) string {
+	components := t.identityComponentsForMatching(wildcardColumn, wildcardLine)
+
+	var identity strings.Builder
+	for i, component := range components {
+		if i > 0 {
+			identity.WriteString(" :: ")
+		}
+		identity.WriteString(component.name)
+		identity.WriteString("=")
+		identity.WriteString(component.value)
+	}
+
+	return identity.String()
+}
+
+type identityComponentForMatching struct {
+	name  string
+	value string
+}
+
+func (t Test) identityComponentsForMatching(
+	wildcardColumn bool,
+	wildcardLine bool,
+) []identityComponentForMatching {
 	scopeStr := ""
 	if t.Scope != nil {
 		scopeStr = *t.Scope
@@ -191,12 +251,12 @@ func (t Test) IdentityForMatching() string {
 	}
 
 	locationColumnStr := "nil"
-	if t.Location != nil && t.Location.Column != nil {
+	if !wildcardColumn && t.Location != nil && t.Location.Column != nil {
 		locationColumnStr = strconv.Itoa(*t.Location.Column)
 	}
 
 	locationLineStr := "nil"
-	if t.Location != nil && t.Location.Line != nil {
+	if !wildcardLine && t.Location != nil && t.Location.Line != nil {
 		locationLineStr = strconv.Itoa(*t.Location.Line)
 	}
 
@@ -205,8 +265,15 @@ func (t Test) IdentityForMatching() string {
 		lineageStr = lineageStr + "____" + component
 	}
 
-	//nolint:lll
-	return fmt.Sprintf("scope=%s :: id=%s :: name=%s :: locationFile=%s :: locationColumn=%s :: locationLine=%s :: lineage=%s", scopeStr, idStr, t.Name, locationFileStr, locationColumnStr, locationLineStr, lineageStr)
+	return []identityComponentForMatching{
+		{name: "scope", value: scopeStr},
+		{name: "id", value: idStr},
+		{name: "name", value: t.Name},
+		{name: "locationFile", value: locationFileStr},
+		{name: "locationColumn", value: locationColumnStr},
+		{name: "locationLine", value: locationLineStr},
+		{name: "lineage", value: lineageStr},
+	}
 }
 
 // Calculates the composite identifier of a Test given the components which determine it

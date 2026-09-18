@@ -342,80 +342,6 @@ var _ = Describe("Test", func() {
 		})
 	})
 
-	Describe("Matches", func() {
-		It("matches when the top-level fields are the same", func() {
-			scope1_1 := "scope1"
-			id1_1 := "id1"
-			name1_1 := "name1"
-			lineage1_1 := []string{"name", "1"}
-			file1_1 := "file1"
-			location1_1 := v1.Location{File: file1_1}
-
-			scope1_2 := "scope1"
-			id1_2 := "id1"
-			name1_2 := "name1"
-			lineage1_2 := []string{"name", "1"}
-			file1_2 := "file1"
-			location1_2 := v1.Location{File: file1_2}
-
-			test := v1.Test{
-				Scope:    &scope1_1,
-				ID:       &id1_1,
-				Name:     name1_1,
-				Lineage:  lineage1_1,
-				Location: &location1_1,
-			}
-
-			Expect(test.Matches(v1.Test{
-				Scope:    &scope1_2,
-				ID:       &id1_2,
-				Name:     name1_2,
-				Lineage:  lineage1_2,
-				Location: &location1_2,
-			})).To(BeTrue())
-
-			Expect(test.Matches(v1.Test{
-				Scope:    nil,
-				ID:       &id1_2,
-				Name:     name1_2,
-				Lineage:  lineage1_2,
-				Location: &location1_2,
-			})).To(BeFalse())
-
-			Expect(test.Matches(v1.Test{
-				Scope:    &scope1_2,
-				ID:       nil,
-				Name:     name1_2,
-				Lineage:  lineage1_2,
-				Location: &location1_2,
-			})).To(BeFalse())
-
-			Expect(test.Matches(v1.Test{
-				Scope:    &scope1_2,
-				ID:       &id1_2,
-				Name:     name1_2,
-				Lineage:  lineage1_2,
-				Location: nil,
-			})).To(BeFalse())
-
-			Expect(test.Matches(v1.Test{
-				Scope:    &scope1_2,
-				ID:       &id1_2,
-				Name:     "other name",
-				Lineage:  lineage1_2,
-				Location: &location1_2,
-			})).To(BeFalse())
-
-			Expect(test.Matches(v1.Test{
-				Scope:    &scope1_2,
-				ID:       &id1_2,
-				Name:     name1_2,
-				Lineage:  []string{"other"},
-				Location: &location1_2,
-			})).To(BeFalse())
-		})
-	})
-
 	Describe("IdentityForMatching", func() {
 		It("constructs a string based on all of the attributes used for matching", func() {
 			scope1_1 := "scope1"
@@ -450,6 +376,60 @@ var _ = Describe("Test", func() {
 
 			//nolint:lll
 			Expect(test.IdentityForMatching()).To(Equal("scope= :: id=nil :: name=name1 :: locationFile=nil :: locationColumn=nil :: locationLine=nil :: lineage="))
+		})
+	})
+
+	Describe("DiffIdentityForMatching", func() {
+		It("describes only the components that differ", func() {
+			line := 58
+			column := 1
+
+			name := "name1"
+			lineage := []string{"name", "1"}
+			withoutPosition := v1.Location{File: "file1"}
+			withPosition := v1.Location{File: "file1", Line: &line, Column: &column}
+
+			failed := v1.Test{Name: name, Lineage: lineage, Location: &withoutPosition}
+			retried := v1.Test{Name: name, Lineage: lineage, Location: &withPosition}
+
+			Expect(failed.DiffIdentityForMatching(retried)).To(Equal([]string{
+				"locationColumn (nil -> 1)",
+				"locationLine (nil -> 58)",
+			}))
+		})
+
+		It("describes nothing for two tests with the same identity", func() {
+			location := v1.Location{File: "file1"}
+			test := v1.Test{Name: "name1", Lineage: []string{"name", "1"}, Location: &location}
+
+			Expect(test.DiffIdentityForMatching(test)).To(BeEmpty())
+		})
+
+		It("names every differing component", func() {
+			scope := "scope1"
+			id := "id1"
+			line := 58
+			column := 1
+			location := v1.Location{File: "file1", Line: &line, Column: &column}
+
+			original := v1.Test{Name: "name1", Lineage: []string{"name", "1"}}
+			retried := v1.Test{
+				Scope:    &scope,
+				ID:       &id,
+				Name:     "name2",
+				Lineage:  []string{"name", "2"},
+				Location: &location,
+			}
+
+			Expect(original.DiffIdentityForMatching(retried)).To(Equal([]string{
+				"scope ( -> scope1)",
+				"id (nil -> id1)",
+				"name (name1 -> name2)",
+				"locationFile (nil -> file1)",
+				"locationColumn (nil -> 1)",
+				"locationLine (nil -> 58)",
+				"lineage (____name____1 -> ____name____2)",
+			}))
 		})
 	})
 
