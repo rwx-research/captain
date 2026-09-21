@@ -1058,7 +1058,7 @@ func (s Service) reportTestResults(
 		}
 	}
 
-	mintLinksPath := os.Getenv("MINT_LINKS")
+	mintLinksPath := os.Getenv("RWX_LINKS")
 	if reportingConfiguration.CloudEnabled &&
 		reportingConfiguration.Provider.ProviderName == "mint" &&
 		mintLinksPath != "" {

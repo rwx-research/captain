@@ -158,7 +158,7 @@ func withAndWithoutInheritedEnv(sharedTests sharedTestGen) {
 		if os.Getenv("FAST_INTEGRATION") == "" {
 			Describe("using the Mint provider", func() {
 				env := helpers.ReadEnvFromFile(".env.mint")
-				env["MINT_GIT_COMMIT_SHA"] = randomGitSha
+				env["RWX_GIT_COMMIT_SHA"] = randomGitSha
 				sharedTests(func() map[string]string {
 					return copyMap(env)
 				}, "mint")

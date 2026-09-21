@@ -45,7 +45,7 @@ func SetEnv(env map[string]string) {
 }
 
 func UnsetCIEnv() {
-	envPrefixes := []string{"MINT", "GITHUB", "BUILDKITE", "CIRCLE", "GITLAB", "CI", "RWX", "CAPTAIN"}
+	envPrefixes := []string{"GITHUB", "BUILDKITE", "CIRCLE", "GITLAB", "CI", "RWX", "CAPTAIN"}
 	for _, env := range os.Environ() {
 		for _, prefix := range envPrefixes {
 			if strings.HasPrefix(env, prefix) {
