@@ -28,7 +28,7 @@ tasks:
 
   - key: go
     use: go-installation
-    run: echo "$(go env GOPATH)/bin" > "$MINT_ENV/PATH"
+    run: echo "$(go env GOPATH)/bin" > "$RWX_ENV/PATH"
 
   - key: go-deps
     use: [go, code]

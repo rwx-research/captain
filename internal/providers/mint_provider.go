@@ -190,7 +190,7 @@ func mintTags(cfg MintEnv) (map[string]any, error) {
 				"Missing git ref",
 				"It appears that you are running on RWX (`RWX` is set to `true`),"+
 					" however Captain is unable to determine your git ref.",
-				"Ensure that you've run the `git/clone` package to set the `MINT_GIT_*` metadata.",
+				"Ensure that you've run the `git/clone` package to set the `RWX_GIT_*` metadata.",
 			)
 		}
 

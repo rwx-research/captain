@@ -15,11 +15,11 @@ const (
 	retryActionKey         = "retry-failed-tests"
 	retryActionLabel       = "Retry failed tests"
 	retryActionDescription = "Only the tests that failed will be run again."
-	retryActionEnv         = "CAPTAIN_MINT_RETRY_FAILED_TESTS"
+	retryActionEnv         = "CAPTAIN_RWX_RETRY_FAILED_TESTS"
 )
 
 func IsMint() bool {
-	return os.Getenv("MINT") == "true"
+	return os.Getenv("RWX") == "true"
 }
 
 func DidRetryFailedTests() bool {
@@ -29,7 +29,7 @@ func DidRetryFailedTests() bool {
 func WriteConfigureRetryCommandTip(fs fs.FileSystem) error {
 	var err error
 
-	tipFile, err := fs.Create(filepath.Join(os.Getenv("MINT_TIPS"), "configure-captain-retry-command"))
+	tipFile, err := fs.Create(filepath.Join(os.Getenv("RWX_TIPS"), "configure-captain-retry-command"))
 	if err != nil {
 		return errors.Wrap(err, "unable to create tip file")
 	}
@@ -233,15 +233,15 @@ func RetryFailedTestsLabel() string {
 }
 
 func errorsDirectory() string {
-	return os.Getenv("MINT_ERRORS")
+	return os.Getenv("RWX_ERRORS")
 }
 
 func retryDataDirectory() string {
-	return os.Getenv("MINT_RETRY_DATA")
+	return os.Getenv("RWX_RETRY_DATA")
 }
 
 func retryActionDirectory() string {
-	return filepath.Join(os.Getenv("MINT_RETRY_ACTIONS"), retryActionKey)
+	return filepath.Join(os.Getenv("RWX_RETRY_ACTIONS"), retryActionKey)
 }
 
 func writeEnv(fs fs.FileSystem) error {
