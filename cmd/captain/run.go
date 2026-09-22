@@ -439,6 +439,12 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 
 	addGenericProviderFlags(runCmd, &cliArgs.GenericProvider)
 	addFrameworkFlags(runCmd, &cliArgs.frameworkParams)
+	runCmd.Flags().Lookup("language").Usage = strings.Replace(
+		runCmd.Flags().Lookup("language").Usage,
+		"(required if framework is set)",
+		"(inferred for CLI-only suites when the framework has one known language)",
+		1,
+	)
 	return nil
 }
 
@@ -446,7 +452,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 // from other parts of the app (e.g. config files, env vars)
 func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 	if suiteConfig, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; ok {
-		if cliArgs.command != "" {
+		if cliArgs.command != "" || cmd.Flags().Changed("command") {
 			suiteConfig.Command = cliArgs.command
 		}
 
@@ -462,7 +468,7 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 			suiteConfig.Retries.FailOnMisconfiguration = true
 		}
 
-		if cliArgs.testResults != "" {
+		if cliArgs.testResults != "" || cmd.Flags().Changed("test-results") {
 			suiteConfig.Results.Path = cliArgs.testResults
 		}
 
@@ -492,8 +498,8 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 			suiteConfig.Retries.MaxTests = cliArgs.maxTestsToRetry
 		}
 
-		if cliArgs.printSummary {
-			suiteConfig.Output.PrintSummary = true
+		if cliArgs.printSummary || cmd.Flags().Changed("print-summary") {
+			suiteConfig.Output.PrintSummary = cliArgs.printSummary
 		}
 
 		if cliArgs.quiet {
@@ -518,7 +524,7 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 			suiteConfig.Retries.Attempts = cliArgs.Retries
 		}
 
-		if cliArgs.retryCommandTemplate != "" {
+		if cliArgs.retryCommandTemplate != "" || cmd.Flags().Changed("retry-command") {
 			suiteConfig.Retries.Command = cliArgs.retryCommandTemplate
 		}
 
@@ -530,15 +536,15 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 			suiteConfig.Retries.AdditionalArtifactPaths = cliArgs.additionalArtifactPaths
 		}
 
-		if suiteConfig.Partition.Delimiter == "" {
+		if suiteConfig.Partition.Delimiter == "" || cmd.Flags().Changed("partition-delimiter") {
 			suiteConfig.Partition.Delimiter = cliArgs.partitionDelimiter
 		}
 
-		if cliArgs.partitionCommandTemplate != "" {
+		if cliArgs.partitionCommandTemplate != "" || cmd.Flags().Changed("partition-command") {
 			suiteConfig.Partition.Command = cliArgs.partitionCommandTemplate
 		}
 
-		if len(cliArgs.partitionGlobs) != 0 {
+		if len(cliArgs.partitionGlobs) != 0 || cmd.Flags().Changed("partition-globs") {
 			suiteConfig.Partition.Globs = cliArgs.partitionGlobs
 		}
 

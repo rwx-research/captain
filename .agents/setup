@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v rwx >/dev/null 2>&1; then
+  tmp=$(mktemp)
+  trap 'rm -f "$tmp"' EXIT
+  curl -fsSL https://github.com/rwx-cloud/rwx/releases/download/v3.30.0/rwx-linux-x86_64 -o "$tmp"
+  sudo install "$tmp" /usr/local/bin/rwx
+fi

@@ -201,7 +201,14 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 			cfg.TestSuites = make(map[string]cli.SuiteConfig)
 		}
 
-		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = cli.SuiteConfig{}
+		var suite cli.SuiteConfig
+		if cmd.Name() == "run" {
+			suite, err = defaultRunSuite(cliArgs.frameworkParams)
+			if err != nil {
+				return cfg, err
+			}
+		}
+		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suite
 	}
 
 	cfg = bindRootCmdFlags(cfg, cliArgs.RootCliArgs)

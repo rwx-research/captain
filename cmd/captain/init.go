@@ -41,7 +41,7 @@ var frameworkParsers map[v1.Framework][]parsing.Parser = map[v1.Framework][]pars
 	v1.GoGinkgoFramework:             {parsing.GoGinkgoParser{}},
 	v1.GoTestFramework:               {parsing.GoTestParser{}},
 	v1.JavaScriptCucumberFramework:   {parsing.JavaScriptCucumberJSONParser{}},
-	v1.JavaScriptCypressFramework:    {parsing.JavaScriptCypressParser{}},
+	v1.JavaScriptCypressFramework:    {parsing.JavaScriptCypressParser{}, parsing.RWXParser{}},
 	v1.JavaScriptJestFramework:       {parsing.JavaScriptJestParser{}},
 	v1.JavaScriptKarmaFramework:      {parsing.JavaScriptKarmaParser{}},
 	v1.JavaScriptMochaFramework:      {parsing.JavaScriptMochaParser{}},
