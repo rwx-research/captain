@@ -19,7 +19,7 @@ func (s DelimiterSubstitution) Example() string {
 
 func (s DelimiterSubstitution) ValidateTemplate(compiledTemplate templating.CompiledTemplate) error {
 	keywords := compiledTemplate.Keywords()
-	message := "Partitioning with a delimiter requires a template with only the 'testFiles' keyword"
+	message := "Partitioning with a delimiter requires a template with only the 'testFiles' or 'partition' keyword"
 
 	if len(keywords) == 0 {
 		return errors.NewInputError("%v; no keywords were found", message)
@@ -30,7 +30,7 @@ func (s DelimiterSubstitution) ValidateTemplate(compiledTemplate templating.Comp
 		return errors.NewInputError("%v; these were found: %v", message, strings.Join(keywords, ", "))
 	}
 
-	if keywords[0] != "testFiles" {
+	if keywords[0] != "testFiles" && keywords[0] != "partition" {
 		return errors.NewInputError("%v; '%v' was found instead", message, keywords[0])
 	}
 
@@ -47,5 +47,6 @@ func (s DelimiterSubstitution) SubstitutionLookupFor(
 		escapedTestFilePaths = append(escapedTestFilePaths, fmt.Sprintf("'%v'", templating.ShellEscape(testFilePath)))
 	}
 
-	return map[string]string{"testFiles": strings.Join(escapedTestFilePaths, s.Delimiter)}, nil
+	partition := strings.Join(escapedTestFilePaths, s.Delimiter)
+	return map[string]string{"testFiles": partition, "partition": partition}, nil
 }
