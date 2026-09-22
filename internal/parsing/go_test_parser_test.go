@@ -9,6 +9,7 @@ import (
 	"github.com/bradleyjkemp/cupaloy"
 
 	"github.com/rwx-research/captain-cli/internal/parsing"
+	"github.com/rwx-research/captain-cli/internal/testing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -28,10 +29,10 @@ var _ = Describe("GoTestParser", func() {
 `))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(results.TimingManifests).To(Equal([]v1.TimingManifest{{
-				Granularity: "package", Timings: []v1.Timing{
-					{Identifier: "parallel", Duration: 4500 * time.Millisecond},
-					{Identifier: "overhead", Duration: 2250 * time.Millisecond},
-					{Identifier: "empty", Duration: 0},
+				FileTimings: []testing.TestFileTiming{
+					{Filepath: "parallel", Duration: 4500 * time.Millisecond},
+					{Filepath: "overhead", Duration: 2250 * time.Millisecond},
+					{Filepath: "empty", Duration: 0},
 				},
 			}}))
 		})
@@ -41,8 +42,8 @@ var _ = Describe("GoTestParser", func() {
 				`{"Action":"pass","Package":"example/no-tests","Elapsed":0.125}`))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(results.Tests).To(BeEmpty())
-			Expect(results.TimingManifests[0].Timings).To(Equal([]v1.Timing{
-				{Identifier: "example/no-tests", Duration: 125 * time.Millisecond},
+			Expect(results.TimingManifests[0].FileTimings).To(Equal([]testing.TestFileTiming{
+				{Filepath: "example/no-tests", Duration: 125 * time.Millisecond},
 			}))
 		})
 

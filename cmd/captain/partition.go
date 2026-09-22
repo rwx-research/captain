@@ -18,7 +18,6 @@ type partitionArgs struct {
 	trimPrefix         string
 	discoveryCommand   string
 	discoveryDelimiter string
-	granularity        string
 }
 
 func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
@@ -52,9 +51,6 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 				}
 				if !cmd.Flags().Changed("discovery-delimiter") && partition.DiscoveryDelimiter != "" {
 					pArgs.discoveryDelimiter = partition.DiscoveryDelimiter
-				}
-				if !cmd.Flags().Changed("granularity") {
-					pArgs.granularity = partition.Granularity
 				}
 				if len(cliArgs.RootCliArgs.positionalArgs) == 0 {
 					cliArgs.RootCliArgs.positionalArgs = partition.Globs
@@ -115,7 +111,6 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 				TestFilePaths:      args,
 				DiscoveryCommand:   pArgs.discoveryCommand,
 				DiscoveryDelimiter: pArgs.discoveryDelimiter,
-				Granularity:        pArgs.granularity,
 				PartitionNodes:     pArgs.nodes,
 				Delimiter:          pArgs.delimiter,
 				RoundRobin:         pArgs.roundRobin,
@@ -135,8 +130,6 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		"Command producing opaque identifiers to partition (mutually exclusive with positional globs).")
 	partitionCmd.Flags().StringVar(&pArgs.discoveryDelimiter, "discovery-delimiter", "\n",
 		"Delimiter separating identifiers in discovery-command output.")
-	partitionCmd.Flags().StringVar(&pArgs.granularity, "granularity", "",
-		"Timing granularity (defaults to package for command discovery, file for globs).")
 
 	// it's a smell that we're using cliArgs here but I believe it's a major refactor to stop doing that.
 	addShaFlag(partitionCmd, &cliArgs.GenericProvider.Sha)

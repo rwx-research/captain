@@ -4,9 +4,9 @@ package v1
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/testing"
 )
 
 type TestResults struct {
@@ -20,13 +20,7 @@ type TestResults struct {
 }
 
 type TimingManifest struct {
-	Granularity string   `json:"granularity"`
-	Timings     []Timing `json:"timings"`
-}
-
-type Timing struct {
-	Identifier string        `json:"identifier"`
-	Duration   time.Duration `json:"duration_in_nanoseconds"`
+	FileTimings []testing.TestFileTiming `json:"file_timings"`
 }
 
 func (tr TestResults) MarshalJSON() ([]byte, error) {

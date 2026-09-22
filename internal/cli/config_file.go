@@ -46,7 +46,6 @@ type SuiteConfigPartition struct {
 	Globs              []string
 	DiscoveryCommand   string `yaml:"discovery-command"`
 	DiscoveryDelimiter string `yaml:"discovery-delimiter"`
-	Granularity        string
 	Delimiter          string
 	RoundRobin         bool   `yaml:"round-robin"`
 	TrimPrefix         string `yaml:"trim-prefix"`

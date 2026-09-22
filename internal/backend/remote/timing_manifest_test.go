@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/rwx-research/captain-cli/internal/backend/remote"
+	"github.com/rwx-research/captain-cli/internal/testing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -25,25 +26,24 @@ var _ = Describe("entity timing manifests", func() {
 		client.RoundTrip = func(req *http.Request) (*http.Response, error) {
 			body, err := io.ReadAll(req.Body)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(string(body)).To(MatchJSON(`{"test_suite_identifier":"suite","granularity":"package","timings":[]}`))
+			Expect(string(body)).To(MatchJSON(`{"test_suite_identifier":"suite","file_timings":[]}`))
 			return &http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(strings.NewReader(""))}, nil
 		}
-		Expect(client.UploadTimingManifest(context.Background(), "suite", v1.TimingManifest{
-			Granularity: "package",
-		})).To(Succeed())
+		Expect(client.UploadTimingManifest(context.Background(), "suite", v1.TimingManifest{})).To(Succeed())
 	})
 
-	It("selects arbitrary read granularity and uses identifiers rather than legacy file timings", func() {
+	It("reads opaque identifiers using the unchanged timing manifest contract", func() {
 		client := remote.Client{ClientConfig: remote.ClientConfig{Host: "cloud.rwx.com"}}
 		client.RoundTrip = func(req *http.Request) (*http.Response, error) {
-			Expect(req.URL.Query().Get("granularity")).To(Equal("test-case"))
+			Expect(req.URL.Query()).To(HaveLen(2))
 			Expect(req.URL.Query().Get("test_suite_identifier")).To(Equal("suite"))
+			Expect(req.URL.Query().Has("commit_sha")).To(BeTrue())
 			return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{
-				"file_timings":[{"file_path":"wrong","duration_in_nanoseconds":99}],
-				"granularity":"test-case","timings":[{"identifier":"opaque/../case","duration_in_nanoseconds":123}]
+				"generated_at":"2026-09-22T00:00:00Z","commit_sha":"abc",
+				"file_timings":[{"file_path":"opaque/../case","duration_in_nanoseconds":123}]
 			}`))}, nil
 		}
-		timings, err := client.GetTestTimingManifest(context.Background(), "suite", "test-case")
+		timings, err := client.GetTestTimingManifest(context.Background(), "suite")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(timings).To(HaveLen(1))
 		Expect(timings[0].Filepath).To(Equal("opaque/../case"))
@@ -80,15 +80,15 @@ var _ = Describe("entity timing manifests", func() {
 				case 2:
 					Expect(req.Method).To(Equal(http.MethodPut))
 					Expect(req.URL.String()).To(Equal("https://example.com/results"))
-					Expect(string(body)).NotTo(ContainSubstring("granularity"))
+					Expect(string(body)).NotTo(ContainSubstring("file_timings"))
 				case 3:
 					Expect(req.Method).To(Equal(http.MethodPut))
 					Expect(string(body)).To(ContainSubstring(`"upload_status":"uploaded"`))
 				case 4:
 					Expect(req.Method).To(Equal(http.MethodPost))
 					Expect(req.URL.Path).To(Equal("/captain/api/test_suites/timings"))
-					Expect(string(body)).To(MatchJSON(`{"test_suite_identifier":"suite","granularity":"package",
-						"timings":[{"identifier":"example/pkg","duration_in_nanoseconds":1250000000}]}`))
+					Expect(string(body)).To(MatchJSON(`{"test_suite_identifier":"suite",
+						"file_timings":[{"file_path":"example/pkg","duration_in_nanoseconds":1250000000}]}`))
 					responseStatus = status
 				default:
 					Fail("unexpected request")
@@ -96,8 +96,8 @@ var _ = Describe("entity timing manifests", func() {
 				return &http.Response{StatusCode: responseStatus, Body: io.NopCloser(strings.NewReader(responseBody))}, nil
 			}
 			results := *v1.NewTestResults(v1.GoTestFramework, nil, nil)
-			results.TimingManifests = []v1.TimingManifest{{Granularity: "package", Timings: []v1.Timing{
-				{Identifier: "example/pkg", Duration: 1250 * time.Millisecond},
+			results.TimingManifests = []v1.TimingManifest{{FileTimings: []testing.TestFileTiming{
+				{Filepath: "example/pkg", Duration: 1250 * time.Millisecond},
 			}}}
 			_, err := client.UpdateTestResults(context.Background(), "suite", results)
 			if status == http.StatusCreated {

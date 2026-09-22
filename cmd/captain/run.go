@@ -48,7 +48,6 @@ type CliArgs struct {
 	partitionGlobs              []string
 	partitionDiscoveryCommand   string
 	partitionDiscoveryDelimiter string
-	partitionGranularity        string
 	partitionRoundRobin         bool
 	partitionTrimPrefix         string
 	quarantinedTestRetries      int
@@ -184,7 +183,6 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 							TestFilePaths:      suiteConfig.Partition.Globs,
 							DiscoveryCommand:   suiteConfig.Partition.DiscoveryCommand,
 							DiscoveryDelimiter: suiteConfig.Partition.DiscoveryDelimiter,
-							Granularity:        suiteConfig.Partition.Granularity,
 							PartitionNodes: config.PartitionNodes{
 								Index: partitionIndex,
 								Total: partitionTotal,
@@ -362,8 +360,6 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		"Command producing opaque identifiers to partition (mutually exclusive with partition-globs).")
 	runCmd.Flags().StringVar(&cliArgs.partitionDiscoveryDelimiter, "partition-discovery-delimiter", "\n",
 		"Delimiter separating identifiers in discovery-command output.")
-	runCmd.Flags().StringVar(&cliArgs.partitionGranularity, "partition-granularity", "",
-		"Timing granularity (defaults to package for command discovery, file for globs).")
 
 	runCmd.Flags().StringArrayVar(
 		&cliArgs.partitionGlobs,
@@ -551,9 +547,6 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 		}
 		if cmd.Flags().Changed("partition-discovery-delimiter") {
 			suiteConfig.Partition.DiscoveryDelimiter = cliArgs.partitionDiscoveryDelimiter
-		}
-		if cmd.Flags().Changed("partition-granularity") {
-			suiteConfig.Partition.Granularity = cliArgs.partitionGranularity
 		}
 
 		if cmd.Flags().Changed("partition-round-robin") {

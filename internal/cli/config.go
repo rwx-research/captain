@@ -162,21 +162,10 @@ type PartitionConfig struct {
 	TestFilePaths      []string
 	DiscoveryCommand   string
 	DiscoveryDelimiter string
-	Granularity        string
 	Delimiter          string
 	PartitionNodes     config.PartitionNodes
 	RoundRobin         bool
 	TrimPrefix         string
-}
-
-func (pc PartitionConfig) TimingGranularity() string {
-	if pc.Granularity != "" {
-		return pc.Granularity
-	}
-	if pc.DiscoveryCommand != "" {
-		return "package"
-	}
-	return "file"
 }
 
 func (pc PartitionConfig) Validate() error {

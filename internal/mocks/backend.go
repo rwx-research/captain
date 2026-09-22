@@ -47,7 +47,6 @@ func (a *API) GetQuarantinedTests(
 func (a *API) GetTestTimingManifest(
 	ctx context.Context,
 	testSuiteIdentifier string,
-	_ ...string,
 ) ([]testing.TestFileTiming, error) {
 	if a.MockGetTestTimingManifest != nil {
 		return a.MockGetTestTimingManifest(ctx, testSuiteIdentifier)

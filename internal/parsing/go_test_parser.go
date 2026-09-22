@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/testing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
@@ -27,7 +28,7 @@ type GoTestTestOutput struct {
 }
 
 func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
-	packageTimings := make([]v1.Timing, 0)
+	packageTimings := make([]testing.TestFileTiming, 0)
 	testsByPackage := map[string]map[string]v1.Test{}
 	failedPackages := map[string]bool{}
 	packagesWithFailLine := map[string]bool{}
@@ -65,9 +66,9 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		if testOutput.Test == nil {
 			if (*testOutput.Action == "pass" || *testOutput.Action == "skip") &&
 				testOutput.Elapsed != nil && *testOutput.Elapsed >= 0 {
-				packageTimings = append(packageTimings, v1.Timing{
-					Identifier: *testOutput.Package,
-					Duration:   time.Duration(math.Round(*testOutput.Elapsed * float64(time.Second))),
+				packageTimings = append(packageTimings, testing.TestFileTiming{
+					Filepath: *testOutput.Package,
+					Duration: time.Duration(math.Round(*testOutput.Elapsed * float64(time.Second))),
 				})
 			}
 			if *testOutput.Action == "fail" {
@@ -221,7 +222,7 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		otherErrors,
 	)
 	if len(packageTimings) != 0 {
-		results.TimingManifests = []v1.TimingManifest{{Granularity: "package", Timings: packageTimings}}
+		results.TimingManifests = []v1.TimingManifest{{FileTimings: packageTimings}}
 	}
 	return results, nil
 }

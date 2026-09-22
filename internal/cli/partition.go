@@ -39,7 +39,7 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 	if cfg.RoundRobin {
 		unmatchedFilepaths = append(unmatchedFilepaths, testFilePaths...)
 	} else {
-		fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID, cfg.TimingGranularity())
+		fileTimings, err := s.API.GetTestTimingManifest(ctx, cfg.SuiteID)
 		if err != nil {
 			return PartitionResult{}, errors.WithStack(err)
 		}

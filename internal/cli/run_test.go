@@ -24,6 +24,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/testing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -209,8 +210,8 @@ var _ = Describe("Run", func() {
 
 		Context("when the parser provides independent timings", func() {
 			BeforeEach(func() {
-				manifest := v1.TimingManifest{Granularity: "package", Timings: []v1.Timing{
-					{Identifier: "example/pkg", Duration: 123},
+				manifest := v1.TimingManifest{FileTimings: []testing.TestFileTiming{
+					{Filepath: "example/pkg", Duration: 123},
 				}}
 				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(
 					io.Reader,

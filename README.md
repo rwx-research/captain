@@ -46,15 +46,15 @@ and duplicate identifiers are ignored. Identifiers are matched exactly, without
 path normalization or prefix trimming. Discovery commands and globs are mutually
 exclusive.
 
-Command discovery uses `package` timing granularity by default; globs use `file`.
-Set `partition.granularity`, `--granularity` for `partition`, or
-`--partition-granularity` for `run` to select another granularity. The Go JSON
-parser records successful package elapsed times, including package overhead and
-parallel execution, rather than summing individual tests. Failed or incomplete
+Each suite uses a single timing manifest, with package names or other opaque
+identifiers stored in the existing `file_path` field. No timing granularity
+configuration is needed. The Go JSON parser records successful package elapsed
+times, including package overhead and parallel execution, rather than summing
+individual tests. Failed or incomplete
 packages do not contribute timings, and targeted retries do not replace the
 original run's package timings. Configure result capture as usual to record
-these timings. Non-file timings also work with the local backend and are stored
-separately from existing file timings.
+these timings. Non-file timings also work with the local backend using the
+suite's existing `timings.yaml` file.
 
 ## Contributing
 

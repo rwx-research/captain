@@ -14,6 +14,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend/local"
 	"github.com/rwx-research/captain-cli/internal/fs"
 	"github.com/rwx-research/captain-cli/internal/mocks"
+	"github.com/rwx-research/captain-cli/internal/testing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -21,7 +22,7 @@ import (
 )
 
 var _ = Describe("local backend client", func() {
-	It("persists opaque timings separately by granularity without overwriting legacy files", func() {
+	It("persists opaque timings in the existing manifest without extracting test durations", func() {
 		dir := GinkgoT().TempDir()
 		newClient := func() local.Client {
 			client, err := local.NewClient(fs.Local{}, filepath.Join(dir, "flakes"),
@@ -31,22 +32,34 @@ var _ = Describe("local backend client", func() {
 		}
 		client := newClient()
 		ctx := context.Background()
+		duration := 9 * time.Second
 		for _, manifest := range []v1.TimingManifest{
-			{Granularity: "file", Timings: []v1.Timing{{Identifier: "same", Duration: time.Second}}},
-			{Granularity: "package", Timings: []v1.Timing{{Identifier: "same", Duration: 2 * time.Second}}},
-			{Granularity: "custom/../kind", Timings: []v1.Timing{{Identifier: "same", Duration: 3 * time.Second}}},
+			{FileTimings: []testing.TestFileTiming{
+				{Filepath: "a/../b", Duration: time.Second}, {Filepath: "b", Duration: 3 * time.Second},
+			}},
+			{FileTimings: []testing.TestFileTiming{{Filepath: "a/../b", Duration: 2 * time.Second}}},
 		} {
-			_, err := client.UpdateTestResults(ctx, "suite", v1.TestResults{TimingManifests: []v1.TimingManifest{manifest}})
+			_, err := client.UpdateTestResults(ctx, "suite", v1.TestResults{
+				TimingManifests: []v1.TimingManifest{manifest},
+				Tests: []v1.Test{{
+					Location: &v1.Location{File: "unwanted"}, Attempt: v1.TestAttempt{Duration: &duration},
+				}},
+			})
 			Expect(err).NotTo(HaveOccurred())
 		}
 		client = newClient()
-		for i, granularity := range []string{"file", "package", "custom/../kind"} {
-			timings, err := client.GetTestTimingManifest(ctx, "suite", granularity)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(timings).To(HaveLen(1))
-			Expect(timings[0].Filepath).To(Equal("same"))
-			Expect(timings[0].Duration).To(Equal(time.Duration(i+1) * time.Second))
-		}
+		timings, err := client.GetTestTimingManifest(ctx, "suite")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(timings).To(ConsistOf(
+			testing.TestFileTiming{Filepath: "a/../b", Duration: 2 * time.Second},
+			testing.TestFileTiming{Filepath: "b", Duration: 3 * time.Second},
+		))
+		contents, err := os.ReadFile(filepath.Join(dir, "timings"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(string(contents)).To(Equal("a/../b: 2s\nb: 3s\n"))
+		entries, err := os.ReadDir(dir)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(entries).To(HaveLen(3))
 	})
 
 	const (

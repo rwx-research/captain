@@ -117,7 +117,6 @@ var _ = Describe("Partition", func() {
 			}
 			cfg := cfgWithArgs(0, 2, nil, ",", false, "prefix/")
 			cfg.DiscoveryCommand = `printf 'b\na/../b\nprefix/c\nb\n\n'`
-			Expect(cfg.TimingGranularity()).To(Equal("package"))
 			Expect(service.Partition(context.Background(), cfg)).To(Succeed())
 			Expect(recordedLogs.FilterLevelExact(zapcore.InfoLevel).All()[0].Message).To(Equal("a/../b"))
 			cfg.PartitionNodes.Index = 1
@@ -125,13 +124,11 @@ var _ = Describe("Partition", func() {
 			Expect(recordedLogs.FilterLevelExact(zapcore.InfoLevel).All()[1].Message).To(Equal("prefix/c,b"))
 		})
 
-		It("supports custom delimiters and arbitrary granularity", func() {
+		It("supports custom delimiters and opaque identifiers", func() {
 			service.TaskRunner = exec.Local{}
 			cfg := cfgWithArgs(0, 1, nil, ",", true, "")
 			cfg.DiscoveryCommand = `printf 'first case|second case|first case|'`
 			cfg.DiscoveryDelimiter = "|"
-			cfg.Granularity = "test-case"
-			Expect(cfg.TimingGranularity()).To(Equal("test-case"))
 			Expect(service.Partition(context.Background(), cfg)).To(Succeed())
 			Expect(recordedLogs.FilterLevelExact(zapcore.InfoLevel).All()[0].Message).To(Equal("first case,second case"))
 		})
