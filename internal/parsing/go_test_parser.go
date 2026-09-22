@@ -27,6 +27,7 @@ type GoTestTestOutput struct {
 }
 
 func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
+	packageTimings := make([]v1.Timing, 0)
 	testsByPackage := map[string]map[string]v1.Test{}
 	failedPackages := map[string]bool{}
 	packagesWithFailLine := map[string]bool{}
@@ -62,6 +63,13 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 
 		if testOutput.Test == nil {
+			if (*testOutput.Action == "pass" || *testOutput.Action == "skip") &&
+				testOutput.Elapsed != nil && *testOutput.Elapsed >= 0 {
+				packageTimings = append(packageTimings, v1.Timing{
+					Identifier: *testOutput.Package,
+					Duration:   time.Duration(math.Round(*testOutput.Elapsed * float64(time.Second))),
+				})
+			}
 			if *testOutput.Action == "fail" {
 				failedPackages[*testOutput.Package] = true
 			}
@@ -139,7 +147,11 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		}
 	}
 
-	if len(tests) == 0 && len(failedBuilds) == 0 {
+	if err := scanner.Err(); err != nil {
+		return nil, errors.Wrap(err, "unable to read go test output")
+	}
+
+	if len(tests) == 0 && len(failedBuilds) == 0 && len(packageTimings) == 0 {
 		return nil, errors.NewInputError("Did not see any tests, so we cannot be sure it is go test output")
 	}
 
@@ -203,9 +215,13 @@ func (p GoTestParser) Parse(data io.Reader) (*v1.TestResults, error) {
 		return otherErrors[i].Message < otherErrors[j].Message
 	})
 
-	return v1.NewTestResults(
+	results := v1.NewTestResults(
 		v1.GoTestFramework,
 		tests,
 		otherErrors,
-	), nil
+	)
+	if len(packageTimings) != 0 {
+		results.TimingManifests = []v1.TimingManifest{{Granularity: "package", Timings: packageTimings}}
+	}
+	return results, nil
 }

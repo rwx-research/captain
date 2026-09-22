@@ -3,6 +3,7 @@ package cli_test
 import (
 	"context"
 	"path/filepath"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -12,6 +13,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/config"
 	"github.com/rwx-research/captain-cli/internal/errors"
+	"github.com/rwx-research/captain-cli/internal/exec"
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/testing"
@@ -77,6 +79,12 @@ var _ = Describe("Partition", func() {
 	})
 
 	Context("when misconfigured", func() {
+		It("rejects command discovery together with globs", func() {
+			cfg := cfgWithGlob(0, 2, "*.test")
+			cfg.DiscoveryCommand = "go list ./..."
+			Expect(service.Partition(ctx, cfg).Error()).To(ContainSubstring("mutually exclusive"))
+		})
+
 		It("requires an index be >= 0", func() {
 			err = service.Partition(ctx, cfgWithGlob(-1, 2, "*.test"))
 			Expect(err.Error()).To(ContainSubstring("Missing partition index"))
@@ -92,6 +100,48 @@ var _ = Describe("Partition", func() {
 		It("must specify filepath args", func() {
 			err = service.Partition(ctx, cfgWithArgs(0, 1, []string{}, " ", false, ""))
 			Expect(err.Error()).To(ContainSubstring("Missing test file paths"))
+		})
+	})
+
+	Context("with command discovery", func() {
+		It("balances opaque identifiers without path normalization or prefix trimming", func() {
+			service.TaskRunner = exec.Local{}
+			service.API.(*mocks.API).MockGetTestTimingManifest = func(
+				context.Context, string,
+			) ([]testing.TestFileTiming, error) {
+				return []testing.TestFileTiming{
+					{Filepath: "a/../b", Duration: 9 * time.Second},
+					{Filepath: "b", Duration: time.Second},
+					{Filepath: "prefix/c", Duration: 2 * time.Second},
+				}, nil
+			}
+			cfg := cfgWithArgs(0, 2, nil, ",", false, "prefix/")
+			cfg.DiscoveryCommand = `printf 'b\na/../b\nprefix/c\nb\n\n'`
+			Expect(cfg.TimingGranularity()).To(Equal("package"))
+			Expect(service.Partition(context.Background(), cfg)).To(Succeed())
+			Expect(recordedLogs.FilterLevelExact(zapcore.InfoLevel).All()[0].Message).To(Equal("a/../b"))
+			cfg.PartitionNodes.Index = 1
+			Expect(service.Partition(context.Background(), cfg)).To(Succeed())
+			Expect(recordedLogs.FilterLevelExact(zapcore.InfoLevel).All()[1].Message).To(Equal("prefix/c,b"))
+		})
+
+		It("supports custom delimiters and arbitrary granularity", func() {
+			service.TaskRunner = exec.Local{}
+			cfg := cfgWithArgs(0, 1, nil, ",", true, "")
+			cfg.DiscoveryCommand = `printf 'first case|second case|first case|'`
+			cfg.DiscoveryDelimiter = "|"
+			cfg.Granularity = "test-case"
+			Expect(cfg.TimingGranularity()).To(Equal("test-case"))
+			Expect(service.Partition(context.Background(), cfg)).To(Succeed())
+			Expect(recordedLogs.FilterLevelExact(zapcore.InfoLevel).All()[0].Message).To(Equal("first case,second case"))
+		})
+
+		It("fails discovery rather than partitioning partial output", func() {
+			service.TaskRunner = exec.Local{}
+			cfg := cfgWithArgs(0, 1, nil, ",", true, "")
+			cfg.DiscoveryCommand = `sh -c 'printf partial; exit 7'`
+			Expect(service.Partition(context.Background(), cfg).Error()).To(ContainSubstring("discovery-command failed"))
+			Expect(recordedLogs.FilterLevelExact(zapcore.InfoLevel).All()).To(BeEmpty())
 		})
 	})
 

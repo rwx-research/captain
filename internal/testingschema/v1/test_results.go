@@ -4,17 +4,29 @@ package v1
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 )
 
 type TestResults struct {
-	Framework   Framework             `json:"framework"`
-	Summary     Summary               `json:"summary"`
-	Tests       []Test                `json:"tests"`
-	OtherErrors []OtherError          `json:"otherErrors,omitempty"`
-	DerivedFrom []OriginalTestResults `json:"derivedFrom,omitempty"`
-	Meta        map[string]any        `json:"meta,omitempty"`
+	TimingManifests []TimingManifest      `json:"-"`
+	Framework       Framework             `json:"framework"`
+	Summary         Summary               `json:"summary"`
+	Tests           []Test                `json:"tests"`
+	OtherErrors     []OtherError          `json:"otherErrors,omitempty"`
+	DerivedFrom     []OriginalTestResults `json:"derivedFrom,omitempty"`
+	Meta            map[string]any        `json:"meta,omitempty"`
+}
+
+type TimingManifest struct {
+	Granularity string   `json:"granularity"`
+	Timings     []Timing `json:"timings"`
+}
+
+type Timing struct {
+	Identifier string        `json:"identifier"`
+	Duration   time.Duration `json:"duration_in_nanoseconds"`
 }
 
 func (tr TestResults) MarshalJSON() ([]byte, error) {

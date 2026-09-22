@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,6 +21,34 @@ import (
 )
 
 var _ = Describe("local backend client", func() {
+	It("persists opaque timings separately by granularity without overwriting legacy files", func() {
+		dir := GinkgoT().TempDir()
+		newClient := func() local.Client {
+			client, err := local.NewClient(fs.Local{}, filepath.Join(dir, "flakes"),
+				filepath.Join(dir, "quarantines"), filepath.Join(dir, "timings"))
+			Expect(err).NotTo(HaveOccurred())
+			return client
+		}
+		client := newClient()
+		ctx := context.Background()
+		for _, manifest := range []v1.TimingManifest{
+			{Granularity: "file", Timings: []v1.Timing{{Identifier: "same", Duration: time.Second}}},
+			{Granularity: "package", Timings: []v1.Timing{{Identifier: "same", Duration: 2 * time.Second}}},
+			{Granularity: "custom/../kind", Timings: []v1.Timing{{Identifier: "same", Duration: 3 * time.Second}}},
+		} {
+			_, err := client.UpdateTestResults(ctx, "suite", v1.TestResults{TimingManifests: []v1.TimingManifest{manifest}})
+			Expect(err).NotTo(HaveOccurred())
+		}
+		client = newClient()
+		for i, granularity := range []string{"file", "package", "custom/../kind"} {
+			timings, err := client.GetTestTimingManifest(ctx, "suite", granularity)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(timings).To(HaveLen(1))
+			Expect(timings[0].Filepath).To(Equal("same"))
+			Expect(timings[0].Duration).To(Equal(time.Duration(i+1) * time.Second))
+		}
+	})
+
 	const (
 		flakesPath      = "flakes.yaml"
 		quarantinesPath = "quarantines.yaml"

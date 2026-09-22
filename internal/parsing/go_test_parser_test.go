@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bradleyjkemp/cupaloy"
 
@@ -16,6 +17,45 @@ import (
 
 var _ = Describe("GoTestParser", func() {
 	Describe("Parse", func() {
+		It("uses package elapsed including overhead and parallel execution, not summed test durations", func() {
+			results, err := parsing.GoTestParser{}.Parse(strings.NewReader(`
+{"Action":"pass","Package":"parallel","Test":"TestA","Elapsed":4}
+{"Action":"pass","Package":"parallel","Test":"TestB","Elapsed":3}
+{"Action":"pass","Package":"parallel","Elapsed":4.5}
+{"Action":"pass","Package":"overhead","Test":"TestC","Elapsed":1}
+{"Action":"pass","Package":"overhead","Elapsed":2.25}
+{"Action":"skip","Package":"empty","Elapsed":0}
+`))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results.TimingManifests).To(Equal([]v1.TimingManifest{{
+				Granularity: "package", Timings: []v1.Timing{
+					{Identifier: "parallel", Duration: 4500 * time.Millisecond},
+					{Identifier: "overhead", Duration: 2250 * time.Millisecond},
+					{Identifier: "empty", Duration: 0},
+				},
+			}}))
+		})
+
+		It("can produce a manifest without individual test results", func() {
+			results, err := parsing.GoTestParser{}.Parse(strings.NewReader(
+				`{"Action":"pass","Package":"example/no-tests","Elapsed":0.125}`))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results.Tests).To(BeEmpty())
+			Expect(results.TimingManifests[0].Timings).To(Equal([]v1.Timing{
+				{Identifier: "example/no-tests", Duration: 125 * time.Millisecond},
+			}))
+		})
+
+		It("does not invent timings for failed or incomplete packages", func() {
+			results, err := parsing.GoTestParser{}.Parse(strings.NewReader(`
+{"Action":"run","Package":"incomplete","Test":"TestA"}
+{"Action":"fail","Package":"failed","Test":"TestB","Elapsed":0.1}
+{"Action":"fail","Package":"failed","Elapsed":0.2}
+`))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(results.TimingManifests).To(BeEmpty())
+		})
+
 		It("parses the sample file", func() {
 			fixture, err := os.Open("../../test/fixtures/go_test.jsonl")
 			Expect(err).ToNot(HaveOccurred())

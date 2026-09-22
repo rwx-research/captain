@@ -8,6 +8,24 @@ import (
 )
 
 var _ = Describe("Merge", func() {
+	It("combines first-attempt manifests across files without replacing them with targeted retry timings", func() {
+		first := v1.TestResults{TimingManifests: []v1.TimingManifest{{
+			Granularity: "package", Timings: []v1.Timing{{Identifier: "a", Duration: 900}},
+		}}}
+		second := v1.TestResults{TimingManifests: []v1.TimingManifest{{
+			Granularity: "package", Timings: []v1.Timing{{Identifier: "b", Duration: 400}},
+		}}}
+		retry := v1.TestResults{TimingManifests: []v1.TimingManifest{{
+			Granularity: "package", Timings: []v1.Timing{{Identifier: "a", Duration: 10}},
+		}}}
+		merged := v1.Merge([]v1.TestResults{first, second}, []v1.TestResults{retry})
+		Expect(merged.TimingManifests).To(Equal([]v1.TimingManifest{
+			{Granularity: "package", Timings: []v1.Timing{{Identifier: "a", Duration: 900}}},
+			{Granularity: "package", Timings: []v1.Timing{{Identifier: "b", Duration: 400}}},
+		}))
+		Expect(v1.StripDerivedFrom(merged).TimingManifests).To(Equal(merged.TimingManifests))
+	})
+
 	var (
 		rubyRSpec1   *v1.TestResults
 		rubyRSpec1_2 *v1.TestResults

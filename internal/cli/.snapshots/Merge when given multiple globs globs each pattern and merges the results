@@ -1,4 +1,5 @@
 (v1.TestResults) {
+  TimingManifests: ([]v1.TimingManifest) <nil>,
   Framework: (v1.Framework) Other: one (one),
   Summary: (v1.Summary) {
     Status: (v1.SummaryStatus) (len=10) "successful",

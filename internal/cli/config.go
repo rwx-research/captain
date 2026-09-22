@@ -158,15 +158,31 @@ func (rc RunConfig) IsRunningPartition() bool {
 }
 
 type PartitionConfig struct {
-	SuiteID        string
-	TestFilePaths  []string
-	Delimiter      string
-	PartitionNodes config.PartitionNodes
-	RoundRobin     bool
-	TrimPrefix     string
+	SuiteID            string
+	TestFilePaths      []string
+	DiscoveryCommand   string
+	DiscoveryDelimiter string
+	Granularity        string
+	Delimiter          string
+	PartitionNodes     config.PartitionNodes
+	RoundRobin         bool
+	TrimPrefix         string
+}
+
+func (pc PartitionConfig) TimingGranularity() string {
+	if pc.Granularity != "" {
+		return pc.Granularity
+	}
+	if pc.DiscoveryCommand != "" {
+		return "package"
+	}
+	return "file"
 }
 
 func (pc PartitionConfig) Validate() error {
+	if pc.DiscoveryCommand != "" && len(pc.TestFilePaths) != 0 {
+		return errors.NewInputError("discovery-command and globs are mutually exclusive")
+	}
 	if pc.SuiteID == "" {
 		return errors.NewConfigurationError(
 			"Missing suite ID",
@@ -207,7 +223,7 @@ func (pc PartitionConfig) Validate() error {
 		)
 	}
 
-	if len(pc.TestFilePaths) == 0 {
+	if len(pc.TestFilePaths) == 0 && pc.DiscoveryCommand == "" {
 		return errors.NewConfigurationError(
 			"Missing test file paths",
 			"No test file paths are provided.\n",

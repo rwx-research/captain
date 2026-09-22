@@ -18,6 +18,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/testing"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
 // Client is the main client for the Captain API.
@@ -126,7 +127,12 @@ func NewClient(cfg ClientConfig) (Client, error) {
 func (c Client) GetTestTimingManifest(
 	ctx context.Context,
 	testSuiteIdentifier string,
+	granularities ...string,
 ) ([]testing.TestFileTiming, error) {
+	granularity := "file"
+	if len(granularities) > 0 && granularities[0] != "" {
+		granularity = granularities[0]
+	}
 	endpoint := hostEndpointCompat(c, "/api/test_suites/timing_manifest")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
@@ -136,6 +142,7 @@ func (c Client) GetTestTimingManifest(
 
 	queryValues := req.URL.Query()
 	queryValues.Add("test_suite_identifier", testSuiteIdentifier)
+	queryValues.Add("granularity", granularity)
 	if c.Provider.TimingManifestKey != "" {
 		queryValues.Add("commit_sha", c.Provider.TimingManifestKey)
 	} else {
@@ -159,6 +166,7 @@ func (c Client) GetTestTimingManifest(
 
 	respBody := struct {
 		FileTimings []testing.TestFileTiming `json:"file_timings"`
+		Timings     []v1.Timing              `json:"timings"`
 	}{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
@@ -170,7 +178,39 @@ func (c Client) GetTestTimingManifest(
 		)
 	}
 
-	return respBody.FileTimings, nil
+	if respBody.Timings != nil {
+		timings := make([]testing.TestFileTiming, 0, len(respBody.Timings))
+		for _, timing := range respBody.Timings {
+			timings = append(timings, testing.TestFileTiming{Filepath: timing.Identifier, Duration: timing.Duration})
+		}
+		return timings, nil
+	}
+	if granularity == "file" {
+		return respBody.FileTimings, nil
+	}
+	return nil, nil
+}
+
+func (c Client) UploadTimingManifest(ctx context.Context, suite string, manifest v1.TimingManifest) error {
+	endpoint := hostEndpointCompat(c, "/api/test_suites/timings")
+	if manifest.Timings == nil {
+		manifest.Timings = []v1.Timing{}
+	}
+	body := struct {
+		TestSuiteIdentifier string `json:"test_suite_identifier"`
+		v1.TimingManifest
+	}{suite, manifest}
+	resp, err := c.postJSON(ctx, endpoint, body)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusCreated {
+		return errors.NewInternalError(
+			"API backend encountered an error. Endpoint was %q, Status Code %d", endpoint, resp.StatusCode,
+		)
+	}
+	return nil
 }
 
 func (c Client) logError(err error) error {

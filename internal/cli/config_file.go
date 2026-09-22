@@ -42,11 +42,14 @@ type SuiteConfigRetries struct {
 }
 
 type SuiteConfigPartition struct {
-	Command    string
-	Globs      []string
-	Delimiter  string
-	RoundRobin bool   `yaml:"round-robin"`
-	TrimPrefix string `yaml:"trim-prefix"`
+	Command            string
+	Globs              []string
+	DiscoveryCommand   string `yaml:"discovery-command"`
+	DiscoveryDelimiter string `yaml:"discovery-delimiter"`
+	Granularity        string
+	Delimiter          string
+	RoundRobin         bool   `yaml:"round-robin"`
+	TrimPrefix         string `yaml:"trim-prefix"`
 }
 
 // SuiteConfig holds options that can be customized per suite

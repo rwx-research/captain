@@ -12,10 +12,13 @@ import (
 )
 
 type partitionArgs struct {
-	nodes      config.PartitionNodes
-	delimiter  string
-	roundRobin bool
-	trimPrefix string
+	nodes              config.PartitionNodes
+	delimiter          string
+	roundRobin         bool
+	trimPrefix         string
+	discoveryCommand   string
+	discoveryDelimiter string
+	granularity        string
 }
 
 func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
@@ -30,7 +33,7 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 		Example: "" +
 			"  bundle exec rspec $(captain partition your-project-rspec --index 0 --total 2 spec/**/*_spec.rb)\n" +
 			"  bundle exec rspec $(captain partition your-project-rspec --index 1 --total 2 spec/**/*_spec.rb)",
-		Args:                  cobra.MinimumNArgs(1),
+		Args:                  cobra.ArbitraryArgs,
 		DisableFlagsInUseLine: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			err := func() error {
@@ -41,6 +44,20 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 				cfg, err := InitConfig(cmd, *cliArgs)
 				if err != nil {
 					return err
+				}
+
+				partition := cfg.TestSuites[cliArgs.RootCliArgs.suiteID].Partition
+				if !cmd.Flags().Changed("discovery-command") {
+					pArgs.discoveryCommand = partition.DiscoveryCommand
+				}
+				if !cmd.Flags().Changed("discovery-delimiter") && partition.DiscoveryDelimiter != "" {
+					pArgs.discoveryDelimiter = partition.DiscoveryDelimiter
+				}
+				if !cmd.Flags().Changed("granularity") {
+					pArgs.granularity = partition.Granularity
+				}
+				if len(cliArgs.RootCliArgs.positionalArgs) == 0 {
+					cliArgs.RootCliArgs.positionalArgs = partition.Globs
 				}
 
 				provider, err := cfg.ProvidersEnv.MakeProvider()
@@ -94,12 +111,15 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 				return errors.WithStack(err)
 			}
 			err = captain.Partition(cmd.Context(), cli.PartitionConfig{
-				SuiteID:        cliArgs.RootCliArgs.suiteID,
-				TestFilePaths:  args,
-				PartitionNodes: pArgs.nodes,
-				Delimiter:      pArgs.delimiter,
-				RoundRobin:     pArgs.roundRobin,
-				TrimPrefix:     pArgs.trimPrefix,
+				SuiteID:            cliArgs.RootCliArgs.suiteID,
+				TestFilePaths:      args,
+				DiscoveryCommand:   pArgs.discoveryCommand,
+				DiscoveryDelimiter: pArgs.discoveryDelimiter,
+				Granularity:        pArgs.granularity,
+				PartitionNodes:     pArgs.nodes,
+				Delimiter:          pArgs.delimiter,
+				RoundRobin:         pArgs.roundRobin,
+				TrimPrefix:         pArgs.trimPrefix,
 			})
 			return errors.WithStack(err)
 		},
@@ -110,6 +130,13 @@ func configurePartitionCmd(rootCmd *cobra.Command, cliArgs *CliArgs) error {
 	)
 
 	partitionCmd.Flags().IntVar(&pArgs.nodes.Total, "total", -1, "the total number of partitions")
+
+	partitionCmd.Flags().StringVar(&pArgs.discoveryCommand, "discovery-command", "",
+		"Command producing opaque identifiers to partition (mutually exclusive with positional globs).")
+	partitionCmd.Flags().StringVar(&pArgs.discoveryDelimiter, "discovery-delimiter", "\n",
+		"Delimiter separating identifiers in discovery-command output.")
+	partitionCmd.Flags().StringVar(&pArgs.granularity, "granularity", "",
+		"Timing granularity (defaults to package for command discovery, file for globs).")
 
 	// it's a smell that we're using cliArgs here but I believe it's a major refactor to stop doing that.
 	addShaFlag(partitionCmd, &cliArgs.GenericProvider.Sha)

@@ -244,6 +244,14 @@ func (c Client) UpdateTestResults(
 		c.Log.Warnf("unable to update test results file status: %s", err)
 	}
 
+	if len(uploadResults) > 0 && uploadResults[0].Uploaded {
+		for _, manifest := range testResults.TimingManifests {
+			if err := c.UploadTimingManifest(ctx, testSuite, manifest); err != nil {
+				return uploadResults, errors.Wrap(err, "unable to upload timing manifest")
+			}
+		}
+	}
+
 	return uploadResults, nil
 }
 
@@ -264,10 +272,11 @@ func (c Client) makeTestResultsFile(testResults v1.TestResults, externalID uuid.
 	}
 
 	testResultsFile := TestResultsFile{
-		ExternalID:    externalID,
-		FD:            f,
-		OriginalPaths: originalPaths,
-		Parser:        ParserTypeRWX,
+		SkipFileTimings: len(testResults.TimingManifests) > 0,
+		ExternalID:      externalID,
+		FD:              f,
+		OriginalPaths:   originalPaths,
+		Parser:          ParserTypeRWX,
 	}
 
 	return testResultsFile, nil

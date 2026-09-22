@@ -2,6 +2,7 @@ package local
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"os"
@@ -124,10 +125,20 @@ func (c Client) Flush() error {
 	return write(c.quarantinesPath, c.Quarantines)
 }
 
-func (c Client) GetTestTimingManifest(_ context.Context, _ string) ([]testing.TestFileTiming, error) {
-	testTimings := make([]testing.TestFileTiming, 0, len(c.Timings))
+func (c Client) GetTestTimingManifest(
+	_ context.Context, _ string, granularities ...string,
+) ([]testing.TestFileTiming, error) {
+	timings := c.Timings
+	if len(granularities) > 0 && granularities[0] != "" && granularities[0] != "file" {
+		var err error
+		timings, err = c.readEntityTimings(granularities[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	testTimings := make([]testing.TestFileTiming, 0, len(timings))
 
-	for file, duration := range c.Timings {
+	for file, duration := range timings {
 		testTimings = append(testTimings, testing.TestFileTiming{
 			Filepath: file,
 			Duration: duration,
@@ -135,6 +146,51 @@ func (c Client) GetTestTimingManifest(_ context.Context, _ string) ([]testing.Te
 	}
 
 	return testTimings, nil
+}
+
+func (c Client) entityTimingsPath(granularity string) string {
+	return c.timingsPath + "." + base64.RawURLEncoding.EncodeToString([]byte(granularity))
+}
+
+func (c Client) readEntityTimings(granularity string) (map[string]time.Duration, error) {
+	timings := make(map[string]time.Duration)
+	file, err := c.fs.Open(c.entityTimingsPath(granularity))
+	if errors.Is(err, os.ErrNotExist) {
+		return timings, nil
+	}
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	defer file.Close()
+	if err := yaml.NewDecoder(file).Decode(&timings); err != nil && !errors.Is(err, io.EOF) {
+		return nil, errors.WithStack(err)
+	}
+	return timings, nil
+}
+
+func (c Client) UploadTimingManifest(_ context.Context, _ string, manifest v1.TimingManifest) error {
+	timings := c.Timings
+	path := c.timingsPath
+	if manifest.Granularity != "file" {
+		var err error
+		timings, err = c.readEntityTimings(manifest.Granularity)
+		if err != nil {
+			return err
+		}
+		path = c.entityTimingsPath(manifest.Granularity)
+	}
+	if timings == nil {
+		timings = make(map[string]time.Duration)
+	}
+	for _, timing := range manifest.Timings {
+		timings[timing.Identifier] = timing.Duration
+	}
+	file, err := c.fs.Create(path)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer file.Close()
+	return errors.WithStack(yaml.NewEncoder(file).Encode(timings))
 }
 
 func (c Client) GetRunConfiguration(_ context.Context, _ string) (backend.RunConfiguration, error) {
@@ -158,10 +214,18 @@ func (c Client) GetQuarantinedTests(_ context.Context, _ string) ([]backend.Test
 }
 
 func (c Client) UpdateTestResults(
-	_ context.Context,
-	_ string,
+	ctx context.Context,
+	suite string,
 	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
+	if len(testResults.TimingManifests) > 0 {
+		for _, manifest := range testResults.TimingManifests {
+			if err := c.UploadTimingManifest(ctx, suite, manifest); err != nil {
+				return nil, err
+			}
+		}
+		testResults.Tests = nil
+	}
 	if c.Timings == nil {
 		c.Timings = make(map[string]time.Duration)
 	}
