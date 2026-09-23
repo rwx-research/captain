@@ -67,6 +67,22 @@ var _ = Describe("DelimiterSubstitution", func() {
 	})
 
 	Describe("SubstitutionLookupFor", func() {
+		DescribeTable("substitutes either alias with identical escaping and delimiter behavior",
+			func(keyword string, paths []string, expected string) {
+				substitution := runpartition.DelimiterSubstitution{Delimiter: " || "}
+				compiledTemplate, err := templating.CompileTemplate("some-command {{ " + keyword + " }}")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(substitution.ValidateTemplate(compiledTemplate)).To(Succeed())
+				lookup, err := substitution.SubstitutionLookupFor(compiledTemplate, paths)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(compiledTemplate.Substitute(lookup)).To(Equal(expected))
+			},
+			Entry("testFiles", "testFiles", []string{"a spec", "b's"}, `some-command 'a spec' || 'b'"'"'s'`),
+			Entry("partition", "partition", []string{"a spec", "b's"}, `some-command 'a spec' || 'b'"'"'s'`),
+			Entry("empty testFiles", "testFiles", []string{}, "some-command "),
+			Entry("empty partition", "partition", []string{}, "some-command "),
+		)
+
 		Context("when provided no files", func() {
 			It("returns testFiles as an empty string", func() {
 				substitution := runpartition.DelimiterSubstitution{}
@@ -86,7 +102,7 @@ var _ = Describe("DelimiterSubstitution", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(lookup["testFiles"]).To(Equal("'a' || 'b' || 'c'"))
-				Expect(len(lookup)).To(Equal(1))
+				Expect(lookup["partition"]).To(Equal("'a' || 'b' || 'c'"))
 			})
 		})
 

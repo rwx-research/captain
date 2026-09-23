@@ -19,12 +19,13 @@ func StripDerivedFrom(testResults TestResults) TestResults {
 	}
 
 	return TestResults{
-		Framework:   testResults.Framework,
-		Summary:     testResults.Summary,
-		Tests:       testResults.Tests,
-		OtherErrors: testResults.OtherErrors,
-		DerivedFrom: cleanedDerivedFrom,
-		Meta:        testResults.Meta,
+		TimingManifests: testResults.TimingManifests,
+		Framework:       testResults.Framework,
+		Summary:         testResults.Summary,
+		Tests:           testResults.Tests,
+		OtherErrors:     testResults.OtherErrors,
+		DerivedFrom:     cleanedDerivedFrom,
+		Meta:            testResults.Meta,
 	}
 }
 

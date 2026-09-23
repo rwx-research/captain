@@ -1,11 +1,14 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"path/filepath"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/mattn/go-shellwords"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/testing"
@@ -28,9 +31,9 @@ func (s Service) Partition(ctx context.Context, cfg PartitionConfig) error {
 func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (PartitionResult, error) {
 	fileTimingMatches := make([]testing.FileTimingMatch, 0)
 	unmatchedFilepaths := make([]string, 0)
-	testFilePaths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
+	testFilePaths, err := s.discoverPartitionEntities(ctx, cfg)
 	if err != nil {
-		return PartitionResult{}, errors.NewSystemError("unable to expand filepath glob: %s", err)
+		return PartitionResult{}, err
 	}
 
 	if cfg.RoundRobin {
@@ -46,6 +49,21 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 		for _, clientTestFile := range testFilePaths {
 			match := false
 			var fileTimingMatch testing.FileTimingMatch
+			if cfg.DiscoveryCommand != "" {
+				for _, timing := range fileTimings {
+					if timing.Filepath == clientTestFile {
+						fileTimingMatches = append(fileTimingMatches, testing.FileTimingMatch{
+							FileTiming: timing, ClientFilepath: clientTestFile,
+						})
+						match = true
+						break
+					}
+				}
+				if !match {
+					unmatchedFilepaths = append(unmatchedFilepaths, clientTestFile)
+				}
+				continue
+			}
 			clientExpandedFilepath := clientTestFile
 			if cfg.TrimPrefix != "" {
 				trimmedClientExpandedFilepath := strings.TrimPrefix(clientTestFile, cfg.TrimPrefix)
@@ -132,6 +150,40 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 		partition:              partitions[cfg.PartitionNodes.Index],
 		utilizedPartitionCount: utilizedPartitionCount(partitions),
 	}, nil
+}
+
+func (s Service) discoverPartitionEntities(ctx context.Context, cfg PartitionConfig) ([]string, error) {
+	if cfg.DiscoveryCommand == "" {
+		paths, err := s.FileSystem.GlobMany(cfg.TestFilePaths)
+		if err != nil {
+			return nil, errors.NewSystemError("unable to expand filepath glob: %s", err)
+		}
+		return paths, nil
+	}
+	args, err := shellwords.Parse(cfg.DiscoveryCommand)
+	if err != nil || len(args) == 0 {
+		return nil, errors.NewInputError("unable to parse discovery-command %q", cfg.DiscoveryCommand)
+	}
+	var output bytes.Buffer
+	if _, err := s.runCommand(ctx, args, &output, nil); err != nil {
+		return nil, errors.Wrap(err, "discovery-command failed")
+	}
+	delimiter := cfg.DiscoveryDelimiter
+	if delimiter == "" {
+		delimiter = "\n"
+	}
+	entities := make([]string, 0)
+	seen := make(map[string]bool)
+	for _, entity := range strings.Split(output.String(), delimiter) {
+		if delimiter == "\n" {
+			entity = strings.TrimSuffix(entity, "\r")
+		}
+		if entity != "" && !seen[entity] {
+			entities = append(entities, entity)
+			seen[entity] = true
+		}
+	}
+	return entities, nil
 }
 
 func partitionWithLeastRuntime(partitions []testing.TestPartition) testing.TestPartition {

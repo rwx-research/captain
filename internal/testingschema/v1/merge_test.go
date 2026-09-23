@@ -1,6 +1,7 @@
 package v1_test
 
 import (
+	"github.com/rwx-research/captain-cli/internal/testing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -8,6 +9,24 @@ import (
 )
 
 var _ = Describe("Merge", func() {
+	It("combines first-attempt manifests across files without replacing them with targeted retry timings", func() {
+		first := v1.TestResults{TimingManifests: []v1.TimingManifest{{
+			FileTimings: []testing.TestFileTiming{{Filepath: "a", Duration: 900}},
+		}}}
+		second := v1.TestResults{TimingManifests: []v1.TimingManifest{{
+			FileTimings: []testing.TestFileTiming{{Filepath: "b", Duration: 400}},
+		}}}
+		retry := v1.TestResults{TimingManifests: []v1.TimingManifest{{
+			FileTimings: []testing.TestFileTiming{{Filepath: "a", Duration: 10}},
+		}}}
+		merged := v1.Merge([]v1.TestResults{first, second}, []v1.TestResults{retry})
+		Expect(merged.TimingManifests).To(Equal([]v1.TimingManifest{
+			{FileTimings: []testing.TestFileTiming{{Filepath: "a", Duration: 900}}},
+			{FileTimings: []testing.TestFileTiming{{Filepath: "b", Duration: 400}}},
+		}))
+		Expect(v1.StripDerivedFrom(merged).TimingManifests).To(Equal(merged.TimingManifests))
+	})
+
 	var (
 		rubyRSpec1   *v1.TestResults
 		rubyRSpec1_2 *v1.TestResults

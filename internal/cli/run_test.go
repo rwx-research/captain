@@ -24,6 +24,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/mocks"
 	"github.com/rwx-research/captain-cli/internal/parsing"
 	"github.com/rwx-research/captain-cli/internal/targetedretries"
+	"github.com/rwx-research/captain-cli/internal/testing"
 	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -205,6 +206,30 @@ var _ = Describe("Run", func() {
 				commandFinished = true
 				return nil
 			}
+		})
+
+		Context("when the parser provides independent timings", func() {
+			BeforeEach(func() {
+				manifest := v1.TimingManifest{FileTimings: []testing.TestFileTiming{
+					{Filepath: "example/pkg", Duration: 123},
+				}}
+				service.ParseConfig.MutuallyExclusiveParsers[0].(*mocks.Parser).MockParse = func(
+					io.Reader,
+				) (*v1.TestResults, error) {
+					return &v1.TestResults{TimingManifests: []v1.TimingManifest{manifest}}, nil
+				}
+				service.API.(*mocks.API).MockUpdateTestResults = func(
+					_ context.Context, _ string, results v1.TestResults,
+				) ([]backend.TestResultsUploadResult, error) {
+					Expect(results.TimingManifests).To(Equal([]v1.TimingManifest{manifest}))
+					testResultsFileUploaded = true
+					return nil, nil
+				}
+			})
+			It("retains manifests through the run and report flow even without individual tests", func() {
+				Expect(err).NotTo(HaveOccurred())
+				Expect(testResultsFileUploaded).To(BeTrue())
+			})
 		})
 
 		It("doesn't return an error", func() {

@@ -196,6 +196,7 @@ func (s Service) RunSuite(ctx context.Context, cfg RunConfig) (finalErr error) {
 
 			newlyExecutedTestResults = v1.NewTestResults(testResults.Framework, tests, otherErrors)
 			newlyExecutedTestResults.DerivedFrom = derivedFrom
+			newlyExecutedTestResults.TimingManifests = testResults.TimingManifests
 		}
 
 		// Wait until run configuration was fetched. Ignore any errors.

@@ -16,11 +16,12 @@ const ParserTypeRWX = ParserType("rwx")
 
 // TestResultsFile is a build- or test-artifact as defined by the Captain API.
 type TestResultsFile struct {
-	ExternalID     uuid.UUID       `json:"external_identifier"`
-	FD             fs.ReadOnlyFile `json:"-"`
-	OriginalPaths  []string        `json:"-"`
-	Parser         ParserType      `json:"format"`
-	UploadURL      *url.URL
-	CaptainID      string
-	S3uploadStatus int
+	SkipFileTimings bool            `json:"skip_file_timings,omitempty"`
+	ExternalID      uuid.UUID       `json:"external_identifier"`
+	FD              fs.ReadOnlyFile `json:"-"`
+	OriginalPaths   []string        `json:"-"`
+	Parser          ParserType      `json:"format"`
+	UploadURL       *url.URL
+	CaptainID       string
+	S3uploadStatus  int
 }

@@ -162,6 +162,9 @@ func (c Client) UpdateTestResults(
 	_ string,
 	testResults v1.TestResults,
 ) ([]backend.TestResultsUploadResult, error) {
+	if len(testResults.TimingManifests) > 0 {
+		testResults.Tests = nil
+	}
 	if c.Timings == nil {
 		c.Timings = make(map[string]time.Duration)
 	}
@@ -177,6 +180,12 @@ func (c Client) UpdateTestResults(
 				testDuration = *test.Attempt.Duration
 			}
 			newTimings[test.Location.File] = testDuration
+		}
+	}
+
+	for _, manifest := range testResults.TimingManifests {
+		for _, timing := range manifest.FileTimings {
+			newTimings[timing.Filepath] = timing.Duration
 		}
 	}
 

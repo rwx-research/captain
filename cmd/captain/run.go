@@ -20,35 +20,37 @@ import (
 )
 
 type CliArgs struct {
-	command                   string
-	testResults               string
-	failOnUploadError         bool
-	failOnDuplicateTestID     bool
-	failOnMisconfiguredRetry  bool
-	failRetriesFast           bool
-	flakyRetries              int
-	intermediateArtifactsPath string
-	additionalArtifactPaths   []string
-	maxTestsToRetry           string
-	postRetryCommands         []string
-	preRetryCommands          []string
-	printSummary              bool
-	quiet                     bool
-	reporters                 []string
-	Retries                   int
-	retryCommandTemplate      string
-	updateStoredResults       bool
-	GenericProvider           providers.GenericEnv
-	frameworkParams           frameworkParams
-	RootCliArgs               rootCliArgs
-	partitionIndex            int
-	partitionTotal            int
-	partitionDelimiter        string
-	partitionCommandTemplate  string
-	partitionGlobs            []string
-	partitionRoundRobin       bool
-	partitionTrimPrefix       string
-	quarantinedTestRetries    int
+	command                     string
+	testResults                 string
+	failOnUploadError           bool
+	failOnDuplicateTestID       bool
+	failOnMisconfiguredRetry    bool
+	failRetriesFast             bool
+	flakyRetries                int
+	intermediateArtifactsPath   string
+	additionalArtifactPaths     []string
+	maxTestsToRetry             string
+	postRetryCommands           []string
+	preRetryCommands            []string
+	printSummary                bool
+	quiet                       bool
+	reporters                   []string
+	Retries                     int
+	retryCommandTemplate        string
+	updateStoredResults         bool
+	GenericProvider             providers.GenericEnv
+	frameworkParams             frameworkParams
+	RootCliArgs                 rootCliArgs
+	partitionIndex              int
+	partitionTotal              int
+	partitionDelimiter          string
+	partitionCommandTemplate    string
+	partitionGlobs              []string
+	partitionDiscoveryCommand   string
+	partitionDiscoveryDelimiter string
+	partitionRoundRobin         bool
+	partitionTrimPrefix         string
+	quarantinedTestRetries      int
 }
 
 func createRunCmd(cliArgs *CliArgs) *cobra.Command {
@@ -177,8 +179,10 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						UploadResults:             true,
 						PartitionCommandTemplate:  suiteConfig.Partition.Command,
 						PartitionConfig: cli.PartitionConfig{
-							SuiteID:       cliArgs.RootCliArgs.suiteID,
-							TestFilePaths: suiteConfig.Partition.Globs,
+							SuiteID:            cliArgs.RootCliArgs.suiteID,
+							TestFilePaths:      suiteConfig.Partition.Globs,
+							DiscoveryCommand:   suiteConfig.Partition.DiscoveryCommand,
+							DiscoveryDelimiter: suiteConfig.Partition.DiscoveryDelimiter,
 							PartitionNodes: config.PartitionNodes{
 								Index: partitionIndex,
 								Total: partitionTotal,
@@ -351,6 +355,11 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		" ",
 		"The delimiter used to separate partitioned files.",
 	)
+
+	runCmd.Flags().StringVar(&cliArgs.partitionDiscoveryCommand, "partition-discovery-command", "",
+		"Command producing opaque identifiers to partition (mutually exclusive with partition-globs).")
+	runCmd.Flags().StringVar(&cliArgs.partitionDiscoveryDelimiter, "partition-discovery-delimiter", "\n",
+		"Delimiter separating identifiers in discovery-command output.")
 
 	runCmd.Flags().StringArrayVar(
 		&cliArgs.partitionGlobs,
@@ -531,6 +540,13 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 
 		if len(cliArgs.partitionGlobs) != 0 {
 			suiteConfig.Partition.Globs = cliArgs.partitionGlobs
+		}
+
+		if cmd.Flags().Changed("partition-discovery-command") {
+			suiteConfig.Partition.DiscoveryCommand = cliArgs.partitionDiscoveryCommand
+		}
+		if cmd.Flags().Changed("partition-discovery-delimiter") {
+			suiteConfig.Partition.DiscoveryDelimiter = cliArgs.partitionDiscoveryDelimiter
 		}
 
 		if cmd.Flags().Changed("partition-round-robin") {

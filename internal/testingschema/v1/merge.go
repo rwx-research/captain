@@ -19,6 +19,7 @@ func union(separateTestResults []TestResults) *TestResults {
 
 	unioned, rest := separateTestResults[0], separateTestResults[1:]
 	for _, testResults := range rest {
+		unioned.TimingManifests = append(unioned.TimingManifests, testResults.TimingManifests...)
 		unioned.DerivedFrom = append(unioned.DerivedFrom, testResults.DerivedFrom...)
 		unioned.OtherErrors = append(unioned.OtherErrors, testResults.OtherErrors...)
 		unioned.Tests = append(unioned.Tests, testResults.Tests...)

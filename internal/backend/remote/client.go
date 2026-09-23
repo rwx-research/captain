@@ -18,6 +18,7 @@ import (
 	"github.com/rwx-research/captain-cli/internal/backend"
 	"github.com/rwx-research/captain-cli/internal/errors"
 	"github.com/rwx-research/captain-cli/internal/testing"
+	v1 "github.com/rwx-research/captain-cli/internal/testingschema/v1"
 )
 
 // Client is the main client for the Captain API.
@@ -171,6 +172,28 @@ func (c Client) GetTestTimingManifest(
 	}
 
 	return respBody.FileTimings, nil
+}
+
+func (c Client) UploadTimingManifest(ctx context.Context, suite string, manifest v1.TimingManifest) error {
+	endpoint := hostEndpointCompat(c, "/api/test_suites/timings")
+	if manifest.FileTimings == nil {
+		manifest.FileTimings = []testing.TestFileTiming{}
+	}
+	body := struct {
+		TestSuiteIdentifier string `json:"test_suite_identifier"`
+		v1.TimingManifest
+	}{suite, manifest}
+	resp, err := c.postJSON(ctx, endpoint, body)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusCreated {
+		return errors.NewInternalError(
+			"API backend encountered an error. Endpoint was %q, Status Code %d", endpoint, resp.StatusCode,
+		)
+	}
+	return nil
 }
 
 func (c Client) logError(err error) error {
