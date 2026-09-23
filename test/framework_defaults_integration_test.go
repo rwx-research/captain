@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("CLI-only framework defaults integration", func() {
+var _ = Describe("framework defaults integration", func() {
 	var dir string
 
 	BeforeEach(func() {
@@ -41,7 +41,7 @@ var _ = Describe("CLI-only framework defaults integration", func() {
 		return results
 	}
 
-	DescribeTable("runs and retries RSpec with default templates", func(partition bool) {
+	DescribeTable("runs and retries RSpec with default templates", func(partition, configured bool) {
 		failed, err := os.ReadFile("fixtures/integration-tests/rspec-failed-not-quarantined.json")
 		Expect(err).NotTo(HaveOccurred())
 		passed, err := os.ReadFile("fixtures/integration-tests/rspec-passed.json")
@@ -61,6 +61,17 @@ cp passed.json rspec.json
 `), 0o700)).To(Succeed())
 
 		flags := []string{"--framework", "rspec", "--retries", "1"}
+		if configured {
+			Expect(os.Mkdir(filepath.Join(dir, ".captain"), 0o700)).To(Succeed())
+			Expect(os.WriteFile(filepath.Join(dir, ".captain", "config.yaml"), []byte(`test-suites:
+  default-suite:
+    results:
+      framework: rspec
+    retries:
+      attempts: 1
+`), 0o600)).To(Succeed())
+			flags = nil
+		}
 		initial := "exec rspec --format json --out rspec.json --format progress"
 		if partition {
 			Expect(os.Mkdir(filepath.Join(dir, "spec"), 0o700)).To(Succeed())
@@ -79,7 +90,12 @@ cp passed.json rspec.json
 		Expect(err).NotTo(HaveOccurred())
 		Expect(string(invocations)).To(Equal(initial + "\n" +
 			"exec rspec --format json --out rspec.json --format progress ./x.rb[1:1]\n"))
-	}, Entry("unpartitioned", false), Entry("partitioned", true))
+	},
+		Entry("unpartitioned", false, false),
+		Entry("partitioned", true, false),
+		Entry("configured unpartitioned", false, true),
+		Entry("configured partitioned", true, true),
+	)
 
 	It("discovers Go packages and runs only the selected partition", func() {
 		Expect(os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module example.com/suite\n\ngo 1.20\n"),

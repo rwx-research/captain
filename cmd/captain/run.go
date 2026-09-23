@@ -442,7 +442,7 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 	runCmd.Flags().Lookup("language").Usage = strings.Replace(
 		runCmd.Flags().Lookup("language").Usage,
 		"(required if framework is set)",
-		"(inferred for CLI-only suites when the framework has one known language)",
+		"(inferred when the framework has one known language)",
 		1,
 	)
 	return nil

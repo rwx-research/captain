@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("CLI-only framework defaults", func() {
+var _ = Describe("framework defaults", func() {
 	configure := func(command, config string, flags ...string) (captain.Config, error) {
 		configPath := filepath.Join(GinkgoT().TempDir(), "config.yaml")
 		if config != "" {
@@ -207,17 +207,17 @@ var _ = Describe("CLI-only framework defaults", func() {
 		Expect(cfg.TestSuites["suite"].Partition.Globs).To(Equal([]string{"custom/*.js"}))
 	})
 
-	DescribeTable("does not apply defaults to configured suites", func(config string) {
+	DescribeTable("applies defaults to configured suites", func(config string) {
 		cfg, err := configure("run", config, "--framework", "rspec")
 		Expect(err).NotTo(HaveOccurred())
 		suite := cfg.TestSuites["suite"]
-		Expect(suite.Command).To(BeEmpty())
-		Expect(suite.Results.Language).To(BeEmpty())
-		Expect(suite.Results.Path).To(BeEmpty())
-		Expect(suite.Retries.Command).To(BeEmpty())
-		Expect(suite.Partition.Command).To(BeEmpty())
-		Expect(suite.Partition.Globs).To(BeEmpty())
-		Expect(suite.Output.PrintSummary).To(BeFalse())
+		Expect(suite.Command).To(Equal("bundle exec rspec --format json --out rspec.json --format progress"))
+		Expect(suite.Results.Language).To(Equal("Ruby"))
+		Expect(suite.Results.Path).To(Equal("rspec.json"))
+		Expect(suite.Retries.Command).To(ContainSubstring("{{ tests }}"))
+		Expect(suite.Partition.Command).To(ContainSubstring("{{ testFiles }}"))
+		Expect(suite.Partition.Globs).To(Equal([]string{"spec/**/*_spec.rb"}))
+		Expect(suite.Output.PrintSummary).To(BeTrue())
 	},
 		Entry("an empty mapping", "test-suites:\n  suite: {}\n"),
 		Entry("a null suite", "test-suites:\n  suite:\n"),
@@ -246,7 +246,79 @@ var _ = Describe("CLI-only framework defaults", func() {
 		Expect(suite.Retries.Command).To(Equal("custom retry"))
 		Expect(suite.Partition.Command).To(Equal("custom partition"))
 		Expect(suite.Partition.Globs).To(Equal([]string{"custom/**/*"}))
+		Expect(suite.Output.PrintSummary).To(BeTrue())
+	})
+
+	It("selects defaults from YAML and lets CLI flags override YAML", func() {
+		config := "test-suites:\n  suite:\n    results:\n      framework: rspec\n    retries:\n      attempts: 2\n"
+		cfg, err := configure("run", config)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Results.Language).To(Equal("Ruby"))
+		Expect(cfg.TestSuites["suite"].Results.Path).To(Equal("rspec.json"))
+		Expect(cfg.TestSuites["suite"].Retries.Attempts).To(Equal(2))
+		cfg, err = configure("run", config, "--framework", "jest", "--command", "custom run")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Results.Language).To(Equal("JavaScript"))
+		Expect(cfg.TestSuites["suite"].Results.Framework).To(Equal("jest"))
+		Expect(cfg.TestSuites["suite"].Results.Path).To(Equal("jest.json"))
+		Expect(cfg.TestSuites["suite"].Command).To(Equal("custom run"))
+	})
+
+	It("preserves explicit false and empty YAML values", func() {
+		cfg, err := configure("run", `test-suites:
+  suite:
+    command: ""
+    results:
+      framework: rspec
+      path: ""
+    retries:
+      command: ""
+    partition:
+      command: ""
+      globs: []
+      delimiter: "|"
+    output:
+      print-summary: false
+`)
+		Expect(err).NotTo(HaveOccurred())
+		suite := cfg.TestSuites["suite"]
+		Expect(suite.Command).To(BeEmpty())
+		Expect(suite.Results.Path).To(BeEmpty())
+		Expect(suite.Retries.Command).To(BeEmpty())
+		Expect(suite.Partition.Command).To(BeEmpty())
+		Expect(suite.Partition.Globs).To(BeEmpty())
+		Expect(suite.Partition.Delimiter).To(Equal("|"))
 		Expect(suite.Output.PrintSummary).To(BeFalse())
+	})
+
+	It("replaces default globs with configured discovery", func() {
+		cfg, err := configure("run", `test-suites:
+  suite:
+    results:
+      framework: rspec
+    partition:
+      discovery-command: custom list
+`)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Partition.DiscoveryCommand).To(Equal("custom list"))
+		Expect(cfg.TestSuites["suite"].Partition.Globs).To(BeEmpty())
+	})
+
+	It("requires a language for an ambiguous framework in YAML", func() {
+		config := "test-suites:\n  suite:\n    results:\n      framework: cucumber\n"
+		_, err := configure("run", config)
+		_, ok := errors.AsConfigurationError(err)
+		Expect(ok).To(BeTrue())
+		cfg, err := configure("run", config, "--language", "ruby")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Command).To(ContainSubstring("bundle exec cucumber"))
+	})
+
+	It("still rejects unknown YAML fields", func() {
+		_, err := configure("run", "test-suites:\n  suite:\n    unknown: value\n", "--framework", "rspec")
+		configError, ok := errors.AsConfigurationError(err)
+		Expect(ok).To(BeTrue())
+		Expect(configError.Description()).To(ContainSubstring("unknown"))
 	})
 
 	It("applies defaults when only another suite is configured", func() {

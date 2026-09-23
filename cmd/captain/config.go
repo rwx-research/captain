@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -115,6 +116,9 @@ func findInParentDir(fileName string) (string, error) {
 // Environment variables take precedence over a config file.
 // Flags take precedence over all other options.
 func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
+	var configuredSuites struct {
+		TestSuites map[string]yaml.Node `yaml:"test-suites"`
+	}
 	if cliArgs.RootCliArgs.configFilePath == "" {
 		possibleConfigFilePaths := make([]string, 0, 2)
 		errs := make([]error, 0, 2)
@@ -162,13 +166,13 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 	}
 
 	if cliArgs.RootCliArgs.configFilePath != "" {
-		fd, err := os.Open(cliArgs.RootCliArgs.configFilePath)
+		data, err := os.ReadFile(cliArgs.RootCliArgs.configFilePath)
 		if err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
 				return cfg, errors.Wrap(err, fmt.Sprintf("unable to open config file %q", cliArgs.RootCliArgs.configFilePath))
 			}
 		} else {
-			decoder := yaml.NewDecoder(fd)
+			decoder := yaml.NewDecoder(bytes.NewReader(data))
 			decoder.KnownFields(true)
 			if err = decoder.Decode(&cfg.ConfigFile); err != nil {
 				typeError := new(yaml.TypeError)
@@ -181,6 +185,9 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 					)
 				}
 
+				return cfg, errors.Wrap(err, "unable to parse config file")
+			}
+			if err := yaml.Unmarshal(data, &configuredSuites); err != nil {
 				return cfg, errors.Wrap(err, "unable to parse config file")
 			}
 		}
@@ -196,26 +203,37 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 		return cfg, errors.Wrap(err, "unable to parse environment variables")
 	}
 
-	if _, ok := cfg.TestSuites[cliArgs.RootCliArgs.suiteID]; !ok {
-		if cfg.TestSuites == nil {
-			cfg.TestSuites = make(map[string]cli.SuiteConfig)
-		}
-
-		var suite cli.SuiteConfig
-		if cmd.Name() == "run" {
-			suite, err = defaultRunSuite(cliArgs.frameworkParams)
-			if err != nil {
-				return cfg, err
-			}
-			if cmd.Flags().Changed("partition-globs") {
-				suite.Partition.DiscoveryCommand = ""
-			}
-			if cliArgs.partitionDiscoveryCommand != "" {
-				suite.Partition.Globs = nil
-			}
-		}
-		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suite
+	if cfg.TestSuites == nil {
+		cfg.TestSuites = make(map[string]cli.SuiteConfig)
 	}
+	suiteID := cliArgs.RootCliArgs.suiteID
+	suite := cfg.TestSuites[suiteID]
+	if cmd.Name() == "run" {
+		params := cliArgs.frameworkParams
+		if params.kind == "" {
+			params.kind = suite.Results.Framework
+		}
+		if params.language == "" {
+			params.language = suite.Results.Language
+		}
+		defaults, err := defaultRunSuite(params)
+		if err != nil {
+			return cfg, err
+		}
+		if suite.Partition.Globs != nil || cmd.Flags().Changed("partition-globs") {
+			defaults.Partition.DiscoveryCommand = ""
+		}
+		if suite.Partition.DiscoveryCommand != "" || cliArgs.partitionDiscoveryCommand != "" {
+			defaults.Partition.Globs = nil
+		}
+		if node, ok := configuredSuites.TestSuites[suiteID]; ok {
+			if err := node.Decode(&defaults); err != nil {
+				return cfg, errors.Wrap(err, "unable to parse test suite")
+			}
+		}
+		suite = defaults
+	}
+	cfg.TestSuites[suiteID] = suite
 
 	cfg = bindRootCmdFlags(cfg, cliArgs.RootCliArgs)
 	cfg = bindFrameworkFlags(cfg, cliArgs.frameworkParams, cliArgs.RootCliArgs.suiteID)

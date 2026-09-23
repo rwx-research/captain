@@ -958,6 +958,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 						"run",
 						"oss-run-with-partition",
 						"--config-file", "fixtures/integration-tests/partition-config.yaml",
+						"--print-summary=false",
 					},
 					env: make(map[string]string),
 				})
