@@ -9,6 +9,6 @@ func defaultJavaScriptBunSuite() cli.SuiteConfig {
 	suite.Retries.Command = "bun test '{{ file }}' --test-name-pattern '{{ testNamePattern }}' " +
 		"--reporter=junit --reporter-outfile bun.xml"
 	suite.Partition.Command = "bun test {{ testFiles }} --reporter=junit --reporter-outfile bun.xml"
-	suite.Partition.Globs = []string{"**/*.test.ts"}
+	suite.Partition.DiscoveryCommand = "find . -type d -name node_modules -prune -o -type f -name '*.test.ts' -print"
 	return suite
 }

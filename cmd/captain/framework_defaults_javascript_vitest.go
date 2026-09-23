@@ -10,6 +10,8 @@ func defaultJavaScriptVitestSuite() cli.SuiteConfig {
 		"--reporter=default --reporter=json --outputFile=./vitest.json"
 	suite.Partition.Command = "npx vitest run {{ testFiles }} " +
 		"--reporter=default --reporter=json --outputFile=./vitest.json"
-	suite.Partition.Globs = []string{"**/*.test.js"}
+	suite.Partition.DiscoveryCommand = `node -e 'const {execFileSync} = require("node:child_process"); ` +
+		`const files = JSON.parse(execFileSync("npx", ["vitest", "list", "--filesOnly", "--json"], {encoding: "utf8"})); ` +
+		`for (const {file} of files) console.log(file);'`
 	return suite
 }

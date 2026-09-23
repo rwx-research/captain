@@ -41,6 +41,22 @@ paths controlled by reporter configuration retain the documented locations.
 Retries and partitioning remain opt-in. **No framework defaults are applied to a
 suite present in the configuration file**, even if its configuration is empty.
 
+Partition defaults use framework discovery where supported:
+
+- Go: `go list ./...` discovers packages.
+- Ginkgo: `go list` discovers directories containing tests.
+- Jest: `npx jest --listTests`, with selected files passed via `--runTestsByPath`.
+- Vitest: `npx vitest list --filesOnly --json`, extracting file paths so named
+  projects work too (requires a Vitest version supporting `--filesOnly`).
+- Playwright: `npx playwright test --list --reporter=json`, extracting file paths.
+- Bun has no list-only CLI mode; `find` discovers `*.test.ts` while pruning
+  `node_modules` directories at every depth.
+
+Other frameworks retain their existing partition defaults. For CLI-only suites,
+`--partition-globs` replaces default discovery, and
+`--partition-discovery-command` replaces default globs. Explicitly providing both
+remains an error.
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for information around our

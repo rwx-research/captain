@@ -8,5 +8,7 @@ func defaultGoTestSuite() cli.SuiteConfig {
 	suite.Results.Path = "go-test.json"
 	suite.Retries.Command = "gotestsum --raw-command --jsonfile go-test.json -- " +
 		"go test {{ package }} -run '{{ run }}' -json -count=1"
+	suite.Partition.DiscoveryCommand = "go list ./..."
+	suite.Partition.Command = "gotestsum --raw-command --jsonfile go-test.json -- go test {{ testFiles }} -json -count=1"
 	return suite
 }

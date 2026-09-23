@@ -207,6 +207,12 @@ func InitConfig(cmd *cobra.Command, cliArgs CliArgs) (cfg Config, err error) {
 			if err != nil {
 				return cfg, err
 			}
+			if cmd.Flags().Changed("partition-globs") {
+				suite.Partition.DiscoveryCommand = ""
+			}
+			if cliArgs.partitionDiscoveryCommand != "" {
+				suite.Partition.Globs = nil
+			}
 		}
 		cfg.TestSuites[cliArgs.RootCliArgs.suiteID] = suite
 	}

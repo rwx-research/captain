@@ -23,7 +23,10 @@ var _ = Describe("CLI-only framework defaults integration", func() {
 
 	run := func(flags ...string) v1.TestResults {
 		args := append([]string{"run", "default-suite", "--reporter", "rwx-v1-json=summary.json"}, flags...)
-		cmd := captainCmd(captainArgs{args: args, env: map[string]string{"PATH": dir + ":" + os.Getenv("PATH")}})
+		cmd := captainCmd(captainArgs{args: args, env: map[string]string{
+			"PATH": dir + ":" + os.Getenv("PATH"),
+			"HOME": os.Getenv("HOME"),
+		}})
 		binary, err := filepath.Abs(cmd.Path)
 		Expect(err).NotTo(HaveOccurred())
 		cmd.Path = binary
@@ -77,6 +80,56 @@ cp passed.json rspec.json
 		Expect(string(invocations)).To(Equal(initial + "\n" +
 			"exec rspec --format json --out rspec.json --format progress ./x.rb[1:1]\n"))
 	}, Entry("unpartitioned", false), Entry("partitioned", true))
+
+	It("discovers Go packages and runs only the selected partition", func() {
+		Expect(os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module example.com/suite\n\ngo 1.20\n"),
+			0o600)).To(Succeed())
+		for _, name := range []string{"a", "b", "c"} {
+			Expect(os.Mkdir(filepath.Join(dir, name), 0o700)).To(Succeed())
+			Expect(os.WriteFile(filepath.Join(dir, name, "example_test.go"),
+				[]byte("package example\nimport \"testing\"\nfunc TestExample(t *testing.T) {}\n"), 0o600)).To(Succeed())
+		}
+		Expect(os.WriteFile(filepath.Join(dir, "gotestsum"), []byte(`#!/bin/sh
+set -eu
+printf '%s\n' "$*" > invocations
+output=$3
+shift 4
+"$@" > "$output"
+`), 0o700)).To(Succeed())
+		results := run("--framework", "go test", "--partition-index", "0", "--partition-total", "2",
+			"--partition-round-robin")
+		Expect(results.Framework).To(Equal(v1.GoTestFramework))
+		Expect(results.Tests).To(HaveLen(2))
+		for _, test := range results.Tests {
+			Expect(test.Attempt.Status.Kind).To(Equal(v1.TestStatusSuccessful))
+		}
+		invocations, err := os.ReadFile(filepath.Join(dir, "invocations"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(string(invocations)).To(Equal(
+			"--raw-command --jsonfile go-test.json -- go test example.com/suite/a example.com/suite/c -json -count=1\n"))
+	})
+
+	It("discovers Bun files without including node_modules at any depth", func() {
+		for _, file := range []string{
+			"root.test.ts", "src/nested.test.ts", "node_modules/vendor.test.ts", "src/node_modules/vendor.test.ts",
+		} {
+			path := filepath.Join(dir, file)
+			Expect(os.MkdirAll(filepath.Dir(path), 0o700)).To(Succeed())
+			Expect(os.WriteFile(path, nil, 0o600)).To(Succeed())
+		}
+		Expect(os.WriteFile(filepath.Join(dir, "bun"), []byte(`#!/bin/sh
+set -eu
+printf '%s\n' "$@" > invocations
+echo '<testsuites><testsuite name="example" tests="1"><testcase name="passes"/></testsuite></testsuites>' > bun.xml
+`), 0o700)).To(Succeed())
+		results := run("--framework", "bun", "--partition-index", "0", "--partition-total", "1",
+			"--partition-round-robin")
+		Expect(results.Tests).To(HaveLen(1))
+		invocations, err := os.ReadFile(filepath.Join(dir, "invocations"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(strings.Fields(string(invocations))).To(ConsistOf(
+			"test", "./root.test.ts", "./src/nested.test.ts", "--reporter=junit", "--reporter-outfile", "bun.xml"))
+	})
 
 	It("parses the documented Cypress RWX output with the default path", func() {
 		Expect(os.WriteFile(filepath.Join(dir, "npx"), []byte(`#!/bin/sh

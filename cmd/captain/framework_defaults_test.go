@@ -67,11 +67,26 @@ var _ = Describe("CLI-only framework defaults", func() {
 			Expect(suite.Results.Path).To(Equal(results))
 			Expect(suite.Output.PrintSummary).To(BeTrue())
 			Expect(suite.Partition.Delimiter).To(Equal(delimiter))
-			if glob == "" {
+			discovery := map[string]string{
+				"go test":    "go list ./...",
+				"ginkgo":     "go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.Dir}}{{end}}' ./...",
+				"jest":       "npx jest --listTests",
+				"vitest":     `["vitest", "list", "--filesOnly", "--json"]`,
+				"playwright": `["playwright", "test", "--list", "--reporter=json"]`,
+				"bun":        "find . -type d -name node_modules -prune -o -type f -name '*.test.ts' -print",
+			}[kind]
+			if discovery != "" {
+				Expect(suite.Partition.DiscoveryCommand).To(ContainSubstring(discovery))
 				Expect(suite.Partition.Globs).To(BeEmpty())
+			} else {
+				Expect(suite.Partition.DiscoveryCommand).To(BeEmpty())
+			}
+			if glob == "" && discovery == "" {
 				Expect(suite.Partition.Command).To(BeEmpty())
 			} else {
-				Expect(suite.Partition.Globs).To(Equal([]string{glob}))
+				if glob != "" {
+					Expect(suite.Partition.Globs).To(Equal([]string{glob}))
+				}
 				template, err := templating.CompileTemplate(suite.Partition.Command)
 				Expect(err).NotTo(HaveOccurred())
 				Expect((runpartition.DelimiterSubstitution{Delimiter: delimiter}).ValidateTemplate(template)).To(Succeed())
@@ -93,12 +108,12 @@ var _ = Describe("CLI-only framework defaults", func() {
 		Entry("go test", "go test", "go", "gotestsum --raw-command --jsonfile go-test.json -- go test ./... -json -count=1",
 			"go-test.json", "", " "),
 		Entry("Bun", "bun", "javascript", "bun test --reporter=junit --reporter-outfile bun.xml",
-			"bun.xml", "**/*.test.ts", " "),
+			"bun.xml", "", " "),
 		Entry("JavaScript Cucumber", "cucumber", "javascript", "npx cucumber-js --format json:cucumber.json --format summary",
 			"cucumber.json", "features/**/*.feature", " "),
 		Entry("Cypress", "cypress", "javascript", "npx cypress run", "tmp/rwx/*.json", "cypress/**/*.cy.js", ","),
 		Entry("Jest", "jest", "javascript", "npx jest --json --testLocationInResults --outputFile jest.json",
-			"jest.json", "**/*.test.js", "|"),
+			"jest.json", "", " "),
 		Entry("Karma", "karma", "javascript", "npx karma start --single-run", "tmp/karma.json", "", " "),
 		Entry("Mocha", "mocha", "javascript",
 			"npx mocha 'test/**/*.js' --reporter @rwx-research/mocha-multi-reporters "+
@@ -106,12 +121,12 @@ var _ = Describe("CLI-only framework defaults", func() {
 			"tmp/mocha.json", "test/**/*.js", " "),
 		Entry("Playwright", "playwright", "javascript",
 			"bash -c 'PLAYWRIGHT_JSON_OUTPUT_NAME=playwright.json npx playwright test --reporter=json'",
-			"playwright.json", "tests/**/*.spec.js", " "),
+			"playwright.json", "", " "),
 		Entry("TestCafe", "testcafe", "javascript", "npx testcafe chrome:headless tests/ --reporter spec,json:testcafe.json",
 			"testcafe.json", "tests/**/*.testcafe.ts", " "),
 		Entry("Vitest", "vitest", "javascript",
 			"npx vitest run --reporter=default --reporter=json --outputFile=./vitest.json",
-			"vitest.json", "**/*.test.js", " "),
+			"vitest.json", "", " "),
 		Entry("PHPUnit", "phpunit", "php", "vendor/bin/phpunit --log-junit phpunit.xml tests/", "phpunit.xml", "", " "),
 		Entry("pytest", "pytest", "python", "pytest --report-log=log.json", "log.json", "test/**/test_*.py", " "),
 		Entry("unittest", "unittest", "python", "python -m xmlrunner -o .", "TEST-*.xml", "test/**/test_*.py", " "),
@@ -154,6 +169,42 @@ var _ = Describe("CLI-only framework defaults", func() {
 		cfg, err := configure("run", "", "--framework", "cypress", "--partition-delimiter", " ")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(cfg.TestSuites["suite"].Partition.Delimiter).To(Equal(" "))
+	})
+
+	It("replaces default discovery with explicit globs", func() {
+		cfg, err := configure("run", "", "--framework", "jest", "--partition-globs", "custom/*.js")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Partition.DiscoveryCommand).To(BeEmpty())
+		Expect(cfg.TestSuites["suite"].Partition.Globs).To(Equal([]string{"custom/*.js"}))
+	})
+
+	It("replaces default globs with explicit discovery", func() {
+		cfg, err := configure("run", "", "--framework", "rspec", "--partition-discovery-command", "custom list")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Partition.DiscoveryCommand).To(Equal("custom list"))
+		Expect(cfg.TestSuites["suite"].Partition.Globs).To(BeEmpty())
+	})
+
+	It("preserves conflicting explicit options for validation", func() {
+		cfg, err := configure("run", "", "--framework", "jest", "--partition-globs", "custom/*.js",
+			"--partition-discovery-command", "custom list")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Partition.DiscoveryCommand).To(Equal("custom list"))
+		Expect(cfg.TestSuites["suite"].Partition.Globs).To(Equal([]string{"custom/*.js"}))
+	})
+
+	It("can disable default discovery explicitly", func() {
+		cfg, err := configure("run", "", "--framework", "jest", "--partition-discovery-command=")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Partition.DiscoveryCommand).To(BeEmpty())
+	})
+
+	It("does not replace configured globs with framework discovery", func() {
+		cfg, err := configure("run", "test-suites:\n  suite:\n    partition:\n      globs: [custom/*.js]\n",
+			"--framework", "jest")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cfg.TestSuites["suite"].Partition.DiscoveryCommand).To(BeEmpty())
+		Expect(cfg.TestSuites["suite"].Partition.Globs).To(Equal([]string{"custom/*.js"}))
 	})
 
 	DescribeTable("does not apply defaults to configured suites", func(config string) {

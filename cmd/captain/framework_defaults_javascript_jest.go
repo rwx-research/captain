@@ -8,9 +8,8 @@ func defaultJavaScriptJestSuite() cli.SuiteConfig {
 	suite.Results.Path = "jest.json"
 	suite.Retries.Command = "npx jest --testPathPattern '{{ testPathPattern }}' " +
 		"--testNamePattern '{{ testNamePattern }}' --json --testLocationInResults --outputFile jest.json"
-	suite.Partition.Command = "npx jest --testPathPattern {{ testFiles }} " +
+	suite.Partition.Command = "npx jest --runTestsByPath {{ testFiles }} " +
 		"--json --testLocationInResults --outputFile jest.json"
-	suite.Partition.Delimiter = "|"
-	suite.Partition.Globs = []string{"**/*.test.js"}
+	suite.Partition.DiscoveryCommand = "npx jest --listTests"
 	return suite
 }
