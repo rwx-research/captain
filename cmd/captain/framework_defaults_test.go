@@ -73,7 +73,6 @@ var _ = Describe("framework defaults", func() {
 				"jest":       "npx jest --listTests",
 				"vitest":     `["vitest", "list", "--filesOnly", "--json"]`,
 				"playwright": `["playwright", "test", "--list", "--reporter=json"]`,
-				"bun":        "find . -type d -name node_modules -prune -o -type f -name '*.test.ts' -print",
 			}[kind]
 			if discovery != "" {
 				Expect(suite.Partition.DiscoveryCommand).To(ContainSubstring(discovery))
@@ -83,6 +82,7 @@ var _ = Describe("framework defaults", func() {
 			}
 			if glob == "" && discovery == "" {
 				Expect(suite.Partition.Command).To(BeEmpty())
+				Expect(suite.Partition.Globs).To(BeEmpty())
 			} else {
 				if glob != "" {
 					Expect(suite.Partition.Globs).To(Equal([]string{glob}))

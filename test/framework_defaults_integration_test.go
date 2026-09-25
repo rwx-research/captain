@@ -125,26 +125,18 @@ shift 4
 			"--raw-command --jsonfile go-test.json -- go test example.com/suite/a example.com/suite/c -json -count=1\n"))
 	})
 
-	It("discovers Bun files without including node_modules at any depth", func() {
-		for _, file := range []string{
-			"root.test.ts", "src/nested.test.ts", "node_modules/vendor.test.ts", "src/node_modules/vendor.test.ts",
-		} {
-			path := filepath.Join(dir, file)
-			Expect(os.MkdirAll(filepath.Dir(path), 0o700)).To(Succeed())
-			Expect(os.WriteFile(path, nil, 0o600)).To(Succeed())
-		}
+	It("runs Bun with its default command and results path", func() {
 		Expect(os.WriteFile(filepath.Join(dir, "bun"), []byte(`#!/bin/sh
 set -eu
 printf '%s\n' "$@" > invocations
 echo '<testsuites><testsuite name="example" tests="1"><testcase name="passes"/></testsuite></testsuites>' > bun.xml
 `), 0o700)).To(Succeed())
-		results := run("--framework", "bun", "--partition-index", "0", "--partition-total", "1",
-			"--partition-round-robin")
+		results := run("--framework", "bun")
 		Expect(results.Tests).To(HaveLen(1))
 		invocations, err := os.ReadFile(filepath.Join(dir, "invocations"))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(strings.Fields(string(invocations))).To(ConsistOf(
-			"test", "./root.test.ts", "./src/nested.test.ts", "--reporter=junit", "--reporter-outfile", "bun.xml"))
+			"test", "--reporter=junit", "--reporter-outfile", "bun.xml"))
 	})
 
 	It("parses the documented Cypress RWX output with the default path", func() {
