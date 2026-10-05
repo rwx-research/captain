@@ -6,7 +6,6 @@ import (
 	"io"
 	"math"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/rwx-research/captain-cli/internal/errors"
@@ -58,9 +57,6 @@ type PHPUnitTestResults struct {
 }
 
 var phpUnitNewlineRegexp = regexp.MustCompile(`\r?\n`)
-
-// Pest retains non-ASCII bytes when generating PHP method names from descriptions.
-var pestMethodNameRegexp = regexp.MustCompile(`[^a-zA-Z0-9_\x{0080}-\x{10FFFF}]`)
 
 func (p PHPUnitParser) Parse(data io.Reader) (*v1.TestResults, error) {
 	var testResults PHPUnitTestResults
@@ -129,33 +125,7 @@ func (p PHPUnitParser) testsWithinSuite(suite PHPUnitTestSuite) ([]v1.Test, erro
 		}
 
 		line := testCase.Line
-		file := testCase.File
-		meta := map[string]any{
-			"class": testCase.Class,
-			"name":  testCase.Name,
-			"risky": risky,
-		}
-		// Pest 3+ reports logical locations, even when configured as PHPUnit.
-		if path, _, found := strings.Cut(file, ".php::"); found {
-			file = path + ".php"
-			if strings.HasPrefix(testCase.Name, suite.Name+" with data set ") {
-				meta["pestDatasetName"] = suite.Name
-			} else if method, ok := strings.CutPrefix(suite.Name, testCase.Class+"::__pest_evaluable_"); ok {
-				// Early Pest 3 releases use the generated method name for dataset suites.
-				for offset := 0; offset < len(testCase.Name); offset++ {
-					if !strings.HasPrefix(testCase.Name[offset:], " with data set ") {
-						continue
-					}
-					description := testCase.Name[:offset]
-					generated := strings.ReplaceAll(strings.ReplaceAll(description, "_", "__"), " ", "_")
-					if pestMethodNameRegexp.ReplaceAllString(generated, "_") == method {
-						meta["pestDatasetName"] = description
-						break
-					}
-				}
-			}
-		}
-		location := &v1.Location{File: file, Line: &line}
+		location := &v1.Location{File: testCase.File, Line: &line}
 
 		tests = append(
 			tests,
@@ -165,8 +135,12 @@ func (p PHPUnitParser) testsWithinSuite(suite PHPUnitTestSuite) ([]v1.Test, erro
 				Location: location,
 				Attempt: v1.TestAttempt{
 					Duration: &duration,
-					Meta:     meta,
-					Status:   status,
+					Meta: map[string]any{
+						"class": testCase.Class,
+						"name":  testCase.Name,
+						"risky": risky,
+					},
+					Status: status,
 				},
 			},
 		)

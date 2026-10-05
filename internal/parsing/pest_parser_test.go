@@ -12,9 +12,8 @@ import (
 )
 
 var _ = Describe("PestParser", func() {
-	DescribeTable("normalizes logical locations without changing test identity descriptions",
-		func(parser parsing.Parser, framework v1.Framework) {
-			results, err := parser.Parse(strings.NewReader(`<testsuites>
+	It("normalizes logical locations without changing test identity descriptions", func() {
+		results, err := (parsing.PestParser{}).Parse(strings.NewReader(`<testsuites>
   <testsuite name="Tests\ArchTest" file="tests/ArchTest.php">
     <testcase name="controllers :: use interfaces" class="Tests\ArchTest"
       file="tests/ArchTest.php::controllers :: use interfaces" time="1.25"/>
@@ -26,21 +25,18 @@ var _ = Describe("PestParser", func() {
     </testsuite>
   </testsuite>
 </testsuites>`))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(results.Framework).To(Equal(framework))
-			Expect(results.Tests).To(HaveLen(2))
-			Expect(results.Tests[0].Location.File).To(Equal("tests/ArchTest.php"))
-			Expect(results.Tests[1].Location.File).To(Equal("tests/ArchTest.php"))
-			Expect(results.Tests[0].Name).To(Equal(`Tests\ArchTest::controllers :: use interfaces`))
-			Expect(results.Tests[0].Lineage).To(Equal([]string{`Tests\ArchTest`, "controllers :: use interfaces"}))
-			Expect(results.Tests[0].Attempt.Meta).NotTo(HaveKey("pestDatasetName"))
-			Expect(results.Tests[1].Attempt.Meta).To(HaveKeyWithValue("pestDatasetName", "uses contracts"))
-			Expect(*results.Tests[0].Attempt.Duration + *results.Tests[1].Attempt.Duration).To(Equal(3750 * time.Millisecond))
-			Expect(results.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusFailed))
-		},
-		Entry("configured as Pest", parsing.PestParser{}, v1.PHPPestFramework),
-		Entry("still configured as PHPUnit", parsing.PHPUnitParser{}, v1.PHPUnitFramework),
-	)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(results.Framework).To(Equal(v1.PHPPestFramework))
+		Expect(results.Tests).To(HaveLen(2))
+		Expect(results.Tests[0].Location.File).To(Equal("tests/ArchTest.php"))
+		Expect(results.Tests[1].Location.File).To(Equal("tests/ArchTest.php"))
+		Expect(results.Tests[0].Name).To(Equal(`Tests\ArchTest::controllers :: use interfaces`))
+		Expect(results.Tests[0].Lineage).To(Equal([]string{`Tests\ArchTest`, "controllers :: use interfaces"}))
+		Expect(results.Tests[0].Attempt.Meta).NotTo(HaveKey("pestDatasetName"))
+		Expect(results.Tests[1].Attempt.Meta).To(HaveKeyWithValue("pestDatasetName", "uses contracts"))
+		Expect(*results.Tests[0].Attempt.Duration + *results.Tests[1].Attempt.Duration).To(Equal(3750 * time.Millisecond))
+		Expect(results.Tests[1].Attempt.Status.Kind).To(Equal(v1.TestStatusFailed))
+	})
 
 	It("recovers early Pest 3 dataset descriptions without truncating dataset-like text", func() {
 		results, err := (parsing.PestParser{}).Parse(strings.NewReader(`<testsuites>
