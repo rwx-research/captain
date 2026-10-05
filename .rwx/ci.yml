@@ -49,6 +49,30 @@ tasks:
     init:
       commit-sha: ${{ init.commit-sha }}
 
+  - key: pest-3-first
+    call: ${{ run.dir }}/pest.yml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+      pest-version: 3.0.0
+
+  - key: pest-3
+    call: ${{ run.dir }}/pest.yml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+      pest-version: 3.8.4
+
+  - key: pest-4-first
+    call: ${{ run.dir }}/pest.yml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+      pest-version: 4.0.0
+
+  - key: pest-4
+    call: ${{ run.dir }}/pest.yml
+    init:
+      commit-sha: ${{ init.commit-sha }}
+      pest-version: 4.7.8
+
   - key: release-unstable
     after: test
     if: ${{ init.is-main-branch }}

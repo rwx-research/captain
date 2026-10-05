@@ -19,6 +19,7 @@ const (
 	FrameworkKindKarma      FrameworkKind = "Karma"
 	FrameworkKindMinitest   FrameworkKind = "minitest"
 	FrameworkKindMocha      FrameworkKind = "Mocha"
+	FrameworkKindPest       FrameworkKind = "Pest"
 	FrameworkKindPHPUnit    FrameworkKind = "PHPUnit"
 	FrameworkKindPlaywright FrameworkKind = "Playwright"
 	FrameworkKindPytest     FrameworkKind = "pytest"
@@ -94,6 +95,9 @@ var (
 	)
 	JavaScriptBunFramework = registerFramework(
 		Framework{Language: FrameworkLanguageJavaScript, Kind: FrameworkKindBun},
+	)
+	PHPPestFramework = registerFramework(
+		Framework{Language: FrameworkLanguagePHP, Kind: FrameworkKindPest},
 	)
 	PHPUnitFramework = registerFramework(
 		Framework{Language: FrameworkLanguagePHP, Kind: FrameworkKindPHPUnit},

@@ -1,0 +1,43 @@
+base:
+  image: ubuntu:24.04
+  config: rwx/base 1.1.0
+
+tasks:
+  - key: code
+    call: git/clone 2.2.0
+    with:
+      repository: https://github.com/rwx-research/captain.git
+      ref: ${{ init.commit-sha }}
+
+  - key: tool-versions
+    use: code
+    call: rwx/tool-versions 1.1.0
+    filter: [.tool-versions]
+
+  - key: golang
+    call: golang/install 1.3.0
+    with:
+      go-version: ${{ tasks.tool-versions.values.golang }}
+
+  - key: php
+    run: |
+      sudo apt-get update -qq
+      sudo apt-get install -y php-cli php-xml php-mbstring php-curl unzip composer
+
+  - key: pest
+    use: [code, php]
+    run: |
+      composer require --working-dir=test/pest/fixture --dev "pestphp/pest:${PEST_VERSION}" \
+        --with-all-dependencies --no-interaction --no-progress
+    env:
+      PEST_VERSION: ${{ init.pest-version }}
+
+  - key: build
+    use: [code, golang]
+    run: go build -o captain ./cmd/captain
+
+  - key: test
+    use: [pest, build]
+    run: go test -tags pest -count=1 -v ./test
+    env:
+      PEST_VERSION: ${{ init.pest-version }}
