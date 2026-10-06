@@ -64,6 +64,11 @@
   },
   {
     "language": "PHP",
+    "kind": "Pest",
+    "recipe": { "components": ["file", "description"], "strict": true }
+  },
+  {
+    "language": "PHP",
     "kind": "PHPUnit",
     "recipe": { "components": ["file", "description"], "strict": true }
   },
