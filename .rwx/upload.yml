@@ -1,3 +1,7 @@
+on:
+  cli:
+    init:
+      commit-sha: ${{ event.git.sha }}
 base:
   image: ubuntu:24.04
   config: rwx/base 1.1.0
@@ -85,7 +89,7 @@ tasks:
       ./rcodesign notary-submit --wait --api-key-path rwx-apple-app-store-connect-api-key.json captain.zip
     env:
       CODESIGN_VERSION: 0.22.0
-      RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT: "${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT_CERTIFICATE }}${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT_PRIVATE_KEY }}"
+      RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT: "${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT_2027_CERTIFICATE }}${{ secrets.RWX_APPLE_DEVELOPER_ID_APPLICATION_CERT_2027_PRIVATE_KEY }}"
       RWX_APPLE_APP_STORE_CONNECT_API_KEY: ${{ secrets.RWX_APPLE_APP_STORE_CONNECT_API_KEY }}
 
   - key: upload-darwin
