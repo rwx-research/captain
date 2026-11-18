@@ -42,6 +42,13 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 			Expect(withoutKnownRWXOtelSpanWarnings(stderr)).To(BeEmpty())
 		}
 
+		expectOnlyMatchSummaryOnStderr := func(stderr string) {
+			Expect(withoutKnownRWXOtelSpanWarnings(stderr)).To(SatisfyAll(
+				HaveSuffix("Matched timing data for 4 of 4 test files (0 unmatched)."),
+				Not(ContainSubstring("\n")),
+			))
+		}
+
 		Describe("captain run", func() {
 			Context("quarantining", func() {
 				It("succeeds when all failures quarantined", func() {
@@ -277,7 +284,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						})
 
 						withoutBackwardsCompatibility(func() {
-							expectCleanStderr(result.stderr)
+							expectOnlyMatchSummaryOnStderr(result.stderr)
 						})
 						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
 						Expect(result.exitCode).To(Equal(0))
@@ -302,7 +309,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 						})
 
 						withoutBackwardsCompatibility(func() {
-							expectCleanStderr(result.stderr)
+							expectOnlyMatchSummaryOnStderr(result.stderr)
 						})
 						Expect(result.stdout).To(ContainSubstring("bin/rspec fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
 						Expect(result.exitCode).To(Equal(0))
@@ -424,7 +431,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						expectCleanStderr(result.stderr)
+						expectOnlyMatchSummaryOnStderr(result.stderr)
 					})
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/a_spec.rb fixtures/integration-tests/partition/d_spec.rb"))
 					Expect(result.exitCode).To(Equal(0))
@@ -443,7 +450,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"Cloud Mode Integration Tests"
 					})
 
 					withoutBackwardsCompatibility(func() {
-						expectCleanStderr(result.stderr)
+						expectOnlyMatchSummaryOnStderr(result.stderr)
 					})
 					Expect(result.stdout).To(Equal("fixtures/integration-tests/partition/b_spec.rb fixtures/integration-tests/partition/c_spec.rb"))
 					Expect(result.exitCode).To(Equal(0))
