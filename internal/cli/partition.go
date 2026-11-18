@@ -111,12 +111,15 @@ func (s Service) calculatePartition(ctx context.Context, cfg PartitionConfig) (P
 			return fileTimingMatches[i].Duration() > fileTimingMatches[j].Duration()
 		})
 
-		s.Log.Warnf(
-			"Matched timing data for %d of %d test files (%d unmatched).",
-			len(fileTimingMatches),
-			len(testFilePaths),
-			len(unmatchedFilepaths),
-		)
+		// Warn only when more than 5% of all test files are unmatched.
+		if len(unmatchedFilepaths)*20 > len(testFilePaths) {
+			s.Log.Warnf(
+				"Matched timing data for %d of %d test files (%d unmatched).",
+				len(fileTimingMatches),
+				len(testFilePaths),
+				len(unmatchedFilepaths),
+			)
+		}
 
 		if len(fileTimingMatches) == 0 {
 			s.Log.Warnln("No test file timings were matched. Using naive round-robin strategy.")

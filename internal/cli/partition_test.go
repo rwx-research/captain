@@ -812,14 +812,12 @@ var _ = Describe("Partition", func() {
 		}
 
 		DescribeTable("logs the counts to stderr without changing the partition output",
-			func(timings []testing.TestFileTiming, matched, unmatched int, expectedPartition string) {
+			func(timings []testing.TestFileTiming, expectedWarnings []string, expectedPartition string) {
 				mockTimings(timings)
 
 				Expect(service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))).To(Succeed())
 
-				Expect(messages(zapcore.WarnLevel)).To(ContainElement(
-					fmt.Sprintf(matchSummary, matched, matched+unmatched, unmatched),
-				))
+				Expect(messages(zapcore.WarnLevel)).To(Equal(expectedWarnings))
 				Expect(messages(zapcore.InfoLevel)).To(Equal([]string{expectedPartition}))
 			},
 			Entry("when all files match", []testing.TestFileTiming{
@@ -827,15 +825,42 @@ var _ = Describe("Partition", func() {
 				{Filepath: "b.test", Duration: 3},
 				{Filepath: "c.test", Duration: 2},
 				{Filepath: "d.test", Duration: 1},
-			}, 4, 0, "a.test d.test"),
+			}, []string{}, "a.test d.test"),
 			Entry("when some files match", []testing.TestFileTiming{
 				{Filepath: "a.test", Duration: 6},
 				{Filepath: "b.test", Duration: 4},
 				{Filepath: "c.test", Duration: 3},
-			}, 3, 1, "a.test d.test"),
+			}, []string{fmt.Sprintf(matchSummary, 3, 4, 1)}, "a.test d.test"),
 			Entry("when no files match", []testing.TestFileTiming{
 				{Filepath: "other.test", Duration: 6},
-			}, 0, 4, "a.test c.test"),
+			}, []string{
+				fmt.Sprintf(matchSummary, 0, 4, 4),
+				"No test file timings were matched. Using naive round-robin strategy.",
+			}, "a.test c.test"),
+		)
+
+		DescribeTable("warns only when more than 5% of test files are unmatched",
+			func(total int, expectedWarnings []string) {
+				files := make([]string, 0, total)
+				timings := make([]testing.TestFileTiming, 0, total-1)
+				for i := 0; i < total; i++ {
+					file := fmt.Sprintf("%02d.test", i)
+					files = append(files, file)
+					if i > 0 {
+						timings = append(timings, testing.TestFileTiming{Filepath: file, Duration: time.Second})
+					}
+				}
+				service.FileSystem.(*mocks.FileSystem).MockGlob = func(_ string) ([]string, error) {
+					return files, nil
+				}
+				mockTimings(timings)
+
+				Expect(service.Partition(ctx, cfgWithGlob(0, 2, "*.test"))).To(Succeed())
+
+				Expect(messages(zapcore.WarnLevel)).To(Equal(expectedWarnings))
+			},
+			Entry("when exactly 5% are unmatched", 20, []string{}),
+			Entry("when just over 5% are unmatched", 19, []string{fmt.Sprintf(matchSummary, 18, 19, 1)}),
 		)
 
 		It("keeps the existing warning when no files match", func() {
