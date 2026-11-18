@@ -118,6 +118,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 
 				withoutBackwardsCompatibility(func() {
 					Expect(result.stderr).To(ContainSubstring("No test file timings were matched."))
+					Expect(result.stderr).To(ContainSubstring("Matched timing data for 0 of 3 test files (3 unmatched)."))
 				})
 			})
 
@@ -1321,6 +1322,7 @@ var _ = Describe(versionedPrefixForQuarantining()+"OSS mode Integration Tests", 
 				})
 
 				Expect(result.exitCode).To(Equal(0))
+				Expect(result.stderr).To(ContainSubstring("Matched timing data for "))
 				Expect(result.stderr).To(ContainSubstring("Partition 29/30 contained no test files. 7/30 partitions were utilized. We recommend you set --partition-total no more than 7"))
 			})
 		})
