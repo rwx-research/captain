@@ -26,6 +26,7 @@ type CliArgs struct {
 	failOnDuplicateTestID       bool
 	failOnMisconfiguredRetry    bool
 	failRetriesFast             bool
+	hideConfigureRetryCmdTip    bool
 	flakyRetries                int
 	intermediateArtifactsPath   string
 	additionalArtifactPaths     []string
@@ -160,6 +161,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						FailOnUploadError:         suiteConfig.FailOnUploadError,
 						FailOnMisconfiguredRetry:  suiteConfig.Retries.FailOnMisconfiguration,
 						FailRetriesFast:           suiteConfig.Retries.FailFast,
+						HideConfigureRetryTip:     suiteConfig.Retries.HideConfigureCommandTip,
 						FlakyRetries:              suiteConfig.Retries.FlakyAttempts,
 						IntermediateArtifactsPath: suiteConfig.Retries.IntermediateArtifactsPath,
 						AdditionalArtifactPaths:   suiteConfig.Retries.AdditionalArtifactPaths,
@@ -328,6 +330,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"them)",
 	)
 
+	runCmd.Flags().BoolVar(
+		&cliArgs.hideConfigureRetryCmdTip,
+		"hide-configure-retry-command-tip",
+		false,
+		"if set, captain will not suggest configuring a retry command on RWX when tests fail and no retry command is set",
+	)
+
 	runCmd.Flags().IntVar(
 		&cliArgs.quarantinedTestRetries,
 		"quarantined-test-retries",
@@ -476,6 +485,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 
 		if cliArgs.failRetriesFast {
 			suiteConfig.Retries.FailFast = true
+		}
+
+		if cliArgs.hideConfigureRetryCmdTip {
+			suiteConfig.Retries.HideConfigureCommandTip = true
 		}
 
 		// We want to use the default as set by `cobra`

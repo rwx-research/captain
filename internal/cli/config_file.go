@@ -31,6 +31,7 @@ type SuiteConfigRetries struct {
 	Command                   string
 	FailFast                  bool     `yaml:"fail-fast"`
 	FailOnMisconfiguration    bool     `yaml:"fail-on-misconfiguration"`
+	HideConfigureCommandTip   bool     `yaml:"hide-configure-command-tip"`
 	FlakyAttempts             int      `yaml:"flaky-attempts"`
 	MaxTests                  string   `yaml:"max-tests"`
 	MaxTestsLegacyName        string   `yaml:"maxtests"`

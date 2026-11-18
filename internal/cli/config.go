@@ -22,6 +22,7 @@ type RunConfig struct {
 	FailOnUploadError           bool
 	FailOnMisconfiguredRetry    bool
 	FailRetriesFast             bool
+	HideConfigureRetryTip       bool
 	FlakyRetries                int
 	IntermediateArtifactsPath   string
 	AdditionalArtifactPaths     []string
