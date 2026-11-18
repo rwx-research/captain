@@ -614,6 +614,58 @@ var _ = Describe("Run", func() {
 			})
 		})
 
+		Context("on RWX without a retry command", func() {
+			var (
+				tipsPath     string
+				createdFiles map[string]*strings.Builder
+			)
+
+			BeforeEach(func() {
+				tipsPath = "/tmp/rwx-tips"
+				Expect(os.Setenv("RWX_TIPS", tipsPath)).To(Succeed())
+				DeferCleanup(func() {
+					Expect(os.Unsetenv("RWX_TIPS")).To(Succeed())
+				})
+
+				createdFiles = make(map[string]*strings.Builder)
+				service.FileSystem.(*mocks.FileSystem).MockCreate = func(path string) (fs.File, error) {
+					builder := new(strings.Builder)
+					createdFiles[path] = builder
+
+					return &mocks.File{
+						Builder: builder,
+						Reader:  strings.NewReader(""),
+					}, nil
+				}
+
+				runConfig.WriteRetryFailedTestsAction = true
+			})
+
+			It("writes the configure retry command tip", func() {
+				tipFile := fmt.Sprintf("%s/configure-captain-retry-command", tipsPath)
+				Expect(createdFiles).To(HaveKey(tipFile))
+				Expect(createdFiles[tipFile].String()).To(Equal(
+					"Configure Captain retry command to enable RWX to retry only failed tests.",
+				))
+			})
+
+			Context("when retries are disabled", func() {
+				BeforeEach(func() {
+					runConfig.RetriesDisabled = true
+				})
+
+				It("does not write the configure retry command tip", func() {
+					Expect(createdFiles).NotTo(HaveKey(fmt.Sprintf("%s/configure-captain-retry-command", tipsPath)))
+				})
+
+				It("still returns the error code of the command", func() {
+					executionError, ok := errors.AsExecutionError(err)
+					Expect(ok).To(BeTrue(), "Error is an execution error")
+					Expect(executionError.Code).To(Equal(exitCode))
+				})
+			})
+		})
+
 		Context("other unknown tests quarantined", func() {
 			BeforeEach(func() {
 				mockGetRunConfiguration := func(

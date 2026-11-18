@@ -35,7 +35,7 @@ func WriteConfigureRetryCommandTip(fs fs.FileSystem) error {
 	}
 	defer tipFile.Close()
 
-	_, err = tipFile.Write([]byte("Configure Captain retry command to enable Mint to retry only failed tests."))
+	_, err = tipFile.Write([]byte("Configure Captain retry command to enable RWX to retry only failed tests."))
 	if err != nil {
 		return errors.Wrap(err, "unable to write to tip file")
 	}

@@ -26,6 +26,7 @@ type CliArgs struct {
 	failOnDuplicateTestID       bool
 	failOnMisconfiguredRetry    bool
 	failRetriesFast             bool
+	retriesDisabled             bool
 	flakyRetries                int
 	intermediateArtifactsPath   string
 	additionalArtifactPaths     []string
@@ -160,6 +161,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						FailOnUploadError:         suiteConfig.FailOnUploadError,
 						FailOnMisconfiguredRetry:  suiteConfig.Retries.FailOnMisconfiguration,
 						FailRetriesFast:           suiteConfig.Retries.FailFast,
+						RetriesDisabled:           suiteConfig.Retries.Disabled,
 						FlakyRetries:              suiteConfig.Retries.FlakyAttempts,
 						IntermediateArtifactsPath: suiteConfig.Retries.IntermediateArtifactsPath,
 						AdditionalArtifactPaths:   suiteConfig.Retries.AdditionalArtifactPaths,
@@ -299,6 +301,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 		-1,
 		"the number of times failed tests should be retried "+
 			"(e.g. --retries 2 would mean a maximum of 3 attempts of any given test)",
+	)
+
+	runCmd.Flags().BoolVar(
+		&cliArgs.retriesDisabled,
+		"retries-disabled",
+		false,
+		"if set, this test suite intentionally has no retries, so captain will not suggest configuring a retry command",
 	)
 
 	runCmd.Flags().IntVar(
@@ -476,6 +485,10 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 
 		if cliArgs.failRetriesFast {
 			suiteConfig.Retries.FailFast = true
+		}
+
+		if cliArgs.retriesDisabled {
+			suiteConfig.Retries.Disabled = true
 		}
 
 		// We want to use the default as set by `cobra`

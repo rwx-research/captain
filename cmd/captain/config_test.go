@@ -47,6 +47,21 @@ var _ = Describe("InitConfig", func() {
 		})
 	})
 
+	Context("with --retries-disabled", func() {
+		It("marks the suite's retries as disabled", func() {
+			err := captain.AddFlags(cmd, &cliArgs)
+			Expect(err).ToNot(HaveOccurred())
+			// The command disables flag parsing, so set the flag directly.
+			err = cmd.Flags().Set("retries-disabled", "true")
+			Expect(err).ToNot(HaveOccurred())
+
+			cfg, err := captain.InitConfig(cmd, cliArgs)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(cfg.TestSuites["some-suite"].Retries.Disabled).To(BeTrue())
+			Expect(cfg.TestSuites["some-suite"].Retries.Attempts).To(Equal(-1))
+		})
+	})
+
 	Context("with GitHub Actions environment variables", func() {
 		BeforeEach(func() {
 			helpers.SetEnvFromFile("../../test/.env.github.actions")

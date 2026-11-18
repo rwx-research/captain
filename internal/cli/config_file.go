@@ -39,6 +39,7 @@ type SuiteConfigRetries struct {
 	IntermediateArtifactsPath string   `yaml:"intermediate-artifacts-path"`
 	AdditionalArtifactPaths   []string `yaml:"additional-artifact-paths"`
 	QuarantinedAttempts       int      `yaml:"quarantined-attempts"`
+	Disabled                  bool     `yaml:"disabled"`
 }
 
 type SuiteConfigPartition struct {
