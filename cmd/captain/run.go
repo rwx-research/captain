@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -296,13 +295,19 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
 	)
 
-	cliArgs.Retries = -1
-	runCmd.Flags().Var(
-		&retriesFlag{attempts: &cliArgs.Retries, disabled: &cliArgs.retriesDisabled},
+	runCmd.Flags().IntVar(
+		&cliArgs.Retries,
 		"retries",
+		-1,
 		"the number of times failed tests should be retried "+
-			"(e.g. --retries 2 would mean a maximum of 3 attempts of any given test). "+
-			"Set to 'disabled' if this suite intentionally has no retries",
+			"(e.g. --retries 2 would mean a maximum of 3 attempts of any given test)",
+	)
+
+	runCmd.Flags().BoolVar(
+		&cliArgs.retriesDisabled,
+		"retries-disabled",
+		false,
+		"if set, this test suite intentionally has no retries, so captain will not suggest configuring a retry command",
 	)
 
 	runCmd.Flags().IntVar(
@@ -629,38 +634,4 @@ func addShaFlag(cmd *cobra.Command, destination *string) {
 		os.Getenv("CAPTAIN_SHA"),
 		"the git commit sha hash of the commit being built",
 	)
-}
-
-// retriesFlag accepts either a number of retries or "disabled".
-type retriesFlag struct {
-	attempts *int
-	disabled *bool
-}
-
-func (f *retriesFlag) String() string {
-	if f.disabled != nil && *f.disabled {
-		return cli.RetriesDisabledValue
-	}
-	if f.attempts == nil {
-		return ""
-	}
-	return strconv.Itoa(*f.attempts)
-}
-
-func (f *retriesFlag) Set(value string) error {
-	if value == cli.RetriesDisabledValue {
-		*f.disabled = true
-		return nil
-	}
-
-	attempts, err := strconv.Atoi(value)
-	if err != nil {
-		return errors.NewInputError("expected a number or %q, got %q", cli.RetriesDisabledValue, value)
-	}
-	*f.attempts = attempts
-	return nil
-}
-
-func (f *retriesFlag) Type() string {
-	return "int"
 }

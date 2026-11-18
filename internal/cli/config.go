@@ -56,8 +56,8 @@ func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
 		return errors.NewConfigurationError(
 			"Retries are disabled",
 			"This test suite has retries disabled, but a retry command or a number of retries is also configured.",
-			"Either remove 'disabled' from the retries setting, or remove the retry command, --retries and "+
-				"--flaky-retries settings for this test suite.",
+			"Either stop disabling retries, or remove the retry command, --retries and --flaky-retries settings "+
+				"for this test suite.",
 		)
 	}
 

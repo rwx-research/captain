@@ -334,31 +334,15 @@ var _ = Describe("SuiteConfigRetries", func() {
 		return configFile, err
 	}
 
-	It("parses `retries: disabled`", func() {
-		configFile, err := decode("test-suites:\n  some-suite:\n    retries: disabled\n")
+	It("parses `retries.disabled`", func() {
+		configFile, err := decode("test-suites:\n  some-suite:\n    retries:\n      disabled: true\n")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(configFile.TestSuites["some-suite"].Retries.Disabled).To(BeTrue())
 	})
 
-	It("still parses a retries mapping", func() {
-		configFile, err := decode(
-			"test-suites:\n  some-suite:\n    retries:\n      attempts: 2\n      command: some-command\n",
-		)
+	It("leaves retries enabled by default", func() {
+		configFile, err := decode("test-suites:\n  some-suite:\n    retries:\n      attempts: 2\n")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(configFile.TestSuites["some-suite"].Retries.Disabled).To(BeFalse())
-		Expect(configFile.TestSuites["some-suite"].Retries.Attempts).To(Equal(2))
-		Expect(configFile.TestSuites["some-suite"].Retries.Command).To(Equal("some-command"))
-	})
-
-	It("still rejects unknown fields in a retries mapping", func() {
-		_, err := decode("test-suites:\n  some-suite:\n    retries:\n      not-a-field: true\n")
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("not-a-field"))
-	})
-
-	It("rejects other strings", func() {
-		_, err := decode("test-suites:\n  some-suite:\n    retries: sometimes\n")
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring(`expected "disabled" or a mapping`))
 	})
 })
