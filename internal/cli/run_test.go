@@ -649,9 +649,9 @@ var _ = Describe("Run", func() {
 				))
 			})
 
-			Context("when the configure retry command tip is hidden", func() {
+			Context("when retries are disabled", func() {
 				BeforeEach(func() {
-					runConfig.HideConfigureRetryTip = true
+					runConfig.RetriesDisabled = true
 				})
 
 				It("does not write the configure retry command tip", func() {

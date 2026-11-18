@@ -22,7 +22,6 @@ type RunConfig struct {
 	FailOnUploadError           bool
 	FailOnMisconfiguredRetry    bool
 	FailRetriesFast             bool
-	HideConfigureRetryTip       bool
 	FlakyRetries                int
 	IntermediateArtifactsPath   string
 	AdditionalArtifactPaths     []string
@@ -33,6 +32,7 @@ type RunConfig struct {
 	Quiet                       bool
 	Reporters                   map[string]Reporter
 	Retries                     int
+	RetriesDisabled             bool
 	RetryCommandTemplate        string
 	SuiteID                     string
 	SubstitutionsByFramework    map[v1.Framework]targetedretries.Substitution
@@ -52,6 +52,15 @@ var maxTestsToRetryRegexp = regexp.MustCompile(
 )
 
 func (rc RunConfig) Validate(log *zap.SugaredLogger) error {
+	if rc.RetriesDisabled && (rc.RetryCommandTemplate != "" || rc.Retries > 0 || rc.FlakyRetries > 0) {
+		return errors.NewConfigurationError(
+			"Retries are disabled",
+			"This test suite has retries disabled, but a retry command or a number of retries is also configured.",
+			"Either remove 'disabled' from the retries setting, or remove the retry command, --retries and "+
+				"--flaky-retries settings for this test suite.",
+		)
+	}
+
 	if rc.RetryCommandTemplate == "" && (rc.Retries > 0 || rc.FlakyRetries > 0) {
 		return errors.NewConfigurationError(
 			"Missing retry command",

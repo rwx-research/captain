@@ -1007,7 +1007,7 @@ func (s Service) reportTestResults(
 
 		if hasFailedTests {
 			if cfg.RetryCommandTemplate == "" {
-				if !cfg.HideConfigureRetryTip {
+				if !cfg.RetriesDisabled {
 					err := mint.WriteConfigureRetryCommandTip(s.FileSystem)
 					if err != nil {
 						return nil, errors.Wrap(err, "unable to write configure-captain-retry-command tip")

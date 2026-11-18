@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -26,7 +27,7 @@ type CliArgs struct {
 	failOnDuplicateTestID       bool
 	failOnMisconfiguredRetry    bool
 	failRetriesFast             bool
-	hideConfigureRetryCmdTip    bool
+	retriesDisabled             bool
 	flakyRetries                int
 	intermediateArtifactsPath   string
 	additionalArtifactPaths     []string
@@ -161,7 +162,7 @@ func createRunCmd(cliArgs *CliArgs) *cobra.Command {
 						FailOnUploadError:         suiteConfig.FailOnUploadError,
 						FailOnMisconfiguredRetry:  suiteConfig.Retries.FailOnMisconfiguration,
 						FailRetriesFast:           suiteConfig.Retries.FailFast,
-						HideConfigureRetryTip:     suiteConfig.Retries.HideConfigureCommandTip,
+						RetriesDisabled:           suiteConfig.Retries.Disabled,
 						FlakyRetries:              suiteConfig.Retries.FlakyAttempts,
 						IntermediateArtifactsPath: suiteConfig.Retries.IntermediateArtifactsPath,
 						AdditionalArtifactPaths:   suiteConfig.Retries.AdditionalArtifactPaths,
@@ -295,12 +296,13 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"Available reporters are 'rwx-v1-json', 'junit-xml', 'markdown-summary', and 'github-step-summary'.",
 	)
 
-	runCmd.Flags().IntVar(
-		&cliArgs.Retries,
+	cliArgs.Retries = -1
+	runCmd.Flags().Var(
+		&retriesFlag{attempts: &cliArgs.Retries, disabled: &cliArgs.retriesDisabled},
 		"retries",
-		-1,
 		"the number of times failed tests should be retried "+
-			"(e.g. --retries 2 would mean a maximum of 3 attempts of any given test)",
+			"(e.g. --retries 2 would mean a maximum of 3 attempts of any given test). "+
+			"Set to 'disabled' if this suite intentionally has no retries",
 	)
 
 	runCmd.Flags().IntVar(
@@ -328,13 +330,6 @@ func AddFlags(runCmd *cobra.Command, cliArgs *CliArgs) error {
 			"In this situation, we know the tests overall will fail so we can stop retrying to save compute. Similarly "+
 			"if you only set --flaky-retries 1, we can stop retrying if any non-flaky tests fail because we won't retry "+
 			"them)",
-	)
-
-	runCmd.Flags().BoolVar(
-		&cliArgs.hideConfigureRetryCmdTip,
-		"hide-configure-retry-command-tip",
-		false,
-		"if set, captain will not suggest configuring a retry command on RWX when tests fail and no retry command is set",
 	)
 
 	runCmd.Flags().IntVar(
@@ -487,8 +482,8 @@ func bindRunCmdFlags(cfg Config, cliArgs CliArgs, cmd *cobra.Command) Config {
 			suiteConfig.Retries.FailFast = true
 		}
 
-		if cliArgs.hideConfigureRetryCmdTip {
-			suiteConfig.Retries.HideConfigureCommandTip = true
+		if cliArgs.retriesDisabled {
+			suiteConfig.Retries.Disabled = true
 		}
 
 		// We want to use the default as set by `cobra`
@@ -634,4 +629,38 @@ func addShaFlag(cmd *cobra.Command, destination *string) {
 		os.Getenv("CAPTAIN_SHA"),
 		"the git commit sha hash of the commit being built",
 	)
+}
+
+// retriesFlag accepts either a number of retries or "disabled".
+type retriesFlag struct {
+	attempts *int
+	disabled *bool
+}
+
+func (f *retriesFlag) String() string {
+	if f.disabled != nil && *f.disabled {
+		return cli.RetriesDisabledValue
+	}
+	if f.attempts == nil {
+		return ""
+	}
+	return strconv.Itoa(*f.attempts)
+}
+
+func (f *retriesFlag) Set(value string) error {
+	if value == cli.RetriesDisabledValue {
+		*f.disabled = true
+		return nil
+	}
+
+	attempts, err := strconv.Atoi(value)
+	if err != nil {
+		return errors.NewInputError("expected a number or %q, got %q", cli.RetriesDisabledValue, value)
+	}
+	*f.attempts = attempts
+	return nil
+}
+
+func (f *retriesFlag) Type() string {
+	return "int"
 }

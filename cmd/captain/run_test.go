@@ -56,4 +56,37 @@ var _ = Describe("AddFlags", func() {
 			}))
 		})
 	})
+
+	Context("with --retries set to a number", func() {
+		BeforeEach(func() {
+			args = "--retries 2"
+		})
+
+		It("sets the number of retries", func() {
+			Expect(err).ToNot(HaveOccurred())
+			Expect(cliArgs.Retries).To(Equal(2))
+		})
+	})
+
+	Context("with --retries disabled", func() {
+		BeforeEach(func() {
+			args = "--retries disabled"
+		})
+
+		It("leaves the number of retries at its default", func() {
+			Expect(err).ToNot(HaveOccurred())
+			Expect(cliArgs.Retries).To(Equal(-1))
+		})
+	})
+
+	Context("with --retries set to something else", func() {
+		BeforeEach(func() {
+			args = "--retries sometimes"
+		})
+
+		It("errs", func() {
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(`expected a number or "disabled"`))
+		})
+	})
 })

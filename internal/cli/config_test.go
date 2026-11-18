@@ -1,7 +1,10 @@
 package cli_test
 
 import (
+	"strings"
+
 	"go.uber.org/zap/zaptest"
+	"gopkg.in/yaml.v3"
 
 	"github.com/rwx-research/captain-cli/internal/cli"
 	"github.com/rwx-research/captain-cli/internal/config"
@@ -102,6 +105,29 @@ var _ = Describe("RunConfig", func() {
 		It("is valid when flaky-retries are negative and the retry command is present", func() {
 			err := cli.RunConfig{FlakyRetries: -1, RetryCommandTemplate: "some-command"}.Validate(logger)
 			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("is valid when retries are disabled and nothing else retry-related is configured", func() {
+			err := cli.RunConfig{RetriesDisabled: true, Retries: -1, FlakyRetries: -1}.Validate(logger)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("errs when retries are disabled and a retry command is configured", func() {
+			err := cli.RunConfig{RetriesDisabled: true, RetryCommandTemplate: "some-command"}.Validate(logger)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Retries are disabled"))
+		})
+
+		It("errs when retries are disabled and retries are positive", func() {
+			err := cli.RunConfig{RetriesDisabled: true, Retries: 1}.Validate(logger)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Retries are disabled"))
+		})
+
+		It("errs when retries are disabled and flaky-retries are positive", func() {
+			err := cli.RunConfig{RetriesDisabled: true, FlakyRetries: 1}.Validate(logger)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Retries are disabled"))
 		})
 
 		It("errs when additional artifact paths are provided without intermediate artifacts path", func() {
@@ -296,5 +322,43 @@ var _ = Describe("RunConfig", func() {
 			}
 			Expect(rc.IsRunningPartition()).To(Equal(true))
 		})
+	})
+})
+
+var _ = Describe("SuiteConfigRetries", func() {
+	decode := func(document string) (cli.ConfigFile, error) {
+		var configFile cli.ConfigFile
+		decoder := yaml.NewDecoder(strings.NewReader(document))
+		decoder.KnownFields(true)
+		err := decoder.Decode(&configFile)
+		return configFile, err
+	}
+
+	It("parses `retries: disabled`", func() {
+		configFile, err := decode("test-suites:\n  some-suite:\n    retries: disabled\n")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(configFile.TestSuites["some-suite"].Retries.Disabled).To(BeTrue())
+	})
+
+	It("still parses a retries mapping", func() {
+		configFile, err := decode(
+			"test-suites:\n  some-suite:\n    retries:\n      attempts: 2\n      command: some-command\n",
+		)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(configFile.TestSuites["some-suite"].Retries.Disabled).To(BeFalse())
+		Expect(configFile.TestSuites["some-suite"].Retries.Attempts).To(Equal(2))
+		Expect(configFile.TestSuites["some-suite"].Retries.Command).To(Equal("some-command"))
+	})
+
+	It("still rejects unknown fields in a retries mapping", func() {
+		_, err := decode("test-suites:\n  some-suite:\n    retries:\n      not-a-field: true\n")
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("not-a-field"))
+	})
+
+	It("rejects other strings", func() {
+		_, err := decode("test-suites:\n  some-suite:\n    retries: sometimes\n")
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(`expected "disabled" or a mapping`))
 	})
 })
